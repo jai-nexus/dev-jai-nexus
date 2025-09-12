@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2025-08-15T00:00:00Z",
+  "agents": [
+    {
+      "id": "jai-nexus",
+      "title": "JAI NEXUS Agent",
+      "role": "Overseer/coordination, policy, data registry",
+      "repos": ["public-nexus", ".github", "docs-nexus", "orchestrator-nexus"],
+      "status": "operational",
+      "capabilities": ["org-tasks", "docs-index", "policy"],
+      "links": {
+        "spec": "https://github.com/jai-nexus/jai-format",
+        "site": "/"
+      }
+    },
+    {
+      "id": "orchestrator",
+      "title": "Orchestrator Nexus Agent",
+      "role": "Spin-up environments, compose profiles across repos",
+      "repos": ["orchestrator-nexus"],
+      "status": "operational",
+      "capabilities": ["compose-up", "compose-down"]
+    }
+  ]
+}

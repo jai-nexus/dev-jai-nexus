@@ -1,0 +1,203 @@
+:root {
+    --ink: #111;
+    --muted: #666;
+    --bg: #fff;
+    --ink2: #5428ff;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    font: 16px/1.45 ui-sans-serif, system-ui, -apple-system;
+}
+
+.header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    padding: 16px 20px;
+    background: #2f3ab2;
+    color: white;
+}
+
+.header a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600
+}
+
+.header .brand {
+    font-size: 20px;
+    font-weight: 800
+}
+
+.layout {
+    max-width: 1100px;
+    margin: 28px auto;
+    padding: 0 20px
+}
+
+.h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 16px 0
+}
+
+.badge {
+    display: inline-block;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    background: #eef;
+    color: #223;
+}
+
+.card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 12px 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04)
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap
+}
+
+small {
+    color: var(--muted)
+}
+
+a {
+    color: #3423ff
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 18px 0
+}
+
+.input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 420px
+}
+
+.button {
+    background: #3423ff;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer
+}
+
+.mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace
+}
+
+:root {
+    --tri-blue: #1e88e5;
+    --tri-green: #2e7d32;
+    --tri-yellow: #f9a825;
+    --tri-orange: #fb8c00;
+    --tri-red: #c62828;
+}
+
+body {
+    margin: 2rem auto;
+    max-width: 960px;
+    font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    border: 1px solid rgba(0, 0, 0, .08);
+}
+
+.tri-blue {
+    background: var(--tri-blue);
+    color: #fff;
+}
+
+.tri-green {
+    background: var(--tri-green);
+    color: #fff;
+}
+
+.tri-yellow {
+    background: var(--tri-yellow);
+    color: #111;
+}
+
+.tri-orange {
+    background: var(--tri-orange);
+    color: #111;
+}
+
+.tri-red {
+    background: var(--tri-red);
+    color: #fff;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px;
+    background: #fff;
+}
+
+.card h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.05rem;
+}
+
+.card p {
+    margin: 0.25rem 0 0;
+    color: #374151;
+    font-size: 0.92rem;
+}
+
+.mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    color: #6b7280;
+}
+
+.legend span {
+    margin-right: 6px;
+}
+
+main {
+    margin-top: 1rem;
+}
+
+footer {
+    margin-top: 2rem;
+    font-size: .85rem;
+    color: #6b7280;
+}

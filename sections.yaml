@@ -1,0 +1,34 @@
+# dev.jai.nexus content sync configuration
+root: .
+sources_root: .cache/sources
+
+# Default git auth is SSH. If you prefer HTTPS, set GIT_SSH=0 env var when running the sync.
+git:
+  depth: 1
+  ssh: true
+
+sections:
+  # Example: pull agents from wiki-nexus
+  - id: agents
+    repo: jai-nexus/wiki-nexus
+    ref: main
+    include:
+      - "agents/**/*.md"
+    parser: md
+    dest: "data/agents.json"
+
+  # Example: pull contexts from wiki-nexus
+  - id: contexts
+    repo: jai-nexus/wiki-nexus
+    ref: main
+    include:
+      - "contexts/**/*.md"
+    parser: md
+    dest: "data/contexts.json"
+# You can add more sections later:
+# - id: changelog
+#   repo: jai-nexus/public-nexus
+#   ref: main
+#   include: ["site/changelog/**/*.md"]
+#   parser: md
+#   dest: "data/changelog.json"

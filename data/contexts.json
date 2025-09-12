@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2025-08-15T00:00:00Z",
+  "contexts": [
+    {
+      "id": "jai-format",
+      "title": "JAI Format",
+      "kind": "spec",
+      "summary": "Unified .jai.jsonl encoding for chats; numerical hierarchy 0<1.0<1.1<…",
+      "links": {
+        "repo": "https://github.com/jai-nexus/jai-format"
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Tasks — JAI NEXUS</title>
+<link rel="stylesheet" href="/assets/site.css"/>
+</head>
+<body>
+  <div class="header">
+    <a class="brand" href="/">JAI NEXUS</a>
+    <a href="/tasks/">Tasks</a>
+    <a href="/agents/">Agents</a>
+    <a href="/contexts/">Contexts</a>
+    <a href="/vault/">Vault</a>
+  </div>
+  <div class="layout">
+    <div class="h1">Live Tasks</div>
+    <div id="stats" style="margin-bottom:16px"></div>
+    <div id="list"></div>
+  </div>
+<script>
+(async () => {
+  const res = await fetch('/data/nexus.json', {cache:'no-store'});
+  const data = await res.json();
+  const totals = data.totals || {open:0, done:0, xp:0};
+  document.getElementById('stats').innerHTML =
+    `<span class="badge">XP ${totals.xp}</span>
+     <span class="badge">Open ${totals.open}</span>
+     <span class="badge">Done ${totals.done}</span>`;
+
+  const list = document.getElementById('list');
+  (data.tasks || []).forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <a href="${t.url}" target="_blank">${t.title}</a>
+        <small>${t.source||''} ${t.repo?`— ${t.repo}`:''}</small>
+      </div>
+      <div style="margin-top:4px">
+        <span class="badge">${t.type||''}</span>
+        ${t.points?`<span class="badge">${t.points} pts</span>`:''}
+        ${t.status?`<span class="badge">${t.status}</span>`:''}
+      </div>`;
+    list.appendChild(div);
+  });
+  if (!data.tasks || !data.tasks.length) list.innerHTML = '<p>No tasks found.</p>';
+})();
+</script>
+</body>
+</html>

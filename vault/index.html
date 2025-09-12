@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Vault — JAI Nexus</title>
+<link rel="stylesheet" href="/assets/site.css"/>
+</head><body>
+<div class="header">
+  <a class="brand" href="/">JAI Nexus</a>
+  <a href="/tasks/">Tasks</a><a href="/agents/">Agents</a><a href="/contexts/">Contexts</a><a href="/vault/">Vault</a>
+</div>
+<div class="layout">
+  <div class="h1">Vault (client‑side decryption)</div>
+  <p>Paste a path like <code>data/private/secret.md.enc</code>, enter passphrase, and the page will decrypt the file in your browser.</p>
+  <input class="input mono" id="path" placeholder="data/private/secret.md.enc"/>
+  <div style="height:8px"></div>
+  <input class="input" id="pass" placeholder="passphrase" type="password"/>
+  <div style="height:8px"></div>
+  <button class="button" id="go">Decrypt</button>
+  <hr/>
+  <pre id="out" class="mono"></pre>
+</div>
+<script>
+async function pbkdf2(pass, salt){ const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:250000, hash:'SHA-256'},
+    key, {name:'AES-GCM', length:256}, false, ['decrypt']);
+}
+function bufToStr(buf){ return new TextDecoder().decode(buf); }
+
+document.getElementById('go').onclick = async () => {
+  const path = document.getElementById('path').value.trim();
+  const pass = document.getElementById('pass').value;
+  const out  = document.getElementById('out');
+  out.textContent = '…downloading…';
+  try{
+    const res = await fetch('/'+path); if(!res.ok) throw new Error(res.statusText);
+    const arr = new Uint8Array(await res.arrayBuffer());
+    const magic = new TextDecoder().decode(arr.slice(0,8));
+    if(magic !== 'JAIENC1\u0000') throw new Error('Bad header');
+    const salt = arr.slice(8, 24), iv = arr.slice(24, 36), tag = arr.slice(36, 52);
+    const enc = arr.slice(52);
+    const key = await pbkdf2(pass, salt);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv, additionalData: undefined, tagLength:128},
+                                           key, (()=>{ const c = new Uint8Array(enc.length+16); c.set(enc); c.set(tag, enc.length); return c; })());
+    out.textContent = bufToStr(new Uint8Array(pt));
+  }catch(e){ out.textContent = 'Error: '+e.message; }
+};
+</script>
+</body></html>
