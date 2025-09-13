@@ -1,0 +1,4876 @@
+{
+  "items": [
+    {
+      "nh": "1",
+      "path": ".github/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1",
+      "path": ".github/workflows/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.1",
+      "path": ".github/workflows/audit.yml",
+      "type": "file",
+      "sha12": "dcc55cc88b18",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.2",
+      "path": ".github/workflows/bootstrap-project.yml",
+      "type": "file",
+      "sha12": "ef8a17d34738",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.3",
+      "path": ".github/workflows/ci.yml",
+      "type": "file",
+      "sha12": "8f7fe54329dd",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.4",
+      "path": ".github/workflows/docs.yml",
+      "type": "file",
+      "sha12": "e2a07e0067e8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.5",
+      "path": ".github/workflows/gh-pages.yml",
+      "type": "file",
+      "sha12": "50dffaf360e5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.6",
+      "path": ".github/workflows/notion-sync.yml",
+      "type": "file",
+      "sha12": "a5383b85a62f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1.1.7",
+      "path": ".github/workflows/pages.yml",
+      "type": "file",
+      "sha12": "8435f498d550",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "2",
+      "path": ".vscode/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "2.1",
+      "path": ".vscode/extensions.json",
+      "type": "file",
+      "sha12": "3ce424c3e034",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "2.2",
+      "path": ".vscode/launch.json",
+      "type": "file",
+      "sha12": "7bf8f8474c4d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "2.3",
+      "path": ".vscode/settings.json",
+      "type": "file",
+      "sha12": "189409c8b6cf",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "2.4",
+      "path": ".vscode/tasks.json",
+      "type": "file",
+      "sha12": "769630283f0b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "3",
+      "path": "bin/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "3.1",
+      "path": "bin/jai-operator",
+      "type": "file",
+      "sha12": "9bf8ec750c97",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4",
+      "path": "docs/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1",
+      "path": "docs/agents/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.1",
+      "path": "docs/agents/a001-notion-curator.md",
+      "type": "file",
+      "sha12": "a004450e947b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.2",
+      "path": "docs/agents/a002-jai-1-0.md",
+      "type": "file",
+      "sha12": "6572c4aaed0a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.3",
+      "path": "docs/agents/a003-jai-1-1.md",
+      "type": "file",
+      "sha12": "9b897e07e553",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.4",
+      "path": "docs/agents/a004-jai-1-2.md",
+      "type": "file",
+      "sha12": "f86e759352af",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.5",
+      "path": "docs/agents/a005-jai-1-3.md",
+      "type": "file",
+      "sha12": "284261242818",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.6",
+      "path": "docs/agents/a006-jai-1-4-security-audit.md",
+      "type": "file",
+      "sha12": "609d0e8234df",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.7",
+      "path": "docs/agents/a007-jai-1-5-finance-bot.md",
+      "type": "file",
+      "sha12": "e77a58d9231d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.8",
+      "path": "docs/agents/a008-jai-1-6-research-analyst.md",
+      "type": "file",
+      "sha12": "d228333ca316",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.1.9",
+      "path": "docs/agents/index.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.1",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A001-notion-curator.md",
+      "type": "file",
+      "sha12": "b724ed188fbe",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.2",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A002-jai-1-0.md",
+      "type": "file",
+      "sha12": "2885abaa9261",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.3",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A003-jai-1-1.md",
+      "type": "file",
+      "sha12": "4fe6a7cf50c8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.4",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A004-jai-1-2.md",
+      "type": "file",
+      "sha12": "2c49009a702e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.5",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A005-jai-1-3.md",
+      "type": "file",
+      "sha12": "f6724e3fd970",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.6",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A006-jai-1-4-security-audit.md",
+      "type": "file",
+      "sha12": "c78b3ac2ed4a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.7",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A007-jai-1-5-finance-bot.md",
+      "type": "file",
+      "sha12": "438dc979b6ee",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.2.8",
+      "path": "docs/Agents_Registry_22f173c6285c805cba6dd1c6898d8687_all.csv/A008-jai-1-6-research-analyst.md",
+      "type": "file",
+      "sha12": "827a9cc0a86a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3",
+      "path": "docs/assets/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.1",
+      "path": "docs/assets/a001-jai-constitution-v1-true-north-ethics-charter.md",
+      "type": "file",
+      "sha12": "ceea7625ba00",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.2",
+      "path": "docs/assets/a002-vr-360-jai-operator-dashboard-v1.md",
+      "type": "file",
+      "sha12": "b23c9c88fd92",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.3",
+      "path": "docs/assets/a003-jai-nexus-business-model-v1.md",
+      "type": "file",
+      "sha12": "2c58cd003886",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.4",
+      "path": "docs/assets/a004-business-model-outline.md",
+      "type": "file",
+      "sha12": "14342ad8913a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.5",
+      "path": "docs/assets/a005-bus-model.md",
+      "type": "file",
+      "sha12": "1f57daaa90cd",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.6",
+      "path": "docs/assets/a006-jai-nexus-strategic-design-v1-agency-constitution.md",
+      "type": "file",
+      "sha12": "70c0f80674be",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.7",
+      "path": "docs/assets/a007-7-8-25-project-roadmap.md",
+      "type": "file",
+      "sha12": "ffc4ecc98f65",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.8",
+      "path": "docs/assets/a008-7-8-2025-dev-log.md",
+      "type": "file",
+      "sha12": "60aea69ac539",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.9",
+      "path": "docs/assets/a009-strategic-design-of-a-modular-multi-model-ai-copilot.md",
+      "type": "file",
+      "sha12": "c29b3d9bc3d7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.10",
+      "path": "docs/assets/a010-two-week-development-roadmap.md",
+      "type": "file",
+      "sha12": "55efca9f4b9b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.11",
+      "path": "docs/assets/a011-jai-nexus-project-roadmap.md",
+      "type": "file",
+      "sha12": "862299edd339",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.12",
+      "path": "docs/assets/a012-nan.md",
+      "type": "file",
+      "sha12": "cc6d07412219",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.13",
+      "path": "docs/assets/a013-assets-library.md",
+      "type": "file",
+      "sha12": "51a84bd06c73",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.14",
+      "path": "docs/assets/a014-modules-risk-model-py.md",
+      "type": "file",
+      "sha12": "7f85554911f9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.15",
+      "path": "docs/assets/a015-modules-github-sync-py.md",
+      "type": "file",
+      "sha12": "87812b709960",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.16",
+      "path": "docs/assets/a016-modules-jira-sync-py.md",
+      "type": "file",
+      "sha12": "ddfe3beab4a4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.17",
+      "path": "docs/assets/a017-modules-insight-engine-py.md",
+      "type": "file",
+      "sha12": "90420cf76e91",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.18",
+      "path": "docs/assets/a018-jai-nexus-project-roadmap.md",
+      "type": "file",
+      "sha12": "a76573958372",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.19",
+      "path": "docs/assets/a019-nan.md",
+      "type": "file",
+      "sha12": "dfb4c0d2e88c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.20",
+      "path": "docs/assets/index.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.3.21",
+      "path": "docs/assets/legacy-notion.md",
+      "type": "file",
+      "sha12": "361b3cec7ae1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.1",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A001-jai-constitution-v1-true-north-ethics-charter.md",
+      "type": "file",
+      "sha12": "61f8af903fe8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.2",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A002-vr-360-jai-operator-dashboard-v1.md",
+      "type": "file",
+      "sha12": "d816d826a379",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.3",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A003-jai-nexus-business-model-v1.md",
+      "type": "file",
+      "sha12": "5d7d5cc1ab41",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.4",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A004-business-model-outline.md",
+      "type": "file",
+      "sha12": "560ad6976cf6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.5",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A005-bus-model.md",
+      "type": "file",
+      "sha12": "6ce2e2f6067f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.6",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A006-jai-nexus-strategic-design-v1-agency-constitution.md",
+      "type": "file",
+      "sha12": "c667473acb2c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.7",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A007-7-8-25-project-roadmap.md",
+      "type": "file",
+      "sha12": "18ade2ccf10c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.8",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A008-7-8-2025-dev-log.md",
+      "type": "file",
+      "sha12": "b4cd0a3c38b6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.9",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A009-strategic-design-of-a-modular-multi-model-ai-copilot.md",
+      "type": "file",
+      "sha12": "8e56686f6b9e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.10",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A010-two-week-development-roadmap.md",
+      "type": "file",
+      "sha12": "84c2e8f822a4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.11",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A011-jai-nexus-project-roadmap.md",
+      "type": "file",
+      "sha12": "e1873ae2af2f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.12",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A012-nan.md",
+      "type": "file",
+      "sha12": "87f77d950aa5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.13",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A013-assets-library.md",
+      "type": "file",
+      "sha12": "883e55af3585",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.14",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A014-modules-risk-model-py.md",
+      "type": "file",
+      "sha12": "23ab05c59c5d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.15",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A015-modules-github-sync-py.md",
+      "type": "file",
+      "sha12": "d75f1918e4e7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.16",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A016-modules-jira-sync-py.md",
+      "type": "file",
+      "sha12": "5464b24f828c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.17",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A017-modules-insight-engine-py.md",
+      "type": "file",
+      "sha12": "0335e8ff27fd",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.18",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A018-jai-nexus-project-roadmap.md",
+      "type": "file",
+      "sha12": "b5c7e2b1f94c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.4.19",
+      "path": "docs/Assets_Library_217173c6285c80e39d04ddb0bfd1c2f0_all.csv/A019-nan.md",
+      "type": "file",
+      "sha12": "3be5e0afd5d2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.1",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C001-c001.md",
+      "type": "file",
+      "sha12": "256996eca859",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.2",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C002-c002.md",
+      "type": "file",
+      "sha12": "458e46faedd7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.3",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C003-c003.md",
+      "type": "file",
+      "sha12": "c6fa72872c46",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.4",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C004-c004.md",
+      "type": "file",
+      "sha12": "ff17b39228f1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.5",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C005-c005.md",
+      "type": "file",
+      "sha12": "c9f873229054",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.6",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C006-c006.md",
+      "type": "file",
+      "sha12": "117b4813d85c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.7",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C007-c007.md",
+      "type": "file",
+      "sha12": "aa94ffd13f54",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.8",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C008-c008.md",
+      "type": "file",
+      "sha12": "a59631404944",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.9",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C009-c009.md",
+      "type": "file",
+      "sha12": "a6455fe7dc18",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.10",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C010-c010.md",
+      "type": "file",
+      "sha12": "df08acff96bb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.11",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C011-c011.md",
+      "type": "file",
+      "sha12": "bd652fc0d940",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.12",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C012-c012.md",
+      "type": "file",
+      "sha12": "b775dae22f8d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.13",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C013-c013.md",
+      "type": "file",
+      "sha12": "20b71a3f6c16",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.14",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C014-c014.md",
+      "type": "file",
+      "sha12": "e321cab4abfa",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.15",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C015-c015.md",
+      "type": "file",
+      "sha12": "8d1510f60855",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.16",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C016-c016.md",
+      "type": "file",
+      "sha12": "b16afdc79b0c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.17",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C017-c017.md",
+      "type": "file",
+      "sha12": "8bd2d737d71e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.18",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C018-c018.md",
+      "type": "file",
+      "sha12": "387a6714903d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.19",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C019-c019.md",
+      "type": "file",
+      "sha12": "7f8d7383a6ef",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.20",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C020-c020.md",
+      "type": "file",
+      "sha12": "9fcfa88c17b4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.5.21",
+      "path": "docs/Chat_Workflow_215173c6285c8077abfee263c0957672_all.csv/C021-c021.md",
+      "type": "file",
+      "sha12": "12503b593500",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.6",
+      "path": "docs/contexts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.6.1",
+      "path": "docs/contexts/c001-home-dual-monitor.md",
+      "type": "file",
+      "sha12": "ba3716d7c25c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.6.2",
+      "path": "docs/contexts/c002-home-tri-monitor.md",
+      "type": "file",
+      "sha12": "dda5568d24fe",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.6.3",
+      "path": "docs/contexts/index.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.7",
+      "path": "docs/Contexts_217173c6285c80dfb817d3746a59d6f3_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.7.1",
+      "path": "docs/Contexts_217173c6285c80dfb817d3746a59d6f3_all.csv/C001-home-dual-monitor.md",
+      "type": "file",
+      "sha12": "80d04d982bc3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.7.2",
+      "path": "docs/Contexts_217173c6285c80dfb817d3746a59d6f3_all.csv/C002-home-tri-monitor.md",
+      "type": "file",
+      "sha12": "1e91c6f9f2df",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.1",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J001-humanitarian-allocation.md",
+      "type": "file",
+      "sha12": "04c8b214faf0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.2",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J002-one-page-reference-to-the-strategic-design-vision.md",
+      "type": "file",
+      "sha12": "66231cb664c2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.3",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J003-nan.md",
+      "type": "file",
+      "sha12": "463d5831a18c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.4",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J004-jai-nexus.md",
+      "type": "file",
+      "sha12": "bbcb7a92d24e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.5",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J005-mission-aligned-profit-model.md",
+      "type": "file",
+      "sha12": "d6f0551902a2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.6",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J006-vr-operator-dashboard.md",
+      "type": "file",
+      "sha12": "b566c2d92d96",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.7",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J007-jai-constitution.md",
+      "type": "file",
+      "sha12": "bc7e9d848da7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.8",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J008-published.md",
+      "type": "file",
+      "sha12": "67589d3810ef",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.9",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J009-nan.md",
+      "type": "file",
+      "sha12": "574fedd06a8e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.10",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J010-nan.md",
+      "type": "file",
+      "sha12": "8a67afee968d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.11",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J011-nan.md",
+      "type": "file",
+      "sha12": "5f7f0e6b6e44",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.12",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J012-nan.md",
+      "type": "file",
+      "sha12": "8a39bfc058de",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.13",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J013-nan.md",
+      "type": "file",
+      "sha12": "88f57cbc6271",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.14",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J014-nan.md",
+      "type": "file",
+      "sha12": "cf2e17f90229",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.15",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J015-nan.md",
+      "type": "file",
+      "sha12": "380758339e8d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.16",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J016-nan.md",
+      "type": "file",
+      "sha12": "985d762ff517",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.8.17",
+      "path": "docs/JAI_Glossary_22f173c6285c80da9cd4c6e4a2651721_all.csv/J017-nan.md",
+      "type": "file",
+      "sha12": "d8b99b5dce35",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.1",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S001-day-01-repo-hardening.md",
+      "type": "file",
+      "sha12": "229b2e0f69fb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.2",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S002-day-02-repo-hardening.md",
+      "type": "file",
+      "sha12": "d3d8d6049560",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.3",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S003-day-03-reporters.md",
+      "type": "file",
+      "sha12": "2dac72c1ea93",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.4",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S004-day-04-reporters.md",
+      "type": "file",
+      "sha12": "5dd09324018d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.5",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S005-day-05-wrap-up.md",
+      "type": "file",
+      "sha12": "1cca8f58d450",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.6",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S006-day-06-tag-version.md",
+      "type": "file",
+      "sha12": "59688ccb9fa1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.7",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S007-day-07-buffer-qa.md",
+      "type": "file",
+      "sha12": "1e3a87526c4f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.8",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S008-day-08-design-jam.md",
+      "type": "file",
+      "sha12": "33396ca6fb65",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.9",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S009-day-09-routing-core.md",
+      "type": "file",
+      "sha12": "ef0e221c8d7a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.10",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S010-day-10-adapters.md",
+      "type": "file",
+      "sha12": "13d8b5b8df4e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.11",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S011-day-11-adapters.md",
+      "type": "file",
+      "sha12": "e5a2ceca7f93",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.12",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S012-day-12-adapters.md",
+      "type": "file",
+      "sha12": "e366ded54fce",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.13",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S013-day-13-dev-agent-ux.md",
+      "type": "file",
+      "sha12": "491cd3f3a606",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.9.14",
+      "path": "docs/Sprint_0_Issues_22e173c6285c81e5813be17295bb8097_all.csv/S014-day-14-demo-retro.md",
+      "type": "file",
+      "sha12": "e5a032e310b4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10",
+      "path": "docs/tasks/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.1",
+      "path": "docs/tasks/index.md",
+      "type": "file",
+      "sha12": "c127ead42582",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.2",
+      "path": "docs/tasks/t001-nan.md",
+      "type": "file",
+      "sha12": "2b705b88c18b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.3",
+      "path": "docs/tasks/t002-fill-content-for-readmefirst-linked.md",
+      "type": "file",
+      "sha12": "bdb423ef7e3f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.4",
+      "path": "docs/tasks/t003-rename-dress-the-lobby.md",
+      "type": "file",
+      "sha12": "1c2fabfd620b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.5",
+      "path": "docs/tasks/t004-create-the-four-pillar-pagescreate-the-four-pillar-pages.md",
+      "type": "file",
+      "sha12": "203332f7e1b9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.6",
+      "path": "docs/tasks/t005-seed-rbac-groups.md",
+      "type": "file",
+      "sha12": "fd880f2670fa",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.7",
+      "path": "docs/tasks/t006-add-the-naming-taxonomy-guide.md",
+      "type": "file",
+      "sha12": "027d94eacc9c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.8",
+      "path": "docs/tasks/t007-quick-topology-map.md",
+      "type": "file",
+      "sha12": "9c3cbf15181b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.9",
+      "path": "docs/tasks/t008-tasks-roadmap-databasetasks-roadmap-database.md",
+      "type": "file",
+      "sha12": "f751abd8cb40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.10",
+      "path": "docs/tasks/t009-knowledge-articles-database.md",
+      "type": "file",
+      "sha12": "31e16f51dba5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.11",
+      "path": "docs/tasks/t010-assets-library-database.md",
+      "type": "file",
+      "sha12": "6bf5a90dee4c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.12",
+      "path": "docs/tasks/t011-meetings-decisions-database.md",
+      "type": "file",
+      "sha12": "9d384a0c21ba",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.13",
+      "path": "docs/tasks/t012-wire-the-relations.md",
+      "type": "file",
+      "sha12": "8895dbea1f60",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.14",
+      "path": "docs/tasks/t013-light-weight-quality-checks.md",
+      "type": "file",
+      "sha12": "327dc64f68d1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.15",
+      "path": "docs/tasks/t014-nan.md",
+      "type": "file",
+      "sha12": "50b689f102b0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.16",
+      "path": "docs/tasks/t015-nan.md",
+      "type": "file",
+      "sha12": "98cb6a272b4f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.17",
+      "path": "docs/tasks/t016-dev-infrastructure-nexus.md",
+      "type": "file",
+      "sha12": "ea8c84db1c6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.18",
+      "path": "docs/tasks/t017-fill-content-for-contexts.md",
+      "type": "file",
+      "sha12": "f2ca414a2d4b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.19",
+      "path": "docs/tasks/t018-agenda-2025-06-22.md",
+      "type": "file",
+      "sha12": "70e5015bb4fe",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.20",
+      "path": "docs/tasks/t019-assign-owner-for-readmefirst-linked.md",
+      "type": "file",
+      "sha12": "06796bf6eff8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.21",
+      "path": "docs/tasks/t020-assign-owner-for-welcome-to-jai-nexus-hq.md",
+      "type": "file",
+      "sha12": "1c807c8ecaec",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.22",
+      "path": "docs/tasks/t021-assign-owner-for-welcome-to-notion.md",
+      "type": "file",
+      "sha12": "5eee79ae01dc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.23",
+      "path": "docs/tasks/t022-assign-owner-for-1-3-teams-rbac.md",
+      "type": "file",
+      "sha12": "126b0719ddf7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.24",
+      "path": "docs/tasks/t023-smoke-test-owner-workflows.md",
+      "type": "file",
+      "sha12": "51dac270b7e5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.25",
+      "path": "docs/tasks/t024-resume-wave-8-integrationresume-wave-8-integrationassign-owner.md",
+      "type": "file",
+      "sha12": "d245037b7149",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.26",
+      "path": "docs/tasks/t025-nan.md",
+      "type": "file",
+      "sha12": "5c33b4df2a31",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.27",
+      "path": "docs/tasks/t026-nightly-github-notion-sync.md",
+      "type": "file",
+      "sha12": "05b0b96b8c67",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.28",
+      "path": "docs/tasks/t027-qa-harness-test-loop.md",
+      "type": "file",
+      "sha12": "3f01c0845c09",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.29",
+      "path": "docs/tasks/t028-ars-dashboard-automation.md",
+      "type": "file",
+      "sha12": "887ea9c07138",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.30",
+      "path": "docs/tasks/t029-chat-workflow-seeder.md",
+      "type": "file",
+      "sha12": "bd4caa5681dd",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.10.31",
+      "path": "docs/tasks/t030-nan.md",
+      "type": "file",
+      "sha12": "0e6b4cf7a99f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.1",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T001-nan.md",
+      "type": "file",
+      "sha12": "8212f4ec876c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.2",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T002-fill-content-for-readmefirst-linked.md",
+      "type": "file",
+      "sha12": "eeea68a3588a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.3",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T003-rename-dress-the-lobby.md",
+      "type": "file",
+      "sha12": "1ce27a2e0756",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.4",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T004-create-the-four-pillar-pagescreate-the-four-pillar-pages.md",
+      "type": "file",
+      "sha12": "e7aeda681ff6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.5",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T005-seed-rbac-groups.md",
+      "type": "file",
+      "sha12": "7d7abc953efe",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.6",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T006-add-the-naming-taxonomy-guide.md",
+      "type": "file",
+      "sha12": "a9d9c5568fd4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.7",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T007-quick-topology-map.md",
+      "type": "file",
+      "sha12": "b1bd7cf92fea",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.8",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T008-tasks-roadmap-databasetasks-roadmap-database.md",
+      "type": "file",
+      "sha12": "fcdecb64a8b3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.9",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T009-knowledge-articles-database.md",
+      "type": "file",
+      "sha12": "bea3bb7d72ff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.10",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T010-assets-library-database.md",
+      "type": "file",
+      "sha12": "232ee47a7034",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.11",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T011-meetings-decisions-database.md",
+      "type": "file",
+      "sha12": "f8ce384151e4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.12",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T012-wire-the-relations.md",
+      "type": "file",
+      "sha12": "3ef7e82f6f28",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.13",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T013-light-weight-quality-checks.md",
+      "type": "file",
+      "sha12": "61bcececa451",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.14",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T014-nan.md",
+      "type": "file",
+      "sha12": "52a82b2ab2aa",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.15",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T015-nan.md",
+      "type": "file",
+      "sha12": "0015a4c075be",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.16",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T016-dev-infrastructure-nexus.md",
+      "type": "file",
+      "sha12": "0a8202e94ca4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.17",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T017-fill-content-for-contexts.md",
+      "type": "file",
+      "sha12": "5c68e4f9af07",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.18",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T018-agenda-2025-06-22.md",
+      "type": "file",
+      "sha12": "6fee0366952e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.19",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T019-assign-owner-for-readmefirst-linked.md",
+      "type": "file",
+      "sha12": "864679173056",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.20",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T020-assign-owner-for-welcome-to-jai-nexus-hq.md",
+      "type": "file",
+      "sha12": "e13b0371c0c4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.21",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T021-assign-owner-for-welcome-to-notion.md",
+      "type": "file",
+      "sha12": "6a51ba15fd5b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.22",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T022-assign-owner-for-1-3-teams-rbac.md",
+      "type": "file",
+      "sha12": "81587ba27980",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.23",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T023-smoke-test-owner-workflows.md",
+      "type": "file",
+      "sha12": "8ead17b44b1c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.24",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T024-resume-wave-8-integrationresume-wave-8-integrationassign-owner.md",
+      "type": "file",
+      "sha12": "b474ead2a049",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.25",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T025-nan.md",
+      "type": "file",
+      "sha12": "3fb321105b7d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.26",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T026-nightly-github-notion-sync.md",
+      "type": "file",
+      "sha12": "bf9163984b05",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.27",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T027-qa-harness-test-loop.md",
+      "type": "file",
+      "sha12": "99634e5fe3ac",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.28",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T028-ars-dashboard-automation.md",
+      "type": "file",
+      "sha12": "16cb91411bff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.29",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T029-chat-workflow-seeder.md",
+      "type": "file",
+      "sha12": "30b42ad342fa",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.11.30",
+      "path": "docs/Tasks_Roadmap_216173c6285c80e5b8affbeb231c218c_all.csv/T030-nan.md",
+      "type": "file",
+      "sha12": "4391074bc610",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.1",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U001-nan.md",
+      "type": "file",
+      "sha12": "27d75db9128c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.2",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U002-task.md",
+      "type": "file",
+      "sha12": "77e11062eef7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.3",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U003-1-1-top-level-lobby-page.md",
+      "type": "file",
+      "sha12": "383b8e23d5c0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.4",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U004-1-2-four-pillar-pages.md",
+      "type": "file",
+      "sha12": "46d6787c88d5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.5",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U005-1-3-teams-rbac.md",
+      "type": "file",
+      "sha12": "6c64b5cda4f1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.12.6",
+      "path": "docs/Untitled_215173c6285c8025b713ce3f6cbc0b97_all.csv/U006-1-4-naming-convention-doc.md",
+      "type": "file",
+      "sha12": "db2c86a84fb1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.13",
+      "path": "docs/Usage_218173c6285c80cc97a2f08333e6fe4c_all.csv/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.13.1",
+      "path": "docs/Usage_218173c6285c80cc97a2f08333e6fe4c_all.csv/U001-nan.md",
+      "type": "file",
+      "sha12": "18902da1ebc6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.13.2",
+      "path": "docs/Usage_218173c6285c80cc97a2f08333e6fe4c_all.csv/U002-nan.md",
+      "type": "file",
+      "sha12": "563d90eb6fcb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.13.3",
+      "path": "docs/Usage_218173c6285c80cc97a2f08333e6fe4c_all.csv/U003-nan.md",
+      "type": "file",
+      "sha12": "72d49c10e785",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.13.4",
+      "path": "docs/Usage_218173c6285c80cc97a2f08333e6fe4c_all.csv/U004-nan.md",
+      "type": "file",
+      "sha12": "0b0097a07950",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.14",
+      "path": "docs/CNAME",
+      "type": "file",
+      "sha12": "13ba1724e0c9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.15",
+      "path": "docs/frameworks.md",
+      "type": "file",
+      "sha12": "06898a83d9c8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.16",
+      "path": "docs/gen_nav.py",
+      "type": "file",
+      "sha12": "236529871d0f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.17",
+      "path": "docs/index.md",
+      "type": "file",
+      "sha12": "2a9b62b9c66c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.18",
+      "path": "docs/MASTER_PLAN.md",
+      "type": "file",
+      "sha12": "c502858adb9b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.19",
+      "path": "docs/notion_bootstrap.md",
+      "type": "file",
+      "sha12": "5997edd6c09f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.20",
+      "path": "docs/quantum.md",
+      "type": "file",
+      "sha12": "06898a83d9c8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.21",
+      "path": "docs/ROADMAP.md",
+      "type": "file",
+      "sha12": "5975c07f908e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.22",
+      "path": "docs/spec.md",
+      "type": "file",
+      "sha12": "3213b0edc36a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "4.23",
+      "path": "docs/Sprint0.md",
+      "type": "file",
+      "sha12": "c1ec43c555c3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "5",
+      "path": "domain-pods/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "5.1",
+      "path": "domain-pods/ingest.nexus.yaml",
+      "type": "file",
+      "sha12": "45c0de1e8ec2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "6",
+      "path": "jai_cli_deprecated/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "6.1",
+      "path": "jai_cli_deprecated/.keep",
+      "type": "file",
+      "sha12": "06898a83d9c8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7",
+      "path": "modelops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1",
+      "path": "modelops/adminops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1",
+      "path": "modelops/adminops/jai-adminops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.1",
+      "path": "modelops/adminops/jai-adminops/output/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.1.1",
+      "path": "modelops/adminops/jai-adminops/output/2025Q3_ops_snapshot/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.1.1.1",
+      "path": "modelops/adminops/jai-adminops/output/2025Q3_ops_snapshot/0.1_ui-confirm.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.1.1.2",
+      "path": "modelops/adminops/jai-adminops/output/2025Q3_ops_snapshot/0.2_admin-sync.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.1.1.3",
+      "path": "modelops/adminops/jai-adminops/output/2025Q3_ops_snapshot/jai-meta.yml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.2",
+      "path": "modelops/adminops/jai-adminops/utils/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.2.1",
+      "path": "modelops/adminops/jai-adminops/utils/filetools.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.3",
+      "path": "modelops/adminops/jai-adminops/jai-meta.template.yml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.4",
+      "path": "modelops/adminops/jai-adminops/jai_encode.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "7.1.1.5",
+      "path": "modelops/adminops/jai-adminops/sheets_config.yaml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8",
+      "path": "notion_csv_export/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1",
+      "path": "notion_csv_export/Agents Registry/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.1",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 0 22f173c6285c80b79e87d8eb2829cd8d.md",
+      "type": "file",
+      "sha12": "1c89ed8eed81",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.2",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 1 22f173c6285c80488a10d960bd70ae07.md",
+      "type": "file",
+      "sha12": "8824ed845b28",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.3",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 2 22f173c6285c80578b75e9a3bf75adf3.md",
+      "type": "file",
+      "sha12": "ddf3f3c4e9f5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.4",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 3 22f173c6285c80bc9f4cd47ba26a5cf6.md",
+      "type": "file",
+      "sha12": "e35915acaffb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.5",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 4 Security Audit 230173c6285c80af8b83ebfea497bcff.md",
+      "type": "file",
+      "sha12": "2e2917668110",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.6",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 5 Finance Bot 230173c6285c803587edfc3e5aad1498.md",
+      "type": "file",
+      "sha12": "36c544b255f4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.7",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/jai 1 6 Research Analyst 230173c6285c809bafb2fe344206819a.md",
+      "type": "file",
+      "sha12": "cb1d15f05b08",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.1.8",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687/Notion Curator 22f173c6285c80f4a8d8c026e40336fe.md",
+      "type": "file",
+      "sha12": "f42be5cd0be2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.2",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687.csv",
+      "type": "file",
+      "sha12": "8e9d67a9e64e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.1.3",
+      "path": "notion_csv_export/Agents Registry/Private & Shared/Agents Registry 22f173c6285c805cba6dd1c6898d8687_all.csv",
+      "type": "file",
+      "sha12": "8e9d67a9e64e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.1.2",
+      "path": "notion_csv_export/Agents Registry/f55f69e7-b587-4ed9-aa91-8a81eaa12c20_Export-2759f1b3-152a-4b21-a68c-8069d593fde6.zip",
+      "type": "file",
+      "sha12": "1fae3ef76dc1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2",
+      "path": "notion_csv_export/Assets Library/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1",
+      "path": "notion_csv_export/Assets Library/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.1",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/7 8 2025 dev log 22f173c6285c80ceb9fbd997e30f99a6.md",
+      "type": "file",
+      "sha12": "0eb3a8e8a796",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.2",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/7 8 25 Project Roadmap 22f173c6285c80d28f6dce0a85f3fbf8.md",
+      "type": "file",
+      "sha12": "b4eb3d4f5a77",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.3",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Assets Library 217173c6285c80acbd14eb5c63a568aa.md",
+      "type": "file",
+      "sha12": "239431e3a812",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.4",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/BUS-MODEL 230173c6285c80ffaf58d3f8ee240ff6.md",
+      "type": "file",
+      "sha12": "254148c0cea6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.5",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Business Model outline 230173c6285c80af9981d974f215365c.md",
+      "type": "file",
+      "sha12": "e6477b662ee8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.6",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/JAI Constitution v1 (True\u2011North Ethics Charter) 230173c6285c80b492c2c28d1cbd8b81.md",
+      "type": "file",
+      "sha12": "2d62f16b0ebb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.7",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/JAI \u2011Nexus Strategic Design v1 (Agency Constitutio 230173c6285c8021b22fd156d4ed9735.md",
+      "type": "file",
+      "sha12": "832c5812221a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.8",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/JAI-Nexus Business Model v1 230173c6285c80aab913ed10835e9d85.md",
+      "type": "file",
+      "sha12": "ddfbac38af64",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.9",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/JAI-Nexus Project Roadmap 22f173c6285c801cac7befa3a36d7acf.md",
+      "type": "file",
+      "sha12": "136c1d542b57",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.10",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/JAI-Nexus Project Roadmap 22f173c6285c80808ef0ed64e8b2a8a5.md",
+      "type": "file",
+      "sha12": "a4e86a153772",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.11",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/modules github_sync py 21b173c6285c8024a949f387e5a72211.md",
+      "type": "file",
+      "sha12": "ab349ca8c116",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.12",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/modules insight_engine py 21b173c6285c809ba94bf78a0dbdcdb8.md",
+      "type": "file",
+      "sha12": "bf6fa7b71ada",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.13",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/modules jira_sync py 21b173c6285c80b69816fe08a122565c.md",
+      "type": "file",
+      "sha12": "bb481f12643c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.14",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/modules risk_model py 21b173c6285c80e698cac9a76fe3e798.md",
+      "type": "file",
+      "sha12": "f9a02bb2a002",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.15",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Strategic Design of a Modular Multi-Model AI Copil 22f173c6285c8081abfdc4ed2857e72c.md",
+      "type": "file",
+      "sha12": "f830e56a7c86",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.16",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Two-Week Development Roadmap 22f173c6285c8075b72fdce1697c6c05.md",
+      "type": "file",
+      "sha12": "747122cf2968",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.17",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Untitled 217173c6285c80729831d6a0c8d1fd5b.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.18",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/Untitled 231173c6285c8063b477e273d5e5d636.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.1.19",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0/VR 360\u00b0 JAI Operator Dashboard v1 230173c6285c802d9666ef770eed53ef.md",
+      "type": "file",
+      "sha12": "62a67d1d8c44",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.2",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0.csv",
+      "type": "file",
+      "sha12": "cf2f55ac3864",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.1.3",
+      "path": "notion_csv_export/Assets Library/Private & Shared/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0_all.csv",
+      "type": "file",
+      "sha12": "cf2f55ac3864",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.2.2",
+      "path": "notion_csv_export/Assets Library/555df5c1-4e67-4342-aa65-1e11740b4035_Export-db065aba-4731-464b-9793-d4260753c665.zip",
+      "type": "file",
+      "sha12": "d9533ceaab46",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3",
+      "path": "notion_csv_export/Chat Workflow/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.1",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/### \ud83c\udfc1 Sprint 0 Kick\u2011off (2 h limit) Follow the Spr 215173c6285c80ae9797ffeacd0936d5.md",
+      "type": "file",
+      "sha12": "743554b6356a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.2",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/agenda-daily-refresh 219173c6285c807fbaced92c59d3789b.md",
+      "type": "file",
+      "sha12": "2ebc2cd7c6f1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.3",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/ai-insight-friday 21d173c6285c8072b29bf8fe07c62325.md",
+      "type": "file",
+      "sha12": "90231b5c6b05",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.4",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/ask-owner-botask-owner-botreal-time-feedbackask-ow 21b173c6285c80eaaa83dc50f6a8a329.md",
+      "type": "file",
+      "sha12": "8699cc1f2097",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.5",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/capacity-forecast-weekly 21b173c6285c809b9e01fa9992a9f33d.md",
+      "type": "file",
+      "sha12": "d39cb30cc116",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.6",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Concept Chat 215173c6285c80d08fa2eb0363f6ec1c.md",
+      "type": "file",
+      "sha12": "5b57aa1e7c03",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.7",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Concept Chat 215173c6285c80ecb122e05a241cb6e8.md",
+      "type": "file",
+      "sha12": "2264dc06e916",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.8",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Display Change Hook 217173c6285c80fd98b3f2e4055101f3.md",
+      "type": "file",
+      "sha12": "f4a3044d3356",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.9",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/extreme-risk-daily 21b173c6285c80998a6df2d366648749.md",
+      "type": "file",
+      "sha12": "89944e5e4157",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.10",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Framework Chat 215173c6285c8032b24fdd5962fb264b.md",
+      "type": "file",
+      "sha12": "0d1241d5055e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.11",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/insight-engine-daily 21b173c6285c800e9ed3c9c95c41d046.md",
+      "type": "file",
+      "sha12": "e8d11b3392dc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.12",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/owner-needed-daily 21b173c6285c80f5a4cff6443829009e.md",
+      "type": "file",
+      "sha12": "b311cd79af78",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.13",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/risk-model-retrain 21b173c6285c80e8993ee41d56a04c25.md",
+      "type": "file",
+      "sha12": "622237cf6ebe",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.14",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/risk-score-daily 21b173c6285c803ea7efc82cf659139b.md",
+      "type": "file",
+      "sha12": "317a4427164d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.15",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/risk-seed-now 21b173c6285c8034bf43d04846909a2b.md",
+      "type": "file",
+      "sha12": "e11013dececc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.16",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/starter-task 21b173c6285c801f98d2eaa000d7db40.md",
+      "type": "file",
+      "sha12": "b3ab686427dc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.17",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/starter-task-20250622-old 21b173c6285c801aba03d7dea6c2add9.md",
+      "type": "file",
+      "sha12": "10f85e9cde98",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.18",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/token-quota-check 218173c6285c808f8abec77d85a169b6.md",
+      "type": "file",
+      "sha12": "a237532c42a4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.19",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Untitled 21b173c6285c8018b5ace66a57d32e18.md",
+      "type": "file",
+      "sha12": "1766e3262ce4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.20",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Untitled 21b173c6285c802990f0efebd3b5a018.md",
+      "type": "file",
+      "sha12": "3516dc7c4ffa",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.21",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Untitled 21b173c6285c807d9fc3c0baca215a4c.md",
+      "type": "file",
+      "sha12": "cabedacedf07",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.22",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/Untitled 21b173c6285c80fb8b41e248d9c944bf.md",
+      "type": "file",
+      "sha12": "1766e3262ce4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.1.23",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672/usage-log 218173c6285c80c98c49e0c1acb2128a.md",
+      "type": "file",
+      "sha12": "a9b6fa07c924",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.2",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672.csv",
+      "type": "file",
+      "sha12": "4a88882d3da5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.1.3",
+      "path": "notion_csv_export/Chat Workflow/Private & Shared/Chat Workflow 215173c6285c8077abfee263c0957672_all.csv",
+      "type": "file",
+      "sha12": "4a88882d3da5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.3.2",
+      "path": "notion_csv_export/Chat Workflow/11ea40d3-efc2-41ff-a850-15f582f7b35c_Export-468bcf4f-6ad6-4e69-b083-4428b48dfc0a.zip",
+      "type": "file",
+      "sha12": "ee640fe3bf4a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4",
+      "path": "notion_csv_export/Contexts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1",
+      "path": "notion_csv_export/Contexts/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1.1",
+      "path": "notion_csv_export/Contexts/Private & Shared/Contexts 217173c6285c80dfb817d3746a59d6f3/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1.1.1",
+      "path": "notion_csv_export/Contexts/Private & Shared/Contexts 217173c6285c80dfb817d3746a59d6f3/Home Dual Monitor 217173c6285c8052a4f5e03fe13f29a4.md",
+      "type": "file",
+      "sha12": "3fd648a16db6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1.1.2",
+      "path": "notion_csv_export/Contexts/Private & Shared/Contexts 217173c6285c80dfb817d3746a59d6f3/Home Tri Monitor 217173c6285c80169197ef51f4c95c02.md",
+      "type": "file",
+      "sha12": "427bd02aa283",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1.2",
+      "path": "notion_csv_export/Contexts/Private & Shared/Contexts 217173c6285c80dfb817d3746a59d6f3.csv",
+      "type": "file",
+      "sha12": "fbb1c9ac6d9f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.1.3",
+      "path": "notion_csv_export/Contexts/Private & Shared/Contexts 217173c6285c80dfb817d3746a59d6f3_all.csv",
+      "type": "file",
+      "sha12": "fbb1c9ac6d9f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.4.2",
+      "path": "notion_csv_export/Contexts/f0cb79ca-9b5f-4fdf-84de-a120769fba20_Export-f5b83b84-26c9-493c-8b76-51acdd728235.zip",
+      "type": "file",
+      "sha12": "12c974f27105",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.5",
+      "path": "notion_csv_export/Exec Digest Settings/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.5.1",
+      "path": "notion_csv_export/Exec Digest Settings/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.5.1.1",
+      "path": "notion_csv_export/Exec Digest Settings/Private & Shared/Exec Digest Settings 21b173c6285c800d82e5c37b599091c2.md",
+      "type": "file",
+      "sha12": "ae1528106af1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.5.2",
+      "path": "notion_csv_export/Exec Digest Settings/6c39744c-0d30-4e98-8b2d-98b141a4c830_Export-052036b3-5875-4ab7-87ac-a657757cbd60.zip",
+      "type": "file",
+      "sha12": "0282dd5d9c29",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.6",
+      "path": "notion_csv_export/Insight Settings/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.6.1",
+      "path": "notion_csv_export/Insight Settings/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.6.1.1",
+      "path": "notion_csv_export/Insight Settings/Private & Shared/Insight Settings 21b173c6285c80e4b337d979879fb7c6.md",
+      "type": "file",
+      "sha12": "fe1916d16faf",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.6.2",
+      "path": "notion_csv_export/Insight Settings/c8d9d3ca-bbeb-4e01-b7d1-a82a1ea6f41d_Export-3ee94d91-2262-4293-80b1-96540e5897ba.zip",
+      "type": "file",
+      "sha12": "714cf2c2fd18",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7",
+      "path": "notion_csv_export/JAI Glossary/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.1",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Humanitarian Allocation % 230173c6285c80368948e6db1d1c9c3f.md",
+      "type": "file",
+      "sha12": "895a5cf92853",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.2",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/JAI Constitution 230173c6285c804bbf22e82302b1b4dc.md",
+      "type": "file",
+      "sha12": "489e04d8643e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.3",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/JAI\u2011Nexus 22f173c6285c806dbf3bc56de68e3e97.md",
+      "type": "file",
+      "sha12": "f82f2a548923",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.4",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Mission\u2011Aligned Profit Model 230173c6285c8035aa2be76f9b8a248d.md",
+      "type": "file",
+      "sha12": "05df143dd765",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.5",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/One-page reference to the Strategic Design (vision 230173c6285c80af8fe7c08abcc3513c.md",
+      "type": "file",
+      "sha12": "a633e64e1485",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.6",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Published 230173c6285c80eca917c7e051e2c4d5.md",
+      "type": "file",
+      "sha12": "db227f7d6ed9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.7",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 22f173c6285c802ba614cd8535e14c95.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.8",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c8024b98ad177dc35f24b.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.9",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c8038baa0dc60723b622e.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.10",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80589da4f7eb0fd0d152.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.11",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c8072b156f0e5af52b2ca.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.12",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80a3873efda6efd7d9b6.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.13",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80a585d1f42f85e41d94.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.14",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80cd81f4f058e5dbd34a.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.15",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80da9ff0f925238b7bd9.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.16",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/Untitled 231173c6285c80f2890bdf1909d97342.md",
+      "type": "file",
+      "sha12": "6c9496d29c40",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.1.17",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721/VR Operator Dashboard 230173c6285c80a2a753dc4b31910405.md",
+      "type": "file",
+      "sha12": "4357756fb8b6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.2",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721.csv",
+      "type": "file",
+      "sha12": "a7edc2093447",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.1.3",
+      "path": "notion_csv_export/JAI Glossary/Private & Shared/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721_all.csv",
+      "type": "file",
+      "sha12": "a7edc2093447",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.7.2",
+      "path": "notion_csv_export/JAI Glossary/61a3c405-b5ec-48ba-bd0a-5d03282343d5_Export-1324f314-7cac-4c6f-992a-5e5b7895df85.zip",
+      "type": "file",
+      "sha12": "e5a1985e9da9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.8",
+      "path": "notion_csv_export/READMEFIRST\uf022linked/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.8.1",
+      "path": "notion_csv_export/READMEFIRST\uf022linked/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.8.1.1",
+      "path": "notion_csv_export/READMEFIRST\uf022linked/Private & Shared/READMEFIRST linked 215173c6285c808bad71df40f6e336cf.md",
+      "type": "file",
+      "sha12": "b2a0aa2ea59a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.8.2",
+      "path": "notion_csv_export/READMEFIRST\uf022linked/9193147e-78eb-4a7b-8739-9bab67cbcfac_Export-9a051522-8e78-44fe-87c3-10b607afc7fd.zip",
+      "type": "file",
+      "sha12": "76cee2062074",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9",
+      "path": "notion_csv_export/Sprint 0/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.1",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 01 \u2014 Repo Hardening 22e173c6285c816db60cd1a3299b599e.md",
+      "type": "file",
+      "sha12": "d1f7553450e8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.2",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 02 \u2014 Repo Hardening 22e173c6285c8137b876f0f29cef8bc5.md",
+      "type": "file",
+      "sha12": "34637bac935b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.3",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 03 \u2014 Reporters 22e173c6285c810b97cecf5ef80158ed.md",
+      "type": "file",
+      "sha12": "4fba69b41932",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.4",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 04 \u2014 Reporters 22e173c6285c816eab7cc30ff83fc1d1.md",
+      "type": "file",
+      "sha12": "b8ace91b9de5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.5",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 05 \u2014 Wrap-up 22e173c6285c81e4ae6ee6fe9d0e06af.md",
+      "type": "file",
+      "sha12": "6d4dba6f4e0c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.6",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 06 \u2014 Tag & Version 22e173c6285c81f69478eff4cdf1edd4.md",
+      "type": "file",
+      "sha12": "cd09b7ebfbf3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.7",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 07 \u2014 Buffer QA 22e173c6285c81bdb425da76604032eb.md",
+      "type": "file",
+      "sha12": "1ef84b582ce2",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.8",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 08 \u2014 Design Jam 22e173c6285c817d9d2bf8d9fc3a52b1.md",
+      "type": "file",
+      "sha12": "48fdfb00a8c3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.9",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 09 \u2014 Routing Core 22e173c6285c81af9068cf1b2780f7ed.md",
+      "type": "file",
+      "sha12": "694ac41b3612",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.10",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 10 \u2014 Adapters 22e173c6285c81faaca5eb55b0d10223.md",
+      "type": "file",
+      "sha12": "e2f8fa0f90d4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.11",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 11 \u2014 Adapters 22e173c6285c819ab5d9e62e5f5010ee.md",
+      "type": "file",
+      "sha12": "9f73533cce35",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.12",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 12 \u2014 Adapters 22e173c6285c81208c45f1c576d153d7.md",
+      "type": "file",
+      "sha12": "d6e7b612739c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.13",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 13 \u2014 Dev Agent UX 22e173c6285c8196b7bef51e52ef94dc.md",
+      "type": "file",
+      "sha12": "c9e5fe3c3bf1",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.1.14",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097/Day 14 \u2014 Demo & Retro 22e173c6285c81f1a969d899251d1cd0.md",
+      "type": "file",
+      "sha12": "971b06d371ac",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.2",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097.csv",
+      "type": "file",
+      "sha12": "4d13ae15d262",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.1.3",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097_all.csv",
+      "type": "file",
+      "sha12": "4d13ae15d262",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.1.2",
+      "path": "notion_csv_export/Sprint 0/Private & Shared/Sprint 0 22e173c6285c80bf8ad6d9dff6b3d472.md",
+      "type": "file",
+      "sha12": "a973c5fdcabf",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.9.2",
+      "path": "notion_csv_export/Sprint 0/afe295e2-0cb3-4a77-8476-1ca0be1e3bda_Export-535294ca-47cc-4686-b408-8d6b4d642392.zip",
+      "type": "file",
+      "sha12": "ea188db79add",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.10",
+      "path": "notion_csv_export/Sync Feed/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.10.1",
+      "path": "notion_csv_export/Sync Feed/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.10.1.1",
+      "path": "notion_csv_export/Sync Feed/Private & Shared/Sync Feed 22f173c6285c808d9b9ec2d59d8357dc.md",
+      "type": "file",
+      "sha12": "76431641e13f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.10.2",
+      "path": "notion_csv_export/Sync Feed/61ad380b-68e5-4e00-b749-f72502a56aed_Export-638ba14e-4d73-4ff3-a3ea-d7c1e7117e9d.zip",
+      "type": "file",
+      "sha12": "c3430ef8a6dc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.1",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Add the Naming & Taxonomy Guide 217173c6285c80c2a9eaeb6a62c36aca.md",
+      "type": "file",
+      "sha12": "ea9f0f06a663",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.2",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/AGENDA (2025-06-22) 21a173c6285c80b186bac6122f52d25d.md",
+      "type": "file",
+      "sha12": "1c0dc62212b3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.3",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/ARS Dashboard Automation 230173c6285c800ea7d1f2b276b2d220.md",
+      "type": "file",
+      "sha12": "6017547624b6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.4",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Assets Library database 217173c6285c80fa875dfe387a43ce90.md",
+      "type": "file",
+      "sha12": "df0c981a2e34",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.5",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Assign owner for 1 3 Teams & RBAC 21b173c6285c805f8399c5077785803f.md",
+      "type": "file",
+      "sha12": "cb58ef2ebe76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.6",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Assign owner for READMEFIRST linked 21b173c6285c8058a0f3e6b27c69f4f3.md",
+      "type": "file",
+      "sha12": "594aaf2d5296",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.7",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Assign owner for Welcome to JAI NEXUS HQ 21b173c6285c803e92c2c4bdfef4078a.md",
+      "type": "file",
+      "sha12": "032aa1fd36eb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.8",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Assign owner for Welcome to Notion! 21b173c6285c80fe8564cca10b4554a9.md",
+      "type": "file",
+      "sha12": "588d9c2a9714",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.9",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Chat Workflow Seeder 230173c6285c806f911dc78e5e27d0d0.md",
+      "type": "file",
+      "sha12": "849b5a10cd7d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.10",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Create the Four Pillar PagesCreate the Four Pillar 217173c6285c80758fd5c95bdde94f5f.md",
+      "type": "file",
+      "sha12": "b2c6bbffd63e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.11",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/dev infrastructure nexus 217173c6285c80cda2e5c34155746027.md",
+      "type": "file",
+      "sha12": "62c1911c88ab",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.12",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Fill content for Contexts 218173c6285c809ab0e2c13a06fa302f.md",
+      "type": "file",
+      "sha12": "8d9bd28ae240",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.13",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Fill content for READMEFIRST linked 218173c6285c804a9428d8ec85790e94.md",
+      "type": "file",
+      "sha12": "62a02ec50d0d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.14",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Knowledge Articles database 217173c6285c80c19177fd6c3aa6d65c.md",
+      "type": "file",
+      "sha12": "2a974db02d7d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.15",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Light-weight quality checks 217173c6285c8001af17f1138af612a3.md",
+      "type": "file",
+      "sha12": "a58db5916c4c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.16",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Meetings & Decisions database 217173c6285c80a2aa82e1583b0a5c11.md",
+      "type": "file",
+      "sha12": "3700c755d17a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.17",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Nightly GitHub \u2192 Notion Sync 230173c6285c80d6846ac77add196931.md",
+      "type": "file",
+      "sha12": "21e7fb1a71cb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.18",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/QA Harness Test Loop 230173c6285c802197f5c144314a55b7.md",
+      "type": "file",
+      "sha12": "974bd5fa3c1c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.19",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Quick topology map 217173c6285c804d8a1dc21ddb2ef550.md",
+      "type": "file",
+      "sha12": "586573bd06d3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.20",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Rename & Dress the Lobby 217173c6285c80c5baccf88803f71503.md",
+      "type": "file",
+      "sha12": "c3e143043e4f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.21",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Resume Wave 8 integrationResume Wave 8 integration 21b173c6285c80cb855ccc03d6f1d8ea.md",
+      "type": "file",
+      "sha12": "bf05b73d1b38",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.22",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Seed RBAC Groups 217173c6285c807eafe4f5a0ee491ad3.md",
+      "type": "file",
+      "sha12": "009b2e25e255",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.23",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Smoke-test owner workflows 21b173c6285c800da1b0f4b3808d4f1f.md",
+      "type": "file",
+      "sha12": "e574577f551e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.24",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Tasks Roadmap databaseTasks Roadmap database 217173c6285c8049b3d3f7f982cbc5e3.md",
+      "type": "file",
+      "sha12": "918ae13203e0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.25",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Untitled 216173c6285c803cbb95ff14709d09f9.md",
+      "type": "file",
+      "sha12": "d856ae1c48be",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.26",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Untitled 216173c6285c807b81fec635da7dd1d3.md",
+      "type": "file",
+      "sha12": "d856ae1c48be",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.27",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Untitled 218173c6285c80a2bcbed7673f04d4fa.md",
+      "type": "file",
+      "sha12": "60f44728008a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.28",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Untitled 21b173c6285c80149f0bcdda7d46c0b3.md",
+      "type": "file",
+      "sha12": "8f04129d8a6e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.29",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Untitled 230173c6285c80ebb5dcd6f6ea7ef436.md",
+      "type": "file",
+      "sha12": "d856ae1c48be",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.1.30",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c/Wire the relations 217173c6285c80f2a4abeac412369a8e.md",
+      "type": "file",
+      "sha12": "82684e3d4c76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.2",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.1.3",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/Private & Shared/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c_all.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.11.2",
+      "path": "notion_csv_export/TASKS \uf022 Roadmap/a304d6a9-83a8-4c46-bcd2-52edc074de67_Export-7f82a527-c281-41b5-9804-04be65dd5d21.zip",
+      "type": "file",
+      "sha12": "a59caaa5691d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12",
+      "path": "notion_csv_export/Welcome to JAI Nexus/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.1",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/1 1 Top\u2011level \u201cLobby\u201d page 215173c6285c80308f02cee0c7fb6c24.md",
+      "type": "file",
+      "sha12": "d38dba6aeca6",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.2",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/1 2 Four pillar pages 215173c6285c80a6979edc611dd76118.md",
+      "type": "file",
+      "sha12": "19b3b4231eaf",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.3",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/1 3 Teams & RBAC 215173c6285c80e29037c7658ec88924.md",
+      "type": "file",
+      "sha12": "ea5bd59b3dba",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.4",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/1 4 Naming convention doc 215173c6285c80ae9915c9ec9ef8b098.md",
+      "type": "file",
+      "sha12": "49e30cabd0a7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.5",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/Task 215173c6285c80a8b5d6ff422c25dd05.md",
+      "type": "file",
+      "sha12": "8b3106d705f0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.1.6",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97/Untitled 215173c6285c80e7bd92cefbd4eb5107.md",
+      "type": "file",
+      "sha12": "2c7ca349cbbc",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.2",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.2.1",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c/Untitled 218173c6285c801da633f2110978d9a7.md",
+      "type": "file",
+      "sha12": "9d2199b21c7c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.2.2",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c/Untitled 218173c6285c8054a04bdee8b362e899.md",
+      "type": "file",
+      "sha12": "0052535d8eba",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.2.3",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c/Untitled 218173c6285c80cfabe6fefbf99a9d1a.md",
+      "type": "file",
+      "sha12": "73b58a94969e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.2.4",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c/Untitled 218173c6285c80f0871ddb47c91643df.md",
+      "type": "file",
+      "sha12": "6cf838aa7103",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.3",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/AGENDA (2025-06-21) 219173c6285c8031a95dd9c0a8cfae72.md",
+      "type": "file",
+      "sha12": "a34bf1446832",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.4",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/AGENDA (2025-06-22)GENDA (2025-06-22)AGENDA (2025- 21a173c6285c80cc8329cf7b4261f93a.md",
+      "type": "file",
+      "sha12": "23654692e005",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.5",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97.csv",
+      "type": "file",
+      "sha12": "24e07c8a52ff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.6",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Untitled 215173c6285c8025b713ce3f6cbc0b97_all.csv",
+      "type": "file",
+      "sha12": "24e07c8a52ff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.7",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c.csv",
+      "type": "file",
+      "sha12": "e2df42276954",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.1.8",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0/Usage 218173c6285c80cc97a2f08333e6fe4c_all.csv",
+      "type": "file",
+      "sha12": "9e58842d9bf3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.1.2",
+      "path": "notion_csv_export/Welcome to JAI Nexus/Private & Shared/Welcome to JAI NEXUS HQ 214173c6285c80b68a1dc609b52459b0.md",
+      "type": "file",
+      "sha12": "43df3cddb332",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "8.12.2",
+      "path": "notion_csv_export/Welcome to JAI Nexus/03cbcd8d-686f-48d2-8b64-e49aa7723ef2_Export-9c2482be-083d-491d-ad2e-6a4c388d9b22.zip",
+      "type": "file",
+      "sha12": "7679dd051df8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9",
+      "path": "notion_csv_export_flat/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.1",
+      "path": "notion_csv_export_flat/Agents Registry 22f173c6285c805cba6dd1c6898d8687.csv",
+      "type": "file",
+      "sha12": "8e9d67a9e64e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.2",
+      "path": "notion_csv_export_flat/Agents Registry 22f173c6285c805cba6dd1c6898d8687_all.csv",
+      "type": "file",
+      "sha12": "8e9d67a9e64e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.3",
+      "path": "notion_csv_export_flat/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0.csv",
+      "type": "file",
+      "sha12": "cf2f55ac3864",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.4",
+      "path": "notion_csv_export_flat/Assets Library 217173c6285c80e39d04ddb0bfd1c2f0_all.csv",
+      "type": "file",
+      "sha12": "cf2f55ac3864",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.5",
+      "path": "notion_csv_export_flat/Chat Workflow 215173c6285c8077abfee263c0957672.csv",
+      "type": "file",
+      "sha12": "4a88882d3da5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.6",
+      "path": "notion_csv_export_flat/Chat Workflow 215173c6285c8077abfee263c0957672_all.csv",
+      "type": "file",
+      "sha12": "4a88882d3da5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.7",
+      "path": "notion_csv_export_flat/Contexts 217173c6285c80dfb817d3746a59d6f3.csv",
+      "type": "file",
+      "sha12": "fbb1c9ac6d9f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.8",
+      "path": "notion_csv_export_flat/Contexts 217173c6285c80dfb817d3746a59d6f3_all.csv",
+      "type": "file",
+      "sha12": "fbb1c9ac6d9f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.9",
+      "path": "notion_csv_export_flat/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721.csv",
+      "type": "file",
+      "sha12": "a7edc2093447",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.10",
+      "path": "notion_csv_export_flat/JAI Glossary 22f173c6285c80da9cd4c6e4a2651721_all.csv",
+      "type": "file",
+      "sha12": "a7edc2093447",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.11",
+      "path": "notion_csv_export_flat/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097.csv",
+      "type": "file",
+      "sha12": "4d13ae15d262",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.12",
+      "path": "notion_csv_export_flat/Sprint 0 Issues 22e173c6285c81e5813be17295bb8097_all.csv",
+      "type": "file",
+      "sha12": "4d13ae15d262",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.13",
+      "path": "notion_csv_export_flat/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.14",
+      "path": "notion_csv_export_flat/Tasks Roadmap 216173c6285c80e5b8affbeb231c218c_all.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.15",
+      "path": "notion_csv_export_flat/Untitled 215173c6285c8025b713ce3f6cbc0b97.csv",
+      "type": "file",
+      "sha12": "24e07c8a52ff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.16",
+      "path": "notion_csv_export_flat/Untitled 215173c6285c8025b713ce3f6cbc0b97_all.csv",
+      "type": "file",
+      "sha12": "24e07c8a52ff",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.17",
+      "path": "notion_csv_export_flat/Usage 218173c6285c80cc97a2f08333e6fe4c.csv",
+      "type": "file",
+      "sha12": "e2df42276954",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "9.18",
+      "path": "notion_csv_export_flat/Usage 218173c6285c80cc97a2f08333e6fe4c_all.csv",
+      "type": "file",
+      "sha12": "9e58842d9bf3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10",
+      "path": "scripts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.1",
+      "path": "scripts/github/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.1.1",
+      "path": "scripts/github/bootstrap_project.sh",
+      "type": "file",
+      "sha12": "291d6ce94137",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.2",
+      "path": "scripts/notion/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.2.1",
+      "path": "scripts/notion/__init__.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.2.2",
+      "path": "scripts/notion/bootstrap.py",
+      "type": "file",
+      "sha12": "5fd38f3e0c9b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.3",
+      "path": "scripts/__init__.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.4",
+      "path": "scripts/notion2md.py",
+      "type": "file",
+      "sha12": "4f8da3d93ba3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.5",
+      "path": "scripts/notion2md.py~",
+      "type": "file",
+      "sha12": "4f8da3d93ba3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "10.6",
+      "path": "scripts/notion_sync.py",
+      "type": "file",
+      "sha12": "e6d9ce9bdcc5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "11",
+      "path": "services/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "11.1",
+      "path": "services/memory/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "11.1.1",
+      "path": "services/memory/Dockerfile",
+      "type": "file",
+      "sha12": "195da1c9fa81",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12",
+      "path": "src/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1",
+      "path": "src/jai/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1",
+      "path": "src/jai/agent/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1.1",
+      "path": "src/jai/agent/prompt_templates/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1.1.1",
+      "path": "src/jai/agent/prompt_templates/.keep",
+      "type": "file",
+      "sha12": "06898a83d9c8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1.1.2",
+      "path": "src/jai/agent/prompt_templates/correction.j2",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1.2",
+      "path": "src/jai/agent/__init__.py",
+      "type": "file",
+      "sha12": "c141035e02af",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.1.3",
+      "path": "src/jai/agent/suggester.py",
+      "type": "file",
+      "sha12": "48df077b46e5",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2",
+      "path": "src/jai/core/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.1",
+      "path": "src/jai/core/__init__.py",
+      "type": "file",
+      "sha12": "a3e84d283e03",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.2",
+      "path": "src/jai/core/hash_utils.py",
+      "type": "file",
+      "sha12": "200586927699",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.3",
+      "path": "src/jai/core/model.py",
+      "type": "file",
+      "sha12": "5d88e9ab89f4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.4",
+      "path": "src/jai/core/parser.py",
+      "type": "file",
+      "sha12": "0f0a44b5891f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.5",
+      "path": "src/jai/core/taxonomy.py",
+      "type": "file",
+      "sha12": "2c7f6fcb58e9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.2.6",
+      "path": "src/jai/core/validator.py",
+      "type": "file",
+      "sha12": "2a4588238667",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.3",
+      "path": "src/jai/quantum/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.3.1",
+      "path": "src/jai/quantum/__init__.py",
+      "type": "file",
+      "sha12": "c141035e02af",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.3.2",
+      "path": "src/jai/quantum/branch_ops.py",
+      "type": "file",
+      "sha12": "fc78cac8d864",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.3.3",
+      "path": "src/jai/quantum/consensus.py",
+      "type": "file",
+      "sha12": "2c7f6fcb58e9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.4",
+      "path": "src/jai/report/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.4.1",
+      "path": "src/jai/report/__init__.py",
+      "type": "file",
+      "sha12": "ee365e750391",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.4.2",
+      "path": "src/jai/report/html.py",
+      "type": "file",
+      "sha12": "507dab0f1567",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.4.3",
+      "path": "src/jai/report/validate_report.py",
+      "type": "file",
+      "sha12": "2c7f6fcb58e9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.5",
+      "path": "src/jai/__init__.py",
+      "type": "file",
+      "sha12": "17a71a04fc63",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.6",
+      "path": "src/jai/__main__.py",
+      "type": "file",
+      "sha12": "2da403f3d887",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.7",
+      "path": "src/jai/_version.py",
+      "type": "file",
+      "sha12": "2b1d35598e30",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.8",
+      "path": "src/jai/cli.py",
+      "type": "file",
+      "sha12": "5f07269ff635",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.9",
+      "path": "src/jai/github_sync.py",
+      "type": "file",
+      "sha12": "4e165cd3afac",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.10",
+      "path": "src/jai/qa.py",
+      "type": "file",
+      "sha12": "1cb21b3b0cc4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.11",
+      "path": "src/jai/scheduler.py",
+      "type": "file",
+      "sha12": "2d4319bb3e3e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.1.12",
+      "path": "src/jai/sync_feed.py",
+      "type": "file",
+      "sha12": "f27a3ee1ee25",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2",
+      "path": "src/modelops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1",
+      "path": "src/modelops/adminops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1",
+      "path": "src/modelops/adminops/jai_adminops/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.1",
+      "path": "src/modelops/adminops/jai_adminops/output/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.1.1",
+      "path": "src/modelops/adminops/jai_adminops/output/2025Q3_ops_snapshot/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.1.1.1",
+      "path": "src/modelops/adminops/jai_adminops/output/2025Q3_ops_snapshot/0.1_ui-confirm.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.1.1.2",
+      "path": "src/modelops/adminops/jai_adminops/output/2025Q3_ops_snapshot/0.2_admin-sync.md",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.1.1.3",
+      "path": "src/modelops/adminops/jai_adminops/output/2025Q3_ops_snapshot/jai-meta.yml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.2",
+      "path": "src/modelops/adminops/jai_adminops/utils/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.2.1",
+      "path": "src/modelops/adminops/jai_adminops/utils/filetools.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.3",
+      "path": "src/modelops/adminops/jai_adminops/jai-meta.template.yml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.4",
+      "path": "src/modelops/adminops/jai_adminops/jai_encode.py",
+      "type": "file",
+      "sha12": "6c6f7787676f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.1.5",
+      "path": "src/modelops/adminops/jai_adminops/sheets_config.yaml",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.1.2",
+      "path": "src/modelops/adminops/__init__.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.2.2",
+      "path": "src/modelops/__init__.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.3",
+      "path": "src/models/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.3.1",
+      "path": "src/models/__init__.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.3.2",
+      "path": "src/models/task.py",
+      "type": "file",
+      "sha12": "7e5021a54e67",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.3.3",
+      "path": "src/models/workspace.py",
+      "type": "file",
+      "sha12": "2dff6d23f25d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "12.4",
+      "path": "src/models.workspace.py",
+      "type": "file",
+      "sha12": "7e5021a54e67",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13",
+      "path": "tests/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.1",
+      "path": "tests/fixtures/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.1.1",
+      "path": "tests/fixtures/genesis.yaml",
+      "type": "file",
+      "sha12": "0d510e6743b7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.2",
+      "path": "tests/conftest.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.3",
+      "path": "tests/test_agent.py",
+      "type": "file",
+      "sha12": "2c7f6fcb58e9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.4",
+      "path": "tests/test_cli.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.5",
+      "path": "tests/test_core_model.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.6",
+      "path": "tests/test_core_parser.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.7",
+      "path": "tests/test_core_validator.py",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.8",
+      "path": "tests/test_models.py",
+      "type": "file",
+      "sha12": "ff989e03d143",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.9",
+      "path": "tests/test_notion_bootstrap.py",
+      "type": "file",
+      "sha12": "dd43a7107a4c",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.10",
+      "path": "tests/test_parser.py",
+      "type": "file",
+      "sha12": "617ca2e2afa8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.11",
+      "path": "tests/test_quantum.py",
+      "type": "file",
+      "sha12": "2c7f6fcb58e9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.12",
+      "path": "tests/test_report.py",
+      "type": "file",
+      "sha12": "451151ae0494",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.13",
+      "path": "tests/test_report_csv.py",
+      "type": "file",
+      "sha12": "f78c9ae22d64",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "13.14",
+      "path": "tests/test_validator.py",
+      "type": "file",
+      "sha12": "3c8ecd215f33",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14",
+      "path": "tools/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14.1",
+      "path": "tools/agent_sweep.py",
+      "type": "file",
+      "sha12": "92173721e36a",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14.2",
+      "path": "tools/full_audit.py",
+      "type": "file",
+      "sha12": "a1ef7f6071b7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14.3",
+      "path": "tools/orphaned_model_check.py",
+      "type": "file",
+      "sha12": "209d6e3c0de7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14.4",
+      "path": "tools/route_model_check.py",
+      "type": "file",
+      "sha12": "41ab0da2b9b0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "14.5",
+      "path": "tools/service_relay_check.py",
+      "type": "file",
+      "sha12": "55adfa0d8ae9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "15",
+      "path": ".env.example",
+      "type": "file",
+      "sha12": "7681f0d504e3",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "16",
+      "path": ".env.local.sample",
+      "type": "file",
+      "sha12": "fa471c70ee33",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "17",
+      "path": ".gitattributes",
+      "type": "file",
+      "sha12": "982100c71bc9",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "18",
+      "path": ".gitignore",
+      "type": "file",
+      "sha12": "d99e19f5d290",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "19",
+      "path": ".pre-commit-config.yaml",
+      "type": "file",
+      "sha12": "6965126fbb84",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "20",
+      "path": ".tmp_operator.sh",
+      "type": "file",
+      "sha12": "28c58b8dac47",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "21",
+      "path": "0.0 jai-nexus (2025-09-10).md",
+      "type": "file",
+      "sha12": "fe40088ffc41",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "22",
+      "path": "0.0 jai-nexus (2025-09-12).md",
+      "type": "file",
+      "sha12": "96c7a1b0cebb",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "23",
+      "path": "AgentManifest.yaml",
+      "type": "file",
+      "sha12": "e9c7e9d64cc8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "24",
+      "path": "Agents Registry 22f173c6285c805cba6dd1c6898d8687_all.csv",
+      "type": "file",
+      "sha12": "8e9d67a9e64e",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "25",
+      "path": "align-check.md",
+      "type": "file",
+      "sha12": "b286319c8632",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "26",
+      "path": "audit_config.yaml",
+      "type": "file",
+      "sha12": "312f726160f4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "27",
+      "path": "audit_summary.md",
+      "type": "file",
+      "sha12": "752b9c629c1b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "28",
+      "path": "CNAME",
+      "type": "file",
+      "sha12": "f6ca0d55c718",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "29",
+      "path": "Contexts 217173c6285c80dfb817d3746a59d6f3_all.csv",
+      "type": "file",
+      "sha12": "fbb1c9ac6d9f",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "30",
+      "path": "docker-compose.yml",
+      "type": "file",
+      "sha12": "922169b9b945",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "31",
+      "path": "env_loader.py",
+      "type": "file",
+      "sha12": "7b5b0c52b686",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "32",
+      "path": "LICENSE",
+      "type": "file",
+      "sha12": "7df059597099",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "33",
+      "path": "main.py",
+      "type": "file",
+      "sha12": "894dd2986b1b",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "34",
+      "path": "Makefile",
+      "type": "file",
+      "sha12": "ca4ec06f5c95",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "35",
+      "path": "mkdocs.yml",
+      "type": "file",
+      "sha12": "80167794ba28",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "36",
+      "path": "models.workspace.py",
+      "type": "file",
+      "sha12": "2dff6d23f25d",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "37",
+      "path": "orphaned-models.md",
+      "type": "file",
+      "sha12": "a79abea28585",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "38",
+      "path": "package.json",
+      "type": "file",
+      "sha12": "725ce7a34ee4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "39",
+      "path": "pyproject.toml",
+      "type": "file",
+      "sha12": "0db96b97b9f4",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "40",
+      "path": "README.md",
+      "type": "file",
+      "sha12": "5e74d0d27137",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "41",
+      "path": "relay-align.md",
+      "type": "file",
+      "sha12": "fbc464e9b2f8",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "42",
+      "path": "route-align.md",
+      "type": "file",
+      "sha12": "e43acfecb7f0",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "43",
+      "path": "run_notion_bootstrap.sh",
+      "type": "file",
+      "sha12": "74c76f32bc18",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "44",
+      "path": "scripts.notion.bootstrap",
+      "type": "file",
+      "sha12": "d0534f3717e7",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "45",
+      "path": "sot.yaml",
+      "type": "file",
+      "sha12": "d528effd23ee",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "46",
+      "path": "Tasks Roadmap 216173c6285c80e5b8affbeb231c218c.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "47",
+      "path": "Tasks Roadmap 216173c6285c80e5b8affbeb231c218c_all.csv",
+      "type": "file",
+      "sha12": "12338a722a76",
+      "repo": "jai-nexus"
+    },
+    {
+      "nh": "1",
+      "path": ".github/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "1.1",
+      "path": ".github/workflows/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "1.1.1",
+      "path": ".github/workflows/pages.yml",
+      "type": "file",
+      "sha12": "c51ac6120289",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "2",
+      "path": "agents/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "2.1",
+      "path": "agents/index.html",
+      "type": "file",
+      "sha12": "df430481ab14",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "3",
+      "path": "assets/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "3.1",
+      "path": "assets/site.css",
+      "type": "file",
+      "sha12": "c7a6c366bd5a",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "4",
+      "path": "contexts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "4.1",
+      "path": "contexts/index.html",
+      "type": "file",
+      "sha12": "6eab81f5a053",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5",
+      "path": "data/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.1",
+      "path": "data/private/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.1.1",
+      "path": "data/private/secret.md.enc",
+      "type": "file",
+      "sha12": "d915cf4dbacd",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.2",
+      "path": "data/agents.json",
+      "type": "file",
+      "sha12": "5885876dccde",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.3",
+      "path": "data/contexts.json",
+      "type": "file",
+      "sha12": "ccaef7010abb",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.4",
+      "path": "data/nexus.json",
+      "type": "file",
+      "sha12": "96fd21e8dfc5",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "5.5",
+      "path": "data/tasks.json",
+      "type": "file",
+      "sha12": "b8c929bde684",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "6",
+      "path": "scripts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "6.1",
+      "path": "scripts/build_data.mjs",
+      "type": "file",
+      "sha12": "1733404f1b31",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "6.2",
+      "path": "scripts/encrypt.mjs",
+      "type": "file",
+      "sha12": "bad6ad9cc75f",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "7",
+      "path": "tasks/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "7.1",
+      "path": "tasks/index.html",
+      "type": "file",
+      "sha12": "c98c60935492",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "8",
+      "path": "vault/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "8.1",
+      "path": "vault/index.html",
+      "type": "file",
+      "sha12": "f7c4997f48bd",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "9",
+      "path": ".markdownlint.json",
+      "type": "file",
+      "sha12": "32a3ecb3e20a",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "10",
+      "path": ".nojekyll",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "11",
+      "path": ".pre-commit-config.yaml",
+      "type": "file",
+      "sha12": "99711415a6a4",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "12",
+      "path": "0.0 public-nexus (2025-09-12).md",
+      "type": "file",
+      "sha12": "9c16b05db2ab",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "13",
+      "path": "CNAME",
+      "type": "file",
+      "sha12": "a9196eb3cc5a",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "14",
+      "path": "index.html",
+      "type": "file",
+      "sha12": "fa8104b1bddf",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "15",
+      "path": "LICENSE",
+      "type": "file",
+      "sha12": "7df059597099",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "16",
+      "path": "README.md",
+      "type": "file",
+      "sha12": "55195c62503f",
+      "repo": "public-nexus"
+    },
+    {
+      "nh": "1",
+      "path": ".github/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "1.1",
+      "path": ".github/workflows/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "1.1.1",
+      "path": ".github/workflows/pages.yml",
+      "type": "file",
+      "sha12": "aeaa0a699032",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2",
+      "path": "app/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.1",
+      "path": "app/agents/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.1.1",
+      "path": "app/agents/[id]/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.1.1.1",
+      "path": "app/agents/[id]/page.tsx",
+      "type": "file",
+      "sha12": "8279f82f428f",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.1.2",
+      "path": "app/agents/page.tsx",
+      "type": "file",
+      "sha12": "0fbbdaffe23f",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2",
+      "path": "app/api/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.1",
+      "path": "app/api/nexus/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.1.1",
+      "path": "app/api/nexus/route.ts",
+      "type": "file",
+      "sha12": "2a3fab8627e9",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.2",
+      "path": "app/api/revalidate/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.2.1",
+      "path": "app/api/revalidate/route.ts",
+      "type": "file",
+      "sha12": "2ba0f66c6fc0",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.3",
+      "path": "app/api/tasks/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.2.3.1",
+      "path": "app/api/tasks/route.ts",
+      "type": "file",
+      "sha12": "033e689634eb",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.3",
+      "path": "app/assets/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.3.1",
+      "path": "app/assets/page.tsx",
+      "type": "file",
+      "sha12": "70a388426bac",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.4",
+      "path": "app/contexts/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.4.1",
+      "path": "app/contexts/[id]/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.4.1.1",
+      "path": "app/contexts/[id]/page.tsx",
+      "type": "file",
+      "sha12": "38074f68fe31",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.4.2",
+      "path": "app/contexts/page.tsx",
+      "type": "file",
+      "sha12": "163e069aafd6",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.5",
+      "path": "app/status/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.5.1",
+      "path": "app/status/page.tsx",
+      "type": "file",
+      "sha12": "bebc4cbc0cef",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.6",
+      "path": "app/tasks/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.6.1",
+      "path": "app/tasks/page.tsx",
+      "type": "file",
+      "sha12": "acad01e34c2a",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.7",
+      "path": "app/vault/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.7.1",
+      "path": "app/vault/page.tsx",
+      "type": "file",
+      "sha12": "4a40375deaf6",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.8",
+      "path": "app/globals.css",
+      "type": "file",
+      "sha12": "a527d2fe4054",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.9",
+      "path": "app/layout.tsx",
+      "type": "file",
+      "sha12": "5ed14cda9d50",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "2.10",
+      "path": "app/page.tsx",
+      "type": "file",
+      "sha12": "6bfdceb7d8e6",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3",
+      "path": "components/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1",
+      "path": "components/ui/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.1",
+      "path": "components/ui/alert.tsx",
+      "type": "file",
+      "sha12": "1440ff785cca",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.2",
+      "path": "components/ui/badge.tsx",
+      "type": "file",
+      "sha12": "88c95fcf7712",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.3",
+      "path": "components/ui/button.tsx",
+      "type": "file",
+      "sha12": "45b10581e237",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.4",
+      "path": "components/ui/card.tsx",
+      "type": "file",
+      "sha12": "99cd1857f44b",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.5",
+      "path": "components/ui/input.tsx",
+      "type": "file",
+      "sha12": "d604373f8db2",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.6",
+      "path": "components/ui/popover.tsx",
+      "type": "file",
+      "sha12": "89e072381c13",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.7",
+      "path": "components/ui/select.tsx",
+      "type": "file",
+      "sha12": "47f9f39e48f7",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.8",
+      "path": "components/ui/separator.tsx",
+      "type": "file",
+      "sha12": "eedbe31e4adb",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.9",
+      "path": "components/ui/sheet.tsx",
+      "type": "file",
+      "sha12": "e3979845a753",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.10",
+      "path": "components/ui/sidebar.tsx",
+      "type": "file",
+      "sha12": "252f73a73c54",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.11",
+      "path": "components/ui/skeleton.tsx",
+      "type": "file",
+      "sha12": "08ceeb5c59e3",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.12",
+      "path": "components/ui/table.tsx",
+      "type": "file",
+      "sha12": "8661d30bb35e",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.1.13",
+      "path": "components/ui/tooltip.tsx",
+      "type": "file",
+      "sha12": "306c3ddb4dd1",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.2",
+      "path": "components/app-shell.tsx",
+      "type": "file",
+      "sha12": "2b560253504b",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.3",
+      "path": "components/error-boundary.tsx",
+      "type": "file",
+      "sha12": "f12a688f32db",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.4",
+      "path": "components/loading-skeleton.tsx",
+      "type": "file",
+      "sha12": "c9a9cc099ede",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.5",
+      "path": "components/page-header.tsx",
+      "type": "file",
+      "sha12": "aa7717896ee3",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.6",
+      "path": "components/task-filters.tsx",
+      "type": "file",
+      "sha12": "48cca753e6c9",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.7",
+      "path": "components/tasks-table.tsx",
+      "type": "file",
+      "sha12": "a7076944e177",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "3.8",
+      "path": "components/theme-provider.tsx",
+      "type": "file",
+      "sha12": "c819ed840aee",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "4",
+      "path": "hooks/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "4.1",
+      "path": "hooks/use-mobile.ts",
+      "type": "file",
+      "sha12": "cdb9aae9ca8d",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5",
+      "path": "lib/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.1",
+      "path": "lib/env.ts",
+      "type": "file",
+      "sha12": "4f2862537e3e",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.2",
+      "path": "lib/fetchFeed.ts",
+      "type": "file",
+      "sha12": "03de89705bc1",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.3",
+      "path": "lib/getStatusScreenshot.ts",
+      "type": "file",
+      "sha12": "54c2479641ae",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.4",
+      "path": "lib/safe.ts",
+      "type": "file",
+      "sha12": "e1f7cd61fda7",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.5",
+      "path": "lib/types.ts",
+      "type": "file",
+      "sha12": "abbaaee9b3b3",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "5.6",
+      "path": "lib/utils.ts",
+      "type": "file",
+      "sha12": "8f2af1d4fbef",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6",
+      "path": "public/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.1",
+      "path": "public/images/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.1.1",
+      "path": "public/images/screenshots/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.1.1.1",
+      "path": "public/images/screenshots/status/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.1.1.1.1",
+      "path": "public/images/screenshots/status/.gitkeep",
+      "type": "file",
+      "sha12": "da39a3ee5e6b",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.1.2",
+      "path": "public/images/jai-nexus-logo.png",
+      "type": "file",
+      "sha12": "68adee6af962",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.2",
+      "path": "public/placeholder-logo.png",
+      "type": "file",
+      "sha12": "a52db72ac78a",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.3",
+      "path": "public/placeholder-logo.svg",
+      "type": "file",
+      "sha12": "56ff08036c60",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.4",
+      "path": "public/placeholder-user.jpg",
+      "type": "file",
+      "sha12": "0b7734b7f064",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.5",
+      "path": "public/placeholder.jpg",
+      "type": "file",
+      "sha12": "20a4b925f6d5",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.6",
+      "path": "public/placeholder.svg",
+      "type": "file",
+      "sha12": "ddc7d9ff1d2e",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.7",
+      "path": "public/robots.txt",
+      "type": "file",
+      "sha12": "4a9e2bfe2eb7",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "6.8",
+      "path": "public/sitemap.xml",
+      "type": "file",
+      "sha12": "cdf40ea205ec",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "7",
+      "path": "styles/",
+      "type": "dir",
+      "sha12": "",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "7.1",
+      "path": "styles/globals.css",
+      "type": "file",
+      "sha12": "3ebb074a9e19",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "8",
+      "path": ".gitignore",
+      "type": "file",
+      "sha12": "dcd67b85f47e",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "9",
+      "path": ".pre-commit-config.yaml",
+      "type": "file",
+      "sha12": "99711415a6a4",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "10",
+      "path": "0.0 wiki-nexus (2025-09-12).md",
+      "type": "file",
+      "sha12": "5e260818f713",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "11",
+      "path": "CNAME",
+      "type": "file",
+      "sha12": "eaf0ed7caa3f",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "12",
+      "path": "components.json",
+      "type": "file",
+      "sha12": "33586cb24131",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "13",
+      "path": "next-env.d.ts",
+      "type": "file",
+      "sha12": "c6f6e0e21a36",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "14",
+      "path": "next.config.mjs",
+      "type": "file",
+      "sha12": "7f9340b2109b",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "15",
+      "path": "package.json",
+      "type": "file",
+      "sha12": "6cdc7411c66e",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "16",
+      "path": "pnpm-lock.yaml",
+      "type": "file",
+      "sha12": "0bf1d47f1f17",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "17",
+      "path": "postcss.config.mjs",
+      "type": "file",
+      "sha12": "8bc8c94648c8",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "18",
+      "path": "README.md",
+      "type": "file",
+      "sha12": "696ecb00732a",
+      "repo": "wiki-nexus"
+    },
+    {
+      "nh": "19",
+      "path": "tsconfig.json",
+      "type": "file",
+      "sha12": "1829f16bd9f0",
+      "repo": "wiki-nexus"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+[
+  {
+    "href": "https://github.com/jai-nexus/jai-format/pull/3",
+    "ref": "#3",
+    "repo": "jai-format",
+    "state": "open",
+    "title": "feat: sourcetree CLI + module (jai-format)",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/38",
+    "ref": "#38",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E1] SoT compliance checker (pre-commit hook)",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/37",
+    "ref": "#37",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E1] SoT link discipline: add SoT URL to issue templates + PRs",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-format/issues/2",
+    "ref": "#2",
+    "repo": "jai-format",
+    "state": "open",
+    "title": "[E1] Define org-wide SoT contract (sot.yaml v1.0)",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/35",
+    "ref": "#35",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E3] Wire agents registry to SoT Writer/Reader contracts",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/34",
+    "ref": "#34",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E4] Deploy Codex environments repo-by-repo",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/33",
+    "ref": "#33",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E3] Merge report renderers + tag v0.1.0 CLI",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/32",
+    "ref": "#32",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E8] Harden owner automation: ask-owner-bot + ai-insight-friday",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/31",
+    "ref": "#31",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E8] Run Org Hardener + Org Tasks workflows clean for stable auto-merges",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/30",
+    "ref": "#30",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E7] Normalize secrets: rotate into .env.local + GitHub/1Password, scrub old commits.",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/29",
+    "ref": "#29",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E2] Bootstrap dev.jai.nexus memory service (FastAPI + pgvector + Redis queue)",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/public-nexus/issues/95",
+    "ref": "#95",
+    "repo": "public-nexus",
+    "state": "open",
+    "title": "[E2] Stand up dev.jai.nexus front door with status & health view from SoT-DB",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/jai-nexus/issues/28",
+    "ref": "#28",
+    "repo": "jai-nexus",
+    "state": "open",
+    "title": "[E1] Provision sot-nexus: Postgres schema + API service + nightly snapshot job",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/integrations-nexus/pull/5",
+    "ref": "#5",
+    "repo": "integrations-nexus",
+    "state": "open",
+    "title": "feat(inbox): bootstrap worker + bus",
+    "triage": null
+  },
+  {
+    "href": "https://github.com/jai-nexus/integrations-nexus/pull/4",
+    "ref": "#4",
+    "repo": "integrations-nexus",
+    "state": "open",
+    "title": "chore(db): lock canonical agents seed",
+    "triage": null
+  }
+]
