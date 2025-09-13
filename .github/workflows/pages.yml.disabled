@@ -1,4 +1,6 @@
+# .github/workflows/pages.yml
 name: Deploy dev.jai.nexus
+
 on:
   push:
     branches: [ main ]
@@ -15,10 +17,10 @@ concurrency:
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +28,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Build a trimmed artifact (exclude local cruft)
       - name: Prepare static site
         run: |
           mkdir -p .site
@@ -38,7 +41,7 @@ jobs:
             --exclude 'Makefile*' \
             --exclude 'README.md' \
             ./ .site/
-          # Ensure these two markers make it into the artifact
+          # Include markers if present
           [ -f CNAME ] && cp CNAME .site/ || true
           [ -f .nojekyll ] && cp .nojekyll .site/ || true
 

@@ -12,7 +12,7 @@ Sync selected sections from multiple repos into dev.jai.nexus/data/*.json
 import os, sys, json, re, shutil, subprocess, hashlib, glob, pathlib
 from pathlib import Path
 try:
-    import yaml  # optional (front-matter)
+    import yaml
 except Exception:
     yaml = None
 
