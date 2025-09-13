@@ -32,3 +32,17 @@ sections:
 #   include: ["site/changelog/**/*.md"]
 #   parser: md
 #   dest: "data/changelog.json"
+
+  - id: tasks
+    repo: jai-nexus/public-nexus
+    ref: main
+    include: ["data/tasks.json"]
+    parser: md
+    dest: "data/tasks.json"
+
+  - id: repos
+    repo: jai-nexus/wiki-nexus
+    ref: main
+    include: ["org/repos/*.md"]   # optional: if you keep repo records there
+    parser: md
+    dest: "data/repos.json"
