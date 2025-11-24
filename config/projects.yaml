@@ -1,0 +1,47 @@
+# config/projects.yaml
+# Source of truth for projects that JAI + dev.jai.nexus care about.
+# Mirrors the Notion "Projects" DB schema.
+
+projects:
+  # ---- Tier-0: JAI internal / spine ----
+  - project_id: jai-internal
+    name: "JAI Internal / Spine"
+    root_nh_id: "1.0"
+    tier: 0
+    priority_level: P1
+    status: active
+    owner: "Jerry Ingram"
+    repos:
+      - jai-nexus/jai-nexus
+      - jai-nexus/dev-jai-nexus
+      - jai-nexus/sot-nexus
+      - jai-nexus/docs-nexus
+    notes: "JAI OS, dev.jai.nexus cockpit, SoT/DR, JAI INDEX, and KBs."
+
+  # ---- Tier-1: Active product (assumed Teacher Copilot for now) ----
+  - project_id: teacher-copilot
+    name: "Texas Teacher Copilot"
+    root_nh_id: "5.0"
+    tier: 1
+    priority_level: P2
+    status: planned
+    owner: "Jerry Ingram"
+    repos:
+      - jai-nexus/teacher-copilot-nexus
+      - jai-nexus/docs-nexus
+      - jai-nexus/sot-nexus
+    notes: "First external product: copilot for TEA-aligned coursework and lesson-planning. Swap this project if you decide OffBook is the P2 focus instead."
+
+  # ---- Tier-1: OffBook.ai ----
+  - project_id: offbook
+    name: "OffBook.ai"
+    root_nh_id: "6.0"        # pick the NH root you want; change if OffBook is already numbered
+    tier: 1
+    priority_level: P2
+    status: planned
+    owner: "Jerry Ingram"
+    repos:
+      - jerryingram/offbook-ai
+      - jai-nexus/docs-nexus
+      - jai-nexus/sot-nexus
+    notes: "Creative / performance workflows: scripts, scenes, auditions, and licensing."

@@ -1,0 +1,23 @@
+{
+  "name": "dev-jai-nexus",
+  "version": "1.0.0",
+  "description": "Public site / portals / CORS edge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jai-nexus/dev-jai-nexus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jai-nexus/dev-jai-nexus/issues"
+  },
+  "homepage": "https://github.com/jai-nexus/dev-jai-nexus#readme",
+  "dependencies": {
+    "js-yaml": "^4.1.1"
+  }
+}

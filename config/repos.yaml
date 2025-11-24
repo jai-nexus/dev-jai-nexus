@@ -1,0 +1,60 @@
+repos:
+  - repo_id: sot-nexus
+    org_repo: "jai-nexus/sot-nexus"
+    tier: 0
+    role: sot-ledger
+    project_ids: ["jai-internal"]
+    nh_root: "2.2.1"
+    wave: 1
+    triage_color: yellow
+    owner: "Jerry Ingram"
+    status: active
+    notes: "Source-of-Truth DB + API service"
+
+  - repo_id: jai-nexus
+    org_repo: "jai-nexus/jai-nexus"
+    tier: 0
+    role: jai-core
+    project_ids: ["jai-internal"]
+    nh_root: "2.1.2"
+    wave: 1
+    triage_color: yellow
+    owner: "Jerry Ingram"
+    status: active
+    notes: "Core infra for agents/orchestration"
+
+  - repo_id: dev-jai-nexus
+    org_repo: "jai-nexus/dev-jai-nexus"
+    tier: 0
+    role: dev-spine
+    project_ids: ["jai-internal"]
+    nh_root: "2.1.3"
+    wave: 1
+    triage_color: yellow
+    owner: "Jerry Ingram"
+    status: active
+    notes: "Front door (Next.js) + status/health"
+
+  - repo_id: docs-nexus
+    org_repo: "jai-nexus/docs-nexus"
+    tier: 0
+    role: docs-kb
+    project_ids: ["jai-internal"]
+    nh_root: "2.1.4"
+    wave: 1
+    triage_color: yellow
+    owner: "Jerry Ingram"
+    status: active
+    notes: "Canonical docs & GH pages"
+
+  - repo_id: offbook-ai
+    org_repo: "jerryingram/offbook-ai"
+    tier: 1
+    role: product-app
+    project_ids: ["offbook"]
+    nh_root: "2.1.65"                        # pick the next free 2.1.x slot
+    wave: 1
+    triage_color: yellow
+    status: planned
+    notes: "OffBook.ai app / service surface."
+
