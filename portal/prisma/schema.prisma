@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Repo {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  nhId          String    @default("")   // your numerical hierarchy id
+  name          String    @unique        // e.g. "jai-nexus/jai-nexus"
+  description   String?
+  domainPod     String?                  // e.g. infrastructure.nexus
+  engineGroup   String?                  // frontend/backend/helper
+  language      String?
+  status        String?                  // active/archived/experimental
+  owner         String?                  // repo owner
+  defaultBranch String?                  // main/dev
+  githubUrl     String?
+  notes         Json?
+
+  syncRuns      SyncRun[]
+  domains       Domain[]
+}
+
+model Domain {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  nhId       String    @default("")
+  domain     String    @unique          // dev.jai.nexus, offbook.ai, etc.
+  status     String?                    // live/parked/planned
+  domainKey  String?                    // short code: DEV, INFRA, OFFBOOK
+  engineType String?                    // nextjs/api/docs/landing
+  env        String?                    // prod/dev/preview
+  expiresAt  DateTime?
+  notes      Json?
+
+  repoId     Int?
+  repo       Repo?     @relation(fields: [repoId], references: [id])
+}
+
+model SyncRun {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  type           String                    // notion_sync/docs_harvest/etc.
+  status         String                    // success/failed/partial
+  trigger        String?                   // push/schedule/manual
+
+  startedAt      DateTime
+  finishedAt     DateTime
+
+  workflowRunUrl String?
+  summary        String?
+  payload        Json?                     // raw report blob
+
+  repoId         Int?
+  repo           Repo?     @relation(fields: [repoId], references: [id])
+}
+
+model JaiTool {
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  name         String
+  version      String?                  // 0.1.0, 0.2.1, etc.
+  description  String?
+  scope        String?                  // repo/domain/org
+  status       String?                  // experimental/active/deprecated
+
+  inputSchema  Json?
+  outputSchema Json?
+}
