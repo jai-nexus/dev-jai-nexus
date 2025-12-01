@@ -9,7 +9,7 @@ datasource db {
 model Repo {
   id            Int       @id @default(autoincrement())
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   nhId          String    @default("")   // your numerical hierarchy id
   name          String    @unique        // e.g. "jai-nexus/jai-nexus"
@@ -30,7 +30,7 @@ model Repo {
 model Domain {
   id         Int       @id @default(autoincrement())
   createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   nhId       String    @default("")
   domain     String    @unique          // dev.jai.nexus, offbook.ai, etc.
@@ -48,7 +48,7 @@ model Domain {
 model SyncRun {
   id             Int       @id @default(autoincrement())
   createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   type           String                    // notion_sync/docs_harvest/etc.
   status         String                    // success/failed/partial
@@ -68,7 +68,7 @@ model SyncRun {
 model JaiTool {
   id           Int       @id @default(autoincrement())
   createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  updatedAt     DateTime  @default(now()) @updatedAt
 
   name         String
   version      String?                  // 0.1.0, 0.2.1, etc.
