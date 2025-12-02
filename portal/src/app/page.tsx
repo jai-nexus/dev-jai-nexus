@@ -8,6 +8,9 @@ export default async function HomePage() {
     include: { repo: true },
   });
 
+  // Infer the row type from the query result
+  type SyncRunRow = (typeof runs)[number];
+
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-8 flex items-center justify-between">
@@ -41,7 +44,7 @@ export default async function HomePage() {
                 </tr>
               </thead>
               <tbody>
-                {runs.map((run) => (
+                {runs.map((run: SyncRunRow) => (
                   <tr
                     key={run.id}
                     className="border-b border-gray-900 hover:bg-zinc-900/60"
