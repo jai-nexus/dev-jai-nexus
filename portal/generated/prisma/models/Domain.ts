@@ -273,6 +273,7 @@ export type DomainWhereInput = {
   notes?: Prisma.JsonNullableFilter<"Domain">
   repoId?: Prisma.IntNullableFilter<"Domain"> | number | null
   repo?: Prisma.XOR<Prisma.RepoNullableScalarRelationFilter, Prisma.RepoWhereInput> | null
+  sotEvents?: Prisma.SotEventListRelationFilter
 }
 
 export type DomainOrderByWithRelationInput = {
@@ -289,6 +290,7 @@ export type DomainOrderByWithRelationInput = {
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   repoId?: Prisma.SortOrderInput | Prisma.SortOrder
   repo?: Prisma.RepoOrderByWithRelationInput
+  sotEvents?: Prisma.SotEventOrderByRelationAggregateInput
 }
 
 export type DomainWhereUniqueInput = Prisma.AtLeast<{
@@ -308,6 +310,7 @@ export type DomainWhereUniqueInput = Prisma.AtLeast<{
   notes?: Prisma.JsonNullableFilter<"Domain">
   repoId?: Prisma.IntNullableFilter<"Domain"> | number | null
   repo?: Prisma.XOR<Prisma.RepoNullableScalarRelationFilter, Prisma.RepoWhereInput> | null
+  sotEvents?: Prisma.SotEventListRelationFilter
 }, "id" | "domain">
 
 export type DomainOrderByWithAggregationInput = {
@@ -360,6 +363,7 @@ export type DomainCreateInput = {
   expiresAt?: Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repo?: Prisma.RepoCreateNestedOneWithoutDomainsInput
+  sotEvents?: Prisma.SotEventCreateNestedManyWithoutDomainInput
 }
 
 export type DomainUncheckedCreateInput = {
@@ -375,6 +379,7 @@ export type DomainUncheckedCreateInput = {
   expiresAt?: Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repoId?: number | null
+  sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutDomainInput
 }
 
 export type DomainUpdateInput = {
@@ -389,6 +394,7 @@ export type DomainUpdateInput = {
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repo?: Prisma.RepoUpdateOneWithoutDomainsNestedInput
+  sotEvents?: Prisma.SotEventUpdateManyWithoutDomainNestedInput
 }
 
 export type DomainUncheckedUpdateInput = {
@@ -404,6 +410,7 @@ export type DomainUncheckedUpdateInput = {
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repoId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutDomainNestedInput
 }
 
 export type DomainCreateManyInput = {
@@ -512,6 +519,11 @@ export type DomainSumOrderByAggregateInput = {
   repoId?: Prisma.SortOrder
 }
 
+export type DomainNullableScalarRelationFilter = {
+  is?: Prisma.DomainWhereInput | null
+  isNot?: Prisma.DomainWhereInput | null
+}
+
 export type DomainCreateNestedManyWithoutRepoInput = {
   create?: Prisma.XOR<Prisma.DomainCreateWithoutRepoInput, Prisma.DomainUncheckedCreateWithoutRepoInput> | Prisma.DomainCreateWithoutRepoInput[] | Prisma.DomainUncheckedCreateWithoutRepoInput[]
   connectOrCreate?: Prisma.DomainCreateOrConnectWithoutRepoInput | Prisma.DomainCreateOrConnectWithoutRepoInput[]
@@ -566,6 +578,22 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type DomainCreateNestedOneWithoutSotEventsInput = {
+  create?: Prisma.XOR<Prisma.DomainCreateWithoutSotEventsInput, Prisma.DomainUncheckedCreateWithoutSotEventsInput>
+  connectOrCreate?: Prisma.DomainCreateOrConnectWithoutSotEventsInput
+  connect?: Prisma.DomainWhereUniqueInput
+}
+
+export type DomainUpdateOneWithoutSotEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.DomainCreateWithoutSotEventsInput, Prisma.DomainUncheckedCreateWithoutSotEventsInput>
+  connectOrCreate?: Prisma.DomainCreateOrConnectWithoutSotEventsInput
+  upsert?: Prisma.DomainUpsertWithoutSotEventsInput
+  disconnect?: Prisma.DomainWhereInput | boolean
+  delete?: Prisma.DomainWhereInput | boolean
+  connect?: Prisma.DomainWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DomainUpdateToOneWithWhereWithoutSotEventsInput, Prisma.DomainUpdateWithoutSotEventsInput>, Prisma.DomainUncheckedUpdateWithoutSotEventsInput>
+}
+
 export type DomainCreateWithoutRepoInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -577,6 +605,7 @@ export type DomainCreateWithoutRepoInput = {
   env?: string | null
   expiresAt?: Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sotEvents?: Prisma.SotEventCreateNestedManyWithoutDomainInput
 }
 
 export type DomainUncheckedCreateWithoutRepoInput = {
@@ -591,6 +620,7 @@ export type DomainUncheckedCreateWithoutRepoInput = {
   env?: string | null
   expiresAt?: Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutDomainInput
 }
 
 export type DomainCreateOrConnectWithoutRepoInput = {
@@ -637,6 +667,80 @@ export type DomainScalarWhereInput = {
   repoId?: Prisma.IntNullableFilter<"Domain"> | number | null
 }
 
+export type DomainCreateWithoutSotEventsInput = {
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nhId?: string
+  domain: string
+  status?: string | null
+  domainKey?: string | null
+  engineType?: string | null
+  env?: string | null
+  expiresAt?: Date | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repo?: Prisma.RepoCreateNestedOneWithoutDomainsInput
+}
+
+export type DomainUncheckedCreateWithoutSotEventsInput = {
+  id?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nhId?: string
+  domain: string
+  status?: string | null
+  domainKey?: string | null
+  engineType?: string | null
+  env?: string | null
+  expiresAt?: Date | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repoId?: number | null
+}
+
+export type DomainCreateOrConnectWithoutSotEventsInput = {
+  where: Prisma.DomainWhereUniqueInput
+  create: Prisma.XOR<Prisma.DomainCreateWithoutSotEventsInput, Prisma.DomainUncheckedCreateWithoutSotEventsInput>
+}
+
+export type DomainUpsertWithoutSotEventsInput = {
+  update: Prisma.XOR<Prisma.DomainUpdateWithoutSotEventsInput, Prisma.DomainUncheckedUpdateWithoutSotEventsInput>
+  create: Prisma.XOR<Prisma.DomainCreateWithoutSotEventsInput, Prisma.DomainUncheckedCreateWithoutSotEventsInput>
+  where?: Prisma.DomainWhereInput
+}
+
+export type DomainUpdateToOneWithWhereWithoutSotEventsInput = {
+  where?: Prisma.DomainWhereInput
+  data: Prisma.XOR<Prisma.DomainUpdateWithoutSotEventsInput, Prisma.DomainUncheckedUpdateWithoutSotEventsInput>
+}
+
+export type DomainUpdateWithoutSotEventsInput = {
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nhId?: Prisma.StringFieldUpdateOperationsInput | string
+  domain?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domainKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  env?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repo?: Prisma.RepoUpdateOneWithoutDomainsNestedInput
+}
+
+export type DomainUncheckedUpdateWithoutSotEventsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nhId?: Prisma.StringFieldUpdateOperationsInput | string
+  domain?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domainKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  env?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repoId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
 export type DomainCreateManyRepoInput = {
   id?: number
   createdAt?: Date | string
@@ -662,6 +766,7 @@ export type DomainUpdateWithoutRepoInput = {
   env?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sotEvents?: Prisma.SotEventUpdateManyWithoutDomainNestedInput
 }
 
 export type DomainUncheckedUpdateWithoutRepoInput = {
@@ -676,6 +781,7 @@ export type DomainUncheckedUpdateWithoutRepoInput = {
   env?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutDomainNestedInput
 }
 
 export type DomainUncheckedUpdateManyWithoutRepoInput = {
@@ -693,6 +799,35 @@ export type DomainUncheckedUpdateManyWithoutRepoInput = {
 }
 
 
+/**
+ * Count Type DomainCountOutputType
+ */
+
+export type DomainCountOutputType = {
+  sotEvents: number
+}
+
+export type DomainCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  sotEvents?: boolean | DomainCountOutputTypeCountSotEventsArgs
+}
+
+/**
+ * DomainCountOutputType without action
+ */
+export type DomainCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DomainCountOutputType
+   */
+  select?: Prisma.DomainCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * DomainCountOutputType without action
+ */
+export type DomainCountOutputTypeCountSotEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SotEventWhereInput
+}
+
 
 export type DomainSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -708,6 +843,8 @@ export type DomainSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   notes?: boolean
   repoId?: boolean
   repo?: boolean | Prisma.Domain$repoArgs<ExtArgs>
+  sotEvents?: boolean | Prisma.Domain$sotEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.DomainCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["domain"]>
 
 export type DomainSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -760,6 +897,8 @@ export type DomainSelectScalar = {
 export type DomainOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "nhId" | "domain" | "status" | "domainKey" | "engineType" | "env" | "expiresAt" | "notes" | "repoId", ExtArgs["result"]["domain"]>
 export type DomainInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   repo?: boolean | Prisma.Domain$repoArgs<ExtArgs>
+  sotEvents?: boolean | Prisma.Domain$sotEventsArgs<ExtArgs>
+  _count?: boolean | Prisma.DomainCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DomainIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   repo?: boolean | Prisma.Domain$repoArgs<ExtArgs>
@@ -772,6 +911,7 @@ export type $DomainPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Domain"
   objects: {
     repo: Prisma.$RepoPayload<ExtArgs> | null
+    sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1181,6 +1321,7 @@ readonly fields: DomainFieldRefs;
 export interface Prisma__DomainClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   repo<T extends Prisma.Domain$repoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Domain$repoArgs<ExtArgs>>): Prisma.Prisma__RepoClient<runtime.Types.Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  sotEvents<T extends Prisma.Domain$sotEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Domain$sotEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SotEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1634,6 +1775,30 @@ export type Domain$repoArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   include?: Prisma.RepoInclude<ExtArgs> | null
   where?: Prisma.RepoWhereInput
+}
+
+/**
+ * Domain.sotEvents
+ */
+export type Domain$sotEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SotEvent
+   */
+  select?: Prisma.SotEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SotEvent
+   */
+  omit?: Prisma.SotEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SotEventInclude<ExtArgs> | null
+  where?: Prisma.SotEventWhereInput
+  orderBy?: Prisma.SotEventOrderByWithRelationInput | Prisma.SotEventOrderByWithRelationInput[]
+  cursor?: Prisma.SotEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SotEventScalarFieldEnum | Prisma.SotEventScalarFieldEnum[]
 }
 
 /**

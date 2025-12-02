@@ -54,7 +54,8 @@ export const ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
   SyncRun: 'SyncRun',
-  JaiTool: 'JaiTool'
+  JaiTool: 'JaiTool',
+  SotEvent: 'SotEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -143,6 +144,23 @@ export const JaiToolScalarFieldEnum = {
 } as const
 
 export type JaiToolScalarFieldEnum = (typeof JaiToolScalarFieldEnum)[keyof typeof JaiToolScalarFieldEnum]
+
+
+export const SotEventScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  ts: 'ts',
+  source: 'source',
+  kind: 'kind',
+  nhId: 'nhId',
+  summary: 'summary',
+  payload: 'payload',
+  repoId: 'repoId',
+  domainId: 'domainId'
+} as const
+
+export type SotEventScalarFieldEnum = (typeof SotEventScalarFieldEnum)[keyof typeof SotEventScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -37,3 +37,8 @@ export type SyncRun = Prisma.SyncRunModel
  * 
  */
 export type JaiTool = Prisma.JaiToolModel
+/**
+ * Model SotEvent
+ * 
+ */
+export type SotEvent = Prisma.SotEventModel

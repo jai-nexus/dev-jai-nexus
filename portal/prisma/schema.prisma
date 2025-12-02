@@ -26,6 +26,7 @@ model Repo {
 
   syncRuns      SyncRun[]
   domains       Domain[]
+  sotEvents     SotEvent[]   // 👈 new back-relation
 }
 
 model Domain {
@@ -43,7 +44,9 @@ model Domain {
   notes      Json?
 
   repoId     Int?
-  repo       Repo?     @relation(fields: [repoId], references: [id])
+  repo       Repo?      @relation(fields: [repoId], references: [id])
+
+  sotEvents  SotEvent[] // 👈 new back-relation
 }
 
 model SyncRun {
@@ -79,4 +82,37 @@ model JaiTool {
 
   inputSchema  Json?
   outputSchema Json?
+}
+
+model SotEvent {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  /// When the event actually happened (not when we ingested it)
+  ts         DateTime
+
+  /// High-level source: chatgpt | github | notion | manual | jai-format | etc.
+  source     String
+
+  /// Logical type: conversation | decision | task | design_note | sync | etc.
+  kind       String
+
+  /// Optional NH marker for this event in your hierarchy (e.g. "2.1.3.5")
+  nhId       String    @default("")
+
+  /// Short human-readable summary for dashboards
+  summary    String?
+
+  /// Full canonical blob (usually jai-format or raw export)
+  payload    Json?
+
+  /// Optional links into repo/domain registries
+  repoId     Int?
+  repo       Repo?     @relation(fields: [repoId], references: [id])
+
+  domainId   Int?
+  domain     Domain?   @relation(fields: [domainId], references: [id])
+
+  @@index([ts, repoId, domainId])
 }

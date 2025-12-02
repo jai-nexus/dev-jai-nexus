@@ -1,0 +1,24 @@
+{
+  "ts": "2025-12-02T02:15:00Z",
+  "source": "chatgpt",
+  "kind": "conversation",
+  "nhId": "2.0.0",
+  "summary": "Initial dev.jai.nexus control plane setup (Neon + Prisma + Vercel).",
+  "repo": "jai-nexus/dev-jai-nexus",
+  "domain": "dev.jai.nexus",
+  "payload": {
+    "jai_format_version": "0.1",
+    "conversation_id": "sample-dev-jai-nexus-setup",
+    "notes": "Replace this payload with a real exported chat later.",
+    "messages": [
+      {
+        "role": "user",
+        "content": "How do I create a remote Postgres?"
+      },
+      {
+        "role": "assistant",
+        "content": "..."
+      }
+    ]
+  }
+}

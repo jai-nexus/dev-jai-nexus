@@ -1,0 +1,13 @@
+{
+  "ts": "2025-12-02T03:30:00.000Z",
+  "source": "chatgpt",
+  "kind": "conversation",
+  "nhId": "2.1.3",
+  "summary": "Sample JAI NEXUS design chat (replace with real export)",
+  "payload": {
+    "exportType": "chatgpt",
+    "note": "placeholder blob – swap with real jai-format later"
+  },
+  "repoId": 1,
+  "domainId": 1
+}

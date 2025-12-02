@@ -387,7 +387,8 @@ export const ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
   SyncRun: 'SyncRun',
-  JaiTool: 'JaiTool'
+  JaiTool: 'JaiTool',
+  SotEvent: 'SotEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "repo" | "domain" | "syncRun" | "jaiTool"
+    modelProps: "repo" | "domain" | "syncRun" | "jaiTool" | "sotEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SotEvent: {
+      payload: Prisma.$SotEventPayload<ExtArgs>
+      fields: Prisma.SotEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SotEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SotEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        findFirst: {
+          args: Prisma.SotEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SotEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        findMany: {
+          args: Prisma.SotEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>[]
+        }
+        create: {
+          args: Prisma.SotEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        createMany: {
+          args: Prisma.SotEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SotEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>[]
+        }
+        delete: {
+          args: Prisma.SotEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        update: {
+          args: Prisma.SotEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.SotEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SotEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SotEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.SotEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SotEventPayload>
+        }
+        aggregate: {
+          args: Prisma.SotEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSotEvent>
+        }
+        groupBy: {
+          args: Prisma.SotEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SotEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SotEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SotEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -812,6 +887,23 @@ export const JaiToolScalarFieldEnum = {
 } as const
 
 export type JaiToolScalarFieldEnum = (typeof JaiToolScalarFieldEnum)[keyof typeof JaiToolScalarFieldEnum]
+
+
+export const SotEventScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  ts: 'ts',
+  source: 'source',
+  kind: 'kind',
+  nhId: 'nhId',
+  summary: 'summary',
+  payload: 'payload',
+  repoId: 'repoId',
+  domainId: 'domainId'
+} as const
+
+export type SotEventScalarFieldEnum = (typeof SotEventScalarFieldEnum)[keyof typeof SotEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1013,6 +1105,7 @@ export type GlobalOmitConfig = {
   domain?: Prisma.DomainOmit
   syncRun?: Prisma.SyncRunOmit
   jaiTool?: Prisma.JaiToolOmit
+  sotEvent?: Prisma.SotEventOmit
 }
 
 /* Types for Logging */
