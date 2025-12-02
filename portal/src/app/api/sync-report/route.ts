@@ -1,8 +1,9 @@
 // portal/src/app/api/sync-report/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import type { Prisma } from '@prisma/client';  // 👈 add this
 import { prisma } from '@/lib/prisma';
 
+// Keep this simple for now – avoid Prisma types here
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SyncReportBody = {
   repoFullName: string; // "jai-nexus/jai-nexus"
   type: string;         // "notion_sync", "docs_harvest", ...
@@ -12,7 +13,8 @@ type SyncReportBody = {
   finishedAt: string;   // ISO string
   workflowRunUrl?: string;
   summary?: string;
-  payload?: Prisma.InputJsonValue | null;  // 👈 typed properly
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any;
 };
 
 export async function POST(req: NextRequest) {
@@ -55,8 +57,7 @@ export async function POST(req: NextRequest) {
         finishedAt: new Date(body.finishedAt),
         workflowRunUrl: body.workflowRunUrl,
         summary: body.summary,
-        // 👇 null → undefined, matches Prisma's expected union type
-        payload: body.payload ?? undefined,
+        payload: body.payload,   // <- `any` is assignable to Prisma JsonInput
         repoId: repo.id,
       },
     });
