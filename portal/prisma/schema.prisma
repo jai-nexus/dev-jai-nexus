@@ -1,9 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"         // <- NOT prisma-client-js
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Repo {
@@ -11,15 +11,15 @@ model Repo {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 
-  nhId          String    @default("")   // your numerical hierarchy id
-  name          String    @unique        // e.g. "jai-nexus/jai-nexus"
+  nhId          String    @default("")
+  name          String    @unique
   description   String?
-  domainPod     String?                  // e.g. infrastructure.nexus
-  engineGroup   String?                  // frontend/backend/helper
+  domainPod     String?
+  engineGroup   String?
   language      String?
-  status        String?                  // active/archived/experimental
-  owner         String?                  // repo owner
-  defaultBranch String?                  // main/dev
+  status        String?
+  owner         String?
+  defaultBranch String?
   githubUrl     String?
   notes         Json?
 
@@ -30,14 +30,14 @@ model Repo {
 model Domain {
   id         Int       @id @default(autoincrement())
   createdAt  DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  updatedAt  DateTime  @default(now()) @updatedAt
 
   nhId       String    @default("")
-  domain     String    @unique          // dev.jai.nexus, offbook.ai, etc.
-  status     String?                    // live/parked/planned
-  domainKey  String?                    // short code: DEV, INFRA, OFFBOOK
-  engineType String?                    // nextjs/api/docs/landing
-  env        String?                    // prod/dev/preview
+  domain     String    @unique
+  status     String?
+  domainKey  String?
+  engineType String?
+  env        String?
   expiresAt  DateTime?
   notes      Json?
 
@@ -48,18 +48,18 @@ model Domain {
 model SyncRun {
   id             Int       @id @default(autoincrement())
   createdAt      DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  updatedAt      DateTime  @default(now()) @updatedAt
 
-  type           String                    // notion_sync/docs_harvest/etc.
-  status         String                    // success/failed/partial
-  trigger        String?                   // push/schedule/manual
+  type           String
+  status         String
+  trigger        String?
 
   startedAt      DateTime
   finishedAt     DateTime
 
   workflowRunUrl String?
   summary        String?
-  payload        Json?                     // raw report blob
+  payload        Json?
 
   repoId         Int?
   repo           Repo?     @relation(fields: [repoId], references: [id])
@@ -68,13 +68,13 @@ model SyncRun {
 model JaiTool {
   id           Int       @id @default(autoincrement())
   createdAt    DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
+  updatedAt    DateTime  @default(now()) @updatedAt
 
   name         String
-  version      String?                  // 0.1.0, 0.2.1, etc.
+  version      String?
   description  String?
-  scope        String?                  // repo/domain/org
-  status       String?                  // experimental/active/deprecated
+  scope        String?
+  status       String?
 
   inputSchema  Json?
   outputSchema Json?

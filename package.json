@@ -19,5 +19,8 @@
   "homepage": "https://github.com/jai-nexus/dev-jai-nexus#readme",
   "dependencies": {
     "js-yaml": "^4.1.1"
+  },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.8.32"
   }
 }
