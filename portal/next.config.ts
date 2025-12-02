@@ -1,8 +1,12 @@
-import type { NextConfig } from "next";
+// portal/next.config.ts
+import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  reactStrictMode: true,
+  turbopack: {
+    root: path.resolve(__dirname), // force root to the portal directory
+  },
 };
 
 export default nextConfig;
