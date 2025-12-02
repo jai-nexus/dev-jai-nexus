@@ -7,6 +7,7 @@ export default async function DomainsPage() {
     include: { repo: true },
   });
 
+  type DomainRow = (typeof domains)[number];
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
@@ -40,7 +41,7 @@ export default async function DomainsPage() {
               </tr>
             </thead>
             <tbody>
-              {domains.map((d) => (
+              {domains.map((d: DomainRow) => (
                 <tr
                   key={d.id}
                   className="border-b border-gray-900 hover:bg-zinc-900/60"
