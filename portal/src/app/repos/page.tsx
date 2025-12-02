@@ -1,4 +1,6 @@
 // portal/src/app/repos/page.tsx
+export const dynamic = 'force-dynamic';
+
 import { loadRepoConfigs } from '@/lib/reposConfig';
 
 export default async function ReposPage() {

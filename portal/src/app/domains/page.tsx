@@ -1,4 +1,6 @@
 // portal/src/app/domains/page.tsx
+export const dynamic = 'force-dynamic';
+
 import { prisma } from '@/lib/prisma';
 
 export default async function DomainsPage() {
