@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "ingest:sample-event": "tsx scripts/ingest-sample-sot-event.ts",
+    "ingest:event": "tsx scripts/ingest-sot-event.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
