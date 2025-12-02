@@ -3,6 +3,20 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
 
+// Format timestamps in Central Time (America/Chicago)
+function formatWhen(date: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(date);
+}
+
 export default async function HomePage() {
   const runs = await prisma.syncRun.findMany({
     orderBy: { createdAt: 'desc' },
@@ -31,7 +45,12 @@ export default async function HomePage() {
         </p>
       ) : (
         <section>
-          <h2 className="text-lg font-medium mb-3">Recent sync runs</h2>
+          <h2 className="text-lg font-medium mb-3">
+            Recent sync runs
+            <span className="ml-2 text-xs text-gray-500">
+              (America/Chicago)
+            </span>
+          </h2>
           <div className="overflow-x-auto rounded-lg border border-gray-800">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-zinc-950 border-b border-gray-800 text-left">
@@ -52,7 +71,7 @@ export default async function HomePage() {
                     className="border-b border-gray-900 hover:bg-zinc-900/60"
                   >
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {run.startedAt.toISOString()}
+                      {formatWhen(run.startedAt)}
                     </td>
                     <td className="py-2 px-3 whitespace-nowrap">
                       {run.repo?.name ?? '—'}
