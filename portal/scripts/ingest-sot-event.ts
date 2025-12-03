@@ -2,18 +2,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 type RawEvent = {
   // optional schema version (recommended: "sot-event-0.1")
   version?: string;
 
-  ts: string;          // ISO timestamp
-  source: string;      // e.g. "chatgpt" | "github" | "notion"
-  kind: string;        // e.g. "conversation" | "decision" | ...
+  ts: string;         // ISO timestamp
+  source: string;     // "chatgpt" | "github" | "notion" | ...
+  kind: string;       // "conversation" | "decision" | "task" | ...
 
   nhId?: string;
-  summary?: string;
-  payload?: unknown;
+  summary: string;    // v0.1: required for dashboards
+  payload?: Prisma.InputJsonValue;
 
   // optional linkage
   repoId?: number;
@@ -44,13 +45,13 @@ async function main() {
   if (event.version && event.version !== 'sot-event-0.1') {
     console.warn(
       `Warning: unexpected sot-event version "${event.version}". ` +
-        'Expected "sot-event-0.1". Ingesting anyway.'
+        'Expected "sot-event-0.1". Ingesting anyway.',
     );
   }
 
   // basic validation
-  if (!event.ts || !event.source || !event.kind) {
-    console.error('Event must include ts, source, kind.');
+  if (!event.ts || !event.source || !event.kind || !event.summary) {
+    console.error('Event must include ts, source, kind, summary.');
     process.exit(1);
   }
 
@@ -93,7 +94,7 @@ async function main() {
       kind: event.kind,
       nhId: event.nhId ?? '',
       summary: event.summary,
-      payload: event.payload as any,
+      payload: event.payload ?? null, // Prisma.InputJsonValue | null
       repoId,
       domainId,
     },

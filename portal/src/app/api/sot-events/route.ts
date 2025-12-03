@@ -1,54 +1,62 @@
+// portal/src/app/api/sot-events/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import type { Prisma } from '@prisma/client';
 
 type SotEventBody = {
-  version?: string;        // "sot-event-0.1"
+  version?: string;
+
   ts: string;
   source: string;
   kind: string;
+  summary: string;
+
   nhId?: string;
-  summary?: string;
-  payload?: unknown;
-  repoName?: string;
-  domainName?: string;
+  payload?: Prisma.InputJsonValue;
+
   repoId?: number;
   domainId?: number;
+  repoName?: string;
+  domainName?: string;
 };
 
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as SotEventBody;
 
-    if (!body.ts || !body.source || !body.kind) {
+    if (!body.ts || !body.source || !body.kind || !body.summary) {
       return NextResponse.json(
-        { error: 'ts, source, kind are required' },
+        { error: 'Missing required fields (ts, source, kind, summary)' },
         { status: 400 },
+      );
+    }
+
+    if (body.version && body.version !== 'sot-event-0.1') {
+      console.warn(
+        `sot-events POST: unexpected version "${body.version}", expected "sot-event-0.1"`,
       );
     }
 
     const ts = new Date(body.ts);
     if (Number.isNaN(ts.getTime())) {
-      return NextResponse.json(
-        { error: `Invalid ts: ${body.ts}` },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Invalid ts' }, { status: 400 });
     }
 
-    let repoId = body.repoId ?? null;
-    let domainId = body.domainId ?? null;
+    let repoId = body.repoId;
+    let domainId = body.domainId;
 
     if (!repoId && body.repoName) {
       const repo = await prisma.repo.findUnique({
         where: { name: body.repoName },
       });
-      repoId = repo?.id ?? null;
+      repoId = repo?.id;
     }
 
     if (!domainId && body.domainName) {
       const domain = await prisma.domain.findUnique({
         where: { domain: body.domainName },
       });
-      domainId = domain?.id ?? null;
+      domainId = domain?.id;
     }
 
     const created = await prisma.sotEvent.create({
@@ -58,9 +66,9 @@ export async function POST(req: NextRequest) {
         kind: body.kind,
         nhId: body.nhId ?? '',
         summary: body.summary,
-        payload: body.payload as any,
-        repoId: repoId ?? undefined,
-        domainId: domainId ?? undefined,
+        payload: body.payload ?? null,
+        repoId,
+        domainId,
       },
     });
 
