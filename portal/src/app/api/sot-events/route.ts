@@ -1,7 +1,7 @@
 // portal/src/app/api/sot-events/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '@prisma/client';
+import type { Prisma } from '../../../../generated/prisma/client';
 
 type SotEventBody = {
   version?: string;
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         kind: body.kind,
         nhId: body.nhId ?? '',
         summary: body.summary,
-        payload: body.payload ?? null,
+        payload: body.payload,
         repoId,
         domainId,
       },
