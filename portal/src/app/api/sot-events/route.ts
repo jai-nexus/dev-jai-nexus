@@ -1,29 +1,12 @@
 // portal/src/app/api/sot-events/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import type { Prisma } from '../../../../generated/prisma/client';
-
-type SotEventBody = {
-  version?: string;
-
-  ts: string;
-  source: string;
-  kind: string;
-  summary: string;
-
-  nhId?: string;
-  payload?: Prisma.InputJsonValue;
-
-  repoId?: number;
-  domainId?: number;
-  repoName?: string;
-  domainName?: string;
-};
+import { recordSotEvent, type SotEventEnvelopeV01 } from '@/lib/sotEvents';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as SotEventBody;
+    const body = (await req.json()) as SotEventEnvelopeV01;
 
+    // Fast 400 for obviously bad payloads
     if (!body.ts || !body.source || !body.kind || !body.summary) {
       return NextResponse.json(
         { error: 'Missing required fields (ts, source, kind, summary)' },
@@ -31,46 +14,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (body.version && body.version !== 'sot-event-0.1') {
-      console.warn(
-        `sot-events POST: unexpected version "${body.version}", expected "sot-event-0.1"`,
-      );
-    }
-
-    const ts = new Date(body.ts);
-    if (Number.isNaN(ts.getTime())) {
-      return NextResponse.json({ error: 'Invalid ts' }, { status: 400 });
-    }
-
-    let repoId = body.repoId;
-    let domainId = body.domainId;
-
-    if (!repoId && body.repoName) {
-      const repo = await prisma.repo.findUnique({
-        where: { name: body.repoName },
-      });
-      repoId = repo?.id;
-    }
-
-    if (!domainId && body.domainName) {
-      const domain = await prisma.domain.findUnique({
-        where: { domain: body.domainName },
-      });
-      domainId = domain?.id;
-    }
-
-    const created = await prisma.sotEvent.create({
-      data: {
-        ts,
-        source: body.source,
-        kind: body.kind,
-        nhId: body.nhId ?? '',
-        summary: body.summary,
-        payload: body.payload,
-        repoId,
-        domainId,
-      },
-    });
+    // All version / ts / repo/domain resolution and DB write is centralized
+    const created = await recordSotEvent(body);
 
     return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
   } catch (err) {

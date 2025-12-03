@@ -2,20 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
-
-// Format timestamps in Central Time (America/Chicago)
-function formatWhen(date: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/Chicago',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(date);
-}
+import { formatCentral, formatCentralTooltip } from '@/lib/time';
 
 export default async function HomePage() {
   const runs = await prisma.syncRun.findMany({
@@ -24,7 +11,6 @@ export default async function HomePage() {
     include: { repo: true },
   });
 
-  // Infer the row type from the query result
   type SyncRunRow = (typeof runs)[number];
 
   return (
@@ -70,8 +56,11 @@ export default async function HomePage() {
                     key={run.id}
                     className="border-b border-gray-900 hover:bg-zinc-900/60"
                   >
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {formatWhen(run.startedAt)}
+                    <td
+                      className="py-2 px-3 whitespace-nowrap text-xs"
+                      title={formatCentralTooltip(run.startedAt)}
+                    >
+                      {formatCentral(run.startedAt)}
                     </td>
                     <td className="py-2 px-3 whitespace-nowrap">
                       {run.repo?.name ?? '—'}

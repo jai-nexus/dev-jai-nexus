@@ -1,50 +1,25 @@
 // portal/src/app/api/sync-report/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
-// Keep this simple for now – avoid Prisma types here
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SyncReportBody = {
-  repoFullName: string; // "jai-nexus/jai-nexus"
-  type: string;         // "notion_sync", "docs_harvest", ...
-  status: string;       // "success" | "failed" | "partial"
-  trigger?: string;     // "push" | "schedule" | "manual"
-  startedAt: string;    // ISO string
-  finishedAt: string;   // ISO string
-  workflowRunUrl?: string;
-  summary?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  payload?: any;
-};
+import { recordSotEvent } from '@/lib/sotEvents';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as SyncReportBody;
+    const body = await req.json();
 
-    const { repoFullName, type, status, startedAt, finishedAt } = body;
-
-    if (!repoFullName || !type || !status || !startedAt || !finishedAt) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 },
-      );
-    }
-
-    const [owner] = repoFullName.split('/');
-    const githubUrl = `https://github.com/${repoFullName}`;
+    // ... existing repo / syncRun logic ...
+    // assume you compute: repo, startedAt, finishedAt, status, summary, type, trigger
 
     const repo = await prisma.repo.upsert({
-      where: { name: repoFullName },
-      update: {
-        owner,
-        githubUrl,
-      },
+      where: { name: body.repoFullName },
       create: {
-        name: repoFullName,
-        owner,
-        githubUrl,
-        nhId: '',
-        status: 'unknown',
+        name: body.repoFullName,
+        nhId: body.nhId ?? '',
+        description: body.repoDescription ?? null,
+      },
+      update: {
+        nhId: body.nhId ?? '',
+        description: body.repoDescription ?? null,
       },
     });
 
@@ -52,22 +27,39 @@ export async function POST(req: NextRequest) {
       data: {
         type: body.type,
         status: body.status,
-        trigger: body.trigger,
+        trigger: body.trigger ?? null,
         startedAt: new Date(body.startedAt),
         finishedAt: new Date(body.finishedAt),
-        workflowRunUrl: body.workflowRunUrl,
-        summary: body.summary,
-        payload: body.payload,   // <- `any` is assignable to Prisma JsonInput
+        workflowRunUrl: body.workflowRunUrl ?? null,
+        summary: body.summary ?? null,
+        payload: body.payload,
         repoId: repo.id,
       },
     });
 
-    return NextResponse.json({ ok: true, id: run.id }, { status: 201 });
-  } catch (error) {
-    console.error('sync-report error', error);
-    return NextResponse.json(
-      { error: 'Internal error' },
-      { status: 500 },
-    );
+    // NEW: mirror it into SotEvent as a "sync"
+    await recordSotEvent({
+      version: 'sot-event-0.1',
+      ts: body.finishedAt ?? body.startedAt,
+      source: 'github',                    // or "sync-service", etc.
+      kind: 'sync',
+      summary: body.summary ?? `Sync run ${run.id} (${body.status})`,
+      nhId: body.nhId,
+      payload: {
+        syncRunId: run.id,
+        repoName: repo.name,
+        type: body.type,
+        status: body.status,
+        trigger: body.trigger,
+        workflowRunUrl: body.workflowRunUrl,
+      },
+      repoId: repo.id,
+      domainName: 'dev.jai.nexus',         // or resolve dynamically later
+    });
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err) {
+    console.error('sync-report POST error', err);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

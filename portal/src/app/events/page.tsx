@@ -2,18 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
-
-// Local time formatter (same idea as Runs page)
-const tz = 'America/Chicago';
-const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  timeZone: tz,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-});
+import { formatCentral, formatCentralTooltip, CENTRAL_TZ } from '@/lib/time';
 
 export default async function EventsPage() {
   const events = await prisma.sotEvent.findMany({
@@ -25,7 +14,6 @@ export default async function EventsPage() {
     },
   });
 
-  // Infer row type to keep map() typed
   type SotEventRow = (typeof events)[number];
 
   return (
@@ -36,14 +24,15 @@ export default async function EventsPage() {
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          Showing latest 50 events · {tz}
+          Showing latest 50 events · {CENTRAL_TZ}
         </p>
       </header>
 
       {events.length === 0 ? (
         <p className="text-sm text-gray-400">
           No events recorded yet. Use the ingest script or future pipelines to
-          append <code className="mx-1 px-1 py-0.5 rounded bg-zinc-900 text-xs">
+          append{' '}
+          <code className="mx-1 px-1 py-0.5 rounded bg-zinc-900 text-xs">
             SotEvent
           </code>{' '}
           rows.
@@ -66,20 +55,26 @@ export default async function EventsPage() {
               </thead>
               <tbody>
                 {events.map((event: SotEventRow) => {
-                  const when = dateTimeFormatter.format(event.ts);
-                  const payloadPreview =
-                    event.payload != null
-                      ? JSON.stringify(event.payload).slice(0, 60) +
-                        (JSON.stringify(event.payload).length > 60 ? '…' : '')
-                      : '—';
+                  const whenLabel = formatCentral(event.ts);
+                  const whenTooltip = formatCentralTooltip(event.ts);
+
+                  let payloadPreview = '—';
+                  if (event.payload != null) {
+                    const raw = JSON.stringify(event.payload);
+                    payloadPreview =
+                      raw.length > 60 ? `${raw.slice(0, 60)}…` : raw;
+                  }
 
                   return (
                     <tr
                       key={event.id}
                       className="border-b border-gray-900 hover:bg-zinc-900/60"
                     >
-                      <td className="py-2 px-3 whitespace-nowrap text-xs">
-                        {when}
+                      <td
+                        className="py-2 px-3 whitespace-nowrap text-xs"
+                        title={whenTooltip}
+                      >
+                        {whenLabel}
                       </td>
                       <td className="py-2 px-3 whitespace-nowrap text-xs uppercase text-gray-300">
                         {event.source}
