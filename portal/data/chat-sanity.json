@@ -1,0 +1,16 @@
+{
+  "nhId": "2.1.3",
+  "summary": "Sanity check – real-time SoT event",
+  "notes": "Anything you want here",
+  "jai_format_version": "0.1",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Timestamp sanity check"
+    },
+    {
+      "role": "assistant",
+      "content": "Looks good."
+    }
+  ]
+}
