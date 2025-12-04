@@ -1,25 +1,107 @@
-// portal/src/app/api/sot-events/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { recordSotEvent, type SotEventEnvelopeV01 } from '@/lib/sotEvents';
+// portal/scripts/ingest-sot-event.ts
+import fs from 'node:fs';
+import path from 'node:path';
+import { prisma } from '@/lib/prisma';
+import type { Prisma } from '../generated/prisma/client';
+import { parseSotTimestamp } from '@/lib/time';
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = (await req.json()) as SotEventEnvelopeV01;
+type RawEvent = {
+  version?: string;
 
-    // Fast 400 for obviously bad payloads
-    if (!body.ts || !body.source || !body.kind || !body.summary) {
-      return NextResponse.json(
-        { error: 'Missing required fields (ts, source, kind, summary)' },
-        { status: 400 },
-      );
-    }
+  ts: string;       // ISO8601 with Z/offset (real event time)
+  source: string;   // "chatgpt" | "github" | "notion" | ...
+  kind: string;     // "conversation" | "decision" | ...
 
-    // All version / ts / repo/domain resolution and DB write is centralized
-    const created = await recordSotEvent(body);
+  nhId?: string;
+  summary?: string;
+  payload?: Prisma.InputJsonValue;
 
-    return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
-  } catch (err) {
-    console.error('sot-events POST error', err);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  repoId?: number;
+  domainId?: number;
+  repoName?: string;
+  domainName?: string;
+};
+
+async function main() {
+  const filePath = process.argv[2];
+  if (!filePath) {
+    console.error('Usage: npm run ingest:event -- ./data/my-event.json');
+    process.exit(1);
   }
+
+  const absPath = path.resolve(filePath);
+  const raw = fs.readFileSync(absPath, 'utf8');
+
+  let event: RawEvent;
+  try {
+    event = JSON.parse(raw) as RawEvent;
+  } catch (err) {
+    console.error('Failed to parse JSON from', absPath, err);
+    process.exit(1);
+  }
+
+  if (!event.ts || !event.source || !event.kind) {
+    console.error('Event must include ts, source, kind.');
+    process.exit(1);
+  }
+
+  if (event.version && event.version !== 'sot-event-0.1') {
+    console.warn(
+      `Warning: unexpected sot-event version "${event.version}". ` +
+        'Expected "sot-event-0.1". Ingesting anyway.',
+    );
+  }
+
+  // *** Canonical UTC event time ***
+  const ts = parseSotTimestamp(event.ts);
+
+  let repoId = event.repoId;
+  let domainId = event.domainId;
+
+  if (!repoId && event.repoName) {
+    const repo = await prisma.repo.findUnique({
+      where: { name: event.repoName },
+    });
+    if (!repo) {
+      console.warn('No Repo found for name:', event.repoName);
+    } else {
+      repoId = repo.id;
+    }
+  }
+
+  if (!domainId && event.domainName) {
+    const domain = await prisma.domain.findUnique({
+      where: { domain: event.domainName },
+    });
+    if (!domain) {
+      console.warn('No Domain found for domain:', event.domainName);
+    } else {
+      domainId = domain.id;
+    }
+  }
+
+  const created = await prisma.sotEvent.create({
+    data: {
+      ts, // <- true event instant in UTC
+      source: event.source,
+      kind: event.kind,
+      nhId: event.nhId ?? '',
+      summary: event.summary,
+      payload: event.payload,
+      repoId,
+      domainId,
+      // createdAt is set by DB @default(now())
+    },
+  });
+
+  console.log('Created SotEvent id =', created.id);
 }
+
+main()
+  .catch((err) => {
+    console.error('Ingest failed:', err);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

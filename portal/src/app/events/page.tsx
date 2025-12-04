@@ -2,11 +2,13 @@
 export const dynamic = 'force-dynamic';
 
 import { prisma } from '@/lib/prisma';
-import { formatCentral, formatCentralTooltip, CENTRAL_TZ } from '@/lib/time';
+import { formatCentral, formatCentralTooltip } from '@/lib/time';
+
+const tz = 'America/Chicago';
 
 export default async function EventsPage() {
   const events = await prisma.sotEvent.findMany({
-    orderBy: { ts: 'desc' },
+    orderBy: { ts: 'desc' }, // or { createdAt: 'desc' } if you want ingest order
     take: 50,
     include: {
       repo: true,
@@ -24,7 +26,7 @@ export default async function EventsPage() {
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
         <p className="text-xs text-gray-500 mt-1">
-          Showing latest 50 events · {CENTRAL_TZ}
+          Showing latest 50 events · {tz}
         </p>
       </header>
 
@@ -43,7 +45,8 @@ export default async function EventsPage() {
             <table className="w-full text-sm border-collapse">
               <thead className="bg-zinc-950 border-b border-gray-800 text-left">
                 <tr>
-                  <th className="py-2 px-3">When</th>
+                  <th className="py-2 px-3">Event time</th>
+                  <th className="py-2 px-3">Ingested</th>
                   <th className="py-2 px-3">Source</th>
                   <th className="py-2 px-3">Kind</th>
                   <th className="py-2 px-3">NH_ID</th>
@@ -55,15 +58,16 @@ export default async function EventsPage() {
               </thead>
               <tbody>
                 {events.map((event: SotEventRow) => {
-                  const whenLabel = formatCentral(event.ts);
-                  const whenTooltip = formatCentralTooltip(event.ts);
+                  const eventTime = formatCentral(event.ts);
+                  const ingestedTime = formatCentral(event.createdAt);
 
-                  let payloadPreview = '—';
-                  if (event.payload != null) {
-                    const raw = JSON.stringify(event.payload);
-                    payloadPreview =
-                      raw.length > 60 ? `${raw.slice(0, 60)}…` : raw;
-                  }
+                  const payloadString =
+                    event.payload != null ? JSON.stringify(event.payload) : '';
+                  const payloadPreview =
+                    payloadString === ''
+                      ? '—'
+                      : payloadString.slice(0, 60) +
+                        (payloadString.length > 60 ? '…' : '');
 
                   return (
                     <tr
@@ -72,9 +76,15 @@ export default async function EventsPage() {
                     >
                       <td
                         className="py-2 px-3 whitespace-nowrap text-xs"
-                        title={whenTooltip}
+                        title={formatCentralTooltip(event.ts)}
                       >
-                        {whenLabel}
+                        {eventTime}
+                      </td>
+                      <td
+                        className="py-2 px-3 whitespace-nowrap text-xs text-gray-400"
+                        title={formatCentralTooltip(event.createdAt)}
+                      >
+                        {ingestedTime}
                       </td>
                       <td className="py-2 px-3 whitespace-nowrap text-xs uppercase text-gray-300">
                         {event.source}
