@@ -9,7 +9,8 @@
     "lint": "next lint",
     "ingest:event": "tsx scripts/ingest-sot-event.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "audit:q4-2025": "tsx scripts/run-q4-audit.ts"
+    "audit:q4-2025": "tsx scripts/run-q4-audit.ts",
+    "emit:offbook-v0": "tsx scripts/emit-offbook-v0-deployed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.0.1",

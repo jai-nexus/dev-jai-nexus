@@ -26,11 +26,12 @@ projects:
     name: "OffBook.ai v0"
     root_nh_id: "2.1"
     tier: 1
-    status: "active"
+    status: "active"   # deployed and live
     repo: "JerryIngram/offbook-ai"
     owner_agent_nh_id: "2.1"
     description: >
-      First external product anchor for Q1’26.
+      First external product anchor for Q1’26. V0 deployed on Vercel with
+      primary entrypoint at /landing (marketing + local-only beta signup).
 
   - project_id: "teacher-copilot.sandbox"
     name: "Teacher Copilot Sandbox"
