@@ -50,7 +50,7 @@ export default async function HomePage() {
                   <th className="py-2 px-3">Workflow</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody suppressHydrationWarning>
                 {runs.map((run: SyncRunRow) => (
                   <tr
                     key={run.id}

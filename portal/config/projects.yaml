@@ -22,16 +22,26 @@ projects:
     description: >
       Core engine capable of emitting SoT events from key flows.
 
+  - project_id: "jai-autopilot.v0"
+    name: "JAI Autopilot Agent v0"
+    root_nh_id: "1.3"
+    tier: 0
+    status: "planned"
+    repo: "JerryIngram/jai-autopilot-win"
+    owner_agent_nh_id: "1.1"
+    description: >
+      Local Windows agent that watches builds, calls LLMs for fixes,
+      and emits AUTOPILOT_* SoT events into dev.jai.nexus.
+
   - project_id: "offbook.v0"
     name: "OffBook.ai v0"
     root_nh_id: "2.1"
     tier: 1
-    status: "active"   # deployed and live
+    status: "active"
     repo: "JerryIngram/offbook-ai"
     owner_agent_nh_id: "2.1"
     description: >
-      First external product anchor for Q1’26. V0 deployed on Vercel with
-      primary entrypoint at /landing (marketing + local-only beta signup).
+      First external product anchor for Q1’26.
 
   - project_id: "teacher-copilot.sandbox"
     name: "Teacher Copilot Sandbox"
