@@ -33,6 +33,9 @@ export default function RootLayout({
             <Link href="/events" className="hover:text-gray-100">
               Events
             </Link>
+            <Link href="/operator/events" className="hover:text-gray-100">
+              Operator
+            </Link>
           </nav>
         </header>
         {children}
