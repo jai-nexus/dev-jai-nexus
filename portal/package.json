@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "ingest:event": "tsx scripts/ingest-sot-event.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "audit:q4-2025": "tsx scripts/run-q4-audit.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.0.1",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.15.6",
     "@types/react": "^18.0.0",

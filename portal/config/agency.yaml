@@ -1,0 +1,91 @@
+# agents/agency.yaml
+schema_version: 0.1
+
+owner:
+  name: "Jerry Ingram"
+  handle: "jai_owner"
+  nh_root: "1.0"
+
+agents:
+  # Root operator – you / your proxy
+  - nh_id: "1.0"
+    id: "jai-operator"
+    label: "JAI Operator"
+    parent_nh_id: null
+    tier: 0
+    role: "Owner proxy and top-level coordinator"
+    scope:
+      - "jai-core"
+      - "dev-portal"
+      - "offbook"
+    responsibilities:
+      - "Maintain the NH map and agency spec"
+      - "Guard focus: Tier-0 and Tier-1 only"
+      - "Approve new repos and major scope changes"
+    delegates_to:
+      - "1.1"
+      - "1.2"
+      - "2.1"
+    github_labels:
+      - "agent:operator"
+
+  # This repo – the core engine
+  - nh_id: "1.1"
+    id: "jai-core"
+    label: "JAI Core Engine"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Core orchestration engine and recursive tools"
+    scope:
+      - "jai"        # this repo
+    responsibilities:
+      - "Operate canvas, recursion, and lineage logic"
+      - "Expose APIs for other agents and tools"
+      - "Emit SoT events for significant operations"
+    delegates_to:
+      - "1.1.1"
+      - "1.1.2"
+    github_labels:
+      - "agent:jai-core"
+
+  # dev-jai-nexus – operator console + infra
+  - nh_id: "1.2"
+    id: "dev-portal"
+    label: "Dev Portal & Infra"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Operator console and SoT DB"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Maintain portal, DB schema, and pipelines"
+      - "Surface registry and SoT events to the owner"
+    delegates_to: []
+    github_labels:
+      - "agent:dev-portal"
+
+  # External anchor product – OffBook
+  - nh_id: "2.1"
+    id: "offbook-owner"
+    label: "OffBook.ai Owner"
+    parent_nh_id: "1.0"
+    tier: 1
+    role: "Product owner for OffBook.v0"
+    scope:
+      - "offbook-ai"
+    responsibilities:
+      - "Deliver and evolve OffBook v0"
+      - "Keep its repo, design doc, and SoT events coherent"
+    delegates_to:
+      - "2.1.1"
+    github_labels:
+      - "agent:offbook"
+
+delegation_rules:
+  - id: "default"
+    description: >
+      Delegations flow down the NH tree. Cross-branch communication
+      goes through 1.0 (Operator) to keep accountability clear.
+    constraints:
+      - "No agent may create active work in a repo outside its scope."
+      - "Every significant delegation is a GitHub issue + SoT event."

@@ -1,0 +1,43 @@
+# portal/config/projects.yaml
+schema_version: 0.1
+
+projects:
+  - project_id: "dev-portal.v0"
+    name: "Dev JAI Nexus Portal v0"
+    root_nh_id: "1.2"
+    tier: 0
+    status: "active"
+    repo: "jai-nexus/dev-jai-nexus"
+    owner_agent_nh_id: "1.2"
+    description: >
+      Minimal operator console: SoT events viewer, registry and agency views.
+
+  - project_id: "jai-core.v0"
+    name: "JAI Core Engine v0"
+    root_nh_id: "1.1"
+    tier: 0
+    status: "active"
+    repo: "jai-nexus/jai"
+    owner_agent_nh_id: "1.1"
+    description: >
+      Core engine capable of emitting SoT events from key flows.
+
+  - project_id: "offbook.v0"
+    name: "OffBook.ai v0"
+    root_nh_id: "2.1"
+    tier: 1
+    status: "active"
+    repo: "jai-nexus/offbook-ai"
+    owner_agent_nh_id: "2.1"
+    description: >
+      First external product anchor for Q1’26.
+
+  - project_id: "teacher-copilot.sandbox"
+    name: "Teacher Copilot Sandbox"
+    root_nh_id: "2.2"
+    tier: 2
+    status: "frozen"
+    repo: "jai-nexus/teacher-copilot"
+    owner_agent_nh_id: "2.2"
+    description: >
+      Experiments only until explicitly unfrozen via SoT event.

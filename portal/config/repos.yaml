@@ -1,0 +1,48 @@
+# portal/config/repos.yaml
+schema_version: 0.1
+
+repos:
+  - nh_id: "1.0"
+    repo: "jai-nexus/jai-nexus"
+    description: "Meta-docs and global infrastructure specs"
+    tier: 0
+    role: "meta"
+    status: "active"          # active | frozen | parked
+    owner_agent_nh_id: "1.0"
+    notes: "Home of high-level specs and JAI constitution"
+
+  - nh_id: "1.1"
+    repo: "jai-nexus/jai"     # this jai repo
+    description: "JAI core engine and orchestration"
+    tier: 0
+    role: "core"
+    status: "active"
+    owner_agent_nh_id: "1.1"
+    notes: "Canvas/recursion engine, SoT ledger writer"
+
+  - nh_id: "1.2"
+    repo: "jai-nexus/dev-jai-nexus"
+    description: "Dev portal and internal tooling"
+    tier: 0
+    role: "operator-console"
+    status: "active"
+    owner_agent_nh_id: "1.2"
+    notes: "Prisma + Neon, SoT DB, registry views"
+
+  - nh_id: "2.1"
+    repo: "jai-nexus/offbook-ai"
+    description: "OffBook.ai application"
+    tier: 1
+    role: "product"
+    status: "active"
+    owner_agent_nh_id: "2.1"
+    notes: "Chosen external v0 anchor for Q1’26"
+
+  - nh_id: "2.2"
+    repo: "jai-nexus/teacher-copilot"
+    description: "Teacher Copilot sandbox"
+    tier: 2
+    role: "experiment"
+    status: "frozen"
+    owner_agent_nh_id: "2.2"
+    notes: "Recognized, but not allowed to hijack focus in Q1"
