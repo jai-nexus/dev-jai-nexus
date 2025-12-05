@@ -27,7 +27,7 @@ projects:
     root_nh_id: "2.1"
     tier: 1
     status: "active"
-    repo: "jai-nexus/offbook-ai"
+    repo: "JerryIngram/offbook-ai"
     owner_agent_nh_id: "2.1"
     description: >
       First external product anchor for Q1’26.
