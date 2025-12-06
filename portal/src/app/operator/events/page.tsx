@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCentral, formatCentralTooltip } from "@/lib/time";
 
@@ -27,7 +28,7 @@ export default async function OperatorEventsPage({
   const sourceFilter = firstParam(searchParams?.source);
   const kindFilter = firstParam(searchParams?.kind);
 
-  // Keep this simple – no Prisma namespace import needed
+  // Simple where-clause, no Prisma namespace import
   const where: {
     nhId?: string;
     source?: string;
@@ -44,7 +45,6 @@ export default async function OperatorEventsPage({
     take: 100,
   });
 
-  // Infer row type from the query result
   type SotEventRow = (typeof events)[number];
 
   const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
@@ -110,6 +110,7 @@ export default async function OperatorEventsPage({
                   <th className="py-2 px-3 text-xs text-gray-400">Summary</th>
                 </tr>
               </thead>
+
               {/* DB-backed, time-sensitive data – avoid noisy hydration warnings */}
               <tbody suppressHydrationWarning>
                 {events.map((evt: SotEventRow) => (
@@ -129,19 +130,55 @@ export default async function OperatorEventsPage({
                     >
                       {formatCentral(evt.createdAt)}
                     </td>
+
+                    {/* Clickable filter: source */}
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <code className="text-[11px] text-gray-200">
-                        {evt.source}
-                      </code>
+                      {evt.source ? (
+                        <Link
+                          href={`/operator/events?source=${encodeURIComponent(
+                            evt.source,
+                          )}`}
+                          className="text-[11px] text-sky-300 hover:text-sky-200 underline"
+                        >
+                          {evt.source}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
                     </td>
+
+                    {/* Clickable filter: kind */}
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <code className="text-[11px] text-gray-200">
-                        {evt.kind}
-                      </code>
+                      {evt.kind ? (
+                        <Link
+                          href={`/operator/events?kind=${encodeURIComponent(
+                            evt.kind,
+                          )}`}
+                          className="text-[11px] text-sky-300 hover:text-sky-200 underline"
+                        >
+                          {evt.kind}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
                     </td>
+
+                    {/* Clickable filter: NH_ID */}
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {evt.nhId ?? "—"}
+                      {evt.nhId ? (
+                        <Link
+                          href={`/operator/events?nh=${encodeURIComponent(
+                            evt.nhId,
+                          )}`}
+                          className="text-[11px] text-sky-300 hover:text-sky-200 underline font-mono"
+                        >
+                          {evt.nhId}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
                     </td>
+
                     <td className="py-2 px-3 text-xs max-w-xl truncate">
                       {evt.summary ?? "—"}
                     </td>
