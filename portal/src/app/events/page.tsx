@@ -1,46 +1,22 @@
-// portal/src/app/operator/events/page.tsx
-export const runtime = "nodejs";
-export const revalidate = 0;
+// portal/src/app/events/page.tsx
+export const dynamic = 'force-dynamic';
 
-import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
-import { formatCentral, formatCentralTooltip } from "@/lib/time";
+import { prisma } from '@/lib/prisma';
+import { formatCentral, formatCentralTooltip } from '@/lib/time';
 
-type SearchParamValue = string | string[] | undefined;
+const tz = 'America/Chicago';
 
-function firstParam(value: SearchParamValue): string | undefined {
-  if (!value) return undefined;
-  return Array.isArray(value) ? value[0] : value;
-}
-
-interface OperatorEventsPageProps {
-  searchParams?: {
-    nh?: SearchParamValue;
-    source?: SearchParamValue;
-    kind?: SearchParamValue;
-  };
-}
-
-export default async function OperatorEventsPage({
-  searchParams,
-}: OperatorEventsPageProps) {
-  const nhFilter = firstParam(searchParams?.nh);
-  const sourceFilter = firstParam(searchParams?.source);
-  const kindFilter = firstParam(searchParams?.kind);
-
-  const where: Prisma.SotEventWhereInput = {};
-
-  if (nhFilter) where.nhId = nhFilter;
-  if (sourceFilter) where.source = sourceFilter;
-  if (kindFilter) where.kind = kindFilter;
-
+export default async function EventsPage() {
   const events = await prisma.sotEvent.findMany({
-    where,
-    orderBy: { ts: "desc" },
-    take: 100,
+    orderBy: { ts: 'desc' }, // or { createdAt: 'desc' } if you want ingest order
+    take: 50,
+    include: {
+      repo: true,
+      domain: true,
+    },
   });
 
-  const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
+  type SotEventRow = (typeof events)[number];
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -49,95 +25,91 @@ export default async function OperatorEventsPage({
         <p className="text-sm text-gray-400 mt-1">
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-400">
-            Showing latest 100 events · America/Chicago
-          </span>
-
-          {hasFilters && (
-            <div className="flex flex-wrap gap-2 items-center">
-              {nhFilter && (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  NH: <span className="ml-1 font-mono">{nhFilter}</span>
-                </span>
-              )}
-              {sourceFilter && (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  Source: <span className="ml-1 font-mono">{sourceFilter}</span>
-                </span>
-              )}
-              {kindFilter && (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  Kind: <span className="ml-1 font-mono">{kindFilter}</span>
-                </span>
-              )}
-
-              <a
-                href="/operator/events"
-                className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1"
-              >
-                Clear filters
-              </a>
-            </div>
-          )}
-        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Showing latest 50 events · {tz}
+        </p>
       </header>
 
       {events.length === 0 ? (
         <p className="text-sm text-gray-400">
-          No events found for the current filter.
+          No events recorded yet. Use the ingest script or future pipelines to
+          append{' '}
+          <code className="mx-1 px-1 py-0.5 rounded bg-zinc-900 text-xs">
+            SotEvent
+          </code>{' '}
+          rows.
         </p>
       ) : (
         <section>
-          <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
+          <div className="overflow-x-auto rounded-lg border border-gray-800">
             <table className="w-full text-sm border-collapse">
               <thead className="bg-zinc-950 border-b border-gray-800 text-left">
                 <tr>
-                  <th className="py-2 px-3 text-xs text-gray-400">Event time</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Ingested</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Source</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Kind</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">NH_ID</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Summary</th>
+                  <th className="py-2 px-3">Event time</th>
+                  <th className="py-2 px-3">Ingested</th>
+                  <th className="py-2 px-3">Source</th>
+                  <th className="py-2 px-3">Kind</th>
+                  <th className="py-2 px-3">NH_ID</th>
+                  <th className="py-2 px-3">Repo</th>
+                  <th className="py-2 px-3">Domain</th>
+                  <th className="py-2 px-3">Summary</th>
+                  <th className="py-2 px-3">Payload</th>
                 </tr>
               </thead>
               <tbody>
-                {events.map((evt) => (
-                  <tr
-                    key={evt.id}
-                    className="border-b border-gray-900 hover:bg-zinc-900/60"
-                  >
-                    <td
-                      className="py-2 px-3 whitespace-nowrap text-xs"
-                      title={formatCentralTooltip(evt.ts)}
+                {events.map((event: SotEventRow) => {
+                  const eventTime = formatCentral(event.ts);
+                  const ingestedTime = formatCentral(event.createdAt);
+
+                  const payloadString =
+                    event.payload != null ? JSON.stringify(event.payload) : '';
+                  const payloadPreview =
+                    payloadString === ''
+                      ? '—'
+                      : payloadString.slice(0, 60) +
+                        (payloadString.length > 60 ? '…' : '');
+
+                  return (
+                    <tr
+                      key={event.id}
+                      className="border-b border-gray-900 hover:bg-zinc-900/60"
                     >
-                      {formatCentral(evt.ts)}
-                    </td>
-                    <td
-                      className="py-2 px-3 whitespace-nowrap text-xs text-gray-400"
-                      title={formatCentralTooltip(evt.createdAt)}
-                    >
-                      {formatCentral(evt.createdAt)}
-                    </td>
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <code className="text-[11px] text-gray-200">
-                        {evt.source}
-                      </code>
-                    </td>
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <code className="text-[11px] text-gray-200">
-                        {evt.kind}
-                      </code>
-                    </td>
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {evt.nhId ?? "—"}
-                    </td>
-                    <td className="py-2 px-3 text-xs max-w-xl truncate">
-                      {evt.summary ?? "—"}
-                    </td>
-                  </tr>
-                ))}
+                      <td
+                        className="py-2 px-3 whitespace-nowrap text-xs"
+                        title={formatCentralTooltip(event.ts)}
+                      >
+                        {eventTime}
+                      </td>
+                      <td
+                        className="py-2 px-3 whitespace-nowrap text-xs text-gray-400"
+                        title={formatCentralTooltip(event.createdAt)}
+                      >
+                        {ingestedTime}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs uppercase text-gray-300">
+                        {event.source}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs">
+                        {event.kind}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs">
+                        {event.nhId || '—'}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs">
+                        {event.repo?.name ?? '—'}
+                      </td>
+                      <td className="py-2 px-3 whitespace-nowrap text-xs">
+                        {event.domain?.domain ?? '—'}
+                      </td>
+                      <td className="py-2 px-3 max-w-xs truncate">
+                        {event.summary ?? '—'}
+                      </td>
+                      <td className="py-2 px-3 max-w-xs truncate text-xs text-gray-400">
+                        {payloadPreview}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
