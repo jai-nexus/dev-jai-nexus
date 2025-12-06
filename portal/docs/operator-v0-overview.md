@@ -205,3 +205,9 @@ npm run dev   # http://localhost:3000
 # Build + test production build
 npm run build
 npm start
+
+## 5. Known dev quirks
+
+- On `/` (home), Next.js dev sometimes shows a **“Hydration failed” (Recoverable Error)** banner.
+  - This happens when new `SyncRun` rows are inserted between the initial HTML render and the client hydration pass, or when time formatting differs slightly between renders.
+  - It does **not** affect production builds (`npm run build` / Vercel) and can be treated as a dev-only warning for now.

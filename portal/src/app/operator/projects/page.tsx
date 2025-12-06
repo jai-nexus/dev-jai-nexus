@@ -1,19 +1,19 @@
 // portal/src/app/operator/projects/page.tsx
-export const runtime = "nodejs"
-export const revalidate = 0
+export const runtime = "nodejs";
+export const revalidate = 0;
 
 import {
   getProjectsConfig,
   type ProjectConfigEntry,
-} from "@/lib/projectsConfig"
+} from "@/lib/projectsConfig";
 
 export default function ProjectsPage() {
-  const config = getProjectsConfig()
+  const config = getProjectsConfig();
 
   const projects: ProjectConfigEntry[] = [...config.projects].sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier
-    return a.root_nh_id.localeCompare(b.root_nh_id)
-  })
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    return a.root_nh_id.localeCompare(b.root_nh_id);
+  });
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -48,6 +48,7 @@ export default function ProjectsPage() {
                 <th className="py-2 px-3 text-xs text-gray-400">
                   Owner agent
                 </th>
+                <th className="py-2 px-3 text-xs text-gray-400">Events</th>
                 <th className="py-2 px-3 text-xs text-gray-400">
                   Description
                 </th>
@@ -106,6 +107,16 @@ export default function ProjectsPage() {
                   <td className="py-2 px-3 text-xs whitespace-nowrap">
                     {project.owner_agent_nh_id}
                   </td>
+                  <td className="py-2 px-3 text-xs whitespace-nowrap">
+                    <a
+                      href={`/operator/events?nh=${encodeURIComponent(
+                        project.root_nh_id,
+                      )}`}
+                      className="text-sky-400 hover:text-sky-300 underline"
+                    >
+                      View events
+                    </a>
+                  </td>
                   <td className="py-2 px-3 text-xs max-w-md">
                     <span className="text-gray-300">
                       {project.description}
@@ -118,5 +129,5 @@ export default function ProjectsPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }
