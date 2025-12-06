@@ -1,17 +1,20 @@
 // portal/src/app/operator/agents/page.tsx
-export const runtime = "nodejs";
-export const revalidate = 0;
+export const runtime = "nodejs"
+export const revalidate = 0
 
-import { prisma } from "@/lib/prisma";
-import { getAgencyConfig, type AgencyAgent } from "@/lib/agencyConfig";
+import {
+  getAgencyConfig,
+  type AgencyAgent,
+  type DelegationRule,
+} from "@/lib/agencyConfig"
 
 export default function AgentsPage() {
-  const agency = getAgencyConfig();
+  const agency = getAgencyConfig()
 
   const agents: AgencyAgent[] = [...agency.agents].sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier;
-    return a.nh_id.localeCompare(b.nh_id);
-  });
+    if (a.tier !== b.tier) return a.tier - b.tier
+    return a.nh_id.localeCompare(b.nh_id)
+  })
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -50,12 +53,16 @@ export default function AgentsPage() {
                 <th className="py-2 px-3 text-xs text-gray-400">Tier</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Role</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Scope</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Delegates to</th>
-                <th className="py-2 px-3 text-xs text-gray-400">GitHub labels</th>
+                <th className="py-2 px-3 text-xs text-gray-400">
+                  Delegates to
+                </th>
+                <th className="py-2 px-3 text-xs text-gray-400">
+                  GitHub labels
+                </th>
               </tr>
             </thead>
             <tbody>
-              {agents.map((agent) => (
+              {agents.map((agent: AgencyAgent) => (
                 <tr
                   key={agent.nh_id}
                   className="border-b border-gray-900 hover:bg-zinc-900/60"
@@ -87,9 +94,7 @@ export default function AgentsPage() {
                       Tier {agent.tier}
                     </span>
                   </td>
-                  <td className="py-2 px-3 text-xs max-w-xs">
-                    {agent.role}
-                  </td>
+                  <td className="py-2 px-3 text-xs max-w-xs">{agent.role}</td>
                   <td className="py-2 px-3 text-xs whitespace-nowrap">
                     {agent.scope.join(", ")}
                   </td>
@@ -111,7 +116,7 @@ export default function AgentsPage() {
       <section>
         <h2 className="text-lg font-medium mb-3">Delegation rules</h2>
         <div className="space-y-3">
-          {agency.delegation_rules.map((rule) => (
+          {agency.delegation_rules.map((rule: DelegationRule) => (
             <div
               key={rule.id}
               className="rounded-lg border border-gray-800 bg-zinc-950 p-4"
@@ -125,7 +130,7 @@ export default function AgentsPage() {
                 {rule.description.trim()}
               </p>
               <ul className="text-xs text-gray-300 list-disc list-inside space-y-1">
-                {rule.constraints.map((c, idx) => (
+                {rule.constraints.map((c: string, idx: number) => (
                   <li key={idx}>{c}</li>
                 ))}
               </ul>
@@ -134,5 +139,5 @@ export default function AgentsPage() {
         </div>
       </section>
     </main>
-  );
+  )
 }
