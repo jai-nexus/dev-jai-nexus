@@ -47,8 +47,8 @@ Columns:
 
 - **Event time** – canonical `ts` from SoT envelope (America/Chicago display).
 - **Ingested** – DB `createdAt` (ingestion time).
-- **Source** – `source` field (`chatgpt`, `jai-runner`, `offbook-deploy-script`, `jai-autopilot-win`, `jai-cli`, etc.).
-- **Kind** – event kind (`conversation`, `OFFBOOK_V0_DEPLOYED`, `AUDIT_Q4_2025_COMPLETED`, `AUTOPILOT_PROJECT_REGISTERED`, `AUTOPILOT_BUILD_STARTED`, …).
+- **Source** – `source` field (`chatgpt`, `jai-runner`, `offbook-deploy-script`, `q4-audit-script`, `bootstrap-script`, `jai-autopilot-win`, `jai-cli`, etc.).
+- **Kind** – event kind (`conversation`, `OFFBOOK_V0_DEPLOYED`, `AUDIT_Q4_2025_COMPLETED`, `AUTOPILOT_PROJECT_REGISTERED`, `AUTOPILOT_BUILD_STARTED`, `AUTOPILOT_BUILD_FAILED`, `AUTOPILOT_BUILD_SUCCEEDED`, `DEBUG_EVENT`, `TEST_EVENT`, …).
 - **NH_ID** – `nhId` field (ties to Agency / Projects).
 - **Summary** – short human description of the event.
 
@@ -175,7 +175,7 @@ Query parameters:
 - `nh` – filter by `nhId`
 - `source` – filter by `source`
 - `kind` – filter by `kind`
-- `limit` – max rows (default 50)
+- `limit` – max rows (default `50`, min `1`, max `200`)
 
 Example:
 
