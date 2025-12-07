@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         ts,
         source: body.source,
         kind: body.kind,
+        // IMPORTANT: use empty string when nhId is not provided
         nhId: body.nhId ?? "",
         summary: body.summary,
         payload: body.payload,

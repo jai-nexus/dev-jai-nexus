@@ -47,9 +47,24 @@ Columns:
 
 - **Event time** – canonical `ts` from SoT envelope (America/Chicago display).
 - **Ingested** – DB `createdAt` (ingestion time).
-- **Source** – `source` field (`CHATGPT`, `JAI-RUNNER`, `OFFBOOK-DEPLOY-SCRIPT`, etc.).
-- **Kind** – event kind (`conversation`, `OFFBOOK_V0_DEPLOYED`, `AUDIT_Q4_2025_COMPLETED`, `AUTOPILOT_PROJECT_REGISTERED`, …).
+- **Source** – `source` field (`chatgpt`, `jai-runner`, `offbook-deploy-script`, `jai-autopilot-win`, `jai-cli`, etc.).
+- **Kind** – event kind (`conversation`, `OFFBOOK_V0_DEPLOYED`, `AUDIT_Q4_2025_COMPLETED`, `AUTOPILOT_PROJECT_REGISTERED`, `AUTOPILOT_BUILD_STARTED`, …).
 - **NH_ID** – `nhId` field (ties to Agency / Projects).
+- **Summary** – short human description of the event.
+
+Filters (operator view):
+
+- Query params:
+  - `nh=…`
+  - `source=…`
+  - `kind=…`
+- UI shows filter chips and a **Clear filters** link back to `/operator/events`.
+
+Examples:
+
+- `/operator/events?nh=1.3`
+- `/operator/events?source=jai-autopilot-win`
+- `/operator/events?kind=AUTOPILOT_BUILD_FAILED`
 
 Scripts that currently emit SoT events:
 
@@ -61,6 +76,13 @@ Scripts that currently emit SoT events:
   - Uses `scripts/emit-offbook-v0-deployed.ts` to emit `OFFBOOK_V0_DEPLOYED`.
 - `npm run emit:autopilot-v0`  
   - Uses `scripts/emit-autopilot-v0-init.ts` to emit `AUTOPILOT_PROJECT_REGISTERED`.
+- `npm run emit:autopilot-demo`  
+  - Uses `scripts/emit-autopilot-demo.ts` to emit a demo trio:
+    - `AUTOPILOT_BUILD_STARTED`
+    - `AUTOPILOT_BUILD_FAILED`
+    - `AUTOPILOT_BUILD_SUCCEEDED`
+- `npm run sot:post`  
+  - Uses `scripts/jai-sot-post.ts` as a generic CLI for sending single SoT events.
 
 SoT contract: see `docs/sot-event-v0.1.md`.
 
@@ -85,7 +107,7 @@ What it shows:
     - Tier 0 = emerald
     - Tier 1 = sky
     - Tier 2+ = purple
-  - Role, scope (repos or domains), delegates_to, GitHub labels.
+  - Role, scope (repos or domains), `delegates_to`, GitHub labels.
 
 - **Delegation rules**:
   - Current `default` rule:
@@ -144,70 +166,18 @@ This file is the **registry** connecting NH roots → repos → tiers.
 
 ---
 
-## 2. Key config + code files
+## 2. SoT events API + CLI
 
-- `config/agency.yaml` – NH Agency config (owner + agents + delegation rules).
-- `config/projects.yaml` – Project registry.
-- `src/lib/agencyConfig.ts` – typed loader for Agency YAML.
-- `src/lib/projectsConfig.ts` – typed loader for Projects YAML.
-- `src/app/operator/layout.tsx` – Operator layout with sub-nav:
-  - Tabs for **Events / Agents / Projects**.
-- `src/app/operator/page.tsx` – Operator home dashboard (cards).
-- `src/app/operator/events/page.tsx` – Operator view of the SoT stream.
-- `src/app/operator/agents/page.tsx` – Agency table.
-- `src/app/operator/projects/page.tsx` – Project registry UI.
-- `docs/autopilot-v0-contract.md` – SoT event contract for Autopilot v0.
-- `docs/offbook-v0-design.md` – OffBook v0 design anchor.
-- `docs/q4-2025-audit-report.md` – Q4 audit document.
+### 2.1 `GET /api/sot-events`
 
----
+Query parameters:
 
-## 3. Autopilot v0 (planned)
+- `nh` – filter by `nhId`
+- `source` – filter by `source`
+- `kind` – filter by `kind`
+- `limit` – max rows (default 50)
 
-**NH root:** `1.3`  
-**Project:** `jai-autopilot.v0`  
-**Repo (planned):** `JerryIngram/jai-autopilot-win`
-
-Contract summary (see `docs/autopilot-v0-contract.md`):
-
-- Local Windows agent that:
-  - Runs `npm run build` / `npm test` etc. for tracked repos.
-  - Watches for failures.
-  - Calls LLMs to propose fixes.
-  - Emits SoT events back into dev.jai.nexus.
-
-Key SoT event kinds:
-
-- `AUTOPILOT_PROJECT_REGISTERED`
-- `AUTOPILOT_BUILD_STARTED`
-- `AUTOPILOT_BUILD_FAILED`
-- `AUTOPILOT_BUILD_SUCCEEDED`
-
-At Q4 2025:
-
-- Project is **registered** in the SoT DB.
-- Contract is documented.
-- Implementation in `jai-autopilot-win` is **not started yet** (planned Tier-0 work for Q1 ’26).
-
----
-
-## 4. How to run this locally
-
-From `dev-jai-nexus/portal`:
+Example:
 
 ```bash
-# Install deps
-npm install
-
-# Start dev server
-npm run dev   # http://localhost:3000
-
-# Build + test production build
-npm run build
-npm start
-
-## 5. Known dev quirks
-
-- On `/` (home), Next.js dev sometimes shows a **“Hydration failed” (Recoverable Error)** banner.
-  - This happens when new `SyncRun` rows are inserted between the initial HTML render and the client hydration pass, or when time formatting differs slightly between renders.
-  - It does **not** affect production builds (`npm run build` / Vercel) and can be treated as a dev-only warning for now.
+curl "http://localhost:3000/api/sot-events?nh=1.3&limit=10"
