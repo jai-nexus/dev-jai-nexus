@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+import Link from "next/link";
 import {
   getProjectsConfig,
   type ProjectConfigEntry,
@@ -65,7 +66,16 @@ export default function ProjectsPage() {
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap">
                     <div className="flex flex-col">
-                      <span className="font-medium">{project.name}</span>
+                      {/* Project name → NH-scoped events */}
+                      <Link
+                        href={`/operator/events?nh=${encodeURIComponent(
+                          project.root_nh_id,
+                        )}`}
+                        className="font-medium text-sky-300 hover:text-sky-200 hover:underline"
+                        title={`View SoT events for NH ${project.root_nh_id}`}
+                      >
+                        {project.name}
+                      </Link>
                       <span className="text-xs text-gray-500">
                         {project.project_id}
                       </span>
@@ -108,14 +118,14 @@ export default function ProjectsPage() {
                     {project.owner_agent_nh_id}
                   </td>
                   <td className="py-2 px-3 text-xs whitespace-nowrap">
-                    <a
+                    <Link
                       href={`/operator/events?nh=${encodeURIComponent(
                         project.root_nh_id,
                       )}`}
                       className="text-sky-400 hover:text-sky-300 underline"
                     >
                       View events
-                    </a>
+                    </Link>
                   </td>
                   <td className="py-2 px-3 text-xs max-w-md">
                     <span className="text-gray-300">
