@@ -26,9 +26,9 @@ projects:
     name: "JAI Autopilot Agent v0"
     root_nh_id: "1.3"
     tier: 0
-    status: "planned"
-    repo: "JerryIngram/jai-autopilot-win"
-    owner_agent_nh_id: "1.1"
+    status: "planned"  # or "active" once you’re comfortable
+    repo: "jai-nexus/jai-autopilot-win"
+    owner_agent_nh_id: "1.3"
     description: >
       Local Windows agent that watches builds, calls LLMs for fixes,
       and emits AUTOPILOT_* SoT events into dev.jai.nexus.
