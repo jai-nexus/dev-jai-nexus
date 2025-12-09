@@ -287,6 +287,7 @@ export type RepoWhereInput = {
   syncRuns?: Prisma.SyncRunListRelationFilter
   domains?: Prisma.DomainListRelationFilter
   sotEvents?: Prisma.SotEventListRelationFilter
+  fileIndexes?: Prisma.FileIndexListRelationFilter
 }
 
 export type RepoOrderByWithRelationInput = {
@@ -307,6 +308,7 @@ export type RepoOrderByWithRelationInput = {
   syncRuns?: Prisma.SyncRunOrderByRelationAggregateInput
   domains?: Prisma.DomainOrderByRelationAggregateInput
   sotEvents?: Prisma.SotEventOrderByRelationAggregateInput
+  fileIndexes?: Prisma.FileIndexOrderByRelationAggregateInput
 }
 
 export type RepoWhereUniqueInput = Prisma.AtLeast<{
@@ -330,6 +332,7 @@ export type RepoWhereUniqueInput = Prisma.AtLeast<{
   syncRuns?: Prisma.SyncRunListRelationFilter
   domains?: Prisma.DomainListRelationFilter
   sotEvents?: Prisma.SotEventListRelationFilter
+  fileIndexes?: Prisma.FileIndexListRelationFilter
 }, "id" | "name">
 
 export type RepoOrderByWithAggregationInput = {
@@ -391,6 +394,7 @@ export type RepoCreateInput = {
   syncRuns?: Prisma.SyncRunCreateNestedManyWithoutRepoInput
   domains?: Prisma.DomainCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutRepoInput
 }
 
 export type RepoUncheckedCreateInput = {
@@ -411,6 +415,7 @@ export type RepoUncheckedCreateInput = {
   syncRuns?: Prisma.SyncRunUncheckedCreateNestedManyWithoutRepoInput
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutRepoInput
 }
 
 export type RepoUpdateInput = {
@@ -430,6 +435,7 @@ export type RepoUpdateInput = {
   syncRuns?: Prisma.SyncRunUpdateManyWithoutRepoNestedInput
   domains?: Prisma.DomainUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoUncheckedUpdateInput = {
@@ -450,6 +456,7 @@ export type RepoUncheckedUpdateInput = {
   syncRuns?: Prisma.SyncRunUncheckedUpdateManyWithoutRepoNestedInput
   domains?: Prisma.DomainUncheckedUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoCreateManyInput = {
@@ -564,6 +571,11 @@ export type RepoNullableScalarRelationFilter = {
   isNot?: Prisma.RepoWhereInput | null
 }
 
+export type RepoScalarRelationFilter = {
+  is?: Prisma.RepoWhereInput
+  isNot?: Prisma.RepoWhereInput
+}
+
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
@@ -616,6 +628,20 @@ export type RepoUpdateOneWithoutSyncRunsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RepoUpdateToOneWithWhereWithoutSyncRunsInput, Prisma.RepoUpdateWithoutSyncRunsInput>, Prisma.RepoUncheckedUpdateWithoutSyncRunsInput>
 }
 
+export type RepoCreateNestedOneWithoutFileIndexesInput = {
+  create?: Prisma.XOR<Prisma.RepoCreateWithoutFileIndexesInput, Prisma.RepoUncheckedCreateWithoutFileIndexesInput>
+  connectOrCreate?: Prisma.RepoCreateOrConnectWithoutFileIndexesInput
+  connect?: Prisma.RepoWhereUniqueInput
+}
+
+export type RepoUpdateOneRequiredWithoutFileIndexesNestedInput = {
+  create?: Prisma.XOR<Prisma.RepoCreateWithoutFileIndexesInput, Prisma.RepoUncheckedCreateWithoutFileIndexesInput>
+  connectOrCreate?: Prisma.RepoCreateOrConnectWithoutFileIndexesInput
+  upsert?: Prisma.RepoUpsertWithoutFileIndexesInput
+  connect?: Prisma.RepoWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RepoUpdateToOneWithWhereWithoutFileIndexesInput, Prisma.RepoUpdateWithoutFileIndexesInput>, Prisma.RepoUncheckedUpdateWithoutFileIndexesInput>
+}
+
 export type RepoCreateNestedOneWithoutSotEventsInput = {
   create?: Prisma.XOR<Prisma.RepoCreateWithoutSotEventsInput, Prisma.RepoUncheckedCreateWithoutSotEventsInput>
   connectOrCreate?: Prisma.RepoCreateOrConnectWithoutSotEventsInput
@@ -648,6 +674,7 @@ export type RepoCreateWithoutDomainsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutRepoInput
 }
 
 export type RepoUncheckedCreateWithoutDomainsInput = {
@@ -667,6 +694,7 @@ export type RepoUncheckedCreateWithoutDomainsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUncheckedCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutRepoInput
 }
 
 export type RepoCreateOrConnectWithoutDomainsInput = {
@@ -701,6 +729,7 @@ export type RepoUpdateWithoutDomainsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoUncheckedUpdateWithoutDomainsInput = {
@@ -720,6 +749,7 @@ export type RepoUncheckedUpdateWithoutDomainsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUncheckedUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoCreateWithoutSyncRunsInput = {
@@ -738,6 +768,7 @@ export type RepoCreateWithoutSyncRunsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   domains?: Prisma.DomainCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutRepoInput
 }
 
 export type RepoUncheckedCreateWithoutSyncRunsInput = {
@@ -757,6 +788,7 @@ export type RepoUncheckedCreateWithoutSyncRunsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRepoInput
   sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutRepoInput
 }
 
 export type RepoCreateOrConnectWithoutSyncRunsInput = {
@@ -791,6 +823,7 @@ export type RepoUpdateWithoutSyncRunsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   domains?: Prisma.DomainUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoUncheckedUpdateWithoutSyncRunsInput = {
@@ -808,6 +841,101 @@ export type RepoUncheckedUpdateWithoutSyncRunsInput = {
   defaultBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   githubUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutRepoNestedInput
+  sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutRepoNestedInput
+}
+
+export type RepoCreateWithoutFileIndexesInput = {
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nhId?: string
+  name: string
+  description?: string | null
+  domainPod?: string | null
+  engineGroup?: string | null
+  language?: string | null
+  status?: string | null
+  owner?: string | null
+  defaultBranch?: string | null
+  githubUrl?: string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  syncRuns?: Prisma.SyncRunCreateNestedManyWithoutRepoInput
+  domains?: Prisma.DomainCreateNestedManyWithoutRepoInput
+  sotEvents?: Prisma.SotEventCreateNestedManyWithoutRepoInput
+}
+
+export type RepoUncheckedCreateWithoutFileIndexesInput = {
+  id?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  nhId?: string
+  name: string
+  description?: string | null
+  domainPod?: string | null
+  engineGroup?: string | null
+  language?: string | null
+  status?: string | null
+  owner?: string | null
+  defaultBranch?: string | null
+  githubUrl?: string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  syncRuns?: Prisma.SyncRunUncheckedCreateNestedManyWithoutRepoInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRepoInput
+  sotEvents?: Prisma.SotEventUncheckedCreateNestedManyWithoutRepoInput
+}
+
+export type RepoCreateOrConnectWithoutFileIndexesInput = {
+  where: Prisma.RepoWhereUniqueInput
+  create: Prisma.XOR<Prisma.RepoCreateWithoutFileIndexesInput, Prisma.RepoUncheckedCreateWithoutFileIndexesInput>
+}
+
+export type RepoUpsertWithoutFileIndexesInput = {
+  update: Prisma.XOR<Prisma.RepoUpdateWithoutFileIndexesInput, Prisma.RepoUncheckedUpdateWithoutFileIndexesInput>
+  create: Prisma.XOR<Prisma.RepoCreateWithoutFileIndexesInput, Prisma.RepoUncheckedCreateWithoutFileIndexesInput>
+  where?: Prisma.RepoWhereInput
+}
+
+export type RepoUpdateToOneWithWhereWithoutFileIndexesInput = {
+  where?: Prisma.RepoWhereInput
+  data: Prisma.XOR<Prisma.RepoUpdateWithoutFileIndexesInput, Prisma.RepoUncheckedUpdateWithoutFileIndexesInput>
+}
+
+export type RepoUpdateWithoutFileIndexesInput = {
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nhId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domainPod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  owner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  githubUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  syncRuns?: Prisma.SyncRunUpdateManyWithoutRepoNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutRepoNestedInput
+  sotEvents?: Prisma.SotEventUpdateManyWithoutRepoNestedInput
+}
+
+export type RepoUncheckedUpdateWithoutFileIndexesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  nhId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domainPod?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  engineGroup?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  owner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  defaultBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  githubUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  syncRuns?: Prisma.SyncRunUncheckedUpdateManyWithoutRepoNestedInput
   domains?: Prisma.DomainUncheckedUpdateManyWithoutRepoNestedInput
   sotEvents?: Prisma.SotEventUncheckedUpdateManyWithoutRepoNestedInput
 }
@@ -828,6 +956,7 @@ export type RepoCreateWithoutSotEventsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunCreateNestedManyWithoutRepoInput
   domains?: Prisma.DomainCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutRepoInput
 }
 
 export type RepoUncheckedCreateWithoutSotEventsInput = {
@@ -847,6 +976,7 @@ export type RepoUncheckedCreateWithoutSotEventsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUncheckedCreateNestedManyWithoutRepoInput
   domains?: Prisma.DomainUncheckedCreateNestedManyWithoutRepoInput
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutRepoInput
 }
 
 export type RepoCreateOrConnectWithoutSotEventsInput = {
@@ -881,6 +1011,7 @@ export type RepoUpdateWithoutSotEventsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUpdateManyWithoutRepoNestedInput
   domains?: Prisma.DomainUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutRepoNestedInput
 }
 
 export type RepoUncheckedUpdateWithoutSotEventsInput = {
@@ -900,6 +1031,7 @@ export type RepoUncheckedUpdateWithoutSotEventsInput = {
   notes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   syncRuns?: Prisma.SyncRunUncheckedUpdateManyWithoutRepoNestedInput
   domains?: Prisma.DomainUncheckedUpdateManyWithoutRepoNestedInput
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutRepoNestedInput
 }
 
 
@@ -911,12 +1043,14 @@ export type RepoCountOutputType = {
   syncRuns: number
   domains: number
   sotEvents: number
+  fileIndexes: number
 }
 
 export type RepoCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   syncRuns?: boolean | RepoCountOutputTypeCountSyncRunsArgs
   domains?: boolean | RepoCountOutputTypeCountDomainsArgs
   sotEvents?: boolean | RepoCountOutputTypeCountSotEventsArgs
+  fileIndexes?: boolean | RepoCountOutputTypeCountFileIndexesArgs
 }
 
 /**
@@ -950,6 +1084,13 @@ export type RepoCountOutputTypeCountSotEventsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.SotEventWhereInput
 }
 
+/**
+ * RepoCountOutputType without action
+ */
+export type RepoCountOutputTypeCountFileIndexesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileIndexWhereInput
+}
+
 
 export type RepoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -969,6 +1110,7 @@ export type RepoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   syncRuns?: boolean | Prisma.Repo$syncRunsArgs<ExtArgs>
   domains?: boolean | Prisma.Repo$domainsArgs<ExtArgs>
   sotEvents?: boolean | Prisma.Repo$sotEventsArgs<ExtArgs>
+  fileIndexes?: boolean | Prisma.Repo$fileIndexesArgs<ExtArgs>
   _count?: boolean | Prisma.RepoCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["repo"]>
 
@@ -1028,6 +1170,7 @@ export type RepoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   syncRuns?: boolean | Prisma.Repo$syncRunsArgs<ExtArgs>
   domains?: boolean | Prisma.Repo$domainsArgs<ExtArgs>
   sotEvents?: boolean | Prisma.Repo$sotEventsArgs<ExtArgs>
+  fileIndexes?: boolean | Prisma.Repo$fileIndexesArgs<ExtArgs>
   _count?: boolean | Prisma.RepoCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RepoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1039,6 +1182,7 @@ export type $RepoPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     syncRuns: Prisma.$SyncRunPayload<ExtArgs>[]
     domains: Prisma.$DomainPayload<ExtArgs>[]
     sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
+    fileIndexes: Prisma.$FileIndexPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1452,6 +1596,7 @@ export interface Prisma__RepoClient<T, Null = never, ExtArgs extends runtime.Typ
   syncRuns<T extends Prisma.Repo$syncRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repo$syncRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   domains<T extends Prisma.Repo$domainsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repo$domainsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DomainPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sotEvents<T extends Prisma.Repo$sotEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repo$sotEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SotEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  fileIndexes<T extends Prisma.Repo$fileIndexesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repo$fileIndexesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileIndexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1952,6 +2097,30 @@ export type Repo$sotEventsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.SotEventScalarFieldEnum | Prisma.SotEventScalarFieldEnum[]
+}
+
+/**
+ * Repo.fileIndexes
+ */
+export type Repo$fileIndexesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileIndex
+   */
+  select?: Prisma.FileIndexSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileIndex
+   */
+  omit?: Prisma.FileIndexOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileIndexInclude<ExtArgs> | null
+  where?: Prisma.FileIndexWhereInput
+  orderBy?: Prisma.FileIndexOrderByWithRelationInput | Prisma.FileIndexOrderByWithRelationInput[]
+  cursor?: Prisma.FileIndexWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileIndexScalarFieldEnum | Prisma.FileIndexScalarFieldEnum[]
 }
 
 /**

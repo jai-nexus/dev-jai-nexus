@@ -26,7 +26,9 @@ model Repo {
 
   syncRuns      SyncRun[]
   domains       Domain[]
-  sotEvents     SotEvent[]   // 👈 new back-relation
+  sotEvents     SotEvent[]
+
+  fileIndexes   FileIndex[]
 }
 
 model Domain {
@@ -67,6 +69,83 @@ model SyncRun {
 
   repoId         Int?
   repo           Repo?     @relation(fields: [repoId], references: [id])
+
+  fileIndexes    FileIndex[]
+}
+model FileIndex {
+  id            Int       @id @default(autoincrement())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  // FK: which repo this file belongs to
+  repoId        Int
+  repo          Repo      @relation(fields: [repoId], references: [id])
+
+  // Optional link back to SyncRun that produced this snapshot
+  syncRunId     Int?
+  syncRun       SyncRun?  @relation(fields: [syncRunId], references: [id])
+
+  // Path info
+  path          String    // "portal/src/app/operator/projects/page.tsx"
+  dir           String    // "portal/src/app/operator/projects"
+  filename      String    // "page.tsx"
+  extension     String    // "tsx"
+
+  // File characteristics
+  sizeBytes     Int
+  sha256        String
+  lastCommitSha String?
+
+  // When this row was indexed (redundant with createdAt but explicit)
+  indexedAt     DateTime  @default(now())
+
+  @@index([repoId])
+  @@index([extension])
+  @@unique([repoId, path])
+}
+
+model PilotSession {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  // For now, just free-form hooks; we can replace with real FK to Project/Wave later.
+  projectKey String?   // e.g. "Dev<INFRA>Ops"
+  waveLabel  String?   // e.g. "Wave 7"
+
+  mode       String    // "observer" | "guide" | "autopilot"
+  surface    String    // "web" | "vr" | "terminal" | ...
+
+  createdBy  String    // "admin@jai.nexus" | "agent@jai.nexus" | etc.
+
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+
+  actions    PilotAction[]
+
+  @@index([surface])
+}
+
+model PilotAction {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+
+  // When the action actually occurred (can differ from createdAt if backfilled)
+  ts             DateTime  @default(now())
+
+  sessionId      Int
+  session        PilotSession @relation(fields: [sessionId], references: [id])
+
+  mode           String    // snapshot of session mode at time of action
+  targetNodeId   String?   // Scene Graph node (DOM node ID, VR panel ID, etc.)
+  actionType     String    // "click" | "type" | "scroll" | "open_tab" | "focus_panel" | ...
+  payload        String?   // JSON/text payload (typed text, URL, etc.)
+  reason         String    // natural-language rationale (can be empty for pure observer)
+
+  @@index([sessionId])
+  @@index([mode])
+  @@index([actionType])
 }
 
 model JaiTool {

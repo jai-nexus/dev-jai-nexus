@@ -273,6 +273,7 @@ export type SyncRunWhereInput = {
   payload?: Prisma.JsonNullableFilter<"SyncRun">
   repoId?: Prisma.IntNullableFilter<"SyncRun"> | number | null
   repo?: Prisma.XOR<Prisma.RepoNullableScalarRelationFilter, Prisma.RepoWhereInput> | null
+  fileIndexes?: Prisma.FileIndexListRelationFilter
 }
 
 export type SyncRunOrderByWithRelationInput = {
@@ -289,6 +290,7 @@ export type SyncRunOrderByWithRelationInput = {
   payload?: Prisma.SortOrderInput | Prisma.SortOrder
   repoId?: Prisma.SortOrderInput | Prisma.SortOrder
   repo?: Prisma.RepoOrderByWithRelationInput
+  fileIndexes?: Prisma.FileIndexOrderByRelationAggregateInput
 }
 
 export type SyncRunWhereUniqueInput = Prisma.AtLeast<{
@@ -308,6 +310,7 @@ export type SyncRunWhereUniqueInput = Prisma.AtLeast<{
   payload?: Prisma.JsonNullableFilter<"SyncRun">
   repoId?: Prisma.IntNullableFilter<"SyncRun"> | number | null
   repo?: Prisma.XOR<Prisma.RepoNullableScalarRelationFilter, Prisma.RepoWhereInput> | null
+  fileIndexes?: Prisma.FileIndexListRelationFilter
 }, "id">
 
 export type SyncRunOrderByWithAggregationInput = {
@@ -360,6 +363,7 @@ export type SyncRunCreateInput = {
   summary?: string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repo?: Prisma.RepoCreateNestedOneWithoutSyncRunsInput
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutSyncRunInput
 }
 
 export type SyncRunUncheckedCreateInput = {
@@ -375,6 +379,7 @@ export type SyncRunUncheckedCreateInput = {
   summary?: string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repoId?: number | null
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutSyncRunInput
 }
 
 export type SyncRunUpdateInput = {
@@ -389,6 +394,7 @@ export type SyncRunUpdateInput = {
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repo?: Prisma.RepoUpdateOneWithoutSyncRunsNestedInput
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutSyncRunNestedInput
 }
 
 export type SyncRunUncheckedUpdateInput = {
@@ -404,6 +410,7 @@ export type SyncRunUncheckedUpdateInput = {
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   repoId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutSyncRunNestedInput
 }
 
 export type SyncRunCreateManyInput = {
@@ -512,6 +519,11 @@ export type SyncRunSumOrderByAggregateInput = {
   repoId?: Prisma.SortOrder
 }
 
+export type SyncRunNullableScalarRelationFilter = {
+  is?: Prisma.SyncRunWhereInput | null
+  isNot?: Prisma.SyncRunWhereInput | null
+}
+
 export type SyncRunCreateNestedManyWithoutRepoInput = {
   create?: Prisma.XOR<Prisma.SyncRunCreateWithoutRepoInput, Prisma.SyncRunUncheckedCreateWithoutRepoInput> | Prisma.SyncRunCreateWithoutRepoInput[] | Prisma.SyncRunUncheckedCreateWithoutRepoInput[]
   connectOrCreate?: Prisma.SyncRunCreateOrConnectWithoutRepoInput | Prisma.SyncRunCreateOrConnectWithoutRepoInput[]
@@ -554,6 +566,22 @@ export type SyncRunUncheckedUpdateManyWithoutRepoNestedInput = {
   deleteMany?: Prisma.SyncRunScalarWhereInput | Prisma.SyncRunScalarWhereInput[]
 }
 
+export type SyncRunCreateNestedOneWithoutFileIndexesInput = {
+  create?: Prisma.XOR<Prisma.SyncRunCreateWithoutFileIndexesInput, Prisma.SyncRunUncheckedCreateWithoutFileIndexesInput>
+  connectOrCreate?: Prisma.SyncRunCreateOrConnectWithoutFileIndexesInput
+  connect?: Prisma.SyncRunWhereUniqueInput
+}
+
+export type SyncRunUpdateOneWithoutFileIndexesNestedInput = {
+  create?: Prisma.XOR<Prisma.SyncRunCreateWithoutFileIndexesInput, Prisma.SyncRunUncheckedCreateWithoutFileIndexesInput>
+  connectOrCreate?: Prisma.SyncRunCreateOrConnectWithoutFileIndexesInput
+  upsert?: Prisma.SyncRunUpsertWithoutFileIndexesInput
+  disconnect?: Prisma.SyncRunWhereInput | boolean
+  delete?: Prisma.SyncRunWhereInput | boolean
+  connect?: Prisma.SyncRunWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SyncRunUpdateToOneWithWhereWithoutFileIndexesInput, Prisma.SyncRunUpdateWithoutFileIndexesInput>, Prisma.SyncRunUncheckedUpdateWithoutFileIndexesInput>
+}
+
 export type SyncRunCreateWithoutRepoInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -565,6 +593,7 @@ export type SyncRunCreateWithoutRepoInput = {
   workflowRunUrl?: string | null
   summary?: string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  fileIndexes?: Prisma.FileIndexCreateNestedManyWithoutSyncRunInput
 }
 
 export type SyncRunUncheckedCreateWithoutRepoInput = {
@@ -579,6 +608,7 @@ export type SyncRunUncheckedCreateWithoutRepoInput = {
   workflowRunUrl?: string | null
   summary?: string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  fileIndexes?: Prisma.FileIndexUncheckedCreateNestedManyWithoutSyncRunInput
 }
 
 export type SyncRunCreateOrConnectWithoutRepoInput = {
@@ -625,6 +655,80 @@ export type SyncRunScalarWhereInput = {
   repoId?: Prisma.IntNullableFilter<"SyncRun"> | number | null
 }
 
+export type SyncRunCreateWithoutFileIndexesInput = {
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  type: string
+  status: string
+  trigger?: string | null
+  startedAt: Date | string
+  finishedAt: Date | string
+  workflowRunUrl?: string | null
+  summary?: string | null
+  payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repo?: Prisma.RepoCreateNestedOneWithoutSyncRunsInput
+}
+
+export type SyncRunUncheckedCreateWithoutFileIndexesInput = {
+  id?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  type: string
+  status: string
+  trigger?: string | null
+  startedAt: Date | string
+  finishedAt: Date | string
+  workflowRunUrl?: string | null
+  summary?: string | null
+  payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repoId?: number | null
+}
+
+export type SyncRunCreateOrConnectWithoutFileIndexesInput = {
+  where: Prisma.SyncRunWhereUniqueInput
+  create: Prisma.XOR<Prisma.SyncRunCreateWithoutFileIndexesInput, Prisma.SyncRunUncheckedCreateWithoutFileIndexesInput>
+}
+
+export type SyncRunUpsertWithoutFileIndexesInput = {
+  update: Prisma.XOR<Prisma.SyncRunUpdateWithoutFileIndexesInput, Prisma.SyncRunUncheckedUpdateWithoutFileIndexesInput>
+  create: Prisma.XOR<Prisma.SyncRunCreateWithoutFileIndexesInput, Prisma.SyncRunUncheckedCreateWithoutFileIndexesInput>
+  where?: Prisma.SyncRunWhereInput
+}
+
+export type SyncRunUpdateToOneWithWhereWithoutFileIndexesInput = {
+  where?: Prisma.SyncRunWhereInput
+  data: Prisma.XOR<Prisma.SyncRunUpdateWithoutFileIndexesInput, Prisma.SyncRunUncheckedUpdateWithoutFileIndexesInput>
+}
+
+export type SyncRunUpdateWithoutFileIndexesInput = {
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  trigger?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workflowRunUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repo?: Prisma.RepoUpdateOneWithoutSyncRunsNestedInput
+}
+
+export type SyncRunUncheckedUpdateWithoutFileIndexesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  trigger?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  finishedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  workflowRunUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  repoId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
 export type SyncRunCreateManyRepoInput = {
   id?: number
   createdAt?: Date | string
@@ -650,6 +754,7 @@ export type SyncRunUpdateWithoutRepoInput = {
   workflowRunUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  fileIndexes?: Prisma.FileIndexUpdateManyWithoutSyncRunNestedInput
 }
 
 export type SyncRunUncheckedUpdateWithoutRepoInput = {
@@ -664,6 +769,7 @@ export type SyncRunUncheckedUpdateWithoutRepoInput = {
   workflowRunUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summary?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   payload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  fileIndexes?: Prisma.FileIndexUncheckedUpdateManyWithoutSyncRunNestedInput
 }
 
 export type SyncRunUncheckedUpdateManyWithoutRepoInput = {
@@ -681,6 +787,35 @@ export type SyncRunUncheckedUpdateManyWithoutRepoInput = {
 }
 
 
+/**
+ * Count Type SyncRunCountOutputType
+ */
+
+export type SyncRunCountOutputType = {
+  fileIndexes: number
+}
+
+export type SyncRunCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  fileIndexes?: boolean | SyncRunCountOutputTypeCountFileIndexesArgs
+}
+
+/**
+ * SyncRunCountOutputType without action
+ */
+export type SyncRunCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SyncRunCountOutputType
+   */
+  select?: Prisma.SyncRunCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SyncRunCountOutputType without action
+ */
+export type SyncRunCountOutputTypeCountFileIndexesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FileIndexWhereInput
+}
+
 
 export type SyncRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -696,6 +831,8 @@ export type SyncRunSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   payload?: boolean
   repoId?: boolean
   repo?: boolean | Prisma.SyncRun$repoArgs<ExtArgs>
+  fileIndexes?: boolean | Prisma.SyncRun$fileIndexesArgs<ExtArgs>
+  _count?: boolean | Prisma.SyncRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["syncRun"]>
 
 export type SyncRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -748,6 +885,8 @@ export type SyncRunSelectScalar = {
 export type SyncRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "type" | "status" | "trigger" | "startedAt" | "finishedAt" | "workflowRunUrl" | "summary" | "payload" | "repoId", ExtArgs["result"]["syncRun"]>
 export type SyncRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   repo?: boolean | Prisma.SyncRun$repoArgs<ExtArgs>
+  fileIndexes?: boolean | Prisma.SyncRun$fileIndexesArgs<ExtArgs>
+  _count?: boolean | Prisma.SyncRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SyncRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   repo?: boolean | Prisma.SyncRun$repoArgs<ExtArgs>
@@ -760,6 +899,7 @@ export type $SyncRunPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "SyncRun"
   objects: {
     repo: Prisma.$RepoPayload<ExtArgs> | null
+    fileIndexes: Prisma.$FileIndexPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1169,6 +1309,7 @@ readonly fields: SyncRunFieldRefs;
 export interface Prisma__SyncRunClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   repo<T extends Prisma.SyncRun$repoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SyncRun$repoArgs<ExtArgs>>): Prisma.Prisma__RepoClient<runtime.Types.Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  fileIndexes<T extends Prisma.SyncRun$fileIndexesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SyncRun$fileIndexesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FileIndexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1622,6 +1763,30 @@ export type SyncRun$repoArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   include?: Prisma.RepoInclude<ExtArgs> | null
   where?: Prisma.RepoWhereInput
+}
+
+/**
+ * SyncRun.fileIndexes
+ */
+export type SyncRun$fileIndexesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FileIndex
+   */
+  select?: Prisma.FileIndexSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FileIndex
+   */
+  omit?: Prisma.FileIndexOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FileIndexInclude<ExtArgs> | null
+  where?: Prisma.FileIndexWhereInput
+  orderBy?: Prisma.FileIndexOrderByWithRelationInput | Prisma.FileIndexOrderByWithRelationInput[]
+  cursor?: Prisma.FileIndexWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FileIndexScalarFieldEnum | Prisma.FileIndexScalarFieldEnum[]
 }
 
 /**

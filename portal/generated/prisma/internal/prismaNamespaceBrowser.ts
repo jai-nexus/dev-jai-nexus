@@ -54,6 +54,9 @@ export const ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
   SyncRun: 'SyncRun',
+  FileIndex: 'FileIndex',
+  PilotSession: 'PilotSession',
+  PilotAction: 'PilotAction',
   JaiTool: 'JaiTool',
   SotEvent: 'SotEvent'
 } as const
@@ -128,6 +131,57 @@ export const SyncRunScalarFieldEnum = {
 } as const
 
 export type SyncRunScalarFieldEnum = (typeof SyncRunScalarFieldEnum)[keyof typeof SyncRunScalarFieldEnum]
+
+
+export const FileIndexScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  repoId: 'repoId',
+  syncRunId: 'syncRunId',
+  path: 'path',
+  dir: 'dir',
+  filename: 'filename',
+  extension: 'extension',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  lastCommitSha: 'lastCommitSha',
+  indexedAt: 'indexedAt'
+} as const
+
+export type FileIndexScalarFieldEnum = (typeof FileIndexScalarFieldEnum)[keyof typeof FileIndexScalarFieldEnum]
+
+
+export const PilotSessionScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  projectKey: 'projectKey',
+  waveLabel: 'waveLabel',
+  mode: 'mode',
+  surface: 'surface',
+  createdBy: 'createdBy',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt'
+} as const
+
+export type PilotSessionScalarFieldEnum = (typeof PilotSessionScalarFieldEnum)[keyof typeof PilotSessionScalarFieldEnum]
+
+
+export const PilotActionScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  ts: 'ts',
+  sessionId: 'sessionId',
+  mode: 'mode',
+  targetNodeId: 'targetNodeId',
+  actionType: 'actionType',
+  payload: 'payload',
+  reason: 'reason'
+} as const
+
+export type PilotActionScalarFieldEnum = (typeof PilotActionScalarFieldEnum)[keyof typeof PilotActionScalarFieldEnum]
 
 
 export const JaiToolScalarFieldEnum = {

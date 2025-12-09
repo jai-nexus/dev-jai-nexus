@@ -10,3 +10,4 @@ data/private/
 .env
 Makefile.tmp
 .venv
+workspace/

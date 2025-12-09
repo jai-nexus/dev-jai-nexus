@@ -387,6 +387,9 @@ export const ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
   SyncRun: 'SyncRun',
+  FileIndex: 'FileIndex',
+  PilotSession: 'PilotSession',
+  PilotAction: 'PilotAction',
   JaiTool: 'JaiTool',
   SotEvent: 'SotEvent'
 } as const
@@ -404,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "repo" | "domain" | "syncRun" | "jaiTool" | "sotEvent"
+    modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "jaiTool" | "sotEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -627,6 +630,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.SyncRunCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.SyncRunCountAggregateOutputType> | number
+        }
+      }
+    }
+    FileIndex: {
+      payload: Prisma.$FileIndexPayload<ExtArgs>
+      fields: Prisma.FileIndexFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FileIndexFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FileIndexFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        findFirst: {
+          args: Prisma.FileIndexFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FileIndexFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        findMany: {
+          args: Prisma.FileIndexFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>[]
+        }
+        create: {
+          args: Prisma.FileIndexCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        createMany: {
+          args: Prisma.FileIndexCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FileIndexCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>[]
+        }
+        delete: {
+          args: Prisma.FileIndexDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        update: {
+          args: Prisma.FileIndexUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        deleteMany: {
+          args: Prisma.FileIndexDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FileIndexUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FileIndexUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>[]
+        }
+        upsert: {
+          args: Prisma.FileIndexUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FileIndexPayload>
+        }
+        aggregate: {
+          args: Prisma.FileIndexAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFileIndex>
+        }
+        groupBy: {
+          args: Prisma.FileIndexGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileIndexGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FileIndexCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FileIndexCountAggregateOutputType> | number
+        }
+      }
+    }
+    PilotSession: {
+      payload: Prisma.$PilotSessionPayload<ExtArgs>
+      fields: Prisma.PilotSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PilotSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PilotSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.PilotSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PilotSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        findMany: {
+          args: Prisma.PilotSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>[]
+        }
+        create: {
+          args: Prisma.PilotSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        createMany: {
+          args: Prisma.PilotSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PilotSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.PilotSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        update: {
+          args: Prisma.PilotSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PilotSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PilotSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PilotSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PilotSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.PilotSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePilotSession>
+        }
+        groupBy: {
+          args: Prisma.PilotSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PilotSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PilotSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PilotSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    PilotAction: {
+      payload: Prisma.$PilotActionPayload<ExtArgs>
+      fields: Prisma.PilotActionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PilotActionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PilotActionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        findFirst: {
+          args: Prisma.PilotActionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PilotActionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        findMany: {
+          args: Prisma.PilotActionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>[]
+        }
+        create: {
+          args: Prisma.PilotActionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        createMany: {
+          args: Prisma.PilotActionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PilotActionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>[]
+        }
+        delete: {
+          args: Prisma.PilotActionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        update: {
+          args: Prisma.PilotActionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PilotActionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PilotActionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PilotActionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PilotActionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PilotActionPayload>
+        }
+        aggregate: {
+          args: Prisma.PilotActionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePilotAction>
+        }
+        groupBy: {
+          args: Prisma.PilotActionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PilotActionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PilotActionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PilotActionCountAggregateOutputType> | number
         }
       }
     }
@@ -873,6 +1098,57 @@ export const SyncRunScalarFieldEnum = {
 export type SyncRunScalarFieldEnum = (typeof SyncRunScalarFieldEnum)[keyof typeof SyncRunScalarFieldEnum]
 
 
+export const FileIndexScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  repoId: 'repoId',
+  syncRunId: 'syncRunId',
+  path: 'path',
+  dir: 'dir',
+  filename: 'filename',
+  extension: 'extension',
+  sizeBytes: 'sizeBytes',
+  sha256: 'sha256',
+  lastCommitSha: 'lastCommitSha',
+  indexedAt: 'indexedAt'
+} as const
+
+export type FileIndexScalarFieldEnum = (typeof FileIndexScalarFieldEnum)[keyof typeof FileIndexScalarFieldEnum]
+
+
+export const PilotSessionScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  projectKey: 'projectKey',
+  waveLabel: 'waveLabel',
+  mode: 'mode',
+  surface: 'surface',
+  createdBy: 'createdBy',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt'
+} as const
+
+export type PilotSessionScalarFieldEnum = (typeof PilotSessionScalarFieldEnum)[keyof typeof PilotSessionScalarFieldEnum]
+
+
+export const PilotActionScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  ts: 'ts',
+  sessionId: 'sessionId',
+  mode: 'mode',
+  targetNodeId: 'targetNodeId',
+  actionType: 'actionType',
+  payload: 'payload',
+  reason: 'reason'
+} as const
+
+export type PilotActionScalarFieldEnum = (typeof PilotActionScalarFieldEnum)[keyof typeof PilotActionScalarFieldEnum]
+
+
 export const JaiToolScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
@@ -1104,6 +1380,9 @@ export type GlobalOmitConfig = {
   repo?: Prisma.RepoOmit
   domain?: Prisma.DomainOmit
   syncRun?: Prisma.SyncRunOmit
+  fileIndex?: Prisma.FileIndexOmit
+  pilotSession?: Prisma.PilotSessionOmit
+  pilotAction?: Prisma.PilotActionOmit
   jaiTool?: Prisma.JaiToolOmit
   sotEvent?: Prisma.SotEventOmit
 }

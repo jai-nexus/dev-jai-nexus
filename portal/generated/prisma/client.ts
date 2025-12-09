@@ -55,6 +55,21 @@ export type Domain = Prisma.DomainModel
  */
 export type SyncRun = Prisma.SyncRunModel
 /**
+ * Model FileIndex
+ * 
+ */
+export type FileIndex = Prisma.FileIndexModel
+/**
+ * Model PilotSession
+ * 
+ */
+export type PilotSession = Prisma.PilotSessionModel
+/**
+ * Model PilotAction
+ * 
+ */
+export type PilotAction = Prisma.PilotActionModel
+/**
  * Model JaiTool
  * 
  */
