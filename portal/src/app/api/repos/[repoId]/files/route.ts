@@ -12,26 +12,44 @@ export async function GET(
   const { repoId } = await context.params;
   const repoIdNum = Number(repoId);
 
-  if (Number.isNaN(repoIdNum)) {
+  if (!repoId || Number.isNaN(repoIdNum)) {
     return NextResponse.json(
-      { error: "Invalid repoId" },
-      { status: 400 }
+      { error: `Invalid repoId: ${repoId}` },
+      { status: 400 },
     );
   }
 
   const { searchParams } = new URL(req.url);
-  const ext = searchParams.get("ext");
-  const prefix = searchParams.get("prefix");
-  const limit = Number(searchParams.get("limit") ?? "500");
+
+  const extParam = searchParams.get("ext");
+  const prefix = searchParams.get("prefix") ?? undefined;
+  const limitParam = searchParams.get("limit");
+
+  // support ext=ts or ext=ts,tsx
+  const exts =
+    extParam
+      ?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? [];
+
+  const limit = (() => {
+    const n = limitParam ? Number(limitParam) : 500;
+    if (Number.isNaN(n)) return 500;
+    return Math.min(n, 5000);
+  })();
 
   const files = await prisma.fileIndex.findMany({
     where: {
       repoId: repoIdNum,
-      ...(ext ? { extension: ext } : {}),
+      ...(exts.length === 1
+        ? { extension: exts[0] }
+        : exts.length > 1
+        ? { extension: { in: exts } }
+        : {}),
       ...(prefix ? { path: { startsWith: prefix } } : {}),
     },
     orderBy: [{ dir: "asc" }, { filename: "asc" }],
-    take: Number.isNaN(limit) ? 500 : Math.min(limit, 5000),
+    take: limit,
   });
 
   return NextResponse.json(
@@ -44,6 +62,6 @@ export async function GET(
       sizeBytes: f.sizeBytes,
       sha256: f.sha256,
       lastCommitSha: f.lastCommitSha,
-    }))
+    })),
   );
 }

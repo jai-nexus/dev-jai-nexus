@@ -1,15 +1,15 @@
+// portal/src/app/operator/repos/[repoId]/page.tsx
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 
-type RouteParams = {
-  repoId: string;
+type RepoFilesPageProps = {
+  params: Promise<{
+    repoId: string;
+  }>;
 };
 
-export default async function RepoFilesPage({
-  params,
-}: {
-  params: Promise<RouteParams>;
-}) {
+export default async function RepoFilesPage({ params }: RepoFilesPageProps) {
+  // ⬅️ key fix: await params
   const { repoId } = await params;
   const repoIdNum = Number(repoId);
 
@@ -20,7 +20,6 @@ export default async function RepoFilesPage({
   const repo = await prisma.repo.findUnique({
     where: { id: repoIdNum },
   });
-
   if (!repo) {
     notFound();
   }
