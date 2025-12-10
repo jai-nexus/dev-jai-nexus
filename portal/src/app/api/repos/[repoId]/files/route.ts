@@ -1,36 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-type RouteParams = {
-  repoId: string;
-};
+export const runtime = "nodejs";
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> }
-) {
-  const { repoId } = await context.params;
-  const repoIdNum = Number(repoId);
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
 
-  if (!repoId || Number.isNaN(repoIdNum)) {
+  // /api/repos/1/files -> ["api","repos","1","files"]
+  const segments = url.pathname.split("/").filter(Boolean);
+  const repoIdSegment = segments[2]; // index: 0=api, 1=repos, 2=:repoId, 3=files
+
+  if (!repoIdSegment) {
     return NextResponse.json(
-      { error: `Invalid repoId: ${repoId}` },
-      { status: 400 },
+      { error: "Invalid repoId: missing" },
+      { status: 400 }
     );
   }
 
-  const { searchParams } = new URL(req.url);
+  const repoIdNum = Number(repoIdSegment);
+  if (Number.isNaN(repoIdNum)) {
+    return NextResponse.json(
+      { error: `Invalid repoId: ${repoIdSegment}` },
+      { status: 400 }
+    );
+  }
 
-  const extParam = searchParams.get("ext");
+  const { searchParams } = url;
+
+  // ext can be "ts" or "ts,tsx,py"
+  const extRaw = searchParams.get("ext");
   const prefix = searchParams.get("prefix") ?? undefined;
   const limitParam = searchParams.get("limit");
-
-  // support ext=ts or ext=ts,tsx
-  const exts =
-    extParam
-      ?.split(",")
-      .map((s) => s.trim())
-      .filter(Boolean) ?? [];
 
   const limit = (() => {
     const n = limitParam ? Number(limitParam) : 500;
@@ -38,14 +38,17 @@ export async function GET(
     return Math.min(n, 5000);
   })();
 
+  const exts = extRaw
+    ? extRaw
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean)
+    : null;
+
   const files = await prisma.fileIndex.findMany({
     where: {
       repoId: repoIdNum,
-      ...(exts.length === 1
-        ? { extension: exts[0] }
-        : exts.length > 1
-        ? { extension: { in: exts } }
-        : {}),
+      ...(exts ? { extension: { in: exts } } : {}),
       ...(prefix ? { path: { startsWith: prefix } } : {}),
     },
     orderBy: [{ dir: "asc" }, { filename: "asc" }],
@@ -62,6 +65,6 @@ export async function GET(
       sizeBytes: f.sizeBytes,
       sha256: f.sha256,
       lastCommitSha: f.lastCommitSha,
-    })),
+    }))
   );
 }

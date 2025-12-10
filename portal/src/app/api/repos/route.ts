@@ -2,10 +2,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+export const runtime = "nodejs";
+
 export async function GET() {
   const repos = await prisma.repo.findMany({
-    where: { status: "ACTIVE" },
-    orderBy: [{ nhId: "asc" }, { name: "asc" }],
+    orderBy: [{ nhId: "asc" }, { id: "asc" }],
   });
 
   return NextResponse.json(

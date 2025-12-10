@@ -1,38 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import fs from "node:fs";
 import path from "node:path";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const WORKSPACE_ROOT = path.resolve(
-  process.cwd(),
-  "..",
-  "workspace"
-);
+const WORKSPACE_ROOT = path.resolve(process.cwd(), "..", "workspace");
 
-type RouteParams = {
-  repoId: string;
-};
+export const runtime = "nodejs";
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> }
-) {
-  const { repoId } = await context.params;
-  const repoIdNum = Number(repoId);
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
 
-  if (Number.isNaN(repoIdNum)) {
+  const segments = url.pathname.split("/").filter(Boolean);
+  // /api/repos/1/file -> ["api","repos","1","file"]
+  const repoIdSegment = segments[2];
+
+  if (!repoIdSegment) {
     return NextResponse.json(
-      { error: "Invalid repoId" },
+      { error: "Invalid repoId: missing" },
       { status: 400 }
     );
   }
 
-  const { searchParams } = new URL(req.url);
-  const relPath = searchParams.get("path");
+  const repoIdNum = Number(repoIdSegment);
+  if (Number.isNaN(repoIdNum)) {
+    return NextResponse.json(
+      { error: `Invalid repoId: ${repoIdSegment}` },
+      { status: 400 }
+    );
+  }
 
+  const relPath = url.searchParams.get("path");
   if (!relPath) {
     return NextResponse.json(
-      { error: "Missing ?path=" },
+      { error: "Missing 'path' query param" },
       { status: 400 }
     );
   }
@@ -48,21 +48,20 @@ export async function GET(
     );
   }
 
-  // Derive owner/name from githubUrl
-  const parts = repo.githubUrl.replace(/\.git$/, "").split("/");
-  const name = parts.pop()!;
-  const owner = parts.pop()!;
+  const [_, owner, repoName] = new URL(repo.githubUrl).pathname
+    .split("/")
+    .filter(Boolean); // ["jai-nexus","dev-jai-nexus"]
 
   const fullPath = path.join(
     WORKSPACE_ROOT,
     owner,
-    name,
-    relPath
+    repoName,
+    relPath.replace(/\\/g, "/")
   );
-
-  // basic safety: prevent ../ escapes
   const normalized = path.normalize(fullPath);
-  if (!normalized.startsWith(path.join(WORKSPACE_ROOT, owner, name))) {
+  const repoRoot = path.join(WORKSPACE_ROOT, owner, repoName) + path.sep;
+
+  if (!normalized.startsWith(repoRoot)) {
     return NextResponse.json(
       { error: "Invalid path" },
       { status: 400 }
