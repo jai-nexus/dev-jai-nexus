@@ -5,11 +5,11 @@ type RouteParams = {
   repoId: string;
 };
 
-export default async function RepoFilesPage({
-  params,
-}: {
+type RepoFilesPageProps = {
   params: Promise<RouteParams>;
-}) {
+};
+
+export default async function RepoFilesPage({ params }: RepoFilesPageProps) {
   const resolved = await params;
   const rawRepoId = resolved?.repoId;
   const repoIdNum = Number(rawRepoId);
@@ -19,7 +19,8 @@ export default async function RepoFilesPage({
       <main className="min-h-screen bg-black text-gray-100 p-8">
         <h1 className="text-2xl font-semibold">Repo Files · Error</h1>
         <p className="mt-2 text-sm text-red-400">
-          Invalid repoId: <code className="font-mono">{String(rawRepoId)}</code>
+          Invalid repoId:{" "}
+          <code className="font-mono">{String(rawRepoId)}</code>
         </p>
       </main>
     );
@@ -34,7 +35,8 @@ export default async function RepoFilesPage({
       <main className="min-h-screen bg-black text-gray-100 p-8">
         <h1 className="text-2xl font-semibold">Repo Files · Error</h1>
         <p className="mt-2 text-sm text-red-400">
-          No repo found for id <code className="font-mono">{repoIdNum}</code>.
+          No repo found for id{" "}
+          <code className="font-mono">{repoIdNum}</code>.
         </p>
       </main>
     );
@@ -74,7 +76,16 @@ export default async function RepoFilesPage({
                 className="border-b border-gray-900/60 hover:bg-zinc-900/60"
               >
                 <td className="px-4 py-1 font-mono text-[11px]">
-                  {f.path}
+                  <a
+                    href={`/api/repos/${repoIdNum}/file?path=${encodeURIComponent(
+                      f.path,
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:underline"
+                  >
+                    {f.path}
+                  </a>
                 </td>
                 <td className="px-4 py-1 text-gray-300">
                   {f.extension || "—"}
