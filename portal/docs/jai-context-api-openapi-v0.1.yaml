@@ -1,0 +1,232 @@
+# portal/docs/jai-context-api-openapi-v0.1.yaml
+
+openapi: 3.1.0
+info:
+  title: JAI Context API
+  version: 0.1.0
+  description: |
+    Read-only context API for dev.jai.nexus.
+
+    Exposes:
+    - Active repos registry
+    - File index per repo
+    - Safe file content reads from the local workspace
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://dev.jai.nexus/api
+    description: Future production (TBD)
+
+paths:
+  /repos:
+    get:
+      operationId: listRepos
+      summary: List active repos
+      description: |
+        Returns all active repos known to dev.jai.nexus, ordered by nhId.
+      responses:
+        "200":
+          description: List of active repos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RepoSummary"
+
+  /repos/{repoId}/files:
+    get:
+      operationId: listRepoFiles
+      summary: List files for a repo
+      description: |
+        Returns indexed files for a repo from the FileIndex table.
+
+        You can filter by:
+        - extension(s) via `ext` (comma-separated list, e.g. `ts,tsx,md`)
+        - path prefix via `prefix` (e.g. `.github/workflows/`)
+        - limit via `limit` (defaults to 500, max 5000)
+      parameters:
+        - name: repoId
+          in: path
+          required: true
+          description: Numeric repo id from /repos.
+          schema:
+            type: integer
+        - name: ext
+          in: query
+          required: false
+          description: >
+            Comma-separated list of file extensions (without leading dot).
+            Example: `ts,tsx,md`
+          schema:
+            type: string
+        - name: prefix
+          in: query
+          required: false
+          description: >
+            Optional path prefix to filter on, e.g. `.github/workflows/` or `src/`.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: >
+            Maximum number of files to return (default 500, max 5000).
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of files for this repo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FileIndexEntry"
+        "400":
+          description: Invalid repoId or query params
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Repo not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /repos/{repoId}/file:
+    get:
+      operationId: getRepoFile
+      summary: Read file content for a repo
+      description: |
+        Returns the UTF-8 content of a file from the cloned repo workspace,
+        given a repoId and a relative path.
+
+        Path traversal is blocked; only files inside the cloned workspace
+        for that repo can be read.
+      parameters:
+        - name: repoId
+          in: path
+          required: true
+          description: Numeric repo id from /repos.
+          schema:
+            type: integer
+        - name: path
+          in: query
+          required: true
+          description: >
+            Repo-relative path from the workspace root for that repo.
+            Example: `README.md`, `.github/workflows/operator_wiki.yml`,
+            or `src/app/operator/page.tsx`.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: File contents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileContentResponse"
+        "400":
+          description: Invalid repoId or missing/unsafe path
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Repo or file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    RepoSummary:
+      type: object
+      description: Minimal repo metadata used by JAI agents.
+      properties:
+        id:
+          type: integer
+          description: Internal numeric repo id.
+        nhId:
+          type: string
+          description: NH ID string, e.g. "2.1.2".
+        name:
+          type: string
+          description: Canonical repo name, e.g. "jai-nexus/dev-jai-nexus".
+        domainPod:
+          type: string
+          nullable: true
+          description: Domain pod for this repo, e.g. "jai.nexus".
+        engineGroup:
+          type: string
+          nullable: true
+          description: Engine group, e.g. "frontend", "backend", "helper", "meta".
+        status:
+          type: string
+          nullable: true
+          description: Repo status, e.g. "ACTIVE".
+        githubUrl:
+          type: string
+          nullable: true
+          description: Full GitHub URL for the repo.
+        defaultBranch:
+          type: string
+          nullable: true
+          description: Default branch name, e.g. "main".
+
+    FileIndexEntry:
+      type: object
+      description: Indexed file metadata from the FileIndex table.
+      properties:
+        id:
+          type: integer
+          description: Internal numeric file id.
+        path:
+          type: string
+          description: Repo-relative path, using forward slashes.
+        dir:
+          type: string
+          description: Directory portion of path (may be empty string).
+        filename:
+          type: string
+          description: Filename only (no directory).
+        extension:
+          type: string
+          description: File extension without dot (may be empty for dotfiles).
+        sizeBytes:
+          type: integer
+          description: File size in bytes.
+        sha256:
+          type: string
+          description: SHA-256 hash of file contents.
+        lastCommitSha:
+          type: string
+          nullable: true
+          description: Optional last commit SHA, if known.
+
+    FileContentResponse:
+      type: object
+      description: Content payload for a single file.
+      properties:
+        repoId:
+          type: integer
+          description: Repo id the file belongs to.
+        path:
+          type: string
+          description: Repo-relative path.
+        content:
+          type: string
+          description: UTF-8 file contents.
+
+    ErrorResponse:
+      type: object
+      description: Generic error response.
+      properties:
+        error:
+          type: string
+          description: Error message (not guaranteed stable across versions).
