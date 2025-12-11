@@ -1,4 +1,5 @@
 // portal/src/app/operator/repos/[repoId]/page.tsx
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 type RouteParams = {
@@ -76,16 +77,14 @@ export default async function RepoFilesPage({ params }: RepoFilesPageProps) {
                 className="border-b border-gray-900/60 hover:bg-zinc-900/60"
               >
                 <td className="px-4 py-1 font-mono text-[11px]">
-                  <a
-                    href={`/api/repos/${repoIdNum}/file?path=${encodeURIComponent(
+                  <Link
+                    href={`/operator/repos/${repoIdNum}/file?path=${encodeURIComponent(
                       f.path,
                     )}`}
-                    target="_blank"
-                    rel="noreferrer"
                     className="hover:underline"
                   >
                     {f.path}
-                  </a>
+                  </Link>
                 </td>
                 <td className="px-4 py-1 text-gray-300">
                   {f.extension || "—"}

@@ -96,7 +96,14 @@ async function rebuildFileIndexForRepo(
       const full = path.join(dirPath, entry.name);
       const rel = path.relative(root, full).replace(/\\/g, "/");
 
-      if (rel.startsWith(".git") || rel.includes("node_modules")) continue;
+      // Skip VCS + build dirs, but allow .github, .gitignore, etc.
+      if (
+        entry.name === ".git" ||
+        entry.name === ".next" ||
+        rel.includes("node_modules")
+      ) {
+        continue;
+      }
 
       if (entry.isDirectory()) {
         walk(full);
