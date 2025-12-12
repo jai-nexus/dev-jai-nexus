@@ -1,10 +1,12 @@
 // portal/prisma/seed.ts
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
+import bcrypt from "bcryptjs";
 
 async function main() {
   console.log("🌱 Using DATABASE_URL:", process.env.DATABASE_URL);
 
+  // --- 1) Seed core repos -----------------------------------
   const repos = [
     {
       name: "jai-nexus/dev-jai-nexus",
@@ -15,7 +17,7 @@ async function main() {
       githubUrl: "https://github.com/jai-nexus/dev-jai-nexus",
       defaultBranch: "main",
     },
-    // add more as you like
+    // add more as needed
   ];
 
   for (const repo of repos) {
@@ -26,7 +28,41 @@ async function main() {
     });
   }
 
-  console.log("✅ Seed complete — repos inserted/updated.");
+  console.log("✅ Repos seeded");
+
+  // --- 2) Seed operator users --------------------------------
+
+  const adminHash = await bcrypt.hash("admin1234", 12);
+  const agentHash = await bcrypt.hash("agent1234", 12);
+
+  const users = [
+    {
+      email: "admin@jai.nexus",
+      name: "JAI Admin",
+      role: "ADMIN" as const,
+      passwordHash: adminHash,
+    },
+    {
+      email: "agent@jai.nexus",
+      name: "JAI Agent",
+      role: "AGENT" as const,
+      passwordHash: agentHash,
+    },
+  ];
+
+  for (const user of users) {
+    await prisma.user.upsert({
+      where: { email: user.email },
+      update: {
+        name: user.name,
+        role: user.role,
+        passwordHash: user.passwordHash,
+      },
+      create: user,
+    });
+  }
+
+  console.log("✅ Users seeded (admin@jai.nexus / agent@jai.nexus)");
 }
 
 main()

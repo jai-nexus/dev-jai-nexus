@@ -1,21 +1,18 @@
 // portal/src/app/operator/layout.tsx
 import type { ReactNode } from "react";
-import { OperatorSubnav } from "@/components/operator/OperatorSubnav";
+import { redirect } from "next/navigation";
+import { getServerAuthSession } from "@/auth";
 
-export const runtime = "nodejs";
-
-export default function OperatorLayout({
+export default async function OperatorLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  // Global app layout already renders the top brand/nav.
-  // This layout just adds the Operator-specific sub-nav
-  // above whatever page is being rendered.
-  return (
-    <>
-      <OperatorSubnav />
-      {children}
-    </>
-  );
+  const session = await getServerAuthSession();
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  return <>{children}</>;
 }

@@ -5,7 +5,21 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+type UserRole = "ADMIN" | "AGENT";
+
+type UserWithRole = {
+  id: string;
+  email: string;
+  name?: string | null;
+  role?: UserRole;
+};
+
+type TokenWithRole = {
+  role?: UserRole;
+};
+
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },
@@ -41,6 +55,7 @@ export const authOptions: NextAuthOptions = {
               email,
               found: !!user,
               hasHash: !!user?.passwordHash,
+              role: user?.role,
             });
           }
 
@@ -61,11 +76,14 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          return {
+          const baseUser: UserWithRole = {
             id: user.id,
             email: user.email,
             name: user.name ?? user.email ?? email,
+            role: user.role as UserRole | undefined,
           };
+
+          return baseUser;
         } catch (err) {
           console.error("[auth] authorize() error", err);
           throw err;
@@ -73,6 +91,26 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+
+  callbacks: {
+    async jwt({ token, user }) {
+      // attach role from user -> token on login
+      if (user) {
+        const u = user as UserWithRole;
+        (token as TokenWithRole).role = u.role;
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      // surface role on session.user for UI / RBAC
+      if (session.user) {
+        const t = token as TokenWithRole;
+        (session.user as UserWithRole).role = t.role;
+      }
+      return session;
+    },
+  },
 };
 
 export function getServerAuthSession() {
