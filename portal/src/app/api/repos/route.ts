@@ -9,14 +9,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   // Enforce Context API key
+  console.log("[DEBUG] JAI_CONTEXT_API_KEY (server):", process.env.JAI_CONTEXT_API_KEY);
   const auth = requireContextApiAuth(req);
-  if (!auth.ok) return auth.errorResponse;
+  if (!auth.ok) return auth.errorResponse!;
 
   try {
     const repos = await prisma.repo.findMany({
-      where: {
-        status: "ACTIVE",
-      },
+      where: { status: "ACTIVE" },
       select: {
         id: true,
         nhId: true,
@@ -43,10 +42,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(payload, { status: 200 });
   } catch (error) {
-    console.error("[GET /api/repos] Failed to load repos", error);
+    console.error("[GET /api/repos] ❌ Failed to load repos", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

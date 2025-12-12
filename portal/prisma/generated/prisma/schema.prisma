@@ -8,7 +8,6 @@ datasource db {
   // NOTE: no `url` here – Prisma 7 reads it from prisma.config.ts
 }
 
-
 model Repo {
   id            Int         @id @default(autoincrement())
   createdAt     DateTime    @default(now())

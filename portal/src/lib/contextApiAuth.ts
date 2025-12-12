@@ -1,70 +1,47 @@
 // portal/src/lib/contextApiAuth.ts
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import crypto from "node:crypto";
+import { NextRequest, NextResponse } from "next/server";
 
-const HEADER_NAME = "x-jai-context-key";
+/**
+ * Require a Context API key for /api/repos[...] endpoints.
+ *
+ * Expects:
+ *   Authorization: Bearer <JAI_CONTEXT_API_KEY>
+ *
+ * Returns:
+ *   - { ok: true } if valid or auth disabled (for local dev)
+ *   - { ok: false, errorResponse: NextResponse } if unauthorized
+ */
+export function requireContextApiAuth(req: NextRequest): {
+  ok: boolean;
+  errorResponse?: NextResponse;
+} {
+  const expected = process.env.JAI_CONTEXT_API_KEY;
 
-type AuthResult =
-  | { ok: true; errorResponse: null }
-  | { ok: false; errorResponse: NextResponse };
+  // Allow local dev without key (but warn loudly)
+  if (!expected) {
+    console.warn("[ContextAPI] ⚠️ JAI_CONTEXT_API_KEY not set — auth disabled (dev mode)");
+    return { ok: true };
+  }
 
-// Small helper so we can compare without revealing the key itself
-function hashPreview(value: string | undefined | null): string {
-  if (!value) return "none";
-  return crypto
-    .createHash("sha256")
-    .update(value)
-    .digest("hex")
-    .slice(0, 8); // first 8 chars is enough for debugging
-}
+  const authHeader = req.headers.get("authorization") ?? "";
+  const isBearer = authHeader.toLowerCase().startsWith("bearer ");
+  const token = isBearer ? authHeader.slice("bearer ".length).trim() : "";
 
-export function requireContextApiAuth(req: NextRequest): AuthResult {
-  const rawExpected = process.env.JAI_CONTEXT_API_KEY;
+  const ok = !!token && token === expected;
 
-  if (!rawExpected) {
-    console.warn(
-      "[ContextAPI] JAI_CONTEXT_API_KEY not set; allowing all requests.",
+  if (!ok) {
+    console.warn("[ContextAPI] 🚫 Unauthorized Context API request", {
+      hasHeader: !!authHeader,
+      headerSample: authHeader.slice(0, 16),
+    });
+
+    const errorResponse = NextResponse.json(
+      { error: "Unauthorized: invalid context API key" },
+      { status: 401 }
     );
-    return { ok: true, errorResponse: null };
+
+    return { ok: false, errorResponse };
   }
 
-  const rawProvided = req.headers.get(HEADER_NAME);
-
-  const expected = rawExpected.trim();
-  const provided = rawProvided?.trim() ?? "";
-
-  const match = provided === expected;
-
-  console.log("[ContextAPI] key check", {
-    hasHeader: Boolean(rawProvided),
-    headerLength: rawProvided?.length ?? 0,
-    hasEnv: Boolean(rawExpected),
-    envLength: rawExpected.length,
-    providedHash: hashPreview(rawProvided),
-    expectedHash: hashPreview(rawExpected),
-    match,
-  });
-
-  if (!rawProvided) {
-    return {
-      ok: false,
-      errorResponse: NextResponse.json(
-        { error: "Missing Context API key", header: HEADER_NAME },
-        { status: 401 },
-      ),
-    };
-  }
-
-  if (!match) {
-    return {
-      ok: false,
-      errorResponse: NextResponse.json(
-        { error: "Invalid Context API key" },
-        { status: 401 },
-      ),
-    };
-  }
-
-  return { ok: true, errorResponse: null };
+  return { ok: true };
 }

@@ -1,13 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "generated/prisma"
+  provider = "prisma-client-js" // safer for now
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  // NOTE: no `url` here – Prisma 7 reads it from prisma.config.ts
+  // ⛔ NO url here
 }
-
 
 model Repo {
   id            Int         @id @default(autoincrement())
