@@ -1,12 +1,9 @@
 // portal/prisma/seed.ts
 import "dotenv/config";
-import { prisma } from "../src/lib/prisma";
 import bcrypt from "bcryptjs";
+import { prisma } from "../src/lib/prisma";
 
-async function main() {
-  console.log("🌱 Using DATABASE_URL:", process.env.DATABASE_URL);
-
-  // --- 1) Seed core repos -----------------------------------
+async function seedRepos() {
   const repos = [
     {
       name: "jai-nexus/dev-jai-nexus",
@@ -28,41 +25,51 @@ async function main() {
     });
   }
 
-  console.log("✅ Repos seeded");
+  console.log("✅ Repo registry seeded");
+}
 
-  // --- 2) Seed operator users --------------------------------
-
-  const adminHash = await bcrypt.hash("admin1234", 12);
-  const agentHash = await bcrypt.hash("agent1234", 12);
-
-  const users = [
-    {
+async function seedUsers() {
+  // ADMIN
+  const adminPasswordHash = await bcrypt.hash("admin1234", 12);
+  await prisma.user.upsert({
+    where: { email: "admin@jai.nexus" },
+    update: {
+      name: "JAI Admin",
+      role: "ADMIN",
+      passwordHash: adminPasswordHash,
+    },
+    create: {
       email: "admin@jai.nexus",
       name: "JAI Admin",
-      role: "ADMIN" as const,
-      passwordHash: adminHash,
+      role: "ADMIN",
+      passwordHash: adminPasswordHash,
     },
-    {
+  });
+
+  // AGENT (optional helper login)
+  const agentPasswordHash = await bcrypt.hash("agent1234", 12);
+  await prisma.user.upsert({
+    where: { email: "agent@jai.nexus" },
+    update: {
+      name: "JAI Agent",
+      role: "AGENT",
+      passwordHash: agentPasswordHash,
+    },
+    create: {
       email: "agent@jai.nexus",
       name: "JAI Agent",
-      role: "AGENT" as const,
-      passwordHash: agentHash,
+      role: "AGENT",
+      passwordHash: agentPasswordHash,
     },
-  ];
+  });
 
-  for (const user of users) {
-    await prisma.user.upsert({
-      where: { email: user.email },
-      update: {
-        name: user.name,
-        role: user.role,
-        passwordHash: user.passwordHash,
-      },
-      create: user,
-    });
-  }
+  console.log("✅ Users seeded: admin@jai.nexus, agent@jai.nexus");
+}
 
-  console.log("✅ Users seeded (admin@jai.nexus / agent@jai.nexus)");
+async function main() {
+  console.log("🌱 Using DATABASE_URL:", process.env.DATABASE_URL);
+  await seedRepos();
+  await seedUsers();
 }
 
 main()
