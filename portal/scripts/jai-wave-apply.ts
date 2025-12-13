@@ -35,25 +35,28 @@ async function main() {
     `[jai:wave:apply] Loading plan for projectKey=${projectKey}, waveLabel=${waveLabel}`,
   );
 
-  const url = `${BASE}/api/internal/waves/get-plan?projectKey=${encodeURIComponent(
-    projectKey,
-  )}&waveLabel=${encodeURIComponent(waveLabel)}`;
-
-  const res = await fetch(url, {
+  const res = await fetch(`${BASE}/api/internal/waves/get-plan`, {
+    method: "POST",
     headers: {
+      "content-type": "application/json",
       "x-jai-internal-token": TOKEN,
     },
+    body: JSON.stringify({ projectKey, waveLabel }),
   });
 
-  const rawJson = await res
-    .json()
-    .catch(() => ({ ok: false as const, error: "Invalid JSON" }));
+  let json: GetWavePlanResponse | WaveErrorResponse;
 
-  const json = rawJson as GetWavePlanResponse | WaveErrorResponse;
+  try {
+    json = (await res.json()) as GetWavePlanResponse | WaveErrorResponse;
+  } catch {
+    console.error("[jai:wave:apply] Failed to parse JSON from response");
+    console.error("HTTP status:", res.status);
+    process.exit(1);
+  }
 
   console.log("[jai:wave:apply] status", res.status, json);
 
-  if (!res.ok || !("ok" in json) || !json.ok) {
+  if (!("ok" in json) || !json.ok) {
     console.error("Failed to load wave plan");
     if ("error" in json && json.error) {
       console.error("Reason:", json.error);
