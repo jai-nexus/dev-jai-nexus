@@ -8,6 +8,7 @@
     "build": "dotenv -e .env -- next build",
     "start": "dotenv -e .env -- next start",
     "lint": "next lint",
+
     "ingest:event": "tsx scripts/ingest-sot-event.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "audit:q4-2025": "tsx scripts/run-q4-audit.ts",
@@ -15,11 +16,15 @@
     "emit:autopilot-v0": "tsx scripts/emit-autopilot-v0-init.ts",
     "emit:autopilot-demo": "tsx scripts/emit-autopilot-demo.ts",
     "sot:post": "tsx scripts/jai-sot-post.ts",
+
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev --skip-seed",
     "seed": "tsx prisma/seed.ts",
     "db:seed": "tsx prisma/seed.ts",
-    "jai:agent:repos": "tsx scripts/jai-agent-repo-status.ts"
+
+    "jai:agent:repos": "tsx scripts/jai-agent-repo-status.ts",
+    "jai:wave:plan": "tsx scripts/jai-agent-plan-wave.ts",
+    "jai:wave:apply": "tsx scripts/jai-wave-apply.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
