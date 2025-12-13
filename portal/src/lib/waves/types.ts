@@ -23,26 +23,36 @@ export interface WaveTaskTarget {
 }
 
 export interface WaveTask {
-  id: string; // e.g. "T1", "T2"
+  /** Local task id for this wave, e.g. "T1" */
+  id: string;
+
   kind: WaveTaskKind;
   status: WaveTaskStatus;
 
   title: string;
   description?: string;
 
-  // Which repo this task is about — matches Repo.name
-  // e.g. "jai-nexus/dev-jai-nexus"
+  /**
+   * Which repo this task is about — matches Repo.name
+   * e.g. "jai-nexus/dev-jai-nexus"
+   */
   repoName: string;
 
-  // Optional NH pointer (your routing glue)
+  /**
+   * Optional NH pointer (your routing glue)
+   * e.g. "2.1.2.W1.0.1"
+   */
   nhId?: string;
 
   target?: WaveTaskTarget;
 }
 
 export interface WavePlan {
-  projectKey: string; // e.g. "2.1.2"
-  waveLabel: string;  // e.g. "W1.0"
+  /** e.g. "2.1.2" */
+  projectKey: string;
+
+  /** e.g. "W1.0" */
+  waveLabel: string;
 
   summary: string;
   notes?: string;
@@ -51,24 +61,23 @@ export interface WavePlan {
 }
 
 /**
- * Internal API response types
+ * Shape returned by /api/internal/waves/get-plan
+ * (what jai-wave-apply is currently logging)
  */
-
-export interface CreateWaveSessionResponse {
-  ok: boolean;
-  sessionId: number;
-}
-
-export interface WaveActionResponse {
-  ok: boolean;
-  actionId: number;
-}
-
 export interface GetWavePlanResponse {
-  ok: boolean;
+  ok: true;
   projectKey: string;
   waveLabel: string;
   sessionId: number;
   actionId: number;
   plan: WavePlan;
+}
+
+/**
+ * Optional simple error shape for internal wave APIs.
+ * This matches what you log when something fails.
+ */
+export interface WaveErrorResponse {
+  ok?: false;
+  error?: string;
 }

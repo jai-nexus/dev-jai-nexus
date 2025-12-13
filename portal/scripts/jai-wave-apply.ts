@@ -2,7 +2,11 @@
 
 import "dotenv/config";
 import fetch from "node-fetch";
-import type { GetWavePlanResponse, WaveTask } from "@/lib/waves/types";
+import type {
+  GetWavePlanResponse,
+  WaveErrorResponse,
+  WaveTask,
+} from "@/lib/waves/types";
 
 const BASE = process.env.JAI_INTERNAL_API_BASE ?? "http://localhost:3000";
 const TOKEN =
@@ -11,49 +15,6 @@ const TOKEN =
     console.error("Missing JAI_INTERNAL_API_TOKEN in env");
     process.exit(1);
   })();
-
-function isWaveTaskArray(value: unknown): value is WaveTask[] {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (t) =>
-        t &&
-        typeof t === "object" &&
-        typeof (t as WaveTask).id === "string" &&
-        typeof (t as WaveTask).kind === "string" &&
-        typeof (t as WaveTask).status === "string" &&
-        typeof (t as WaveTask).title === "string" &&
-        typeof (t as WaveTask).repoName === "string",
-    )
-  );
-}
-
-function isGetWavePlanResponse(
-  value: unknown,
-): value is GetWavePlanResponse {
-  if (!value || typeof value !== "object") return false;
-
-  const v = value as {
-    ok?: unknown;
-    projectKey?: unknown;
-    waveLabel?: unknown;
-    sessionId?: unknown;
-    actionId?: unknown;
-    plan?: unknown;
-  };
-
-  if (v.ok !== true) return false;
-  if (typeof v.projectKey !== "string") return false;
-  if (typeof v.waveLabel !== "string") return false;
-  if (typeof v.sessionId !== "number") return false;
-  if (typeof v.actionId !== "number") return false;
-
-  const plan = v.plan as { summary?: unknown; tasks?: unknown } | undefined;
-  if (!plan || typeof plan.summary !== "string") return false;
-  if (!isWaveTaskArray(plan.tasks)) return false;
-
-  return true;
-}
 
 async function main() {
   const [projectKey, waveLabel] = process.argv.slice(2);
@@ -74,65 +35,73 @@ async function main() {
     `[jai:wave:apply] Loading plan for projectKey=${projectKey}, waveLabel=${waveLabel}`,
   );
 
-  const res = await fetch(`${BASE}/api/internal/waves/get-plan`, {
-    method: "POST",
+  const url = `${BASE}/api/internal/waves/get-plan?projectKey=${encodeURIComponent(
+    projectKey,
+  )}&waveLabel=${encodeURIComponent(waveLabel)}`;
+
+  const res = await fetch(url, {
     headers: {
-      "content-type": "application/json",
       "x-jai-internal-token": TOKEN,
     },
-    body: JSON.stringify({ projectKey, waveLabel }),
   });
 
-  const jsonRaw = await res.json().catch(() => null);
-  console.log("[jai:wave:apply] status", res.status, jsonRaw);
+  const rawJson = await res
+    .json()
+    .catch(() => ({ ok: false as const, error: "Invalid JSON" }));
 
-  if (!res.ok || !isGetWavePlanResponse(jsonRaw)) {
-    console.error(
-      "Failed to load plan or unexpected payload:",
-      res.status,
-      jsonRaw,
-    );
+  const json = rawJson as GetWavePlanResponse | WaveErrorResponse;
+
+  console.log("[jai:wave:apply] status", res.status, json);
+
+  if (!res.ok || !("ok" in json) || !json.ok) {
+    console.error("Failed to load wave plan");
+    if ("error" in json && json.error) {
+      console.error("Reason:", json.error);
+    }
     process.exit(1);
   }
 
-  const { sessionId, actionId, plan } = jsonRaw;
+  const { plan, sessionId, actionId } = json;
 
   console.log();
   console.log(`Wave plan for ${plan.projectKey} ${plan.waveLabel}`);
   console.log(`  Session: ${sessionId}, action: ${actionId}`);
   console.log();
   console.log(plan.summary);
+  console.log();
 
   if (plan.notes) {
+    console.log(`Notes: ${plan.notes}`);
     console.log();
-    console.log("Notes:", plan.notes);
   }
 
-  if (!plan.tasks.length) {
-    console.log();
+  if (!plan.tasks || plan.tasks.length === 0) {
     console.log("(plan has no tasks)");
-    process.exit(0);
+    return;
   }
 
-  console.log();
   console.log("Tasks:");
-  plan.tasks.forEach((task, idx) => {
-    const seq = idx + 1;
-    const nhLabel =
-      task.nhId ?? `${plan.projectKey}.${plan.waveLabel}.${seq}`;
+  plan.tasks.forEach((task: WaveTask, idx: number) => {
+    const label = task.nhId ?? task.id;
     console.log(
-      `  ${seq}. [${nhLabel}] (${task.kind}/${task.status}) ${task.title}`,
+      `  ${idx + 1}. [${label}] (${task.kind}/${task.status}) ${task.title}`,
     );
 
     if (task.target) {
-      console.log(
-        `       -> target ${task.target.kind}: ${task.target.path}`,
-      );
+      const prefix =
+        task.target.kind === "route"
+          ? "route"
+          : task.target.kind === "api"
+            ? "api"
+            : task.target.kind === "script"
+              ? "script"
+              : task.target.kind === "db"
+                ? "db"
+                : "config";
+
+      console.log(`       -> target ${prefix}: ${task.target.path}`);
     }
   });
-
-  // v0: just print; future: actually apply diffs / open PRs.
-  process.exit(0);
 }
 
 main().catch((err) => {

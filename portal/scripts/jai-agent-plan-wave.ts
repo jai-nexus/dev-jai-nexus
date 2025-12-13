@@ -2,12 +2,7 @@
 
 import "dotenv/config";
 import fetch from "node-fetch";
-import type {
-  CreateWaveSessionResponse,
-  WavePlan,
-  WaveTask,
-  WaveActionResponse,
-} from "@/lib/waves/types";
+import type { WavePlan, WaveTask } from "@/lib/waves/types";
 
 const BASE = process.env.JAI_INTERNAL_API_BASE ?? "http://localhost:3000";
 const TOKEN =
@@ -17,18 +12,16 @@ const TOKEN =
     process.exit(1);
   })();
 
-function isCreateWaveSessionResponse(
-  value: unknown,
-): value is CreateWaveSessionResponse {
-  if (!value || typeof value !== "object") return false;
-  const v = value as { ok?: unknown; sessionId?: unknown };
-  return typeof v.sessionId === "number";
+interface CreateWaveResponse {
+  ok?: boolean;
+  sessionId?: number;
+  error?: string;
 }
 
-function isWaveActionResponse(value: unknown): value is WaveActionResponse {
-  if (!value || typeof value !== "object") return false;
-  const v = value as { ok?: unknown; actionId?: unknown };
-  return typeof v.actionId === "number";
+interface RecordActionResponse {
+  ok?: boolean;
+  actionId?: number;
+  error?: string;
 }
 
 async function main() {
@@ -48,6 +41,7 @@ async function main() {
   }
 
   const title = rest.join(" ") || `Wave ${waveLabel} for ${projectKey}`;
+  const nhBase = `${projectKey}.${waveLabel}`;
 
   // 1) Create Wave session
   const createRes = await fetch(`${BASE}/api/internal/waves`, {
@@ -59,30 +53,24 @@ async function main() {
     body: JSON.stringify({ projectKey, waveLabel, title }),
   });
 
-  const createJsonRaw = await createRes.json().catch(() => null);
-  if (!isCreateWaveSessionResponse(createJsonRaw)) {
-    console.error(
-      "[jai:wave:plan] Unexpected createRes payload",
-      createRes.status,
-      createJsonRaw,
-    );
-    process.exit(1);
-  }
+  const createJson = (await createRes
+    .json()
+    .catch(() => ({ ok: false as const }))) as CreateWaveResponse;
 
-  console.log("[jai:wave:plan] createRes", createRes.status, createJsonRaw);
+  console.log("[jai:wave:plan] createRes", createRes.status, createJson);
 
-  if (!createRes.ok) {
+  if (!createRes.ok || typeof createJson.sessionId !== "number") {
     console.error(
       "Failed to create wave:",
       createRes.status,
-      createJsonRaw,
+      createJson,
     );
     process.exit(1);
   }
 
-  const sessionId = createJsonRaw.sessionId;
+  const sessionId = createJson.sessionId;
 
-  // 2) Stub plan (replace with real agent later)
+  // 2) Stub plan (swap to real OpenAI later)
   const tasks: WaveTask[] = [
     {
       id: "T1",
@@ -90,9 +78,9 @@ async function main() {
       status: "pending",
       title: "Review auth + route protection",
       description:
-        "Audit NextAuth config, middleware/proxy, and protected routes for dev.jai.nexus.",
+        "Confirm all operator routes and protected segments enforce NextAuth sessions.",
       repoName: "jai-nexus/dev-jai-nexus",
-      nhId: `${projectKey}.${waveLabel}.1`,
+      nhId: `${nhBase}.1`,
       target: {
         kind: "route",
         path: "src/app/(protected)/operator/page.tsx",
@@ -104,9 +92,9 @@ async function main() {
       status: "pending",
       title: "Harden internal API guards",
       description:
-        "Tighten assertInternalToken + internal routes for repos/waves across local + Vercel.",
+        "Ensure /api/internal/** routes require x-jai-internal-token and safe logging.",
       repoName: "jai-nexus/dev-jai-nexus",
-      nhId: `${projectKey}.${waveLabel}.2`,
+      nhId: `${nhBase}.2`,
       target: {
         kind: "api",
         path: "src/app/api/internal/**/*",
@@ -118,9 +106,9 @@ async function main() {
       status: "pending",
       title: "Expose basic wave planning in Operator UI",
       description:
-        "Add Operator view for PilotSessions + last WavePlan for each projectKey/waveLabel.",
+        "Add a simple /operator/waves view to list waves and tasks for project 2.1.2.",
       repoName: "jai-nexus/dev-jai-nexus",
-      nhId: `${projectKey}.${waveLabel}.3`,
+      nhId: `${nhBase}.3`,
       target: {
         kind: "route",
         path: "src/app/operator/page.tsx",
@@ -132,8 +120,7 @@ async function main() {
     projectKey,
     waveLabel,
     summary: `Plan for ${projectKey} ${waveLabel}: ${title}`,
-    notes:
-      "Stubbed by jai-agent-plan-wave.ts; replace with real agent later.",
+    notes: "Stubbed by jai-agent-plan-wave.ts; replace with real agent later.",
     tasks,
   };
 
@@ -156,23 +143,17 @@ async function main() {
     },
   );
 
-  const actionJsonRaw = await actionRes.json().catch(() => null);
-  if (!isWaveActionResponse(actionJsonRaw)) {
-    console.error(
-      "[jai:wave:plan] Unexpected actionRes payload",
-      actionRes.status,
-      actionJsonRaw,
-    );
-    process.exit(1);
-  }
+  const actionJson = (await actionRes
+    .json()
+    .catch(() => ({ ok: false as const }))) as RecordActionResponse;
 
-  console.log("[jai:wave:plan] actionRes", actionRes.status, actionJsonRaw);
+  console.log("[jai:wave:plan] actionRes", actionRes.status, actionJson);
 
-  if (!actionRes.ok) {
+  if (!actionRes.ok || !actionJson.ok || typeof actionJson.actionId !== "number") {
     console.error(
       "Failed to record plan:",
       actionRes.status,
-      actionJsonRaw,
+      actionJson,
     );
     process.exit(1);
   }
