@@ -6,12 +6,14 @@ import yaml from "js-yaml";
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 
+type RepoStatus = "active" | "frozen" | "parked";
+
 type RepoConfig = {
   nh_id: string;
   repo: string;
   tier: number;
   role: string;
-  status: "active" | "frozen" | "parked";
+  status: RepoStatus;
   owner_agent_nh_id: string;
 };
 
@@ -45,9 +47,7 @@ async function loadYaml<T>(fileName: string): Promise<T> {
 async function main() {
   console.log("Running Q4-2025 audit...");
 
-  const { repos } = await loadYaml<{ repos: RepoConfig[] }>(
-    "repos.yaml",
-  );
+  const { repos } = await loadYaml<{ repos: RepoConfig[] }>("repos.yaml");
   const { projects } = await loadYaml<{ projects: ProjectConfig[] }>(
     "projects.yaml",
   );
@@ -62,16 +62,12 @@ async function main() {
   const issues: string[] = [];
   if (!tier0.length) issues.push("No Tier-0 repos defined.");
   if (!tier1.length) issues.push("No Tier-1 repos defined.");
-  if (!anchored)
-    issues.push("No active Tier-1 external project anchored.");
+  if (!anchored) issues.push("No active Tier-1 external project anchored.");
 
   console.log("Tier-0 repos:", tier0.map((r) => r.repo));
   console.log("Tier-1 repos:", tier1.map((r) => r.repo));
   console.log("Frozen repos:", frozen.map((r) => r.repo));
-  console.log(
-    "Anchored project:",
-    anchored?.project_id ?? "NONE",
-  );
+  console.log("Anchored project:", anchored?.project_id ?? "NONE");
 
   const summary =
     issues.length === 0
@@ -86,30 +82,33 @@ async function main() {
     issues,
   };
 
-// Write directly into SotEvent table
-await prisma.sotEvent.create({
-  data: {
-    ts: new Date(),
-    source: "q4-audit-script",
-    kind: "AUDIT_Q4_2025_COMPLETED",
-    summary,
-    nhId: "1.0",
-    // If your model does NOT have nhId, you can also drop this line.
-    payload, // JSON column
-    // We intentionally do NOT send version, repoName, or domainName here.
-  },
-});
+  // Write directly into SotEvent table (Prisma model must have these fields)
+  await prisma.sotEvent.create({
+    data: {
+      ts: new Date(), // when the audit actually ran
+      source: "q4-audit-script",
+      kind: "AUDIT_Q4_2025_COMPLETED",
+      nhId: "1.0", // root nhId for this audit; adjust if you want a more specific marker
+      summary,
+      payload, // JSON column
+    },
+  });
 
   console.log("SoT event written to DB.");
 
   if (issues.length > 0) {
     console.log("Audit issues:");
     for (const issue of issues) console.log(" - " + issue);
+    // Non-zero exit so CI can fail on problems
     process.exitCode = 1;
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
-});
+main()
+  .catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
