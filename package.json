@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "pnpm --filter portal lint",
     "ingest:sample-event": "tsx scripts/ingest-sample-sot-event.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
