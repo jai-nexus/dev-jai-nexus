@@ -1,30 +1,74 @@
-// src/lib/waves/types.ts
-export type WaveNhId = string; // "2.1.2.W3.0"
+// portal/src/lib/waves/types.ts
 
-export interface WaveContextAction {
-  waveNhId: WaveNhId;
-  projectNhRoot: string; // "2.1.2"
-  repos: {
-    nhId: string;
-    name: string;
-    domainPod: string | null;
-    engineGroup: string | null;
-    status: string | null;
-  }[];
+export type WaveTaskStatus = "pending" | "in_progress" | "done";
+
+export type WaveTaskKind =
+  | "audit"
+  | "refactor"
+  | "feature"
+  | "bugfix"
+  | "infra";
+
+export type WaveTaskTargetKind =
+  | "route"
+  | "api"
+  | "script"
+  | "db"
+  | "config";
+
+export interface WaveTaskTarget {
+  kind: WaveTaskTargetKind;
+  // e.g. "src/app/operator/page.tsx", "src/app/api/internal/waves/route.ts"
+  path: string;
 }
 
 export interface WaveTask {
-  nhId: string; // "2.1.2.W3.0.1"
-  kind: "code-edit" | "doc" | "infra" | "sync";
-  targetRepo: string;
-  targetPath: string;
-  summary: string;
-  status: "planned" | "applied" | "abandoned";
+  id: string; // e.g. "T1", "T2"
+  kind: WaveTaskKind;
+  status: WaveTaskStatus;
+
+  title: string;
+  description?: string;
+
+  // Which repo this task is about — matches Repo.name
+  // e.g. "jai-nexus/dev-jai-nexus"
+  repoName: string;
+
+  // Optional NH pointer (your routing glue)
+  nhId?: string;
+
+  target?: WaveTaskTarget;
 }
 
-export interface WavePlanAction {
-  waveNhId: WaveNhId;
-  projectNhRoot: string;
+export interface WavePlan {
+  projectKey: string; // e.g. "2.1.2"
+  waveLabel: string;  // e.g. "W1.0"
+
   summary: string;
+  notes?: string;
+
   tasks: WaveTask[];
+}
+
+/**
+ * Internal API response types
+ */
+
+export interface CreateWaveSessionResponse {
+  ok: boolean;
+  sessionId: number;
+}
+
+export interface WaveActionResponse {
+  ok: boolean;
+  actionId: number;
+}
+
+export interface GetWavePlanResponse {
+  ok: boolean;
+  projectKey: string;
+  waveLabel: string;
+  sessionId: number;
+  actionId: number;
+  plan: WavePlan;
 }
