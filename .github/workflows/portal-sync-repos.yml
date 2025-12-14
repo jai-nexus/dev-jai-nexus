@@ -2,12 +2,9 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 */2 * * *" # every 2 hours (offset to avoid top-of-hour pileups)
-
-concurrency:
-  group: portal-sync-repos
-  cancel-in-progress: false
+  # uncomment once it’s stable
+  # schedule:
+  #   - cron: "*/30 * * * *" # every 30 minutes
 
 jobs:
   sync:
@@ -20,32 +17,45 @@ jobs:
       - name: Ping
         run: |
           set -euo pipefail
-          curl -fsS \
+          curl -sS \
             -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
-            "$JAI_INTERNAL_API_BASE/api/internal/ping" | tee ping.json
+            "$JAI_INTERNAL_API_BASE/api/internal/ping"
 
       - name: Sync repos (index)
+        id: sync
         run: |
           set -euo pipefail
-          curl -fsS -X POST \
+
+          STATUS="$(curl -sS -o response.json -w "%{http_code}" \
             -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
-            "$JAI_INTERNAL_API_BASE/api/internal/sync-repos" | tee response.json
-          test -s response.json
+            -X POST \
+            "$JAI_INTERNAL_API_BASE/api/internal/sync-repos")"
+
+          echo "http_status=$STATUS" >> "$GITHUB_OUTPUT"
+
+          echo "HTTP $STATUS"
+          echo "---- response.json ----"
+          cat response.json || true
+          echo "-----------------------"
+
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            exit 1
+          fi
 
       - name: Summary
+        if: always()
         run: |
-          {
-            echo "## sync-repos response"
-            echo
-            echo '```json'
-            cat response.json
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## sync-repos response" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**HTTP:** ${{ steps.sync.outputs.http_status }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat response.json >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload response
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: portal-sync-repos
-          path: |
-            ping.json
-            response.json
+          name: sync-repos-response
+          path: response.json
