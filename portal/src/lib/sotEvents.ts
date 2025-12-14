@@ -1,6 +1,6 @@
 // portal/src/lib/sotEvents.ts
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '../../generated/prisma/client';
+import type { Prisma } from '../../prisma/generated/prisma';
 
 export type SotEventEnvelopeV01 = {
   version?: 'sot-event-0.1';

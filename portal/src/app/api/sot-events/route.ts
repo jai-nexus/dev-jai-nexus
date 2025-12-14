@@ -1,7 +1,7 @@
 // portal/src/app/api/sot-events/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "../../../../generated/prisma/client";
+import type { Prisma } from "../../../../prisma/generated/prisma";
 import { parseSotTimestamp } from "@/lib/time";
 
 type SotEventBody = {

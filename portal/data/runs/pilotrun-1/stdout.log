@@ -1,0 +1,56 @@
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo JerryIngram/offbook-ai
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/jai
+Your branch is behind 'origin/main' by 3 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+Updating 5860d3d..bc21777
+Fast-forward
+ portal/package.json                                |   37 +-
+ portal/prisma/generated/prisma/edge.js             |   19 +-
+ portal/prisma/generated/prisma/index-browser.js    |   15 +
+ portal/prisma/generated/prisma/index.d.ts          | 1702 ++++++++++++++++++--
+ portal/prisma/generated/prisma/index.js            |   19 +-
+ portal/prisma/generated/prisma/package.json        |    2 +-
+ portal/prisma/generated/prisma/schema.prisma       |   15 +
+ .../20251214180839_pilot_run/migration.sql         |   16 +
+ portal/prisma/schema.prisma                        |   16 +-
+ portal/scripts/jai-sync-repos.ts                   |    4 +
+ portal/src/app/api/internal/ping/route.ts          |   13 +
+ portal/src/app/api/internal/sync-repos/route.ts    |   43 +
+ .../src/app/operator/repos/[repoId]/file/page.tsx  |   44 +-
+ portal/src/middleware.ts                           |   18 -
+ portal/src/proxy.ts                                |   68 +
+ 15 files changed, 1849 insertions(+), 182 deletions(-)
+ create mode 100644 portal/prisma/migrations/20251214180839_pilot_run/migration.sql
+ create mode 100644 portal/src/app/api/internal/ping/route.ts
+ create mode 100644 portal/src/app/api/internal/sync-repos/route.ts
+ delete mode 100644 portal/src/middleware.ts
+ create mode 100644 portal/src/proxy.ts
+Indexed repo jai-nexus/dev-jai-nexus
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/jai-format
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/jai-nexus
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/jai-pilot
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/docs-nexus
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/integrations-nexus
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/sourcetree-ai
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo JerryIngram/sourcetree-ai
+Your branch is up to date with 'origin/main'.
+Already up to date.
+Indexed repo jai-nexus/.github
