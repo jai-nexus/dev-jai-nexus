@@ -1,12 +1,12 @@
-// portal/src/app/operator/waves/page.tsx
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { getServerAuthSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { WavePlan } from "@/lib/waves/types";
 
 type WaveRow = {
-  id: number;
+  id: number; // PilotSession.id
   projectKey: string;
   waveLabel: string;
   summary: string;
@@ -36,7 +36,8 @@ export default async function WavesPage() {
     redirect("/login");
   }
 
-  // For now: take the most recent sessions, and for each one, use the latest action as its plan.
+  // For now: take the most recent sessions, and for each one,
+  // use the latest action as its plan.
   const sessions = await prisma.pilotSession.findMany({
     orderBy: { createdAt: "desc" },
     take: 20,
@@ -77,18 +78,28 @@ export default async function WavesPage() {
 
   return (
     <main className="min-h-screen bg-black text-gray-100 px-8 py-10">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">JAI · Waves</h1>
-        <p className="mt-1 text-sm text-gray-400">
-          Wave plans logged via jai:wave:plan / jai:wave:apply.
-        </p>
+      <header className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold">JAI · Waves</h1>
+          <p className="mt-1 text-sm text-gray-400">
+            Wave plans logged via{" "}
+            <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
+              jai:wave:plan
+            </code>{" "}
+            /{" "}
+            <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
+              jai:wave:apply
+            </code>
+            .
+          </p>
+        </div>
       </header>
 
       {rows.length === 0 ? (
-        <p className="text-gray-400 text-sm">
+        <p className="text-sm text-gray-400">
           No wave sessions found yet. Run{" "}
           <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
-            npm run jai:wave:plan -- 2.1.2 W1.0 Wave 1.0 - tighten auth & internal agents
+            npm run jai:wave:plan -- 2.1.2 W1.0 &quot;Wave 1.0 - tighten auth &amp; internal agents&quot;
           </code>{" "}
           to seed one.
         </p>
@@ -110,8 +121,18 @@ export default async function WavesPage() {
                   key={row.id}
                   className="border-t border-zinc-800 hover:bg-zinc-900/60"
                 >
-                  <td className="px-4 py-3 align-top font-mono text-xs text-emerald-300">
-                    {row.projectKey}.{row.waveLabel}
+                  <td className="px-4 py-3 align-top text-xs">
+                    <Link
+                      href={`/operator/waves/${row.id}`}
+                      className="inline-flex flex-col text-emerald-300 hover:text-emerald-200"
+                    >
+                      <span className="font-mono">
+                        {row.projectKey}.{row.waveLabel}
+                      </span>
+                      <span className="mt-0.5 font-mono text-[10px] text-gray-500">
+                        session #{row.id}
+                      </span>
+                    </Link>
                   </td>
                   <td className="px-4 py-3 align-top text-xs text-gray-300">
                     {row.projectKey}
