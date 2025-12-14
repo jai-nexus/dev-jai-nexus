@@ -15,20 +15,31 @@ jobs:
 
     steps:
       - name: Ping
+        shell: bash
         run: |
           set -euo pipefail
+
+          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/ping"
+
+          echo "Ping: $URL"
           curl -sS \
-            -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
-            "$JAI_INTERNAL_API_BASE/api/internal/ping"
+            -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "$URL"
 
       - name: Sync repos (index)
         id: sync
+        shell: bash
         run: |
           set -euo pipefail
 
-          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/sync-repos"
+          : > response.json  # always create the file so artifacts/summary never fail
 
-          STATUS="$(curl -sS --fail-with-body \
+          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/sync-repos"
+          echo "Sync: $URL"
+
+          # Never let curl abort the step before writing the body.
+          STATUS="$(curl -sS \
             -o response.json \
             -w "%{http_code}" \
             -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
@@ -38,17 +49,18 @@ jobs:
 
           echo "http_status=$STATUS" >> "$GITHUB_OUTPUT"
 
-          echo "HTTP $STATUS"
+          echo "HTTP: $STATUS"
           echo "---- response.json ----"
           cat response.json || true
           echo "-----------------------"
 
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+          if [[ "$STATUS" -lt 200 || "$STATUS" -ge 300 ]]; then
             exit 1
           fi
 
       - name: Summary
         if: always()
+        shell: bash
         run: |
           echo "## sync-repos response" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
