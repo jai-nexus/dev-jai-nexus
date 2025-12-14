@@ -26,10 +26,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          STATUS="$(curl -sS -o response.json -w "%{http_code}" \
-            -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
+          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/sync-repos"
+
+          STATUS="$(curl -sS --fail-with-body \
+            -o response.json \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
+            -H "Accept: application/json" \
             -X POST \
-            "$JAI_INTERNAL_API_BASE/api/internal/sync-repos")"
+            "$URL" || true)"
 
           echo "http_status=$STATUS" >> "$GITHUB_OUTPUT"
 
