@@ -1,5 +1,6 @@
 // portal/src/app/operator/repos/[repoId]/file/page.tsx
 import Link from "next/link";
+import { cookies, headers } from "next/headers";
 
 type RouteParams = {
   repoId: string;
@@ -17,9 +18,15 @@ type RepoFileViewPageProps = {
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-// For now: local dev default, can later be NEXT_PUBLIC_APP_BASE_URL in prod
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_BASE_URL ?? "http://localhost:3000";
+function getBaseUrl(h: Headers) {
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const host =
+    h.get("x-forwarded-host") ??
+    h.get("host") ??
+    "localhost:3000";
+
+  return `${proto}://${host}`;
+}
 
 export default async function RepoFileViewPage({
   params,
@@ -34,8 +41,7 @@ export default async function RepoFileViewPage({
       <main className="min-h-screen bg-black text-gray-100 p-8">
         <h1 className="text-2xl font-semibold">Repo File · Error</h1>
         <p className="mt-2 text-sm text-red-400">
-          Invalid repoId:{" "}
-          <code className="font-mono">{String(repoId)}</code>
+          Invalid repoId: <code className="font-mono">{String(repoId)}</code>
         </p>
         <BackLink repoId={repoId ?? "?"} />
       </main>
@@ -54,10 +60,18 @@ export default async function RepoFileViewPage({
     );
   }
 
-  // --- IMPORTANT CHANGE: build an absolute URL for the server-side fetch ---
+  const cookieHeader = (await cookies())
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join("; ");
+
+  const h = await headers();
+  const baseUrl = getBaseUrl(h);
+
+  // Absolute URL (required for server-side fetch in Node)
   const apiUrl = new URL(
     `/api/repos/${repoIdNum}/file?path=${encodeURIComponent(path)}`,
-    BASE_URL,
+    baseUrl
   );
 
   let data:
@@ -67,10 +81,18 @@ export default async function RepoFileViewPage({
         content: string;
       }
     | null = null;
+
   let errorMessage: string | null = null;
 
   try {
-    const res = await fetch(apiUrl.toString(), { cache: "no-store" });
+    const res = await fetch(apiUrl.toString(), {
+      cache: "no-store",
+      credentials: "include",
+      headers: {
+        cookie: cookieHeader,
+        accept: "application/json",
+      },
+    });
 
     if (!res.ok) {
       let msg = `HTTP ${res.status}`;
@@ -89,8 +111,7 @@ export default async function RepoFileViewPage({
       };
     }
   } catch (err) {
-    errorMessage =
-      err instanceof Error ? err.message : "Unknown fetch error";
+    errorMessage = err instanceof Error ? err.message : "Unknown fetch error";
   }
 
   if (!data) {
@@ -98,8 +119,7 @@ export default async function RepoFileViewPage({
       <main className="min-h-screen bg-black text-gray-100 p-8">
         <h1 className="text-2xl font-semibold">Repo File · Error</h1>
         <p className="mt-2 text-sm text-red-400">
-          Failed to load file{" "}
-          <code className="font-mono">{path}</code>
+          Failed to load file <code className="font-mono">{path}</code>
           {errorMessage ? `: ${errorMessage}` : null}
         </p>
         <BackLink repoId={repoIdNum} />
