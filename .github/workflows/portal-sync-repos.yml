@@ -3,7 +3,7 @@ name: Portal · sync-repos
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *" # hourly @ minute 17
+    - cron: "17 */2 * * *" # every 2 hours (offset to avoid top-of-hour pileups)
 
 concurrency:
   group: portal-sync-repos
@@ -17,26 +17,35 @@ jobs:
       JAI_INTERNAL_API_TOKEN: ${{ secrets.JAI_INTERNAL_API_TOKEN }}
 
     steps:
-      - name: Validate env
-        run: |
-          test -n "$JAI_INTERNAL_API_BASE" || (echo "Missing JAI_INTERNAL_API_BASE" && exit 1)
-          test -n "$JAI_INTERNAL_API_TOKEN" || (echo "Missing JAI_INTERNAL_API_TOKEN" && exit 1)
-
       - name: Ping
         run: |
+          set -euo pipefail
           curl -fsS \
             -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
-            "$JAI_INTERNAL_API_BASE/api/internal/ping"
+            "$JAI_INTERNAL_API_BASE/api/internal/ping" | tee ping.json
 
       - name: Sync repos (index)
         run: |
+          set -euo pipefail
           curl -fsS -X POST \
             -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \
             "$JAI_INTERNAL_API_BASE/api/internal/sync-repos" | tee response.json
+          test -s response.json
 
       - name: Summary
         run: |
-          echo "## sync-repos response" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat response.json >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## sync-repos response"
+            echo
+            echo '```json'
+            cat response.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload response
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-sync-repos
+          path: |
+            ping.json
+            response.json
