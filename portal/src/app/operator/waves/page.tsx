@@ -1,3 +1,4 @@
+// portal/src/app/operator/waves/page.tsx
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
@@ -31,13 +32,11 @@ function parsePlan(payload: unknown): WavePlan | null {
 
 export default async function WavesPage() {
   const session = await getServerAuthSession();
-
   if (!session) {
     redirect("/login");
   }
 
-  // For now: take the most recent sessions, and for each one,
-  // use the latest action as its plan.
+  // Take the most recent sessions; for each, use the latest action as its plan.
   const sessions = await prisma.pilotSession.findMany({
     orderBy: { createdAt: "desc" },
     take: 20,
@@ -59,7 +58,6 @@ export default async function WavesPage() {
     if (!plan) continue;
 
     const tasks = plan.tasks ?? [];
-
     const pendingCount = tasks.filter((t) => t.status === "pending").length;
     const doneCount = tasks.filter((t) => t.status === "done").length;
 
@@ -99,7 +97,8 @@ export default async function WavesPage() {
         <p className="text-sm text-gray-400">
           No wave sessions found yet. Run{" "}
           <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
-            npm run jai:wave:plan -- 2.1.2 W1.0 &quot;Wave 1.0 - tighten auth &amp; internal agents&quot;
+            npm run jai:wave:plan -- 2.1.2 W1.0 &quot;Wave 1.0 - tighten auth
+            &amp; internal agents&quot;
           </code>{" "}
           to seed one.
         </p>
