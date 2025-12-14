@@ -1,4 +1,5 @@
-import { redirect, notFound } from "next/navigation";
+// portal/src/app/operator/waves/[sessionId]/page.tsx
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
@@ -9,9 +10,28 @@ interface PageProps {
   params: { sessionId: string };
 }
 
-async function loadWavePlan(sessionIdParam: string) {
+// Prisma result helpers
+type PilotSession = NonNullable<
+  Awaited<ReturnType<typeof prisma.pilotSession.findUnique>>
+>;
+
+type PilotAction = NonNullable<
+  Awaited<ReturnType<typeof prisma.pilotAction.findFirst>>
+>;
+
+type LoadedWavePlan = {
+  session: PilotSession;
+  planAction: PilotAction | null;
+  plan: WavePlan | null;
+};
+
+async function loadWavePlan(
+  sessionIdParam: string,
+): Promise<LoadedWavePlan | null> {
   const id = Number.parseInt(sessionIdParam, 10);
+
   if (!Number.isFinite(id) || id <= 0) {
+    console.warn("[WaveDetail] invalid sessionId param:", sessionIdParam);
     return null;
   }
 
@@ -20,6 +40,7 @@ async function loadWavePlan(sessionIdParam: string) {
   });
 
   if (!session) {
+    console.warn("[WaveDetail] no session found for id:", id);
     return null;
   }
 
@@ -31,22 +52,21 @@ async function loadWavePlan(sessionIdParam: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  if (!planAction) {
-    return { session, planAction: null, plan: null as WavePlan | null };
-  }
-
   let plan: WavePlan | null = null;
 
-  if (planAction.payload) {
+  if (planAction?.payload) {
     try {
       plan = JSON.parse(planAction.payload) as WavePlan;
-    } catch {
-      // Leave plan as null if payload isn't valid JSON
-      plan = null;
+    } catch (err) {
+      console.error("[WaveDetail] failed to parse plan JSON:", err);
     }
   }
 
-  return { session, planAction, plan };
+  return {
+    session,
+    planAction: planAction ?? null,
+    plan,
+  };
 }
 
 export default async function WaveDetailPage({ params }: PageProps) {
@@ -55,10 +75,40 @@ export default async function WaveDetailPage({ params }: PageProps) {
     redirect("/login");
   }
 
+  console.log("[WaveDetail] params.sessionId =", params.sessionId);
+
   const data = await loadWavePlan(params.sessionId);
 
+  // If the session truly isn't in the DB, show an explicit debug view
   if (!data) {
-    notFound();
+    return (
+      <main className="min-h-screen bg-black text-gray-100 p-8">
+        <header className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Wave not found</h1>
+            <p className="mt-1 text-sm text-gray-400">
+              No Pilot session found for id{" "}
+              <span className="font-mono">{params.sessionId}</span>.
+            </p>
+          </div>
+
+          <Link
+            href="/operator/waves"
+            className="text-sm text-gray-400 hover:text-gray-200 underline underline-offset-4"
+          >
+            ← Back to Waves
+          </Link>
+        </header>
+
+        <section className="rounded-lg border border-gray-800 bg-zinc-950 p-4">
+          <h2 className="text-sm font-semibold text-gray-300">Debug</h2>
+          <p className="mt-2 text-xs text-gray-400">
+            This usually means the session id does not exist in the connected
+            database, or it was created in a different environment / DB.
+          </p>
+        </section>
+      </main>
+    );
   }
 
   const { session, planAction, plan } = data;
