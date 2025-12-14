@@ -44,6 +44,11 @@ export type PilotSession = $Result.DefaultSelection<Prisma.$PilotSessionPayload>
  */
 export type PilotAction = $Result.DefaultSelection<Prisma.$PilotActionPayload>
 /**
+ * Model PilotRun
+ * 
+ */
+export type PilotRun = $Result.DefaultSelection<Prisma.$PilotRunPayload>
+/**
  * Model JaiTool
  * 
  */
@@ -267,6 +272,16 @@ export class PrismaClient<
     * ```
     */
   get pilotAction(): Prisma.PilotActionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pilotRun`: Exposes CRUD operations for the **PilotRun** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PilotRuns
+    * const pilotRuns = await prisma.pilotRun.findMany()
+    * ```
+    */
+  get pilotRun(): Prisma.PilotRunDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.jaiTool`: Exposes CRUD operations for the **JaiTool** model.
@@ -767,6 +782,7 @@ export namespace Prisma {
     FileIndex: 'FileIndex',
     PilotSession: 'PilotSession',
     PilotAction: 'PilotAction',
+    PilotRun: 'PilotRun',
     JaiTool: 'JaiTool',
     SotEvent: 'SotEvent',
     User: 'User',
@@ -788,7 +804,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken"
+      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "pilotRun" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1233,6 +1249,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PilotActionCountArgs<ExtArgs>
             result: $Utils.Optional<PilotActionCountAggregateOutputType> | number
+          }
+        }
+      }
+      PilotRun: {
+        payload: Prisma.$PilotRunPayload<ExtArgs>
+        fields: Prisma.PilotRunFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PilotRunFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PilotRunFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          findFirst: {
+            args: Prisma.PilotRunFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PilotRunFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          findMany: {
+            args: Prisma.PilotRunFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>[]
+          }
+          create: {
+            args: Prisma.PilotRunCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          createMany: {
+            args: Prisma.PilotRunCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PilotRunCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>[]
+          }
+          delete: {
+            args: Prisma.PilotRunDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          update: {
+            args: Prisma.PilotRunUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          deleteMany: {
+            args: Prisma.PilotRunDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PilotRunUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PilotRunUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>[]
+          }
+          upsert: {
+            args: Prisma.PilotRunUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PilotRunPayload>
+          }
+          aggregate: {
+            args: Prisma.PilotRunAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePilotRun>
+          }
+          groupBy: {
+            args: Prisma.PilotRunGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PilotRunGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PilotRunCountArgs<ExtArgs>
+            result: $Utils.Optional<PilotRunCountAggregateOutputType> | number
           }
         }
       }
@@ -1794,6 +1884,7 @@ export namespace Prisma {
     fileIndex?: FileIndexOmit
     pilotSession?: PilotSessionOmit
     pilotAction?: PilotActionOmit
+    pilotRun?: PilotRunOmit
     jaiTool?: JaiToolOmit
     sotEvent?: SotEventOmit
     user?: UserOmit
@@ -9401,6 +9492,1113 @@ export namespace Prisma {
 
 
   /**
+   * Model PilotRun
+   */
+
+  export type AggregatePilotRun = {
+    _count: PilotRunCountAggregateOutputType | null
+    _avg: PilotRunAvgAggregateOutputType | null
+    _sum: PilotRunSumAggregateOutputType | null
+    _min: PilotRunMinAggregateOutputType | null
+    _max: PilotRunMaxAggregateOutputType | null
+  }
+
+  export type PilotRunAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type PilotRunSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type PilotRunMinAggregateOutputType = {
+    id: number | null
+    kind: string | null
+    status: string | null
+    startedAt: Date | null
+    finishedAt: Date | null
+    summary: string | null
+    artifactDir: string | null
+    stdoutPath: string | null
+    stderrPath: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PilotRunMaxAggregateOutputType = {
+    id: number | null
+    kind: string | null
+    status: string | null
+    startedAt: Date | null
+    finishedAt: Date | null
+    summary: string | null
+    artifactDir: string | null
+    stdoutPath: string | null
+    stderrPath: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PilotRunCountAggregateOutputType = {
+    id: number
+    kind: number
+    status: number
+    startedAt: number
+    finishedAt: number
+    summary: number
+    artifactDir: number
+    stdoutPath: number
+    stderrPath: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PilotRunAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type PilotRunSumAggregateInputType = {
+    id?: true
+  }
+
+  export type PilotRunMinAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    startedAt?: true
+    finishedAt?: true
+    summary?: true
+    artifactDir?: true
+    stdoutPath?: true
+    stderrPath?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PilotRunMaxAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    startedAt?: true
+    finishedAt?: true
+    summary?: true
+    artifactDir?: true
+    stdoutPath?: true
+    stderrPath?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PilotRunCountAggregateInputType = {
+    id?: true
+    kind?: true
+    status?: true
+    startedAt?: true
+    finishedAt?: true
+    summary?: true
+    artifactDir?: true
+    stdoutPath?: true
+    stderrPath?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PilotRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PilotRun to aggregate.
+     */
+    where?: PilotRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PilotRuns to fetch.
+     */
+    orderBy?: PilotRunOrderByWithRelationInput | PilotRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PilotRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PilotRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PilotRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PilotRuns
+    **/
+    _count?: true | PilotRunCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PilotRunAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PilotRunSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PilotRunMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PilotRunMaxAggregateInputType
+  }
+
+  export type GetPilotRunAggregateType<T extends PilotRunAggregateArgs> = {
+        [P in keyof T & keyof AggregatePilotRun]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePilotRun[P]>
+      : GetScalarType<T[P], AggregatePilotRun[P]>
+  }
+
+
+
+
+  export type PilotRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PilotRunWhereInput
+    orderBy?: PilotRunOrderByWithAggregationInput | PilotRunOrderByWithAggregationInput[]
+    by: PilotRunScalarFieldEnum[] | PilotRunScalarFieldEnum
+    having?: PilotRunScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PilotRunCountAggregateInputType | true
+    _avg?: PilotRunAvgAggregateInputType
+    _sum?: PilotRunSumAggregateInputType
+    _min?: PilotRunMinAggregateInputType
+    _max?: PilotRunMaxAggregateInputType
+  }
+
+  export type PilotRunGroupByOutputType = {
+    id: number
+    kind: string
+    status: string
+    startedAt: Date
+    finishedAt: Date | null
+    summary: string | null
+    artifactDir: string | null
+    stdoutPath: string | null
+    stderrPath: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: PilotRunCountAggregateOutputType | null
+    _avg: PilotRunAvgAggregateOutputType | null
+    _sum: PilotRunSumAggregateOutputType | null
+    _min: PilotRunMinAggregateOutputType | null
+    _max: PilotRunMaxAggregateOutputType | null
+  }
+
+  type GetPilotRunGroupByPayload<T extends PilotRunGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PilotRunGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PilotRunGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PilotRunGroupByOutputType[P]>
+            : GetScalarType<T[P], PilotRunGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PilotRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    summary?: boolean
+    artifactDir?: boolean
+    stdoutPath?: boolean
+    stderrPath?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pilotRun"]>
+
+  export type PilotRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    summary?: boolean
+    artifactDir?: boolean
+    stdoutPath?: boolean
+    stderrPath?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pilotRun"]>
+
+  export type PilotRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    summary?: boolean
+    artifactDir?: boolean
+    stdoutPath?: boolean
+    stderrPath?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["pilotRun"]>
+
+  export type PilotRunSelectScalar = {
+    id?: boolean
+    kind?: boolean
+    status?: boolean
+    startedAt?: boolean
+    finishedAt?: boolean
+    summary?: boolean
+    artifactDir?: boolean
+    stdoutPath?: boolean
+    stderrPath?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PilotRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kind" | "status" | "startedAt" | "finishedAt" | "summary" | "artifactDir" | "stdoutPath" | "stderrPath" | "createdAt" | "updatedAt", ExtArgs["result"]["pilotRun"]>
+
+  export type $PilotRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PilotRun"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      kind: string
+      status: string
+      startedAt: Date
+      finishedAt: Date | null
+      summary: string | null
+      artifactDir: string | null
+      stdoutPath: string | null
+      stderrPath: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["pilotRun"]>
+    composites: {}
+  }
+
+  type PilotRunGetPayload<S extends boolean | null | undefined | PilotRunDefaultArgs> = $Result.GetResult<Prisma.$PilotRunPayload, S>
+
+  type PilotRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PilotRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PilotRunCountAggregateInputType | true
+    }
+
+  export interface PilotRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PilotRun'], meta: { name: 'PilotRun' } }
+    /**
+     * Find zero or one PilotRun that matches the filter.
+     * @param {PilotRunFindUniqueArgs} args - Arguments to find a PilotRun
+     * @example
+     * // Get one PilotRun
+     * const pilotRun = await prisma.pilotRun.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PilotRunFindUniqueArgs>(args: SelectSubset<T, PilotRunFindUniqueArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PilotRun that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PilotRunFindUniqueOrThrowArgs} args - Arguments to find a PilotRun
+     * @example
+     * // Get one PilotRun
+     * const pilotRun = await prisma.pilotRun.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PilotRunFindUniqueOrThrowArgs>(args: SelectSubset<T, PilotRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PilotRun that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunFindFirstArgs} args - Arguments to find a PilotRun
+     * @example
+     * // Get one PilotRun
+     * const pilotRun = await prisma.pilotRun.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PilotRunFindFirstArgs>(args?: SelectSubset<T, PilotRunFindFirstArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PilotRun that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunFindFirstOrThrowArgs} args - Arguments to find a PilotRun
+     * @example
+     * // Get one PilotRun
+     * const pilotRun = await prisma.pilotRun.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PilotRunFindFirstOrThrowArgs>(args?: SelectSubset<T, PilotRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PilotRuns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PilotRuns
+     * const pilotRuns = await prisma.pilotRun.findMany()
+     * 
+     * // Get first 10 PilotRuns
+     * const pilotRuns = await prisma.pilotRun.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pilotRunWithIdOnly = await prisma.pilotRun.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PilotRunFindManyArgs>(args?: SelectSubset<T, PilotRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PilotRun.
+     * @param {PilotRunCreateArgs} args - Arguments to create a PilotRun.
+     * @example
+     * // Create one PilotRun
+     * const PilotRun = await prisma.pilotRun.create({
+     *   data: {
+     *     // ... data to create a PilotRun
+     *   }
+     * })
+     * 
+     */
+    create<T extends PilotRunCreateArgs>(args: SelectSubset<T, PilotRunCreateArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PilotRuns.
+     * @param {PilotRunCreateManyArgs} args - Arguments to create many PilotRuns.
+     * @example
+     * // Create many PilotRuns
+     * const pilotRun = await prisma.pilotRun.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PilotRunCreateManyArgs>(args?: SelectSubset<T, PilotRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PilotRuns and returns the data saved in the database.
+     * @param {PilotRunCreateManyAndReturnArgs} args - Arguments to create many PilotRuns.
+     * @example
+     * // Create many PilotRuns
+     * const pilotRun = await prisma.pilotRun.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PilotRuns and only return the `id`
+     * const pilotRunWithIdOnly = await prisma.pilotRun.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PilotRunCreateManyAndReturnArgs>(args?: SelectSubset<T, PilotRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PilotRun.
+     * @param {PilotRunDeleteArgs} args - Arguments to delete one PilotRun.
+     * @example
+     * // Delete one PilotRun
+     * const PilotRun = await prisma.pilotRun.delete({
+     *   where: {
+     *     // ... filter to delete one PilotRun
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PilotRunDeleteArgs>(args: SelectSubset<T, PilotRunDeleteArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PilotRun.
+     * @param {PilotRunUpdateArgs} args - Arguments to update one PilotRun.
+     * @example
+     * // Update one PilotRun
+     * const pilotRun = await prisma.pilotRun.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PilotRunUpdateArgs>(args: SelectSubset<T, PilotRunUpdateArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PilotRuns.
+     * @param {PilotRunDeleteManyArgs} args - Arguments to filter PilotRuns to delete.
+     * @example
+     * // Delete a few PilotRuns
+     * const { count } = await prisma.pilotRun.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PilotRunDeleteManyArgs>(args?: SelectSubset<T, PilotRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PilotRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PilotRuns
+     * const pilotRun = await prisma.pilotRun.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PilotRunUpdateManyArgs>(args: SelectSubset<T, PilotRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PilotRuns and returns the data updated in the database.
+     * @param {PilotRunUpdateManyAndReturnArgs} args - Arguments to update many PilotRuns.
+     * @example
+     * // Update many PilotRuns
+     * const pilotRun = await prisma.pilotRun.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PilotRuns and only return the `id`
+     * const pilotRunWithIdOnly = await prisma.pilotRun.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PilotRunUpdateManyAndReturnArgs>(args: SelectSubset<T, PilotRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PilotRun.
+     * @param {PilotRunUpsertArgs} args - Arguments to update or create a PilotRun.
+     * @example
+     * // Update or create a PilotRun
+     * const pilotRun = await prisma.pilotRun.upsert({
+     *   create: {
+     *     // ... data to create a PilotRun
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PilotRun we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PilotRunUpsertArgs>(args: SelectSubset<T, PilotRunUpsertArgs<ExtArgs>>): Prisma__PilotRunClient<$Result.GetResult<Prisma.$PilotRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PilotRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunCountArgs} args - Arguments to filter PilotRuns to count.
+     * @example
+     * // Count the number of PilotRuns
+     * const count = await prisma.pilotRun.count({
+     *   where: {
+     *     // ... the filter for the PilotRuns we want to count
+     *   }
+     * })
+    **/
+    count<T extends PilotRunCountArgs>(
+      args?: Subset<T, PilotRunCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PilotRunCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PilotRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PilotRunAggregateArgs>(args: Subset<T, PilotRunAggregateArgs>): Prisma.PrismaPromise<GetPilotRunAggregateType<T>>
+
+    /**
+     * Group by PilotRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PilotRunGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PilotRunGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PilotRunGroupByArgs['orderBy'] }
+        : { orderBy?: PilotRunGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PilotRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPilotRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PilotRun model
+   */
+  readonly fields: PilotRunFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PilotRun.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PilotRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PilotRun model
+   */
+  interface PilotRunFieldRefs {
+    readonly id: FieldRef<"PilotRun", 'Int'>
+    readonly kind: FieldRef<"PilotRun", 'String'>
+    readonly status: FieldRef<"PilotRun", 'String'>
+    readonly startedAt: FieldRef<"PilotRun", 'DateTime'>
+    readonly finishedAt: FieldRef<"PilotRun", 'DateTime'>
+    readonly summary: FieldRef<"PilotRun", 'String'>
+    readonly artifactDir: FieldRef<"PilotRun", 'String'>
+    readonly stdoutPath: FieldRef<"PilotRun", 'String'>
+    readonly stderrPath: FieldRef<"PilotRun", 'String'>
+    readonly createdAt: FieldRef<"PilotRun", 'DateTime'>
+    readonly updatedAt: FieldRef<"PilotRun", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PilotRun findUnique
+   */
+  export type PilotRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter, which PilotRun to fetch.
+     */
+    where: PilotRunWhereUniqueInput
+  }
+
+  /**
+   * PilotRun findUniqueOrThrow
+   */
+  export type PilotRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter, which PilotRun to fetch.
+     */
+    where: PilotRunWhereUniqueInput
+  }
+
+  /**
+   * PilotRun findFirst
+   */
+  export type PilotRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter, which PilotRun to fetch.
+     */
+    where?: PilotRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PilotRuns to fetch.
+     */
+    orderBy?: PilotRunOrderByWithRelationInput | PilotRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PilotRuns.
+     */
+    cursor?: PilotRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PilotRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PilotRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PilotRuns.
+     */
+    distinct?: PilotRunScalarFieldEnum | PilotRunScalarFieldEnum[]
+  }
+
+  /**
+   * PilotRun findFirstOrThrow
+   */
+  export type PilotRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter, which PilotRun to fetch.
+     */
+    where?: PilotRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PilotRuns to fetch.
+     */
+    orderBy?: PilotRunOrderByWithRelationInput | PilotRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PilotRuns.
+     */
+    cursor?: PilotRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PilotRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PilotRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PilotRuns.
+     */
+    distinct?: PilotRunScalarFieldEnum | PilotRunScalarFieldEnum[]
+  }
+
+  /**
+   * PilotRun findMany
+   */
+  export type PilotRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter, which PilotRuns to fetch.
+     */
+    where?: PilotRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PilotRuns to fetch.
+     */
+    orderBy?: PilotRunOrderByWithRelationInput | PilotRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PilotRuns.
+     */
+    cursor?: PilotRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PilotRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PilotRuns.
+     */
+    skip?: number
+    distinct?: PilotRunScalarFieldEnum | PilotRunScalarFieldEnum[]
+  }
+
+  /**
+   * PilotRun create
+   */
+  export type PilotRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PilotRun.
+     */
+    data: XOR<PilotRunCreateInput, PilotRunUncheckedCreateInput>
+  }
+
+  /**
+   * PilotRun createMany
+   */
+  export type PilotRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PilotRuns.
+     */
+    data: PilotRunCreateManyInput | PilotRunCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PilotRun createManyAndReturn
+   */
+  export type PilotRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * The data used to create many PilotRuns.
+     */
+    data: PilotRunCreateManyInput | PilotRunCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PilotRun update
+   */
+  export type PilotRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PilotRun.
+     */
+    data: XOR<PilotRunUpdateInput, PilotRunUncheckedUpdateInput>
+    /**
+     * Choose, which PilotRun to update.
+     */
+    where: PilotRunWhereUniqueInput
+  }
+
+  /**
+   * PilotRun updateMany
+   */
+  export type PilotRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PilotRuns.
+     */
+    data: XOR<PilotRunUpdateManyMutationInput, PilotRunUncheckedUpdateManyInput>
+    /**
+     * Filter which PilotRuns to update
+     */
+    where?: PilotRunWhereInput
+    /**
+     * Limit how many PilotRuns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PilotRun updateManyAndReturn
+   */
+  export type PilotRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * The data used to update PilotRuns.
+     */
+    data: XOR<PilotRunUpdateManyMutationInput, PilotRunUncheckedUpdateManyInput>
+    /**
+     * Filter which PilotRuns to update
+     */
+    where?: PilotRunWhereInput
+    /**
+     * Limit how many PilotRuns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PilotRun upsert
+   */
+  export type PilotRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PilotRun to update in case it exists.
+     */
+    where: PilotRunWhereUniqueInput
+    /**
+     * In case the PilotRun found by the `where` argument doesn't exist, create a new PilotRun with this data.
+     */
+    create: XOR<PilotRunCreateInput, PilotRunUncheckedCreateInput>
+    /**
+     * In case the PilotRun was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PilotRunUpdateInput, PilotRunUncheckedUpdateInput>
+  }
+
+  /**
+   * PilotRun delete
+   */
+  export type PilotRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+    /**
+     * Filter which PilotRun to delete.
+     */
+    where: PilotRunWhereUniqueInput
+  }
+
+  /**
+   * PilotRun deleteMany
+   */
+  export type PilotRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PilotRuns to delete
+     */
+    where?: PilotRunWhereInput
+    /**
+     * Limit how many PilotRuns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PilotRun without action
+   */
+  export type PilotRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PilotRun
+     */
+    select?: PilotRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PilotRun
+     */
+    omit?: PilotRunOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model JaiTool
    */
 
@@ -16195,6 +17393,23 @@ export namespace Prisma {
   export type PilotActionScalarFieldEnum = (typeof PilotActionScalarFieldEnum)[keyof typeof PilotActionScalarFieldEnum]
 
 
+  export const PilotRunScalarFieldEnum: {
+    id: 'id',
+    kind: 'kind',
+    status: 'status',
+    startedAt: 'startedAt',
+    finishedAt: 'finishedAt',
+    summary: 'summary',
+    artifactDir: 'artifactDir',
+    stdoutPath: 'stdoutPath',
+    stderrPath: 'stderrPath',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PilotRunScalarFieldEnum = (typeof PilotRunScalarFieldEnum)[keyof typeof PilotRunScalarFieldEnum]
+
+
   export const JaiToolScalarFieldEnum: {
     id: 'id',
     createdAt: 'createdAt',
@@ -16977,6 +18192,90 @@ export namespace Prisma {
     actionType?: StringWithAggregatesFilter<"PilotAction"> | string
     payload?: StringNullableWithAggregatesFilter<"PilotAction"> | string | null
     reason?: StringWithAggregatesFilter<"PilotAction"> | string
+  }
+
+  export type PilotRunWhereInput = {
+    AND?: PilotRunWhereInput | PilotRunWhereInput[]
+    OR?: PilotRunWhereInput[]
+    NOT?: PilotRunWhereInput | PilotRunWhereInput[]
+    id?: IntFilter<"PilotRun"> | number
+    kind?: StringFilter<"PilotRun"> | string
+    status?: StringFilter<"PilotRun"> | string
+    startedAt?: DateTimeFilter<"PilotRun"> | Date | string
+    finishedAt?: DateTimeNullableFilter<"PilotRun"> | Date | string | null
+    summary?: StringNullableFilter<"PilotRun"> | string | null
+    artifactDir?: StringNullableFilter<"PilotRun"> | string | null
+    stdoutPath?: StringNullableFilter<"PilotRun"> | string | null
+    stderrPath?: StringNullableFilter<"PilotRun"> | string | null
+    createdAt?: DateTimeFilter<"PilotRun"> | Date | string
+    updatedAt?: DateTimeFilter<"PilotRun"> | Date | string
+  }
+
+  export type PilotRunOrderByWithRelationInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrderInput | SortOrder
+    summary?: SortOrderInput | SortOrder
+    artifactDir?: SortOrderInput | SortOrder
+    stdoutPath?: SortOrderInput | SortOrder
+    stderrPath?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PilotRunWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: PilotRunWhereInput | PilotRunWhereInput[]
+    OR?: PilotRunWhereInput[]
+    NOT?: PilotRunWhereInput | PilotRunWhereInput[]
+    kind?: StringFilter<"PilotRun"> | string
+    status?: StringFilter<"PilotRun"> | string
+    startedAt?: DateTimeFilter<"PilotRun"> | Date | string
+    finishedAt?: DateTimeNullableFilter<"PilotRun"> | Date | string | null
+    summary?: StringNullableFilter<"PilotRun"> | string | null
+    artifactDir?: StringNullableFilter<"PilotRun"> | string | null
+    stdoutPath?: StringNullableFilter<"PilotRun"> | string | null
+    stderrPath?: StringNullableFilter<"PilotRun"> | string | null
+    createdAt?: DateTimeFilter<"PilotRun"> | Date | string
+    updatedAt?: DateTimeFilter<"PilotRun"> | Date | string
+  }, "id">
+
+  export type PilotRunOrderByWithAggregationInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrderInput | SortOrder
+    summary?: SortOrderInput | SortOrder
+    artifactDir?: SortOrderInput | SortOrder
+    stdoutPath?: SortOrderInput | SortOrder
+    stderrPath?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PilotRunCountOrderByAggregateInput
+    _avg?: PilotRunAvgOrderByAggregateInput
+    _max?: PilotRunMaxOrderByAggregateInput
+    _min?: PilotRunMinOrderByAggregateInput
+    _sum?: PilotRunSumOrderByAggregateInput
+  }
+
+  export type PilotRunScalarWhereWithAggregatesInput = {
+    AND?: PilotRunScalarWhereWithAggregatesInput | PilotRunScalarWhereWithAggregatesInput[]
+    OR?: PilotRunScalarWhereWithAggregatesInput[]
+    NOT?: PilotRunScalarWhereWithAggregatesInput | PilotRunScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PilotRun"> | number
+    kind?: StringWithAggregatesFilter<"PilotRun"> | string
+    status?: StringWithAggregatesFilter<"PilotRun"> | string
+    startedAt?: DateTimeWithAggregatesFilter<"PilotRun"> | Date | string
+    finishedAt?: DateTimeNullableWithAggregatesFilter<"PilotRun"> | Date | string | null
+    summary?: StringNullableWithAggregatesFilter<"PilotRun"> | string | null
+    artifactDir?: StringNullableWithAggregatesFilter<"PilotRun"> | string | null
+    stdoutPath?: StringNullableWithAggregatesFilter<"PilotRun"> | string | null
+    stderrPath?: StringNullableWithAggregatesFilter<"PilotRun"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PilotRun"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PilotRun"> | Date | string
   }
 
   export type JaiToolWhereInput = {
@@ -18038,6 +19337,101 @@ export namespace Prisma {
     actionType?: StringFieldUpdateOperationsInput | string
     payload?: NullableStringFieldUpdateOperationsInput | string | null
     reason?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type PilotRunCreateInput = {
+    kind: string
+    status: string
+    startedAt?: Date | string
+    finishedAt?: Date | string | null
+    summary?: string | null
+    artifactDir?: string | null
+    stdoutPath?: string | null
+    stderrPath?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PilotRunUncheckedCreateInput = {
+    id?: number
+    kind: string
+    status: string
+    startedAt?: Date | string
+    finishedAt?: Date | string | null
+    summary?: string | null
+    artifactDir?: string | null
+    stdoutPath?: string | null
+    stderrPath?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PilotRunUpdateInput = {
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    artifactDir?: NullableStringFieldUpdateOperationsInput | string | null
+    stdoutPath?: NullableStringFieldUpdateOperationsInput | string | null
+    stderrPath?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PilotRunUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    artifactDir?: NullableStringFieldUpdateOperationsInput | string | null
+    stdoutPath?: NullableStringFieldUpdateOperationsInput | string | null
+    stderrPath?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PilotRunCreateManyInput = {
+    id?: number
+    kind: string
+    status: string
+    startedAt?: Date | string
+    finishedAt?: Date | string | null
+    summary?: string | null
+    artifactDir?: string | null
+    stdoutPath?: string | null
+    stderrPath?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PilotRunUpdateManyMutationInput = {
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    artifactDir?: NullableStringFieldUpdateOperationsInput | string | null
+    stdoutPath?: NullableStringFieldUpdateOperationsInput | string | null
+    stderrPath?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PilotRunUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    startedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    finishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    artifactDir?: NullableStringFieldUpdateOperationsInput | string | null
+    stdoutPath?: NullableStringFieldUpdateOperationsInput | string | null
+    stderrPath?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type JaiToolCreateInput = {
@@ -19125,6 +20519,56 @@ export namespace Prisma {
   export type PilotActionSumOrderByAggregateInput = {
     id?: SortOrder
     sessionId?: SortOrder
+  }
+
+  export type PilotRunCountOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    summary?: SortOrder
+    artifactDir?: SortOrder
+    stdoutPath?: SortOrder
+    stderrPath?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PilotRunAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type PilotRunMaxOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    summary?: SortOrder
+    artifactDir?: SortOrder
+    stdoutPath?: SortOrder
+    stderrPath?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PilotRunMinOrderByAggregateInput = {
+    id?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    startedAt?: SortOrder
+    finishedAt?: SortOrder
+    summary?: SortOrder
+    artifactDir?: SortOrder
+    stdoutPath?: SortOrder
+    stderrPath?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PilotRunSumOrderByAggregateInput = {
+    id?: SortOrder
   }
 
   export type JaiToolCountOrderByAggregateInput = {

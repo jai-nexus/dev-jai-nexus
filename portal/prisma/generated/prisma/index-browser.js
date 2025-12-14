@@ -209,6 +209,20 @@ exports.Prisma.PilotActionScalarFieldEnum = {
   reason: 'reason'
 };
 
+exports.Prisma.PilotRunScalarFieldEnum = {
+  id: 'id',
+  kind: 'kind',
+  status: 'status',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt',
+  summary: 'summary',
+  artifactDir: 'artifactDir',
+  stdoutPath: 'stdoutPath',
+  stderrPath: 'stderrPath',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.JaiToolScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
@@ -313,6 +327,7 @@ exports.Prisma.ModelName = {
   FileIndex: 'FileIndex',
   PilotSession: 'PilotSession',
   PilotAction: 'PilotAction',
+  PilotRun: 'PilotRun',
   JaiTool: 'JaiTool',
   SotEvent: 'SotEvent',
   User: 'User',
