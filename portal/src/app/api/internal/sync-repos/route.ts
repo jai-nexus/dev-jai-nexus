@@ -1,39 +1,21 @@
-// src/app/api/internal/sync-repos/route.ts
+// portal/src/app/api/internal/sync-repos/route.ts
 import { NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const IS_VERCEL = Boolean(process.env.VERCEL);
+const IS_VERCEL =
+  process.env.VERCEL === "1" ||
+  process.env.VERCEL === "true" ||
+  process.env.VERCEL === "yes";
 
-/**
- * On Vercel you can only write to /tmp (ephemeral).
- * Locally, we keep artifacts under ./data/runs.
- *
- * You can override with PILOTRUN_RUNS_DIR:
- * - absolute: /some/dir
- * - relative: data/runs (resolved against process.cwd())
- */
-const RUNS_BASE_DIR_ABS = (() => {
-  const custom = process.env.PILOTRUN_RUNS_DIR?.trim();
-  if (custom) {
-    return path.isAbsolute(custom) ? custom : path.join(process.cwd(), custom);
-  }
-  return IS_VERCEL
-    ? path.join(os.tmpdir(), "jai-nexus", "portal", "runs")
-    : path.join(process.cwd(), "data", "runs");
-})();
+type RunResult = { code: number; stdout: string; stderr: string };
 
-function toPosix(p: string) {
-  return p.replace(/\\/g, "/");
-}
-
-function run(cmd: string, args: string[], cwd: string) {
-  return new Promise<{ code: number; stdout: string; stderr: string }>((resolve) => {
+function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
+  return new Promise<RunResult>((resolve) => {
     const child = spawn(cmd, args, {
       cwd,
       env: process.env,
@@ -46,12 +28,15 @@ function run(cmd: string, args: string[], cwd: string) {
     child.stdout.on("data", (d) => (stdout += d.toString()));
     child.stderr.on("data", (d) => (stderr += d.toString()));
 
-    child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
+    child.on("close", (code) =>
+      resolve({ code: typeof code === "number" ? code : 0, stdout, stderr }),
+    );
+
     child.on("error", (err) =>
       resolve({
         code: 1,
         stdout,
-        stderr: stderr + "\n" + (err?.message ?? String(err)),
+        stderr: stderr + "\n" + (err instanceof Error ? err.message : String(err)),
       }),
     );
   });
@@ -64,7 +49,30 @@ function countIndexedRepos(stdout: string) {
     .length;
 }
 
+function safeOneLine(s: string, max = 300) {
+  const one = (s ?? "").replace(/\s+/g, " ").trim();
+  return one.length > max ? one.slice(0, max - 1) + "…" : one;
+}
+
+function getErrorMessage(err: unknown) {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 export async function POST() {
+  // Vercel/serverless: no reliable filesystem persistence + spawning toolchains is fragile.
+  // Use GitHub Actions (or a self-hosted runner) to run the sync script instead.
+  if (IS_VERCEL) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "sync-repos is disabled on Vercel runtime. Run the Portal · sync-repos GitHub Action (recommended) or run locally.",
+      },
+      { status: 501 },
+    );
+  }
+
   const startedAt = new Date();
 
   // 1) Create PilotRun row first (running)
@@ -76,144 +84,114 @@ export async function POST() {
     },
   });
 
-  // 2) Artifact paths (ABS for writing, REL/logical for storing/returning)
-  const artifactDirName = `pilotrun-${runRow.id}`;
-  const artifactDirAbs = path.join(RUNS_BASE_DIR_ABS, artifactDirName);
-
-  // store a logical path (don’t leak /tmp or /var/task absolute paths)
-  const artifactDirRel = IS_VERCEL
-    ? path.posix.join("tmp", "jai-nexus", "portal", "runs", artifactDirName)
-    : path.posix.join("data", "runs", artifactDirName);
-
-  const stdoutPathRel = path.posix.join(artifactDirRel, "stdout.log");
-  const stderrPathRel = path.posix.join(artifactDirRel, "stderr.log");
-  const resultPathRel = path.posix.join(artifactDirRel, "result.json");
-
-  const stdoutPathAbs = path.join(artifactDirAbs, "stdout.log");
-  const stderrPathAbs = path.join(artifactDirAbs, "stderr.log");
-  const resultPathAbs = path.join(artifactDirAbs, "result.json");
-
-  // If anything blows up, we still want to mark the run as failed + return JSON.
-  let finishedAt = new Date();
-  let ok = false;
-  let code = 1;
-  let indexedRepos = 0;
-  let stdout = "";
-  let stderr = "";
+  let artifactDirRel: string | null = null;
+  let stdoutPathRel: string | null = null;
+  let stderrPathRel: string | null = null;
 
   try {
-    // 3) Create artifact dir (Vercel => /tmp, local => ./data/runs)
+    // 2) Create artifact dir (local/dev)
+    artifactDirRel = path.join("data", "runs", `pilotrun-${runRow.id}`);
+    const artifactDirAbs = path.join(process.cwd(), artifactDirRel);
     await fs.mkdir(artifactDirAbs, { recursive: true });
 
-    // 4) Execute the script (Windows-safe for local; Linux for CI/Vercel)
+    stdoutPathRel = path.join(artifactDirRel, "stdout.log");
+    stderrPathRel = path.join(artifactDirRel, "stderr.log");
+    const resultPathRel = path.join(artifactDirRel, "result.json");
+
+    // 3) Execute the script (Windows-safe)
     const isWin = process.platform === "win32";
     const cmd = isWin ? "cmd.exe" : "pnpm";
     const args = isWin
       ? ["/d", "/s", "/c", "pnpm exec tsx scripts/jai-sync-repos.ts"]
       : ["exec", "tsx", "scripts/jai-sync-repos.ts"];
 
-    const r = await run(cmd, args, process.cwd());
+    const { code, stdout, stderr } = await run(cmd, args, process.cwd());
 
-    code = r.code ?? 1;
-    stdout = r.stdout ?? "";
-    stderr = r.stderr ?? "";
+    const exitCode = typeof code === "number" ? code : 1;
+    const indexedRepos = countIndexedRepos(stdout ?? "");
+    const ok = exitCode === 0;
 
-    finishedAt = new Date();
-    indexedRepos = countIndexedRepos(stdout);
-    ok = code === 0;
+    // 4) Write artifacts
+    await fs.writeFile(
+      path.join(process.cwd(), stdoutPathRel),
+      stdout ?? "",
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(process.cwd(), stderrPathRel),
+      stderr ?? "",
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(process.cwd(), resultPathRel),
+      JSON.stringify(
+        {
+          ok,
+          code: exitCode,
+          startedAt: startedAt.toISOString(),
+          finishedAt: new Date().toISOString(),
+          indexedRepos,
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
 
-    // 5) Write artifacts (to ABS paths)
-    await fs.writeFile(stdoutPathAbs, stdout, "utf8").catch(() => {});
-    await fs.writeFile(stderrPathAbs, stderr, "utf8").catch(() => {});
-    await fs
-      .writeFile(
-        resultPathAbs,
-        JSON.stringify(
-          {
-            ok,
-            code,
-            startedAt: startedAt.toISOString(),
-            finishedAt: finishedAt.toISOString(),
-            indexedRepos,
-            artifactDir: artifactDirRel,
-            stdoutPath: stdoutPathRel,
-            stderrPath: stderrPathRel,
-          },
-          null,
-          2,
-        ),
-        "utf8",
-      )
-      .catch(() => {});
-  } catch (err) {
-    finishedAt = new Date();
-    ok = false;
-    code = 1;
-    stderr =
-      (stderr ? stderr + "\n" : "") +
-      (err instanceof Error ? err.stack ?? err.message : String(err));
+    // 5) Update PilotRun row
+    const finishedAt = new Date();
+    const summary = ok
+      ? `sync-repos OK · indexedRepos=${indexedRepos}`
+      : `sync-repos FAILED · exitCode=${exitCode}`;
 
-    // best-effort write error artifact (only if dir exists / can be created)
-    try {
-      await fs.mkdir(artifactDirAbs, { recursive: true });
-      await fs.writeFile(stderrPathAbs, stderr, "utf8");
-      await fs.writeFile(
-        resultPathAbs,
-        JSON.stringify(
-          {
-            ok: false,
-            code: 1,
-            startedAt: startedAt.toISOString(),
-            finishedAt: finishedAt.toISOString(),
-            indexedRepos: 0,
-            error: err instanceof Error ? err.message : String(err),
-            artifactDir: artifactDirRel,
-          },
-          null,
-          2,
-        ),
-        "utf8",
-      );
-    } catch {
-      // ignore
-    }
-  }
-
-  const summary = ok
-    ? `sync-repos OK · indexedRepos=${indexedRepos}`
-    : `sync-repos FAILED · exitCode=${code}`;
-
-  // 6) Update PilotRun row (success/failed) — best-effort
-  try {
     await prisma.pilotRun.update({
       where: { id: runRow.id },
       data: {
         status: ok ? "success" : "failed",
         finishedAt,
         summary,
-        artifactDir: toPosix(artifactDirRel),
-        stdoutPath: toPosix(stdoutPathRel),
-        stderrPath: toPosix(stderrPathRel),
+        artifactDir: artifactDirRel.replace(/\\/g, "/"),
+        stdoutPath: stdoutPathRel.replace(/\\/g, "/"),
+        stderrPath: stderrPathRel.replace(/\\/g, "/"),
       },
     });
-  } catch {
-    // ignore DB update failure here; still return response
-  }
 
-  return NextResponse.json(
-    {
-      ok,
-      runId: runRow.id,
-      summary,
-      indexedRepos,
-      code,
-      artifactDir: toPosix(artifactDirRel),
-      stdoutPath: toPosix(stdoutPathRel),
-      stderrPath: toPosix(stderrPathRel),
-      resultPath: toPosix(resultPathRel),
-      // include a little stderr so Actions has *something* without downloading artifacts
-      error: ok ? null : (stderr || "").slice(0, 4000),
-    },
-    { status: ok ? 200 : 500 },
-  );
+    return NextResponse.json(
+      {
+        ok,
+        runId: runRow.id,
+        summary,
+        indexedRepos,
+        code: exitCode,
+        artifactDir: artifactDirRel.replace(/\\/g, "/"),
+      },
+      { status: ok ? 200 : 500 },
+    );
+  } catch (err: unknown) {
+    const finishedAt = new Date();
+    const msg = safeOneLine(getErrorMessage(err));
+    const summary = `sync-repos FAILED · ${msg}`;
+
+    await prisma.pilotRun.update({
+      where: { id: runRow.id },
+      data: {
+        status: "failed",
+        finishedAt,
+        summary,
+        artifactDir: artifactDirRel ? artifactDirRel.replace(/\\/g, "/") : null,
+        stdoutPath: stdoutPathRel ? stdoutPathRel.replace(/\\/g, "/") : null,
+        stderrPath: stderrPathRel ? stderrPathRel.replace(/\\/g, "/") : null,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        ok: false,
+        runId: runRow.id,
+        summary,
+        error: msg,
+      },
+      { status: 500 },
+    );
+  }
 }
