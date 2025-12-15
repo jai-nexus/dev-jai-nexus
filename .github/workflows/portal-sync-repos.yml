@@ -2,7 +2,7 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
-  # Uncomment once stable
+  # uncomment once it’s stable
   # schedule:
   #   - cron: "0 * * * *" # hourly
 
@@ -20,17 +20,17 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      # Make git fail instead of prompting
+      # optional auth paths (set at least ONE strategy)
+      REPO_SYNC_TOKEN: ${{ secrets.REPO_SYNC_TOKEN }}
+      ORG_APP_ID: ${{ secrets.ORG_APP_ID }}
+      ORG_APP_PRIVATE_KEY: ${{ secrets.ORG_APP_PRIVATE_KEY }}
       GIT_TERMINAL_PROMPT: "0"
 
     steps:
       - name: Validate secrets
         run: |
           set -euo pipefail
-          if [ -z "${DATABASE_URL:-}" ]; then
-            echo "Missing secret: DATABASE_URL"
-            exit 1
-          fi
+          [ -n "${DATABASE_URL:-}" ] || (echo "Missing secret: DATABASE_URL" && exit 1)
           echo "DATABASE_URL is set (not printing)."
 
       - name: Checkout
@@ -57,25 +57,26 @@ jobs:
           pnpm -v
           git --version
 
-      # Optional: GitHub App token (only if you set both secrets)
       - name: Create GitHub App token
         id: app_token
-        if: ${{ secrets.ORG_APP_ID != '' && secrets.ORG_APP_PRIVATE_KEY != '' }}
+        if: ${{ env.ORG_APP_ID != '' && env.ORG_APP_PRIVATE_KEY != '' }}
         uses: tibdex/github-app-token@v2
         with:
-          app_id: ${{ secrets.ORG_APP_ID }}
-          private_key: ${{ secrets.ORG_APP_PRIVATE_KEY }}
+          app_id: ${{ env.ORG_APP_ID }}
+          private_key: ${{ env.ORG_APP_PRIVATE_KEY }}
 
       - name: Configure git auth for clones
-        env:
-          CLONE_TOKEN: ${{ steps.app_token.outputs.token || secrets.REPO_SYNC_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${CLONE_TOKEN:-}" ]; then
-            echo "Missing clone token. Set REPO_SYNC_TOKEN (PAT) or ORG_APP_ID + ORG_APP_PRIVATE_KEY."
+          TOKEN="${{ steps.app_token.outputs.token }}"
+          if [ -z "$TOKEN" ]; then
+            TOKEN="${REPO_SYNC_TOKEN:-}"
+          fi
+          if [ -z "$TOKEN" ]; then
+            echo "Missing clone auth. Set REPO_SYNC_TOKEN (PAT) OR ORG_APP_ID + ORG_APP_PRIVATE_KEY."
             exit 1
           fi
-          git config --global url."https://x-access-token:${CLONE_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
 
       - name: Install (portal)
         working-directory: portal
@@ -84,11 +85,6 @@ jobs:
       - name: Prisma generate (portal)
         working-directory: portal
         run: pnpm prisma generate
-
-      # Optional but often wise if Actions might hit a freshly-migrated DB:
-      # - name: Prisma migrate deploy (portal)
-      #   working-directory: portal
-      #   run: pnpm prisma migrate deploy
 
       - name: Run sync-repos indexer
         id: sync
@@ -132,3 +128,4 @@ jobs:
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
+            portal/workspace
