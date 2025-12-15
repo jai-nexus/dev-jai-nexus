@@ -16,16 +16,10 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: portal
+    timeout-minutes: 30
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      NODE_ENV: production
 
     steps:
       - name: Validate secrets
@@ -39,6 +33,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -47,52 +43,48 @@ jobs:
           cache: pnpm
           cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Enable pnpm (corepack)
+        run: corepack enable
 
       - name: Install (portal)
+        working-directory: portal
         run: pnpm install --frozen-lockfile
 
       - name: Prisma generate (portal)
-        run: pnpm exec prisma generate
-
-      - name: Prisma migrate deploy (portal)
-        run: pnpm exec prisma migrate deploy
+        working-directory: portal
+        run: pnpm prisma generate
 
       - name: Run sync-repos indexer
         id: sync
+        working-directory: portal
         run: |
           set -euo pipefail
+          mkdir -p .tmp
 
-          # capture stdout/stderr into files while still streaming to the job log
-          pnpm exec tsx scripts/jai-sync-repos.ts \
-            2> >(tee sync.stderr.log >&2) \
-            | tee sync.stdout.log
+          set +e
+          pnpm exec tsx scripts/jai-sync-repos.ts > .tmp/sync.stdout.log 2> .tmp/sync.stderr.log
+          EXIT_CODE=$?
+          set -e
 
-          COUNT="$(grep -c '^Indexed repo ' sync.stdout.log || true)"
-          echo "indexed_repos=$COUNT" >> "$GITHUB_OUTPUT"
-          echo "Indexed repos: $COUNT"
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
 
-      - name: Summary
-        if: always()
-        run: |
-          {
-            echo "## Portal sync-repos (GitHub Actions)"
-            echo ""
-            echo "- indexedRepos: ${{ steps.sync.outputs.indexed_repos }}"
-            echo ""
-            echo "### Latest stdout (tail)"
-            echo '```'
-            tail -n 120 sync.stdout.log 2>/dev/null || echo "(no stdout captured)"
-            echo '```'
-            echo ""
-            echo "### Latest stderr (tail)"
-            echo '```'
-            tail -n 120 sync.stderr.log 2>/dev/null || echo "(no stderr captured)"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## Portal sync-repos (GitHub Actions)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- exit_code: $EXIT_CODE" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Latest stdout (tail)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 200 .tmp/sync.stdout.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Latest stderr (tail)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 200 .tmp/sync.stderr.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            exit "$EXIT_CODE"
+          fi
 
       - name: Upload artifacts
         if: always()
@@ -100,5 +92,6 @@ jobs:
         with:
           name: portal-sync-repos-artifacts
           path: |
-            portal/sync.stdout.log
-            portal/sync.stderr.log
+            portal/.tmp/sync.stdout.log
+            portal/.tmp/sync.stderr.log
+            portal/data/runs

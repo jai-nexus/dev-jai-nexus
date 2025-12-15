@@ -8,24 +8,9 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 
 const IS_VERCEL =
-  process.env.VERCEL === "1" ||
-  process.env.VERCEL === "true" ||
-  process.env.VERCEL === "yes";
-
-function getErrorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  if (typeof err === "string") return err;
-  try {
-    return JSON.stringify(err);
-  } catch {
-    return String(err);
-  }
-}
-
-function safeOneLine(s: string, max = 300) {
-  const one = (s ?? "").replace(/\s+/g, " ").trim();
-  return one.length > max ? one.slice(0, max - 1) + "…" : one;
-}
+  !!process.env.VERCEL ||
+  !!process.env.VERCEL_ENV ||
+  process.env.NEXT_RUNTIME === "edge";
 
 function run(cmd: string, args: string[], cwd: string) {
   return new Promise<{ code: number; stdout: string; stderr: string }>(
@@ -39,15 +24,15 @@ function run(cmd: string, args: string[], cwd: string) {
       let stdout = "";
       let stderr = "";
 
-      child.stdout.on("data", (d) => (stdout += d.toString()));
-      child.stderr.on("data", (d) => (stderr += d.toString()));
+      child.stdout?.on("data", (d) => (stdout += d.toString()));
+      child.stderr?.on("data", (d) => (stderr += d.toString()));
 
       child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
       child.on("error", (err) =>
         resolve({
           code: 1,
           stdout,
-          stderr: stderr + "\n" + safeOneLine(getErrorMessage(err)),
+          stderr: `${stderr}\n${err?.message ?? String(err)}`,
         }),
       );
     },
@@ -61,9 +46,18 @@ function countIndexedRepos(stdout: string) {
     .length;
 }
 
+function safeOneLine(s: string, max = 300) {
+  const one = (s ?? "").replace(/\s+/g, " ").trim();
+  return one.length > max ? one.slice(0, max - 1) + "…" : one;
+}
+
+function getErrorMessage(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
+
 export async function POST() {
-  // Vercel can’t safely spawn pnpm/tsx or write persistent artifacts under /var/task.
-  // This endpoint is local/dev only. Use the GitHub Action to run the indexer.
+  // Vercel/serverless: do NOT attempt spawn + filesystem artifacts here.
+  // This endpoint remains useful for local/dev, but production automation should run in GitHub Actions.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -169,25 +163,25 @@ export async function POST() {
     const msg = safeOneLine(getErrorMessage(err));
     const summary = `sync-repos FAILED · ${msg}`;
 
-    // best-effort DB update
-    try {
-      await prisma.pilotRun.update({
-        where: { id: runRow.id },
-        data: {
-          status: "failed",
-          finishedAt,
-          summary,
-          artifactDir: artifactDirRel ? artifactDirRel.replace(/\\/g, "/") : null,
-          stdoutPath: stdoutPathRel ? stdoutPathRel.replace(/\\/g, "/") : null,
-          stderrPath: stderrPathRel ? stderrPathRel.replace(/\\/g, "/") : null,
-        },
-      });
-    } catch {
-      // ignore
-    }
+    await prisma.pilotRun.update({
+      where: { id: runRow.id },
+      data: {
+        status: "failed",
+        finishedAt,
+        summary,
+        artifactDir: artifactDirRel ? artifactDirRel.replace(/\\/g, "/") : null,
+        stdoutPath: stdoutPathRel ? stdoutPathRel.replace(/\\/g, "/") : null,
+        stderrPath: stderrPathRel ? stderrPathRel.replace(/\\/g, "/") : null,
+      },
+    });
 
     return NextResponse.json(
-      { ok: false, runId: runRow.id, summary, error: msg },
+      {
+        ok: false,
+        runId: runRow.id,
+        summary,
+        error: msg,
+      },
       { status: 500 },
     );
   }
