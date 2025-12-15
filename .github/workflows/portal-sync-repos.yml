@@ -22,7 +22,7 @@ jobs:
       NODE_ENV: "production"
 
     steps:
-      - name: Validate required secrets
+      - name: Validate secrets
         run: |
           set -euo pipefail
           if [ -z "${DATABASE_URL:-}" ]; then
@@ -31,41 +31,33 @@ jobs:
           fi
           echo "DATABASE_URL is set (not printing)."
 
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
-          cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          # If you later add `"packageManager": "pnpm@X"` to package.json,
-          # you can remove this version pin.
-          version: 9
-          run_install: false
-
-      - name: Verify pnpm
+      - name: Enable pnpm (corepack)
         run: |
           set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
           node -v
           pnpm -v
 
-      - name: Install portal deps
+      - name: Install (portal)
         run: |
           set -euo pipefail
           pnpm -C portal install --frozen-lockfile
 
-      - name: Prisma generate
+      - name: Prisma generate (portal)
         run: |
           set -euo pipefail
           pnpm -C portal prisma generate
 
-      - name: Prisma migrate deploy
+      - name: Prisma migrate deploy (portal)
         run: |
           set -euo pipefail
           pnpm -C portal prisma migrate deploy
@@ -75,7 +67,6 @@ jobs:
           set -euo pipefail
           TS="$(date -u +%Y%m%dT%H%M%SZ)"
           mkdir -p portal/data/runs/gha
-
           cd portal
           pnpm exec tsx scripts/jai-sync-repos.ts \
             2> "data/runs/gha/sync-${TS}.stderr.log" \
@@ -89,12 +80,12 @@ jobs:
             echo ""
             echo "### Latest stdout (tail)"
             echo '```'
-            ls -1t portal/data/runs/gha/*.stdout.log 2>/dev/null | head -n 1 | xargs -r tail -n 80 || echo "(no stdout log)"
+            ls -1t portal/data/runs/gha/*.stdout.log 2>/dev/null | head -n 1 | xargs -r tail -n 120 || echo "(no stdout log)"
             echo '```'
             echo ""
             echo "### Latest stderr (tail)"
             echo '```'
-            ls -1t portal/data/runs/gha/*.stderr.log 2>/dev/null | head -n 1 | xargs -r tail -n 120 || echo "(no stderr log)"
+            ls -1t portal/data/runs/gha/*.stderr.log 2>/dev/null | head -n 1 | xargs -r tail -n 200 || echo "(no stderr log)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
