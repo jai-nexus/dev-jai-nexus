@@ -17,14 +17,7 @@ jobs:
       contents: read
 
     env:
-      # REQUIRED (repo secret)
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-      # OPTIONAL (only for a health ping; safe to omit)
-      JAI_INTERNAL_API_BASE: ${{ secrets.JAI_INTERNAL_API_BASE }}
-      JAI_INTERNAL_API_TOKEN: ${{ secrets.JAI_INTERNAL_API_TOKEN }}
-
-      # Keep CI behavior predictable
       CI: "1"
       NODE_ENV: "production"
 
@@ -46,12 +39,21 @@ jobs:
         with:
           node-version: "20"
           cache: "pnpm"
+          cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Enable Corepack (pnpm)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # If you later add `"packageManager": "pnpm@X"` to package.json,
+          # you can remove this version pin.
+          version: 9
+          run_install: false
+
+      - name: Verify pnpm
         run: |
           set -euo pipefail
-          corepack enable
-          pnpm --version
+          node -v
+          pnpm -v
 
       - name: Install portal deps
         run: |
@@ -63,31 +65,17 @@ jobs:
           set -euo pipefail
           pnpm -C portal prisma generate
 
-      - name: Prisma migrate deploy (safe in CI)
+      - name: Prisma migrate deploy
         run: |
           set -euo pipefail
           pnpm -C portal prisma migrate deploy
 
-      - name: Optional ping deployed portal
-        if: ${{ env.JAI_INTERNAL_API_BASE != '' && env.JAI_INTERNAL_API_TOKEN != '' }}
-        run: |
-          set -euo pipefail
-          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/ping"
-          echo "Ping: $URL"
-          curl -sS \
-            --connect-timeout 10 \
-            --max-time 60 \
-            -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
-            -H "Accept: application/json" \
-            "$URL" | tee ping.json
-
-      - name: Run sync-repos indexer (runs locally in Actions)
+      - name: Run sync-repos indexer
         run: |
           set -euo pipefail
           TS="$(date -u +%Y%m%dT%H%M%SZ)"
           mkdir -p portal/data/runs/gha
 
-          echo "Running: portal/scripts/jai-sync-repos.ts"
           cd portal
           pnpm exec tsx scripts/jai-sync-repos.ts \
             2> "data/runs/gha/sync-${TS}.stderr.log" \
@@ -98,9 +86,6 @@ jobs:
         run: |
           {
             echo "## Portal sync-repos (GitHub Actions)"
-            echo ""
-            echo "- Ran \`pnpm exec tsx scripts/jai-sync-repos.ts\` inside Actions"
-            echo "- DB: uses \`DATABASE_URL\` repo secret"
             echo ""
             echo "### Latest stdout (tail)"
             echo '```'
@@ -120,4 +105,3 @@ jobs:
           name: portal-sync-repos-artifacts
           path: |
             portal/data/runs
-            ping.json
