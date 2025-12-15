@@ -3,7 +3,7 @@ name: Portal · sync-repos
 on:
   workflow_dispatch:
   # schedule:
-  #   - cron: "*/30 * * * *"
+  #   - cron: "*/30 * * * *" # every 30 minutes
 
 concurrency:
   group: portal-sync-repos
@@ -21,6 +21,8 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REPO_SYNC_TOKEN_ORG: ${{ secrets.REPO_SYNC_TOKEN_ORG }}
       REPO_SYNC_TOKEN_USER: ${{ secrets.REPO_SYNC_TOKEN_USER }}
+      # prevent git prompts that hang CI
+      GIT_TERMINAL_PROMPT: "0"
 
     steps:
       - name: Validate secrets
@@ -40,11 +42,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Enable pnpm (corepack)
+        run: corepack enable
 
       - name: Verify tooling
         run: |
@@ -52,12 +54,21 @@ jobs:
           pnpm -v
           git --version
 
-      - name: Configure git auth for clones
+      - name: Configure git auth for clones (user + org)
         run: |
           set -euo pipefail
+
+          # mask tokens explicitly (extra safety)
+          echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
+          echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
+
+          # Use ORG token for org repos
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
+          # Use USER token for user repos
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
-          git config --global credential.helper ""
+
+          # Optional: if any URLs are git@github.com: form
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/".insteadOf "git@github.com:"
 
       - name: Install (portal)
         working-directory: portal
@@ -67,10 +78,9 @@ jobs:
         working-directory: portal
         run: pnpm prisma generate
 
-      # OPTIONAL: only if your DB needs migrations applied before the script can run
-      # - name: Prisma migrate deploy (portal)
-      #   working-directory: portal
-      #   run: pnpm prisma migrate deploy
+      - name: Prisma migrate deploy (portal)
+        working-directory: portal
+        run: pnpm prisma migrate deploy
 
       - name: Run sync-repos indexer
         id: sync
@@ -86,19 +96,21 @@ jobs:
 
           echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
 
-          echo "## Portal sync-repos (GitHub Actions)" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- exit_code: $EXIT_CODE" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Latest stdout (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 .tmp/sync.stdout.log 2>/dev/null || echo "(no stdout log)"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Latest stderr (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 .tmp/sync.stderr.log 2>/dev/null || echo "(no stderr log)"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Portal sync-repos (GitHub Actions)"
+            echo ""
+            echo "- exit_code: $EXIT_CODE"
+            echo ""
+            echo "### Latest stdout (tail)"
+            echo '```'
+            tail -n 200 .tmp/sync.stdout.log || true
+            echo '```'
+            echo ""
+            echo "### Latest stderr (tail)"
+            echo '```'
+            tail -n 200 .tmp/sync.stderr.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
           exit "$EXIT_CODE"
 
@@ -107,8 +119,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: portal-sync-repos-artifacts
-          if-no-files-found: ignore
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
-            workspace
+            workspace/
+            portal/data/runs/

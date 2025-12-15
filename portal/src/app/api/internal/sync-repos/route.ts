@@ -1,4 +1,3 @@
-// portal/src/app/api/internal/sync-repos/route.ts
 import { NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
@@ -10,33 +9,32 @@ export const runtime = "nodejs";
 const IS_VERCEL =
   process.env.VERCEL === "1" ||
   process.env.VERCEL === "true" ||
-  process.env.VERCEL_ENV != null;
+  !!process.env.VERCEL_ENV ||
+  process.env.NEXT_RUNTIME === "edge";
 
 function run(cmd: string, args: string[], cwd: string) {
-  return new Promise<{ code: number; stdout: string; stderr: string }>(
-    (resolve) => {
-      const child = spawn(cmd, args, {
-        cwd,
-        env: process.env,
-        windowsHide: true,
-      });
+  return new Promise<{ code: number; stdout: string; stderr: string }>((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      env: process.env,
+      windowsHide: true,
+    });
 
-      let stdout = "";
-      let stderr = "";
+    let stdout = "";
+    let stderr = "";
 
-      child.stdout?.on("data", (d) => (stdout += d.toString()));
-      child.stderr?.on("data", (d) => (stderr += d.toString()));
+    child.stdout?.on("data", (d) => (stdout += d.toString()));
+    child.stderr?.on("data", (d) => (stderr += d.toString()));
 
-      child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
-      child.on("error", (err) =>
-        resolve({
-          code: 1,
-          stdout,
-          stderr: `${stderr}\n${err?.message ?? String(err)}`,
-        }),
-      );
-    },
-  );
+    child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
+    child.on("error", (err) =>
+      resolve({
+        code: 1,
+        stdout,
+        stderr: `${stderr}\n${err?.message ?? String(err)}`,
+      }),
+    );
+  });
 }
 
 function countIndexedRepos(stdout: string) {
@@ -57,7 +55,7 @@ function getErrorMessage(err: unknown) {
 
 export async function POST() {
   // Vercel/serverless: do NOT attempt spawn + filesystem artifacts here.
-  // Keep this route for local/dev only. Automation should run in GitHub Actions.
+  // Run the indexer from GitHub Actions instead.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -72,11 +70,7 @@ export async function POST() {
   const startedAt = new Date();
 
   const runRow = await prisma.pilotRun.create({
-    data: {
-      kind: "sync-repos",
-      status: "running",
-      startedAt,
-    },
+    data: { kind: "sync-repos", status: "running", startedAt },
   });
 
   let artifactDirRel: string | null = null;
@@ -104,16 +98,8 @@ export async function POST() {
     const indexedRepos = countIndexedRepos(stdout ?? "");
     const ok = exitCode === 0;
 
-    await fs.writeFile(
-      path.join(process.cwd(), stdoutPathRel),
-      stdout ?? "",
-      "utf8",
-    );
-    await fs.writeFile(
-      path.join(process.cwd(), stderrPathRel),
-      stderr ?? "",
-      "utf8",
-    );
+    await fs.writeFile(path.join(process.cwd(), stdoutPathRel), stdout ?? "", "utf8");
+    await fs.writeFile(path.join(process.cwd(), stderrPathRel), stderr ?? "", "utf8");
     await fs.writeFile(
       path.join(process.cwd(), resultPathRel),
       JSON.stringify(
@@ -176,12 +162,7 @@ export async function POST() {
     });
 
     return NextResponse.json(
-      {
-        ok: false,
-        runId: runRow.id,
-        summary,
-        error: msg,
-      },
+      { ok: false, runId: runRow.id, summary, error: msg },
       { status: 500 },
     );
   }
