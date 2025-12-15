@@ -6,73 +6,112 @@ on:
   # schedule:
   #   - cron: "*/30 * * * *" # every 30 minutes
 
+concurrency:
+  group: portal-sync-repos
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     env:
       JAI_INTERNAL_API_BASE: ${{ secrets.JAI_INTERNAL_API_BASE }}
       JAI_INTERNAL_API_TOKEN: ${{ secrets.JAI_INTERNAL_API_TOKEN }}
 
     steps:
-      - name: Ping
-        shell: bash
+      - name: Validate secrets
         run: |
           set -euo pipefail
+          if [ -z "${JAI_INTERNAL_API_BASE:-}" ]; then
+            echo "Missing secret: JAI_INTERNAL_API_BASE"
+            exit 1
+          fi
+          if [ -z "${JAI_INTERNAL_API_TOKEN:-}" ]; then
+            echo "Missing secret: JAI_INTERNAL_API_TOKEN"
+            exit 1
+          fi
+          echo "Base is set (not printing). Token is set (not printing)."
 
+      - name: Ping
+        run: |
+          set -euo pipefail
           URL="${JAI_INTERNAL_API_BASE%/}/api/internal/ping"
-
           echo "Ping: $URL"
           curl -sS \
+            --connect-timeout 10 \
+            --max-time 60 \
             -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
             -H "Accept: application/json" \
-            "$URL"
+            "$URL" | tee ping.json
 
       - name: Sync repos (index)
         id: sync
-        shell: bash
         run: |
           set -euo pipefail
-
-          : > response.json  # always create the file so artifacts/summary never fail
-
           URL="${JAI_INTERNAL_API_BASE%/}/api/internal/sync-repos"
           echo "Sync: $URL"
 
-          # Never let curl abort the step before writing the body.
+          # We do NOT use --fail/--fail-with-body so we ALWAYS write response.json.
+          set +e
           STATUS="$(curl -sS \
+            --connect-timeout 10 \
+            --max-time 300 \
+            -D response.headers \
             -o response.json \
             -w "%{http_code}" \
             -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
             -H "Accept: application/json" \
             -X POST \
-            "$URL" || true)"
+            "$URL")"
+          CURL_EXIT=$?
+          set -e
 
+          echo "curl_exit=$CURL_EXIT" >> "$GITHUB_OUTPUT"
           echo "http_status=$STATUS" >> "$GITHUB_OUTPUT"
 
-          echo "HTTP: $STATUS"
+          echo "HTTP $STATUS (curl exit $CURL_EXIT)"
+          echo "---- response.headers ----"
+          sed -e 's/\r$//' response.headers || true
           echo "---- response.json ----"
           cat response.json || true
           echo "-----------------------"
 
-          if [[ "$STATUS" -lt 200 || "$STATUS" -ge 300 ]]; then
+          # If curl itself failed (DNS/TLS/timeout), treat as failure.
+          if [ "$CURL_EXIT" -ne 0 ]; then
+            exit 1
+          fi
+
+          # Fail the step for non-2xx.
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
             exit 1
           fi
 
       - name: Summary
         if: always()
-        shell: bash
         run: |
-          echo "## sync-repos response" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**HTTP:** ${{ steps.sync.outputs.http_status }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat response.json >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## sync-repos response"
+            echo ""
+            echo "**HTTP:** ${{ steps.sync.outputs.http_status }}"
+            echo "**curl exit:** ${{ steps.sync.outputs.curl_exit }}"
+            echo ""
+            echo "### response.headers"
+            echo '```'
+            sed -e 's/\r$//' response.headers 2>/dev/null || echo "(no response.headers)"
+            echo '```'
+            echo ""
+            echo "### response.json"
+            echo '```'
+            cat response.json 2>/dev/null || echo "(no response.json)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload response
+      - name: Upload response artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sync-repos-response
-          path: response.json
+          path: |
+            response.json
+            response.headers
+            ping.json
