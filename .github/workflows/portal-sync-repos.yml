@@ -13,26 +13,63 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
+      # REQUIRED (repo secret)
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      # OPTIONAL (only for a health ping; safe to omit)
       JAI_INTERNAL_API_BASE: ${{ secrets.JAI_INTERNAL_API_BASE }}
       JAI_INTERNAL_API_TOKEN: ${{ secrets.JAI_INTERNAL_API_TOKEN }}
 
+      # Keep CI behavior predictable
+      CI: "1"
+      NODE_ENV: "production"
+
     steps:
-      - name: Validate secrets
+      - name: Validate required secrets
         run: |
           set -euo pipefail
-          if [ -z "${JAI_INTERNAL_API_BASE:-}" ]; then
-            echo "Missing secret: JAI_INTERNAL_API_BASE"
+          if [ -z "${DATABASE_URL:-}" ]; then
+            echo "Missing secret: DATABASE_URL"
             exit 1
           fi
-          if [ -z "${JAI_INTERNAL_API_TOKEN:-}" ]; then
-            echo "Missing secret: JAI_INTERNAL_API_TOKEN"
-            exit 1
-          fi
-          echo "Base is set (not printing). Token is set (not printing)."
+          echo "DATABASE_URL is set (not printing)."
 
-      - name: Ping
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Enable Corepack (pnpm)
+        run: |
+          set -euo pipefail
+          corepack enable
+          pnpm --version
+
+      - name: Install portal deps
+        run: |
+          set -euo pipefail
+          pnpm -C portal install --frozen-lockfile
+
+      - name: Prisma generate
+        run: |
+          set -euo pipefail
+          pnpm -C portal prisma generate
+
+      - name: Prisma migrate deploy (safe in CI)
+        run: |
+          set -euo pipefail
+          pnpm -C portal prisma migrate deploy
+
+      - name: Optional ping deployed portal
+        if: ${{ env.JAI_INTERNAL_API_BASE != '' && env.JAI_INTERNAL_API_TOKEN != '' }}
         run: |
           set -euo pipefail
           URL="${JAI_INTERNAL_API_BASE%/}/api/internal/ping"
@@ -44,74 +81,43 @@ jobs:
             -H "Accept: application/json" \
             "$URL" | tee ping.json
 
-      - name: Sync repos (index)
-        id: sync
+      - name: Run sync-repos indexer (runs locally in Actions)
         run: |
           set -euo pipefail
-          URL="${JAI_INTERNAL_API_BASE%/}/api/internal/sync-repos"
-          echo "Sync: $URL"
+          TS="$(date -u +%Y%m%dT%H%M%SZ)"
+          mkdir -p portal/data/runs/gha
 
-          # We do NOT use --fail/--fail-with-body so we ALWAYS write response.json.
-          set +e
-          STATUS="$(curl -sS \
-            --connect-timeout 10 \
-            --max-time 300 \
-            -D response.headers \
-            -o response.json \
-            -w "%{http_code}" \
-            -H "Authorization: Bearer ${JAI_INTERNAL_API_TOKEN}" \
-            -H "Accept: application/json" \
-            -X POST \
-            "$URL")"
-          CURL_EXIT=$?
-          set -e
-
-          echo "curl_exit=$CURL_EXIT" >> "$GITHUB_OUTPUT"
-          echo "http_status=$STATUS" >> "$GITHUB_OUTPUT"
-
-          echo "HTTP $STATUS (curl exit $CURL_EXIT)"
-          echo "---- response.headers ----"
-          sed -e 's/\r$//' response.headers || true
-          echo "---- response.json ----"
-          cat response.json || true
-          echo "-----------------------"
-
-          # If curl itself failed (DNS/TLS/timeout), treat as failure.
-          if [ "$CURL_EXIT" -ne 0 ]; then
-            exit 1
-          fi
-
-          # Fail the step for non-2xx.
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
-            exit 1
-          fi
+          echo "Running: portal/scripts/jai-sync-repos.ts"
+          cd portal
+          pnpm exec tsx scripts/jai-sync-repos.ts \
+            2> "data/runs/gha/sync-${TS}.stderr.log" \
+            | tee "data/runs/gha/sync-${TS}.stdout.log"
 
       - name: Summary
         if: always()
         run: |
           {
-            echo "## sync-repos response"
+            echo "## Portal sync-repos (GitHub Actions)"
             echo ""
-            echo "**HTTP:** ${{ steps.sync.outputs.http_status }}"
-            echo "**curl exit:** ${{ steps.sync.outputs.curl_exit }}"
+            echo "- Ran \`pnpm exec tsx scripts/jai-sync-repos.ts\` inside Actions"
+            echo "- DB: uses \`DATABASE_URL\` repo secret"
             echo ""
-            echo "### response.headers"
+            echo "### Latest stdout (tail)"
             echo '```'
-            sed -e 's/\r$//' response.headers 2>/dev/null || echo "(no response.headers)"
+            ls -1t portal/data/runs/gha/*.stdout.log 2>/dev/null | head -n 1 | xargs -r tail -n 80 || echo "(no stdout log)"
             echo '```'
             echo ""
-            echo "### response.json"
+            echo "### Latest stderr (tail)"
             echo '```'
-            cat response.json 2>/dev/null || echo "(no response.json)"
+            ls -1t portal/data/runs/gha/*.stderr.log 2>/dev/null | head -n 1 | xargs -r tail -n 120 || echo "(no stderr log)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload response artifacts
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sync-repos-response
+          name: portal-sync-repos-artifacts
           path: |
-            response.json
-            response.headers
+            portal/data/runs
             ping.json
