@@ -43,8 +43,12 @@ jobs:
           cache: pnpm
           cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Enable pnpm (corepack)
-        run: corepack enable
+      - name: Enable pnpm (corepack)  # <-- FIXED
+        run: |
+          set -euo pipefail
+          corepack enable
+          corepack prepare pnpm@9.15.4 --activate
+          pnpm --version
 
       - name: Install (portal)
         working-directory: portal
@@ -60,6 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .tmp
+          mkdir -p data/runs
 
           set +e
           pnpm exec tsx scripts/jai-sync-repos.ts > .tmp/sync.stdout.log 2> .tmp/sync.stderr.log
