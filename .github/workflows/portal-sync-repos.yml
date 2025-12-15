@@ -26,6 +26,7 @@ jobs:
 
     steps:
       - name: Validate secrets
+        shell: bash
         run: |
           set -euo pipefail
           [ -n "${DATABASE_URL:-}" ] || (echo "Missing secret: DATABASE_URL" && exit 1)
@@ -38,6 +39,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ✅ Install pnpm BEFORE setup-node tries to do cache: pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -45,46 +53,55 @@ jobs:
           cache: pnpm
           cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Enable pnpm (corepack)
-        run: corepack enable
-
       - name: Verify tooling
+        shell: bash
         run: |
+          set -euo pipefail
           node -v
           pnpm -v
           git --version
 
       - name: Configure git auth for clones (user + org)
+        shell: bash
         run: |
           set -euo pipefail
 
-          # mask tokens explicitly (extra safety)
           echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
           echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
 
-          # Use ORG token for org repos
+          # Org repos -> org token
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
-          # Use USER token for user repos
+          # User repos -> user token
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
 
-          # Optional: if any URLs are git@github.com: form
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/".insteadOf "git@github.com:"
+          # IMPORTANT: do NOT force SSH to use org token; just convert SSH -> HTTPS
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
 
       - name: Install (portal)
         working-directory: portal
-        run: pnpm install --frozen-lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
 
       - name: Prisma generate (portal)
         working-directory: portal
-        run: pnpm prisma generate
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm prisma generate
 
       - name: Prisma migrate deploy (portal)
         working-directory: portal
-        run: pnpm prisma migrate deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm prisma migrate deploy
 
       - name: Run sync-repos indexer
         id: sync
         working-directory: portal
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p .tmp

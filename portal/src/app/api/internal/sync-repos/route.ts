@@ -12,8 +12,10 @@ const IS_VERCEL =
   !!process.env.VERCEL_ENV ||
   process.env.NEXT_RUNTIME === "edge";
 
-function run(cmd: string, args: string[], cwd: string) {
-  return new Promise<{ code: number; stdout: string; stderr: string }>((resolve) => {
+type RunResult = { code: number; stdout: string; stderr: string };
+
+function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
+  return new Promise<RunResult>((resolve) => {
     const child = spawn(cmd, args, {
       cwd,
       env: process.env,
@@ -27,11 +29,11 @@ function run(cmd: string, args: string[], cwd: string) {
     child.stderr?.on("data", (d) => (stderr += d.toString()));
 
     child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
-    child.on("error", (err) =>
+    child.on("error", (err: Error) =>
       resolve({
         code: 1,
         stdout,
-        stderr: `${stderr}\n${err?.message ?? String(err)}`,
+        stderr: `${stderr}\n${err.message}`,
       }),
     );
   });
@@ -54,8 +56,6 @@ function getErrorMessage(err: unknown) {
 }
 
 export async function POST() {
-  // Vercel/serverless: do NOT attempt spawn + filesystem artifacts here.
-  // Run the indexer from GitHub Actions instead.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -134,14 +134,7 @@ export async function POST() {
     });
 
     return NextResponse.json(
-      {
-        ok,
-        runId: runRow.id,
-        summary,
-        indexedRepos,
-        code: exitCode,
-        artifactDir: artifactDirRel.replace(/\\/g, "/"),
-      },
+      { ok, runId: runRow.id, summary, indexedRepos, code: exitCode, artifactDir: artifactDirRel.replace(/\\/g, "/") },
       { status: ok ? 200 : 500 },
     );
   } catch (err: unknown) {
@@ -161,9 +154,6 @@ export async function POST() {
       },
     });
 
-    return NextResponse.json(
-      { ok: false, runId: runRow.id, summary, error: msg },
-      { status: 500 },
-    );
+    return NextResponse.json({ ok: false, runId: runRow.id, summary, error: msg }, { status: 500 });
   }
 }

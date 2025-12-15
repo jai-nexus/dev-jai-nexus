@@ -11,11 +11,14 @@ import { prisma } from "../src/lib/prisma";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// portal/scripts -> portal -> repo root -> workspace
 const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..", "workspace");
 
 async function main() {
+  fs.mkdirSync(WORKSPACE_ROOT, { recursive: true });
+
   const repos = await prisma.repo.findMany({
-    where: { status: "ACTIVE" }, // or loosen this at first
+    where: { status: "ACTIVE" },
   });
 
   for (const repo of repos) {
@@ -26,9 +29,10 @@ async function main() {
 
     const { owner, name } = parseGithubUrl(repo.githubUrl);
     const cloneDir = path.join(WORKSPACE_ROOT, owner, name);
-    fs.mkdirSync(cloneDir, { recursive: true });
 
-    gitSync(repo.githubUrl, cloneDir, repo.defaultBranch || "main");
+    const branch = repo.defaultBranch || "main";
+
+    gitSync(repo.githubUrl, cloneDir, branch);
 
     const syncRun = await prisma.syncRun.create({
       data: {
@@ -36,7 +40,7 @@ async function main() {
         status: "running",
         trigger: "manual",
         startedAt: new Date(),
-        finishedAt: new Date(), // will be updated after indexing
+        finishedAt: new Date(), // updated after indexing
         repo: { connect: { id: repo.id } },
       },
     });
@@ -57,28 +61,52 @@ async function main() {
 }
 
 function parseGithubUrl(url: string): { owner: string; name: string } {
-  // naive v0: https://github.com/owner/name(.git)
-  const parts = url.replace(/\.git$/, "").split("/");
-  const name = parts.pop()!;
-  const owner = parts.pop()!;
+  const cleaned = url.trim().replace(/\.git$/, "");
+
+  // git@github.com:owner/name
+  if (cleaned.startsWith("git@github.com:")) {
+    const rest = cleaned.slice("git@github.com:".length);
+    const [owner, name] = rest.split("/");
+    if (!owner || !name) throw new Error(`Bad githubUrl: ${url}`);
+    return { owner, name };
+  }
+
+  // https://github.com/owner/name
+  const parts = cleaned.split("/");
+  const name = parts.pop();
+  const owner = parts.pop();
+  if (!owner || !name) throw new Error(`Bad githubUrl: ${url}`);
   return { owner, name };
 }
 
-function gitSync(remote: string, dir: string, branch: string) {
-  if (!fs.existsSync(path.join(dir, ".git"))) {
-    execSync(`git clone ${remote} "${dir}"`, { stdio: "inherit" });
-  }
-  execSync(`git -C "${dir}" fetch origin`, { stdio: "inherit" });
-  execSync(`git -C "${dir}" checkout ${branch}`, { stdio: "inherit" });
-  execSync(`git -C "${dir}" pull origin ${branch}`, { stdio: "inherit" });
+function git(cmd: string) {
+  execSync(cmd, {
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      GIT_TERMINAL_PROMPT: "0",
+    },
+  });
 }
 
-async function rebuildFileIndexForRepo(
-  repoId: number,
-  root: string,
-  syncRunId: number
-) {
-  // wipe existing rows for repo
+function gitSync(remote: string, dir: string, branch: string) {
+  const hasGit = fs.existsSync(path.join(dir, ".git"));
+
+  if (!hasGit) {
+    // clone into dir; ok if dir exists but is empty
+    fs.mkdirSync(dir, { recursive: true });
+    git(`git clone --depth 1 --branch ${branch} ${remote} "${dir}"`);
+    return;
+  }
+
+  // deterministic update
+  git(`git -C "${dir}" remote set-url origin ${remote}`);
+  git(`git -C "${dir}" fetch origin ${branch} --depth 1`);
+  git(`git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`);
+  git(`git -C "${dir}" reset --hard origin/${branch}`);
+}
+
+async function rebuildFileIndexForRepo(repoId: number, root: string, syncRunId: number) {
   await prisma.fileIndex.deleteMany({ where: { repoId } });
 
   const files: {
@@ -100,11 +128,11 @@ async function rebuildFileIndexForRepo(
       const full = path.join(dirPath, entry.name);
       const rel = path.relative(root, full).replace(/\\/g, "/");
 
-      // Skip VCS + build dirs, but allow .github, .gitignore, etc.
       if (
         entry.name === ".git" ||
         entry.name === ".next" ||
-        rel.includes("node_modules")
+        entry.name === "node_modules" ||
+        rel.includes("/node_modules/")
       ) {
         continue;
       }
@@ -114,10 +142,7 @@ async function rebuildFileIndexForRepo(
       } else if (entry.isFile()) {
         const stat = fs.statSync(full);
         const content = fs.readFileSync(full);
-        const sha256 = crypto
-          .createHash("sha256")
-          .update(content)
-          .digest("hex");
+        const sha256 = crypto.createHash("sha256").update(content).digest("hex");
         const ext = path.extname(entry.name).replace(".", "");
         const dirRel = path.dirname(rel);
 
