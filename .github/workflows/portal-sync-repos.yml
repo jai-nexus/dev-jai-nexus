@@ -2,7 +2,6 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
-  # uncomment once it’s stable
   # schedule:
   #   - cron: "*/30 * * * *" # every 30 minutes
 
@@ -20,6 +19,8 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Optional (recommended if you clone private repos):
+      # GH_READ_TOKEN: ${{ secrets.GH_READ_TOKEN }}
 
     steps:
       - name: Validate secrets
@@ -40,15 +41,25 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
-          cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Enable pnpm (corepack)  # <-- FIXED
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          run_install: false
+
+      - name: Verify tooling
         run: |
           set -euo pipefail
-          corepack enable
-          corepack prepare pnpm@9.15.4 --activate
-          pnpm --version
+          node -v
+          pnpm -v
+
+      # Optional: make git clone work for private https repos by rewriting URLs
+      # - name: Auth GitHub clones
+      #   if: env.GH_READ_TOKEN != ''
+      #   run: |
+      #     set -euo pipefail
+      #     git config --global url."https://x-access-token:${GH_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
 
       - name: Install (portal)
         working-directory: portal
@@ -64,7 +75,6 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .tmp
-          mkdir -p data/runs
 
           set +e
           pnpm exec tsx scripts/jai-sync-repos.ts > .tmp/sync.stdout.log 2> .tmp/sync.stderr.log
@@ -73,23 +83,23 @@ jobs:
 
           echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
 
-          echo "## Portal sync-repos (GitHub Actions)" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- exit_code: $EXIT_CODE" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Latest stdout (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 .tmp/sync.stdout.log >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Latest stderr (tail)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          tail -n 200 .tmp/sync.stderr.log >> "$GITHUB_STEP_SUMMARY" || true
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Portal sync-repos (GitHub Actions)"
+            echo ""
+            echo "- exit_code: $EXIT_CODE"
+            echo ""
+            echo "### Latest stdout (tail)"
+            echo '```'
+            tail -n 200 .tmp/sync.stdout.log || true
+            echo '```'
+            echo ""
+            echo "### Latest stderr (tail)"
+            echo '```'
+            tail -n 200 .tmp/sync.stderr.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "$EXIT_CODE" -ne 0 ]; then
-            exit "$EXIT_CODE"
-          fi
+          exit "$EXIT_CODE"
 
       - name: Upload artifacts
         if: always()
@@ -99,4 +109,3 @@ jobs:
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
-            portal/data/runs
