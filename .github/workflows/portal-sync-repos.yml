@@ -10,16 +10,22 @@ concurrency:
   group: portal-sync-repos
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: portal
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      CI: "1"
-      NODE_ENV: "production"
+      NODE_ENV: production
 
     steps:
       - name: Validate secrets
@@ -37,40 +43,37 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: portal/pnpm-lock.yaml
 
-      - name: Enable pnpm (corepack)
-        run: |
-          set -euo pipefail
-          corepack enable
-          corepack prepare pnpm@9.15.0 --activate
-          node -v
-          pnpm -v
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Install (portal)
-        run: |
-          set -euo pipefail
-          pnpm -C portal install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Prisma generate (portal)
-        run: |
-          set -euo pipefail
-          pnpm -C portal prisma generate
+        run: pnpm exec prisma generate
 
       - name: Prisma migrate deploy (portal)
-        run: |
-          set -euo pipefail
-          pnpm -C portal prisma migrate deploy
+        run: pnpm exec prisma migrate deploy
 
       - name: Run sync-repos indexer
+        id: sync
         run: |
           set -euo pipefail
-          TS="$(date -u +%Y%m%dT%H%M%SZ)"
-          mkdir -p portal/data/runs/gha
-          cd portal
+
+          # capture stdout/stderr into files while still streaming to the job log
           pnpm exec tsx scripts/jai-sync-repos.ts \
-            2> "data/runs/gha/sync-${TS}.stderr.log" \
-            | tee "data/runs/gha/sync-${TS}.stdout.log"
+            2> >(tee sync.stderr.log >&2) \
+            | tee sync.stdout.log
+
+          COUNT="$(grep -c '^Indexed repo ' sync.stdout.log || true)"
+          echo "indexed_repos=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Indexed repos: $COUNT"
 
       - name: Summary
         if: always()
@@ -78,14 +81,16 @@ jobs:
           {
             echo "## Portal sync-repos (GitHub Actions)"
             echo ""
+            echo "- indexedRepos: ${{ steps.sync.outputs.indexed_repos }}"
+            echo ""
             echo "### Latest stdout (tail)"
             echo '```'
-            ls -1t portal/data/runs/gha/*.stdout.log 2>/dev/null | head -n 1 | xargs -r tail -n 120 || echo "(no stdout log)"
+            tail -n 120 sync.stdout.log 2>/dev/null || echo "(no stdout captured)"
             echo '```'
             echo ""
             echo "### Latest stderr (tail)"
             echo '```'
-            ls -1t portal/data/runs/gha/*.stderr.log 2>/dev/null | head -n 1 | xargs -r tail -n 200 || echo "(no stderr log)"
+            tail -n 120 sync.stderr.log 2>/dev/null || echo "(no stderr captured)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -95,4 +100,5 @@ jobs:
         with:
           name: portal-sync-repos-artifacts
           path: |
-            portal/data/runs
+            portal/sync.stdout.log
+            portal/sync.stderr.log

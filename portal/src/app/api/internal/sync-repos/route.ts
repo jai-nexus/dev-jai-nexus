@@ -12,34 +12,46 @@ const IS_VERCEL =
   process.env.VERCEL === "true" ||
   process.env.VERCEL === "yes";
 
-type RunResult = { code: number; stdout: string; stderr: string };
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
 
-function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
-  return new Promise<RunResult>((resolve) => {
-    const child = spawn(cmd, args, {
-      cwd,
-      env: process.env,
-      windowsHide: true,
-    });
+function safeOneLine(s: string, max = 300) {
+  const one = (s ?? "").replace(/\s+/g, " ").trim();
+  return one.length > max ? one.slice(0, max - 1) + "…" : one;
+}
 
-    let stdout = "";
-    let stderr = "";
+function run(cmd: string, args: string[], cwd: string) {
+  return new Promise<{ code: number; stdout: string; stderr: string }>(
+    (resolve) => {
+      const child = spawn(cmd, args, {
+        cwd,
+        env: process.env,
+        windowsHide: true,
+      });
 
-    child.stdout.on("data", (d) => (stdout += d.toString()));
-    child.stderr.on("data", (d) => (stderr += d.toString()));
+      let stdout = "";
+      let stderr = "";
 
-    child.on("close", (code) =>
-      resolve({ code: typeof code === "number" ? code : 0, stdout, stderr }),
-    );
+      child.stdout.on("data", (d) => (stdout += d.toString()));
+      child.stderr.on("data", (d) => (stderr += d.toString()));
 
-    child.on("error", (err) =>
-      resolve({
-        code: 1,
-        stdout,
-        stderr: stderr + "\n" + (err instanceof Error ? err.message : String(err)),
-      }),
-    );
-  });
+      child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
+      child.on("error", (err) =>
+        resolve({
+          code: 1,
+          stdout,
+          stderr: stderr + "\n" + safeOneLine(getErrorMessage(err)),
+        }),
+      );
+    },
+  );
 }
 
 function countIndexedRepos(stdout: string) {
@@ -49,19 +61,9 @@ function countIndexedRepos(stdout: string) {
     .length;
 }
 
-function safeOneLine(s: string, max = 300) {
-  const one = (s ?? "").replace(/\s+/g, " ").trim();
-  return one.length > max ? one.slice(0, max - 1) + "…" : one;
-}
-
-function getErrorMessage(err: unknown) {
-  if (err instanceof Error) return err.message;
-  return String(err);
-}
-
 export async function POST() {
-  // Vercel/serverless: no reliable filesystem persistence + spawning toolchains is fragile.
-  // Use GitHub Actions (or a self-hosted runner) to run the sync script instead.
+  // Vercel can’t safely spawn pnpm/tsx or write persistent artifacts under /var/task.
+  // This endpoint is local/dev only. Use the GitHub Action to run the indexer.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -75,7 +77,6 @@ export async function POST() {
 
   const startedAt = new Date();
 
-  // 1) Create PilotRun row first (running)
   const runRow = await prisma.pilotRun.create({
     data: {
       kind: "sync-repos",
@@ -89,7 +90,6 @@ export async function POST() {
   let stderrPathRel: string | null = null;
 
   try {
-    // 2) Create artifact dir (local/dev)
     artifactDirRel = path.join("data", "runs", `pilotrun-${runRow.id}`);
     const artifactDirAbs = path.join(process.cwd(), artifactDirRel);
     await fs.mkdir(artifactDirAbs, { recursive: true });
@@ -98,7 +98,6 @@ export async function POST() {
     stderrPathRel = path.join(artifactDirRel, "stderr.log");
     const resultPathRel = path.join(artifactDirRel, "result.json");
 
-    // 3) Execute the script (Windows-safe)
     const isWin = process.platform === "win32";
     const cmd = isWin ? "cmd.exe" : "pnpm";
     const args = isWin
@@ -107,11 +106,10 @@ export async function POST() {
 
     const { code, stdout, stderr } = await run(cmd, args, process.cwd());
 
-    const exitCode = typeof code === "number" ? code : 1;
+    const exitCode = code ?? 1;
     const indexedRepos = countIndexedRepos(stdout ?? "");
     const ok = exitCode === 0;
 
-    // 4) Write artifacts
     await fs.writeFile(
       path.join(process.cwd(), stdoutPathRel),
       stdout ?? "",
@@ -138,7 +136,6 @@ export async function POST() {
       "utf8",
     );
 
-    // 5) Update PilotRun row
     const finishedAt = new Date();
     const summary = ok
       ? `sync-repos OK · indexedRepos=${indexedRepos}`
@@ -172,25 +169,25 @@ export async function POST() {
     const msg = safeOneLine(getErrorMessage(err));
     const summary = `sync-repos FAILED · ${msg}`;
 
-    await prisma.pilotRun.update({
-      where: { id: runRow.id },
-      data: {
-        status: "failed",
-        finishedAt,
-        summary,
-        artifactDir: artifactDirRel ? artifactDirRel.replace(/\\/g, "/") : null,
-        stdoutPath: stdoutPathRel ? stdoutPathRel.replace(/\\/g, "/") : null,
-        stderrPath: stderrPathRel ? stderrPathRel.replace(/\\/g, "/") : null,
-      },
-    });
+    // best-effort DB update
+    try {
+      await prisma.pilotRun.update({
+        where: { id: runRow.id },
+        data: {
+          status: "failed",
+          finishedAt,
+          summary,
+          artifactDir: artifactDirRel ? artifactDirRel.replace(/\\/g, "/") : null,
+          stdoutPath: stdoutPathRel ? stdoutPathRel.replace(/\\/g, "/") : null,
+          stderrPath: stderrPathRel ? stderrPathRel.replace(/\\/g, "/") : null,
+        },
+      });
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json(
-      {
-        ok: false,
-        runId: runRow.id,
-        summary,
-        error: msg,
-      },
+      { ok: false, runId: runRow.id, summary, error: msg },
       { status: 500 },
     );
   }
