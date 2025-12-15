@@ -2,9 +2,8 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
-  # uncomment once it’s stable
   # schedule:
-  #   - cron: "0 * * * *" # hourly
+  #   - cron: "*/30 * * * *"
 
 concurrency:
   group: portal-sync-repos
@@ -20,24 +19,22 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      # optional auth paths (set at least ONE strategy)
-      REPO_SYNC_TOKEN: ${{ secrets.REPO_SYNC_TOKEN }}
-      ORG_APP_ID: ${{ secrets.ORG_APP_ID }}
-      ORG_APP_PRIVATE_KEY: ${{ secrets.ORG_APP_PRIVATE_KEY }}
-      GIT_TERMINAL_PROMPT: "0"
+      REPO_SYNC_TOKEN_ORG: ${{ secrets.REPO_SYNC_TOKEN_ORG }}
+      REPO_SYNC_TOKEN_USER: ${{ secrets.REPO_SYNC_TOKEN_USER }}
 
     steps:
       - name: Validate secrets
         run: |
           set -euo pipefail
           [ -n "${DATABASE_URL:-}" ] || (echo "Missing secret: DATABASE_URL" && exit 1)
-          echo "DATABASE_URL is set (not printing)."
+          [ -n "${REPO_SYNC_TOKEN_ORG:-}" ] || (echo "Missing secret: REPO_SYNC_TOKEN_ORG" && exit 1)
+          [ -n "${REPO_SYNC_TOKEN_USER:-}" ] || (echo "Missing secret: REPO_SYNC_TOKEN_USER" && exit 1)
+          echo "Secrets are set (not printing)."
 
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -48,35 +45,19 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 9
-          run_install: false
 
       - name: Verify tooling
         run: |
-          set -euo pipefail
           node -v
           pnpm -v
           git --version
 
-      - name: Create GitHub App token
-        id: app_token
-        if: ${{ env.ORG_APP_ID != '' && env.ORG_APP_PRIVATE_KEY != '' }}
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ env.ORG_APP_ID }}
-          private_key: ${{ env.ORG_APP_PRIVATE_KEY }}
-
       - name: Configure git auth for clones
         run: |
           set -euo pipefail
-          TOKEN="${{ steps.app_token.outputs.token }}"
-          if [ -z "$TOKEN" ]; then
-            TOKEN="${REPO_SYNC_TOKEN:-}"
-          fi
-          if [ -z "$TOKEN" ]; then
-            echo "Missing clone auth. Set REPO_SYNC_TOKEN (PAT) OR ORG_APP_ID + ORG_APP_PRIVATE_KEY."
-            exit 1
-          fi
-          git config --global url."https://x-access-token:${TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
+          git config --global credential.helper ""
 
       - name: Install (portal)
         working-directory: portal
@@ -86,14 +67,17 @@ jobs:
         working-directory: portal
         run: pnpm prisma generate
 
+      # OPTIONAL: only if your DB needs migrations applied before the script can run
+      # - name: Prisma migrate deploy (portal)
+      #   working-directory: portal
+      #   run: pnpm prisma migrate deploy
+
       - name: Run sync-repos indexer
         id: sync
         working-directory: portal
         run: |
           set -euo pipefail
           mkdir -p .tmp
-          : > .tmp/sync.stdout.log
-          : > .tmp/sync.stderr.log
 
           set +e
           pnpm exec tsx scripts/jai-sync-repos.ts > .tmp/sync.stdout.log 2> .tmp/sync.stderr.log
@@ -102,21 +86,19 @@ jobs:
 
           echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
 
-          {
-            echo "## Portal sync-repos (GitHub Actions)"
-            echo ""
-            echo "- exit_code: $EXIT_CODE"
-            echo ""
-            echo "### Latest stdout (tail)"
-            echo '```'
-            tail -n 200 .tmp/sync.stdout.log || true
-            echo '```'
-            echo ""
-            echo "### Latest stderr (tail)"
-            echo '```'
-            tail -n 200 .tmp/sync.stderr.log || true
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## Portal sync-repos (GitHub Actions)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- exit_code: $EXIT_CODE" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Latest stdout (tail)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 200 .tmp/sync.stdout.log 2>/dev/null || echo "(no stdout log)"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Latest stderr (tail)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 200 .tmp/sync.stderr.log 2>/dev/null || echo "(no stderr log)"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
           exit "$EXIT_CODE"
 
@@ -125,7 +107,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: portal-sync-repos-artifacts
+          if-no-files-found: ignore
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
-            portal/workspace
+            workspace
