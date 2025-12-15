@@ -2,8 +2,9 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
+  # uncomment once stable
   # schedule:
-  #   - cron: "*/30 * * * *" # every 30 minutes
+  #   - cron: "*/30 * * * *"
 
 concurrency:
   group: portal-sync-repos
@@ -19,8 +20,6 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      # Optional (recommended if you clone private repos):
-      # GH_READ_TOKEN: ${{ secrets.GH_READ_TOKEN }}
 
     steps:
       - name: Validate secrets
@@ -42,24 +41,30 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.4
-          run_install: false
-
-      - name: Verify tooling
+      - name: Enable pnpm (corepack)
         run: |
           set -euo pipefail
-          node -v
-          pnpm -v
+          corepack enable
+          # Pick a pnpm version and lock it. Adjust if your project expects a different major.
+          corepack prepare pnpm@9.15.4 --activate
+          pnpm --version
 
-      # Optional: make git clone work for private https repos by rewriting URLs
-      # - name: Auth GitHub clones
-      #   if: env.GH_READ_TOKEN != ''
-      #   run: |
-      #     set -euo pipefail
-      #     git config --global url."https://x-access-token:${GH_READ_TOKEN}@github.com/".insteadOf "https://github.com/"
+      # Option A (recommended): GitHub App token (uses your existing ORG_APP_* secrets)
+      - name: Create GitHub App token
+        id: app-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.ORG_APP_ID }}
+          private_key: ${{ secrets.ORG_APP_PRIVATE_KEY }}
+
+      - name: Configure git auth for clones
+        env:
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          # Rewrite https://github.com/... to an authenticated form automatically
+          git config --global url."https://x-access-token:${GH_APP_TOKEN}@github.com/".insteadOf "https://github.com/"
+          git config --global advice.detachedHead false
 
       - name: Install (portal)
         working-directory: portal
@@ -99,7 +104,9 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-          exit "$EXIT_CODE"
+          if [ "$EXIT_CODE" -ne 0 ]; then
+            exit "$EXIT_CODE"
+          fi
 
       - name: Upload artifacts
         if: always()
@@ -109,3 +116,4 @@ jobs:
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
+            workspace

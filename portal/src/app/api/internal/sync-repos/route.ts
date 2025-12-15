@@ -1,4 +1,3 @@
-// portal/src/app/api/internal/sync-repos/route.ts
 import { NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
@@ -7,36 +6,38 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const IS_VERCEL =
+// Treat Vercel/serverless as “no spawn + no persistent filesystem”
+const IS_SERVERLESS =
   !!process.env.VERCEL ||
   !!process.env.VERCEL_ENV ||
+  !!process.env.AWS_LAMBDA_FUNCTION_NAME ||
   process.env.NEXT_RUNTIME === "edge";
 
-function run(cmd: string, args: string[], cwd: string) {
-  return new Promise<{ code: number; stdout: string; stderr: string }>(
-    (resolve) => {
-      const child = spawn(cmd, args, {
-        cwd,
-        env: process.env,
-        windowsHide: true,
-      });
+type RunResult = { code: number; stdout: string; stderr: string };
 
-      let stdout = "";
-      let stderr = "";
+function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      env: process.env,
+      windowsHide: true,
+    });
 
-      child.stdout?.on("data", (d) => (stdout += d.toString()));
-      child.stderr?.on("data", (d) => (stderr += d.toString()));
+    let stdout = "";
+    let stderr = "";
 
-      child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
-      child.on("error", (err) =>
-        resolve({
-          code: 1,
-          stdout,
-          stderr: `${stderr}\n${err?.message ?? String(err)}`,
-        }),
-      );
-    },
-  );
+    child.stdout?.on("data", (d) => (stdout += d.toString()));
+    child.stderr?.on("data", (d) => (stderr += d.toString()));
+
+    child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
+    child.on("error", (err) =>
+      resolve({
+        code: 1,
+        stdout,
+        stderr: `${stderr}\n${err instanceof Error ? err.message : String(err)}`,
+      }),
+    );
+  });
 }
 
 function countIndexedRepos(stdout: string) {
@@ -56,14 +57,13 @@ function getErrorMessage(err: unknown) {
 }
 
 export async function POST() {
-  // Vercel/serverless: do NOT attempt spawn + filesystem artifacts here.
-  // This endpoint remains useful for local/dev, but production automation should run in GitHub Actions.
-  if (IS_VERCEL) {
+  // Don’t try to spawn scripts / write artifacts on Vercel.
+  if (IS_SERVERLESS) {
     return NextResponse.json(
       {
         ok: false,
         error:
-          "sync-repos is disabled on Vercel runtime. Run the Portal · sync-repos GitHub Action (recommended) or run locally.",
+          "sync-repos is disabled on serverless (Vercel). Run the Portal · sync-repos GitHub Action instead.",
       },
       { status: 501 },
     );
@@ -104,16 +104,8 @@ export async function POST() {
     const indexedRepos = countIndexedRepos(stdout ?? "");
     const ok = exitCode === 0;
 
-    await fs.writeFile(
-      path.join(process.cwd(), stdoutPathRel),
-      stdout ?? "",
-      "utf8",
-    );
-    await fs.writeFile(
-      path.join(process.cwd(), stderrPathRel),
-      stderr ?? "",
-      "utf8",
-    );
+    await fs.writeFile(path.join(process.cwd(), stdoutPathRel), stdout ?? "", "utf8");
+    await fs.writeFile(path.join(process.cwd(), stderrPathRel), stderr ?? "", "utf8");
     await fs.writeFile(
       path.join(process.cwd(), resultPathRel),
       JSON.stringify(
@@ -176,12 +168,7 @@ export async function POST() {
     });
 
     return NextResponse.json(
-      {
-        ok: false,
-        runId: runRow.id,
-        summary,
-        error: msg,
-      },
+      { ok: false, runId: runRow.id, summary, error: msg },
       { status: 500 },
     );
   }
