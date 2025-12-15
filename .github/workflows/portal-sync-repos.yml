@@ -2,9 +2,9 @@ name: Portal · sync-repos
 
 on:
   workflow_dispatch:
-  # uncomment once stable
+  # Uncomment once stable
   # schedule:
-  #   - cron: "*/30 * * * *"
+  #   - cron: "0 * * * *" # hourly
 
 concurrency:
   group: portal-sync-repos
@@ -20,6 +20,8 @@ jobs:
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Make git fail instead of prompting
+      GIT_TERMINAL_PROMPT: "0"
 
     steps:
       - name: Validate secrets
@@ -35,23 +37,30 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Enable pnpm (corepack)
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Verify tooling
         run: |
           set -euo pipefail
-          corepack enable
-          # Pick a pnpm version and lock it. Adjust if your project expects a different major.
-          corepack prepare pnpm@9.15.4 --activate
-          pnpm --version
+          node -v
+          pnpm -v
+          git --version
 
-      # Option A (recommended): GitHub App token (uses your existing ORG_APP_* secrets)
+      # Optional: GitHub App token (only if you set both secrets)
       - name: Create GitHub App token
-        id: app-token
+        id: app_token
+        if: ${{ secrets.ORG_APP_ID != '' && secrets.ORG_APP_PRIVATE_KEY != '' }}
         uses: tibdex/github-app-token@v2
         with:
           app_id: ${{ secrets.ORG_APP_ID }}
@@ -59,12 +68,14 @@ jobs:
 
       - name: Configure git auth for clones
         env:
-          GH_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          CLONE_TOKEN: ${{ steps.app_token.outputs.token || secrets.REPO_SYNC_TOKEN }}
         run: |
           set -euo pipefail
-          # Rewrite https://github.com/... to an authenticated form automatically
-          git config --global url."https://x-access-token:${GH_APP_TOKEN}@github.com/".insteadOf "https://github.com/"
-          git config --global advice.detachedHead false
+          if [ -z "${CLONE_TOKEN:-}" ]; then
+            echo "Missing clone token. Set REPO_SYNC_TOKEN (PAT) or ORG_APP_ID + ORG_APP_PRIVATE_KEY."
+            exit 1
+          fi
+          git config --global url."https://x-access-token:${CLONE_TOKEN}@github.com/".insteadOf "https://github.com/"
 
       - name: Install (portal)
         working-directory: portal
@@ -74,12 +85,19 @@ jobs:
         working-directory: portal
         run: pnpm prisma generate
 
+      # Optional but often wise if Actions might hit a freshly-migrated DB:
+      # - name: Prisma migrate deploy (portal)
+      #   working-directory: portal
+      #   run: pnpm prisma migrate deploy
+
       - name: Run sync-repos indexer
         id: sync
         working-directory: portal
         run: |
           set -euo pipefail
           mkdir -p .tmp
+          : > .tmp/sync.stdout.log
+          : > .tmp/sync.stderr.log
 
           set +e
           pnpm exec tsx scripts/jai-sync-repos.ts > .tmp/sync.stdout.log 2> .tmp/sync.stderr.log
@@ -104,9 +122,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-          if [ "$EXIT_CODE" -ne 0 ]; then
-            exit "$EXIT_CODE"
-          fi
+          exit "$EXIT_CODE"
 
       - name: Upload artifacts
         if: always()
@@ -116,4 +132,3 @@ jobs:
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
-            workspace
