@@ -1,3 +1,4 @@
+// portal/src/app/api/internal/sync-repos/route.ts
 import { NextResponse } from "next/server";
 import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
@@ -14,29 +15,13 @@ const IS_VERCEL =
 
 type RunResult = { code: number; stdout: string; stderr: string };
 
-function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
-  return new Promise<RunResult>((resolve) => {
-    const child = spawn(cmd, args, {
-      cwd,
-      env: process.env,
-      windowsHide: true,
-    });
+function getErrorMessage(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
 
-    let stdout = "";
-    let stderr = "";
-
-    child.stdout?.on("data", (d) => (stdout += d.toString()));
-    child.stderr?.on("data", (d) => (stderr += d.toString()));
-
-    child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
-    child.on("error", (err: Error) =>
-      resolve({
-        code: 1,
-        stdout,
-        stderr: `${stderr}\n${err.message}`,
-      }),
-    );
-  });
+function safeOneLine(s: string, max = 300) {
+  const one = (s ?? "").replace(/\s+/g, " ").trim();
+  return one.length > max ? one.slice(0, max - 1) + "…" : one;
 }
 
 function countIndexedRepos(stdout: string) {
@@ -46,16 +31,41 @@ function countIndexedRepos(stdout: string) {
     .length;
 }
 
-function safeOneLine(s: string, max = 300) {
-  const one = (s ?? "").replace(/\s+/g, " ").trim();
-  return one.length > max ? one.slice(0, max - 1) + "…" : one;
-}
+function run(cmd: string, args: string[], cwd: string): Promise<RunResult> {
+  return new Promise<RunResult>((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd,
+      // prevent any git prompts from hanging the process
+      env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+      windowsHide: true,
+    });
 
-function getErrorMessage(err: unknown) {
-  return err instanceof Error ? err.message : String(err);
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout?.on("data", (chunk: Buffer) => {
+      stdout += chunk.toString("utf8");
+    });
+
+    child.stderr?.on("data", (chunk: Buffer) => {
+      stderr += chunk.toString("utf8");
+    });
+
+    child.on("close", (code) => resolve({ code: code ?? 0, stdout, stderr }));
+
+    child.on("error", (err: unknown) =>
+      resolve({
+        code: 1,
+        stdout,
+        stderr: `${stderr}\n${getErrorMessage(err)}`,
+      }),
+    );
+  });
 }
 
 export async function POST() {
+  // Vercel/serverless: do NOT attempt spawn + filesystem artifacts here.
+  // Run the indexer from GitHub Actions instead.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -98,8 +108,16 @@ export async function POST() {
     const indexedRepos = countIndexedRepos(stdout ?? "");
     const ok = exitCode === 0;
 
-    await fs.writeFile(path.join(process.cwd(), stdoutPathRel), stdout ?? "", "utf8");
-    await fs.writeFile(path.join(process.cwd(), stderrPathRel), stderr ?? "", "utf8");
+    await fs.writeFile(
+      path.join(process.cwd(), stdoutPathRel),
+      stdout ?? "",
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(process.cwd(), stderrPathRel),
+      stderr ?? "",
+      "utf8",
+    );
     await fs.writeFile(
       path.join(process.cwd(), resultPathRel),
       JSON.stringify(
@@ -134,7 +152,14 @@ export async function POST() {
     });
 
     return NextResponse.json(
-      { ok, runId: runRow.id, summary, indexedRepos, code: exitCode, artifactDir: artifactDirRel.replace(/\\/g, "/") },
+      {
+        ok,
+        runId: runRow.id,
+        summary,
+        indexedRepos,
+        code: exitCode,
+        artifactDir: artifactDirRel.replace(/\\/g, "/"),
+      },
       { status: ok ? 200 : 500 },
     );
   } catch (err: unknown) {
@@ -154,6 +179,9 @@ export async function POST() {
       },
     });
 
-    return NextResponse.json({ ok: false, runId: runRow.id, summary, error: msg }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, runId: runRow.id, summary, error: msg },
+      { status: 500 },
+    );
   }
 }
