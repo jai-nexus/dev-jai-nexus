@@ -21,7 +21,6 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REPO_SYNC_TOKEN_ORG: ${{ secrets.REPO_SYNC_TOKEN_ORG }}
       REPO_SYNC_TOKEN_USER: ${{ secrets.REPO_SYNC_TOKEN_USER }}
-      # prevent git prompts that hang CI
       GIT_TERMINAL_PROMPT: "0"
 
     steps:
@@ -39,7 +38,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # ✅ Install pnpm BEFORE setup-node tries to do cache: pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -69,13 +67,22 @@ jobs:
           echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
           echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
 
-          # Org repos -> org token
+          # HTTPS rewrites
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
-          # User repos -> user token
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
 
-          # IMPORTANT: do NOT force SSH to use org token; just convert SSH -> HTTPS
+          # SSH rewrites (explicit)
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "git@github.com:jai-nexus/"
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "git@github.com:JerryIngram/"
+
+          # Fallback: any other SSH -> HTTPS (no token)
           git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+          echo "Probing org token..."
+          git ls-remote https://github.com/jai-nexus/jai HEAD >/dev/null
+
+          echo "Probing user token..."
+          git ls-remote https://github.com/JerryIngram/offbook-ai HEAD >/dev/null
 
       - name: Install (portal)
         working-directory: portal
