@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "../../../../prisma/generated/prisma";
 import { parseSotTimestamp } from "@/lib/time";
+import crypto from "node:crypto";
+import { getToken, type JWT } from "next-auth/jwt";
 
 type SotEventBody = {
   version?: string;
-
   ts: string;
   source: string;
   kind: string;
@@ -21,13 +22,41 @@ type SotEventBody = {
   domainName?: string;
 };
 
-// POST  /api/sot-events
-// Ingest a single SoT event into the DB
+function timingSafeEqualString(a: string, b: string) {
+  const aa = Buffer.from(a, "utf8");
+  const bb = Buffer.from(b, "utf8");
+  if (aa.length !== bb.length) return false;
+  return crypto.timingSafeEqual(aa, bb);
+}
+
+function hasInternalToken(req: NextRequest) {
+  const expected = process.env.JAI_INTERNAL_API_TOKEN ?? "";
+  if (!expected) return false;
+
+  const auth = req.headers.get("authorization") ?? "";
+  const bearer = auth.replace(/^Bearer\s+/i, "").trim();
+  if (!bearer) return false;
+
+  return timingSafeEqualString(bearer, expected);
+}
+
+async function hasSession(req: NextRequest) {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) return false;
+
+  const token = (await getToken({ req, secret })) as (JWT | null);
+  return !!token;
+}
+
+// POST /api/sot-events (internal token only)
 export async function POST(req: NextRequest) {
   try {
+    if (!hasInternalToken(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = (await req.json()) as SotEventBody;
 
-    // Required fields
     if (!body.ts || !body.source || !body.kind || !body.summary) {
       return NextResponse.json(
         { error: "Missing required fields (ts, source, kind, summary)" },
@@ -35,14 +64,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Soft version check for v0.1
     if (body.version && body.version !== "sot-event-0.1") {
       console.warn(
         `sot-events POST: unexpected version "${body.version}", expected "sot-event-0.1"`,
       );
     }
 
-    // Canonical timestamp parsing (UTC-safe)
     const ts = parseSotTimestamp(body.ts);
     if (!ts) {
       return NextResponse.json({ error: "Invalid ts" }, { status: 400 });
@@ -51,19 +78,13 @@ export async function POST(req: NextRequest) {
     let repoId = body.repoId;
     let domainId = body.domainId;
 
-    // Optional: resolve repo by name
     if (!repoId && body.repoName) {
-      const repo = await prisma.repo.findUnique({
-        where: { name: body.repoName },
-      });
+      const repo = await prisma.repo.findUnique({ where: { name: body.repoName } });
       repoId = repo?.id;
     }
 
-    // Optional: resolve domain by domain name
     if (!domainId && body.domainName) {
-      const domain = await prisma.domain.findUnique({
-        where: { domain: body.domainName },
-      });
+      const domain = await prisma.domain.findUnique({ where: { domain: body.domainName } });
       domainId = domain?.id;
     }
 
@@ -72,7 +93,6 @@ export async function POST(req: NextRequest) {
         ts,
         source: body.source,
         kind: body.kind,
-        // IMPORTANT: use empty string when nhId is not provided
         nhId: body.nhId ?? "",
         summary: body.summary,
         payload: body.payload,
@@ -88,9 +108,11 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET  /api/sot-events
-// Read the SoT stream with optional filters for agents/CLI
+// GET /api/sot-events (session OR internal token)
 export async function GET(req: NextRequest) {
+  const ok = hasInternalToken(req) || (await hasSession(req));
+  if (!ok) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
 
   const nh = searchParams.get("nh") ?? undefined;
@@ -100,13 +122,7 @@ export async function GET(req: NextRequest) {
   const limitParam = searchParams.get("limit");
   const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 200);
 
-  // Simple, typed where-clause
-  const where: {
-    nhId?: string;
-    source?: string;
-    kind?: string;
-  } = {};
-
+  const where: { nhId?: string; source?: string; kind?: string } = {};
   if (nh) where.nhId = nh;
   if (source) where.source = source;
   if (kind) where.kind = kind;
@@ -117,23 +133,17 @@ export async function GET(req: NextRequest) {
     take: limit,
   });
 
-  const result = events.map((evt) => ({
-    id: evt.id,
-    ts: evt.ts.toISOString(),
-    createdAt: evt.createdAt.toISOString(),
-    source: evt.source,
-    kind: evt.kind,
-    nhId: evt.nhId || null,
-    summary: evt.summary,
-    payload: evt.payload,
-  }));
-
   return NextResponse.json({
-    meta: {
-      count: result.length,
-      limit,
-      filters: { nh, source, kind },
-    },
-    events: result,
+    meta: { count: events.length, limit, filters: { nh, source, kind } },
+    events: events.map((evt) => ({
+      id: evt.id,
+      ts: evt.ts.toISOString(),
+      createdAt: evt.createdAt.toISOString(),
+      source: evt.source,
+      kind: evt.kind,
+      nhId: evt.nhId || null,
+      summary: evt.summary,
+      payload: evt.payload,
+    })),
   });
 }

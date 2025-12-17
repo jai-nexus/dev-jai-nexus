@@ -4,8 +4,23 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+
+function sanitizeNext(next: string | null) {
+  if (!next) return "/operator";
+  // must be a site-relative path
+  if (!next.startsWith("/")) return "/operator";
+  // block protocol-relative //evil.com
+  if (next.startsWith("//")) return "/operator";
+  // block backslashes
+  if (next.includes("\\")) return "/operator";
+  return next;
+}
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const nextParam = sanitizeNext(searchParams.get("next"));
+
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,14 +31,13 @@ export default function LoginPage() {
 
     const form = e.currentTarget;
     const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     const res = await signIn("credentials", {
       redirect: false,
       email,
       password,
-      callbackUrl: "/operator",
+      callbackUrl: nextParam,
     });
 
     setPending(false);
@@ -33,10 +47,8 @@ export default function LoginPage() {
       return;
     }
 
-    // Successful login – NextAuth gave us a URL to go to
-    if (res.url) {
-      window.location.href = res.url;
-    }
+    // NextAuth gives us a URL; fall back to safe nextParam
+    window.location.href = res.url ?? nextParam;
   }
 
   return (
@@ -48,17 +60,13 @@ export default function LoginPage() {
         <header>
           <h1 className="text-xl font-semibold">JAI NEXUS · Login</h1>
           <p className="text-xs text-gray-400 mt-1">
-            Sign in as{" "}
-            <span className="font-mono">admin@jai.nexus</span> or{" "}
+            Sign in as <span className="font-mono">admin@jai.nexus</span> or{" "}
             <span className="font-mono">agent@jai.nexus</span>.
           </p>
         </header>
 
         <div className="space-y-1">
-          <label
-            className="block text-xs font-medium text-gray-300"
-            htmlFor="email"
-          >
+          <label className="block text-xs font-medium text-gray-300" htmlFor="email">
             Email
           </label>
           <input
@@ -72,10 +80,7 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-1">
-          <label
-            className="block text-xs font-medium text-gray-300"
-            htmlFor="password"
-          >
+          <label className="block text-xs font-medium text-gray-300" htmlFor="password">
             Password
           </label>
           <input
