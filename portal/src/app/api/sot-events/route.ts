@@ -3,11 +3,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "../../../../prisma/generated/prisma";
 import { parseSotTimestamp } from "@/lib/time";
+import { getToken } from "next-auth/jwt";
+import { assertInternalToken } from "@/lib/internalAuth";
 import crypto from "node:crypto";
-import { getToken, type JWT } from "next-auth/jwt";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type SotEventBody = {
   version?: string;
+
   ts: string;
   source: string;
   kind: string;
@@ -29,32 +34,34 @@ function timingSafeEqualString(a: string, b: string) {
   return crypto.timingSafeEqual(aa, bb);
 }
 
+// Boolean-only check (so GET can fall back to session without returning 500)
 function hasInternalToken(req: NextRequest) {
   const expected = process.env.JAI_INTERNAL_API_TOKEN ?? "";
   if (!expected) return false;
 
   const auth = req.headers.get("authorization") ?? "";
   const bearer = auth.replace(/^Bearer\s+/i, "").trim();
-  if (!bearer) return false;
+  const legacy = (req.headers.get("x-jai-internal-token") ?? "").trim();
+  const presented = bearer || legacy;
 
-  return timingSafeEqualString(bearer, expected);
+  if (!presented) return false;
+  return timingSafeEqualString(presented, expected);
 }
 
 async function hasSession(req: NextRequest) {
   const secret = process.env.NEXTAUTH_SECRET;
   if (!secret) return false;
-
-  const token = (await getToken({ req, secret })) as (JWT | null);
+  const token = await getToken({ req, secret });
   return !!token;
 }
 
 // POST /api/sot-events (internal token only)
 export async function POST(req: NextRequest) {
-  try {
-    if (!hasInternalToken(req)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  // Strict: missing token env var is a 500 (misconfig), not a silent 401
+  const internal = assertInternalToken(req);
+  if (!internal.ok) return internal.response;
 
+  try {
     const body = (await req.json()) as SotEventBody;
 
     if (!body.ts || !body.source || !body.kind || !body.summary) {
@@ -79,12 +86,16 @@ export async function POST(req: NextRequest) {
     let domainId = body.domainId;
 
     if (!repoId && body.repoName) {
-      const repo = await prisma.repo.findUnique({ where: { name: body.repoName } });
+      const repo = await prisma.repo.findUnique({
+        where: { name: body.repoName },
+      });
       repoId = repo?.id;
     }
 
     if (!domainId && body.domainName) {
-      const domain = await prisma.domain.findUnique({ where: { domain: body.domainName } });
+      const domain = await prisma.domain.findUnique({
+        where: { domain: body.domainName },
+      });
       domainId = domain?.id;
     }
 

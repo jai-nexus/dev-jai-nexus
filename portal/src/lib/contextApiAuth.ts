@@ -1,4 +1,3 @@
-// portal/src/lib/contextApiAuth.ts
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 
@@ -22,7 +21,8 @@ function readBearer(req: NextRequest) {
  *   Authorization: Bearer <JAI_CONTEXT_API_KEY>
  *
  * Dev behavior:
- *   If JAI_CONTEXT_API_KEY is missing AND NODE_ENV !== "production", auth is bypassed (with warning).
+ *   If JAI_CONTEXT_API_KEY is missing AND NODE_ENV !== "production",
+ *   auth is bypassed (with warning).
  *
  * Prod behavior:
  *   Missing key is a configuration error (500) — auth is NOT silently disabled.
@@ -54,7 +54,6 @@ export function requireContextApiAuth(req: NextRequest): {
   }
 
   const token = readBearer(req);
-
   const ok = !!token && timingSafeEqualString(token, expected);
 
   if (!ok) {

@@ -1,4 +1,3 @@
-// portal/src/proxy.ts
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
@@ -31,10 +30,16 @@ function isInternalApi(pathname: string) {
   return pathname.startsWith("/api/internal/");
 }
 
-// These are NOT /api/internal/*, but they do their own token auth.
-// Let them reach the route handler.
+// Endpoints that enforce auth in-route (Context API key, etc).
 function isTokenAuthApi(pathname: string) {
-  return pathname === "/api/agents/commit" || pathname === "/api/sot-events";
+  // Context API endpoints (protected by requireContextApiAuth in-route)
+  if (pathname === "/api/repos" || pathname.startsWith("/api/repos/")) return true;
+  if (pathname === "/api/agents/commit") return true;
+
+  // Only keep this if /api/sot-events is ALSO protected in-route
+  if (pathname === "/api/sot-events" || pathname.startsWith("/api/sot-events/")) return true;
+
+  return false;
 }
 
 function isNextData(pathname: string) {
@@ -60,18 +65,30 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow “token-auth APIs” to enforce auth in-route
+  // Let token-auth routes enforce their own auth in-route
   if (isTokenAuthApi(pathname)) {
     return NextResponse.next();
   }
 
   // Internal API lane: machine token auth (never redirects)
+  // Accepts either:
+  //  - Authorization: Bearer <token>  (preferred)
+  //  - x-jai-internal-token: <token>  (legacy/back-compat)
   if (isInternalApi(pathname)) {
+    const expected = process.env.JAI_INTERNAL_API_TOKEN ?? "";
+    if (!expected) {
+      return NextResponse.json(
+        { error: "Internal API token not configured" },
+        { status: 500 },
+      );
+    }
+
     const auth = req.headers.get("authorization") ?? "";
     const bearer = auth.replace(/^Bearer\s+/i, "").trim();
+    const legacy = (req.headers.get("x-jai-internal-token") ?? "").trim();
+    const presented = bearer || legacy;
 
-    const expected = process.env.JAI_INTERNAL_API_TOKEN ?? "";
-    if (!expected || !bearer || !timingSafeEqualString(bearer, expected)) {
+    if (!presented || !timingSafeEqualString(presented, expected)) {
       return unauthorizedJson();
     }
 

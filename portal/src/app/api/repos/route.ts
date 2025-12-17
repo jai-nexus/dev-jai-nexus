@@ -1,4 +1,3 @@
-// portal/src/app/api/repos/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { RepoSummary } from "@/lib/types/context-api";
@@ -9,7 +8,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   // Enforce Context API key
-  console.log("[DEBUG] JAI_CONTEXT_API_KEY (server):", process.env.JAI_CONTEXT_API_KEY);
   const auth = requireContextApiAuth(req);
   if (!auth.ok) return auth.errorResponse!;
 
@@ -42,10 +40,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(payload, { status: 200 });
   } catch (error) {
-    console.error("[GET /api/repos] ❌ Failed to load repos", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error("[GET /api/repos] Failed to load repos", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
