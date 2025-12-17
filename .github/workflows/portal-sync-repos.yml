@@ -47,7 +47,6 @@ jobs:
           echo "status: $org_code"
           if [ "$org_code" != "200" ]; then
             cat /tmp/org_user.json
-            echo "ORG token is invalid. Re-copy the token value and update the Actions secret."
             exit 1
           fi
 
@@ -58,7 +57,6 @@ jobs:
           echo "status: $user_code"
           if [ "$user_code" != "200" ]; then
             cat /tmp/user_user.json
-            echo "USER token is invalid. Re-copy the token value and update the Actions secret."
             exit 1
           fi
 
@@ -95,33 +93,37 @@ jobs:
           pnpm -v
           git --version
 
-      - name: Configure git auth for clones (user + org)
+      - name: Configure git auth for clones (extraheader per owner)
         shell: bash
         run: |
           set -euo pipefail
           echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
           echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
 
-          # HTTPS rewrites (match with and without trailing slash)
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus"
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram"
+          # Remove any previous headers that could conflict
+          git config --global --unset-all http.https://github.com/.extraheader || true
+          git config --global --unset-all http.https://github.com/jai-nexus/.extraheader || true
+          git config --global --unset-all http.https://github.com/JerryIngram/.extraheader || true
+          git config --global --unset-all http.https://github.com/jerryingram/.extraheader || true
 
-          # SSH rewrites (explicit)
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "git@github.com:jai-nexus/"
-          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "git@github.com:JerryIngram/"
+          # Build Basic auth headers (x-access-token:TOKEN)
+          ORG_B64=$(printf "x-access-token:%s" "${REPO_SYNC_TOKEN_ORG}" | base64 -w0)
+          USER_B64=$(printf "x-access-token:%s" "${REPO_SYNC_TOKEN_USER}" | base64 -w0)
 
-          # Fallback: any other SSH -> HTTPS (no token)
+          # Path-scoped headers so each owner uses the correct token
+          git config --global http.https://github.com/jai-nexus/.extraheader "AUTHORIZATION: basic ${ORG_B64}"
+          git config --global http.https://github.com/JerryIngram/.extraheader "AUTHORIZATION: basic ${USER_B64}"
+          git config --global http.https://github.com/jerryingram/.extraheader "AUTHORIZATION: basic ${USER_B64}"
+
+          # Convert SSH remotes to HTTPS so the headers apply
           git config --global url."https://github.com/".insteadOf "git@github.com:"
+          git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 
-          echo "Configured rewrite rules:"
-          git config --global --get-regexp '^url\..*\.insteadOf$' || true
-
-          echo "Git probe (must NOT prompt): org repo"
+          # Probes (must not prompt)
+          echo "Git probe: org repo"
           GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/jai-nexus/jai HEAD >/dev/null
 
-          echo "Git probe (must NOT prompt): user repo"
+          echo "Git probe: user repo"
           GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/JerryIngram/offbook-ai HEAD >/dev/null
 
       - name: Install (portal)
