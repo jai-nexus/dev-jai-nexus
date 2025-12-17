@@ -2,6 +2,10 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
+import { OperatorSubnav } from "@/components/operator/OperatorSubnav";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function OperatorLayout({
   children,
@@ -14,5 +18,10 @@ export default async function OperatorLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <OperatorSubnav />
+      {children}
+    </>
+  );
 }
