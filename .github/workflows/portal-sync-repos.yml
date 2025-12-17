@@ -21,27 +21,54 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REPO_SYNC_TOKEN_ORG: ${{ secrets.REPO_SYNC_TOKEN_ORG }}
       REPO_SYNC_TOKEN_USER: ${{ secrets.REPO_SYNC_TOKEN_USER }}
-      # prevent git prompts that hang CI
       GIT_TERMINAL_PROMPT: "0"
 
     steps:
-      - name: Validate secrets
+      - name: Validate secrets (non-empty)
         shell: bash
         run: |
           set -euo pipefail
           [ -n "${DATABASE_URL:-}" ] || (echo "Missing secret: DATABASE_URL" && exit 1)
           [ -n "${REPO_SYNC_TOKEN_ORG:-}" ] || (echo "Missing secret: REPO_SYNC_TOKEN_ORG" && exit 1)
           [ -n "${REPO_SYNC_TOKEN_USER:-}" ] || (echo "Missing secret: REPO_SYNC_TOKEN_USER" && exit 1)
-          echo "Secrets are set (not printing)."
+          echo "Secret lengths: ORG=${#REPO_SYNC_TOKEN_ORG} USER=${#REPO_SYNC_TOKEN_USER}"
 
-      - name: Checkout
+      - name: Probe token validity via GitHub API (/user)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
+          echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
+
+          echo "ORG token -> /user"
+          org_code=$(curl -sS -o /tmp/org_user.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_ORG}" \
+            https://api.github.com/user)
+          echo "status: $org_code"
+          if [ "$org_code" != "200" ]; then
+            cat /tmp/org_user.json
+            echo "ORG token is invalid. Re-copy the token value and update the Actions secret."
+            exit 1
+          fi
+
+          echo "USER token -> /user"
+          user_code=$(curl -sS -o /tmp/user_user.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_USER}" \
+            https://api.github.com/user)
+          echo "status: $user_code"
+          if [ "$user_code" != "200" ]; then
+            cat /tmp/user_user.json
+            echo "USER token is invalid. Re-copy the token value and update the Actions secret."
+            exit 1
+          fi
+
+      - name: Checkout (no persisted creds)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # CRITICAL: don't let checkout persist GITHUB_TOKEN creds that override your PATs
           persist-credentials: false
 
-      - name: Clear checkout auth header (defensive)
+      - name: Clear any checkout auth header (defensive)
         shell: bash
         run: |
           set -euo pipefail
@@ -72,39 +99,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
           echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
 
-          # HTTPS rewrites (owner-scoped)
+          # HTTPS rewrites (match with and without trailing slash)
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus"
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
+          git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram"
 
-          # SSH rewrites (explicit per owner)
+          # SSH rewrites (explicit)
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "git@github.com:jai-nexus/"
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "git@github.com:JerryIngram/"
 
           # Fallback: any other SSH -> HTTPS (no token)
           git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-      - name: Probe tokens via GitHub API (deterministic)
-        shell: bash
-        run: |
-          set -euo pipefail
+          echo "Configured rewrite rules:"
+          git config --global --get-regexp '^url\..*\.insteadOf$' || true
 
-          echo "Probing org token (jai-nexus/jai)..."
-          code=$(curl -sS -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_ORG}" \
-            https://api.github.com/repos/jai-nexus/jai)
-          echo "org token -> status: $code"
-          [ "$code" = "200" ] || (echo "Org token cannot read jai-nexus/jai (status $code)" && exit 1)
+          echo "Git probe (must NOT prompt): org repo"
+          GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/jai-nexus/jai HEAD >/dev/null
 
-          echo "Probing user token (JerryIngram/offbook-ai)..."
-          code=$(curl -sS -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_USER}" \
-            https://api.github.com/repos/JerryIngram/offbook-ai)
-          echo "user token -> status: $code"
-          [ "$code" = "200" ] || (echo "User token cannot read JerryIngram/offbook-ai (status $code)" && exit 1)
+          echo "Git probe (must NOT prompt): user repo"
+          GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/JerryIngram/offbook-ai HEAD >/dev/null
 
       - name: Install (portal)
         working-directory: portal
@@ -168,5 +186,4 @@ jobs:
           path: |
             portal/.tmp/sync.stdout.log
             portal/.tmp/sync.stderr.log
-            workspace/
             portal/data/runs/
