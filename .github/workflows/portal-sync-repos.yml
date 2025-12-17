@@ -21,6 +21,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REPO_SYNC_TOKEN_ORG: ${{ secrets.REPO_SYNC_TOKEN_ORG }}
       REPO_SYNC_TOKEN_USER: ${{ secrets.REPO_SYNC_TOKEN_USER }}
+      # prevent git prompts that hang CI
       GIT_TERMINAL_PROMPT: "0"
 
     steps:
@@ -37,6 +38,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # CRITICAL: don't let checkout persist GITHUB_TOKEN creds that override your PATs
+          persist-credentials: false
+
+      - name: Clear checkout auth header (defensive)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --local --unset-all http.https://github.com/.extraheader || true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -67,22 +76,35 @@ jobs:
           echo "::add-mask::${REPO_SYNC_TOKEN_ORG}"
           echo "::add-mask::${REPO_SYNC_TOKEN_USER}"
 
-          # HTTPS rewrites
+          # HTTPS rewrites (owner-scoped)
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "https://github.com/jai-nexus/"
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "https://github.com/JerryIngram/"
 
-          # SSH rewrites (explicit)
+          # SSH rewrites (explicit per owner)
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_ORG}@github.com/jai-nexus/".insteadOf "git@github.com:jai-nexus/"
           git config --global url."https://x-access-token:${REPO_SYNC_TOKEN_USER}@github.com/JerryIngram/".insteadOf "git@github.com:JerryIngram/"
 
           # Fallback: any other SSH -> HTTPS (no token)
           git config --global url."https://github.com/".insteadOf "git@github.com:"
 
-          echo "Probing org token..."
-          git ls-remote https://github.com/jai-nexus/jai HEAD >/dev/null
+      - name: Probe tokens via GitHub API (deterministic)
+        shell: bash
+        run: |
+          set -euo pipefail
 
-          echo "Probing user token..."
-          git ls-remote https://github.com/JerryIngram/offbook-ai HEAD >/dev/null
+          echo "Probing org token (jai-nexus/jai)..."
+          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_ORG}" \
+            https://api.github.com/repos/jai-nexus/jai)
+          echo "org token -> status: $code"
+          [ "$code" = "200" ] || (echo "Org token cannot read jai-nexus/jai (status $code)" && exit 1)
+
+          echo "Probing user token (JerryIngram/offbook-ai)..."
+          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${REPO_SYNC_TOKEN_USER}" \
+            https://api.github.com/repos/JerryIngram/offbook-ai)
+          echo "user token -> status: $code"
+          [ "$code" = "200" ] || (echo "User token cannot read JerryIngram/offbook-ai (status $code)" && exit 1)
 
       - name: Install (portal)
         working-directory: portal
