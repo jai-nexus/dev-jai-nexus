@@ -5,6 +5,8 @@ export const revalidate = 0;
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
+import crypto from "node:crypto";
+import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 
 async function createPacket(formData: FormData) {
@@ -18,10 +20,7 @@ async function createPacket(formData: FormData) {
   const ac = String(formData.get("ac") ?? "");
   const plan = String(formData.get("plan") ?? "");
 
-  if (!nhId || !title) {
-    // Minimal guard; you can add UI errors later.
-    redirect("/operator/work/new");
-  }
+  if (!nhId || !title) redirect("/operator/work/new");
 
   const created = await prisma.workPacket.create({
     data: {
@@ -29,21 +28,29 @@ async function createPacket(formData: FormData) {
       title,
       ac,
       plan,
-      status: "DRAFT",
+      status: WorkPacketStatus.DRAFT,
     },
   });
+
+  const mutationId = crypto.randomUUID();
+
+  const data: Prisma.InputJsonValue = {
+    workPacketId: created.id,
+    nhId: created.nhId,
+    title: created.title,
+    status: created.status,
+    repoId: created.repoId ?? "(null)",
+  };
 
   await emitWorkPacketSotEvent({
     kind: "WORK_PACKET_CREATED",
     nhId: created.nhId,
     repoId: created.repoId ?? null,
     summary: `WorkPacket created: ${created.nhId} · ${created.title}`,
-    payload: {
-      workPacketId: created.id,
-      status: created.status,
-      title: created.title,
-    },
+    mutationId,
+    workPacket: { id: created.id, nhId: created.nhId },
     actor: { email: session.user.email ?? null, name: session.user.name ?? null },
+    data,
   });
 
   redirect(`/operator/work/${created.id}`);

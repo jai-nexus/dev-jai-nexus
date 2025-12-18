@@ -1,90 +1,103 @@
 // portal/src/lib/sotWorkPackets.ts
 import { prisma } from "@/lib/prisma";
-import type { Prisma, WorkPacket } from "../../prisma/generated/prisma";
+import type { Prisma, WorkPacket, WorkPacketStatus } from "../../prisma/generated/prisma";
 
-export type WorkPacketSotKind =
-  | "WORK_PACKET_CREATED"
-  | "WORK_PACKET_UPDATED"
-  | "WORK_PACKET_STATUS_CHANGED";
+type JsonScalar = string | number | boolean;
+type JsonChange = { from: JsonScalar; to: JsonScalar };
 
-type EmitArgs = {
-  kind: WorkPacketSotKind;
-  summary: string;
-  nhId: string;
-  repoId?: number | null;
-  payload?: Prisma.InputJsonValue;
-  actor?: { email?: string | null; name?: string | null } | null;
+export type WorkPacketActor = {
+  email: string | null;
+  name: string | null;
 };
 
-export async function emitWorkPacketSotEvent(args: EmitArgs) {
-  const { kind, summary, nhId, repoId, payload, actor } = args;
+export type WorkPacketDiff = {
+  changes: Record<string, JsonChange>;
+  nonStatusChanges: Record<string, JsonChange>;
+  statusChanged: { from: WorkPacketStatus; to: WorkPacketStatus } | null;
+};
 
-  return prisma.sotEvent.create({
-    data: {
-      ts: new Date(),
-      source: "dev-portal",
-      kind,
-      nhId,
-      summary,
-      payload:
-        payload ??
-        ({
-          actor: actor ?? null,
-        } satisfies Prisma.InputJsonObject),
-      repoId: repoId ?? null,
-    },
-  });
-}
-
-type DiffKey =
-  | "nhId"
-  | "title"
-  | "status"
-  | "ac"
-  | "plan"
-  | "githubIssueUrl"
-  | "githubPrUrl"
-  | "verificationUrl"
-  | "repoId";
-
-type JsonPrimitive = string | number | boolean | null;
-
-function toJsonPrimitive(v: WorkPacket[DiffKey]): JsonPrimitive {
-  if (v === null) return null;
+function scalar(v: unknown): JsonScalar {
+  if (v === null || v === undefined) return "(null)";
   if (typeof v === "string") return v;
-  if (typeof v === "number") return v;
+  if (typeof v === "number") return Number.isFinite(v) ? v : "(nan)";
   if (typeof v === "boolean") return v;
-  // enums come through as strings, but TS doesn’t always narrow cleanly
   return String(v);
 }
 
-export function diffWorkPacket(before: WorkPacket, after: WorkPacket) {
-  const changes: Record<string, { from: JsonPrimitive; to: JsonPrimitive }> = {};
+function pushChange(
+  changes: Record<string, JsonChange>,
+  key: string,
+  from: unknown,
+  to: unknown,
+) {
+  const a = scalar(from);
+  const b = scalar(to);
+  if (a === b) return;
+  changes[key] = { from: a, to: b };
+}
 
-  const fields: DiffKey[] = [
-    "nhId",
-    "title",
-    "status",
-    "ac",
-    "plan",
-    "githubIssueUrl",
-    "githubPrUrl",
-    "verificationUrl",
-    "repoId",
-  ];
+export function diffWorkPacket(before: WorkPacket, after: WorkPacket): WorkPacketDiff {
+  const changes: Record<string, JsonChange> = {};
 
-  for (const f of fields) {
-    const b = before[f];
-    const a = after[f];
-    if (b !== a) {
-      changes[f] = { from: toJsonPrimitive(b), to: toJsonPrimitive(a) };
-    }
-  }
+  pushChange(changes, "nhId", before.nhId, after.nhId);
+  pushChange(changes, "title", before.title, after.title);
+  pushChange(changes, "status", before.status, after.status);
+  pushChange(changes, "ac", before.ac, after.ac);
+  pushChange(changes, "plan", before.plan, after.plan);
+  pushChange(changes, "githubIssueUrl", before.githubIssueUrl, after.githubIssueUrl);
+  pushChange(changes, "githubPrUrl", before.githubPrUrl, after.githubPrUrl);
+  pushChange(changes, "verificationUrl", before.verificationUrl, after.verificationUrl);
+  pushChange(changes, "repoId", before.repoId, after.repoId);
 
   const statusChanged =
-    before.status !== after.status
-      ? { from: String(before.status), to: String(after.status) }
-      : null;
+    before.status !== after.status ? { from: before.status, to: after.status } : null;
 
-  return { changes, statusChanged };
+  const nonStatusChanges: Record<string, JsonChange> = {};
+  for (const [k, v] of Object.entries(changes)) {
+    if (k === "status") continue;
+    nonStatusChanges[k] = v;
+  }
+
+  return { changes, nonStatusChanges, statusChanged };
+}
+
+export type EmitWorkPacketSotEventArgs = {
+  source?: string; // default "jai-work-ui"
+  kind: "WORK_PACKET_CREATED" | "WORK_PACKET_UPDATED" | "WORK_PACKET_STATUS_CHANGED";
+  summary: string;
+
+  nhId: string;
+  repoId: number | null;
+
+  workPacket: { id: number; nhId: string };
+  actor: WorkPacketActor;
+
+  mutationId: string;
+
+  data?: Prisma.InputJsonValue; // must be JSON-safe (no null/undefined)
+};
+
+export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
+  const payload: Prisma.InputJsonValue = {
+    schema: "work-packet-sot-0.1",
+    mutationId: args.mutationId,
+    workPacket: args.workPacket,
+    actor: {
+      email: args.actor.email ?? "",
+      name: args.actor.name ?? "",
+    },
+    data: args.data ?? {},
+  };
+
+  await prisma.sotEvent.create({
+    data: {
+      ts: new Date(),
+      source: args.source ?? "jai-work-ui",
+      kind: args.kind,
+      nhId: args.nhId,
+      summary: args.summary,
+      payload,
+      repoId: args.repoId ?? null,
+    },
+  });
 }

@@ -5,15 +5,18 @@ export const revalidate = 0;
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
+import crypto from "node:crypto";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
-import { WorkPacketStatus } from "../../../../../prisma/generated/prisma";
+import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
 
 type Props = { params: { id: string } };
 
-function parseStatus(value: unknown) {
-  const s = String(value ?? "DRAFT").trim();
+function parseStatus(value: unknown): WorkPacketStatus {
+  const s = String(value ?? WorkPacketStatus.DRAFT).trim();
   const allowed = new Set(Object.values(WorkPacketStatus));
-  return allowed.has(s as WorkPacketStatus) ? (s as WorkPacketStatus) : "DRAFT";
+  return allowed.has(s as WorkPacketStatus)
+    ? (s as WorkPacketStatus)
+    : WorkPacketStatus.DRAFT;
 }
 
 async function updatePacket(id: number, formData: FormData) {
@@ -30,11 +33,11 @@ async function updatePacket(id: number, formData: FormData) {
   const status = parseStatus(formData.get("status"));
   const ac = String(formData.get("ac") ?? "");
   const plan = String(formData.get("plan") ?? "");
-  const githubIssueUrl =
-    String(formData.get("githubIssueUrl") ?? "").trim() || null;
+  const githubIssueUrl = String(formData.get("githubIssueUrl") ?? "").trim() || null;
   const githubPrUrl = String(formData.get("githubPrUrl") ?? "").trim() || null;
-  const verificationUrl =
-    String(formData.get("verificationUrl") ?? "").trim() || null;
+  const verificationUrl = String(formData.get("verificationUrl") ?? "").trim() || null;
+
+  if (!nhId || !title) redirect(`/operator/work/${id}`);
 
   const after = await prisma.workPacket.update({
     where: { id },
@@ -52,10 +55,11 @@ async function updatePacket(id: number, formData: FormData) {
 
   const { changes, statusChanged } = diffWorkPacket(before, after);
 
-  // Emit one SoT event per update (clean + readable stream)
-  const kind = statusChanged
-    ? "WORK_PACKET_STATUS_CHANGED"
-    : "WORK_PACKET_UPDATED";
+  if (!statusChanged && Object.keys(changes).length === 0) {
+    redirect(`/operator/work/${id}`);
+  }
+
+  const kind = statusChanged ? "WORK_PACKET_STATUS_CHANGED" : "WORK_PACKET_UPDATED";
 
   const summary = statusChanged
     ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(
@@ -63,17 +67,23 @@ async function updatePacket(id: number, formData: FormData) {
       )}`
     : `WorkPacket updated: ${after.nhId} · ${after.title}`;
 
+  const mutationId = crypto.randomUUID();
+
+  const data: Prisma.InputJsonValue = {
+    workPacketId: after.id,
+    changes, // JSON-safe scalars only (see sotWorkPackets.ts)
+    statusChanged: statusChanged ?? "(null)",
+  };
+
   await emitWorkPacketSotEvent({
     kind,
     nhId: after.nhId,
     repoId: after.repoId ?? null,
     summary,
-    payload: {
-      workPacketId: after.id,
-      changes,
-      statusChanged,
-    },
+    mutationId,
+    workPacket: { id: after.id, nhId: after.nhId },
     actor: { email: session.user.email ?? null, name: session.user.name ?? null },
+    data,
   });
 
   redirect(`/operator/work/${id}`);
@@ -101,7 +111,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
       </header>
 
       <form action={updatePacket.bind(null, p.id)} className="max-w-4xl space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-1">
             <label className="block text-xs text-gray-300">NH</label>
             <input
@@ -111,7 +121,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             />
           </div>
 
-          <div className="md:col-span-2 space-y-1">
+          <div className="space-y-1 md:col-span-2">
             <label className="block text-xs text-gray-300">Title</label>
             <input
               name="title"
@@ -158,17 +168,16 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-1">
-            <label className="block text-xs text-gray-300">
-              GitHub Issue URL
-            </label>
+            <label className="block text-xs text-gray-300">GitHub Issue URL</label>
             <input
               name="githubIssueUrl"
               defaultValue={p.githubIssueUrl ?? ""}
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             />
           </div>
+
           <div className="space-y-1">
             <label className="block text-xs text-gray-300">GitHub PR URL</label>
             <input
@@ -177,10 +186,9 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             />
           </div>
+
           <div className="space-y-1">
-            <label className="block text-xs text-gray-300">
-              Verification URL
-            </label>
+            <label className="block text-xs text-gray-300">Verification URL</label>
             <input
               name="verificationUrl"
               defaultValue={p.verificationUrl ?? ""}
