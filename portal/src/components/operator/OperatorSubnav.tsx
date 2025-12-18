@@ -1,4 +1,3 @@
-// portal/src/components/operator/OperatorSubnav.tsx
 "use client";
 
 import Link from "next/link";
@@ -9,6 +8,7 @@ const links = [
   { href: "/operator/events", label: "Events" },
   { href: "/operator/agents", label: "Agents" },
   { href: "/operator/projects", label: "Projects" },
+  { href: "/operator/work", label: "Work" },
 ];
 
 export function OperatorSubnav() {

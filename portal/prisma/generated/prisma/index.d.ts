@@ -78,6 +78,11 @@ export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>
  * 
  */
 export type VerificationToken = $Result.DefaultSelection<Prisma.$VerificationTokenPayload>
+/**
+ * Model WorkPacket
+ * 
+ */
+export type WorkPacket = $Result.DefaultSelection<Prisma.$WorkPacketPayload>
 
 /**
  * Enums
@@ -90,11 +95,27 @@ export namespace $Enums {
 
 export type Role = (typeof Role)[keyof typeof Role]
 
+
+export const WorkPacketStatus: {
+  DRAFT: 'DRAFT',
+  PLANNED: 'PLANNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  IN_REVIEW: 'IN_REVIEW',
+  BLOCKED: 'BLOCKED',
+  DONE: 'DONE'
+};
+
+export type WorkPacketStatus = (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus]
+
 }
 
 export type Role = $Enums.Role
 
 export const Role: typeof $Enums.Role
+
+export type WorkPacketStatus = $Enums.WorkPacketStatus
+
+export const WorkPacketStatus: typeof $Enums.WorkPacketStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -342,6 +363,16 @@ export class PrismaClient<
     * ```
     */
   get verificationToken(): Prisma.VerificationTokenDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.workPacket`: Exposes CRUD operations for the **WorkPacket** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkPackets
+    * const workPackets = await prisma.workPacket.findMany()
+    * ```
+    */
+  get workPacket(): Prisma.WorkPacketDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -788,7 +819,8 @@ export namespace Prisma {
     User: 'User',
     Account: 'Account',
     Session: 'Session',
-    VerificationToken: 'VerificationToken'
+    VerificationToken: 'VerificationToken',
+    WorkPacket: 'WorkPacket'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -804,7 +836,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "pilotRun" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken"
+      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "pilotRun" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken" | "workPacket"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1770,6 +1802,80 @@ export namespace Prisma {
           }
         }
       }
+      WorkPacket: {
+        payload: Prisma.$WorkPacketPayload<ExtArgs>
+        fields: Prisma.WorkPacketFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkPacketFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkPacketFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          findFirst: {
+            args: Prisma.WorkPacketFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkPacketFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          findMany: {
+            args: Prisma.WorkPacketFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>[]
+          }
+          create: {
+            args: Prisma.WorkPacketCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          createMany: {
+            args: Prisma.WorkPacketCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkPacketCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>[]
+          }
+          delete: {
+            args: Prisma.WorkPacketDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          update: {
+            args: Prisma.WorkPacketUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkPacketDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkPacketUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WorkPacketUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>[]
+          }
+          upsert: {
+            args: Prisma.WorkPacketUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkPacketPayload>
+          }
+          aggregate: {
+            args: Prisma.WorkPacketAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkPacket>
+          }
+          groupBy: {
+            args: Prisma.WorkPacketGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkPacketGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkPacketCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkPacketCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1891,6 +1997,7 @@ export namespace Prisma {
     account?: AccountOmit
     session?: SessionOmit
     verificationToken?: VerificationTokenOmit
+    workPacket?: WorkPacketOmit
   }
 
   /* Types for Logging */
@@ -1975,6 +2082,7 @@ export namespace Prisma {
     fileIndexes: number
     sotEvents: number
     syncRuns: number
+    workPackets: number
   }
 
   export type RepoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1982,6 +2090,7 @@ export namespace Prisma {
     fileIndexes?: boolean | RepoCountOutputTypeCountFileIndexesArgs
     sotEvents?: boolean | RepoCountOutputTypeCountSotEventsArgs
     syncRuns?: boolean | RepoCountOutputTypeCountSyncRunsArgs
+    workPackets?: boolean | RepoCountOutputTypeCountWorkPacketsArgs
   }
 
   // Custom InputTypes
@@ -2021,6 +2130,13 @@ export namespace Prisma {
    */
   export type RepoCountOutputTypeCountSyncRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SyncRunWhereInput
+  }
+
+  /**
+   * RepoCountOutputType without action
+   */
+  export type RepoCountOutputTypeCountWorkPacketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkPacketWhereInput
   }
 
 
@@ -2431,6 +2547,7 @@ export namespace Prisma {
     fileIndexes?: boolean | Repo$fileIndexesArgs<ExtArgs>
     sotEvents?: boolean | Repo$sotEventsArgs<ExtArgs>
     syncRuns?: boolean | Repo$syncRunsArgs<ExtArgs>
+    workPackets?: boolean | Repo$workPacketsArgs<ExtArgs>
     _count?: boolean | RepoCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["repo"]>
 
@@ -2491,6 +2608,7 @@ export namespace Prisma {
     fileIndexes?: boolean | Repo$fileIndexesArgs<ExtArgs>
     sotEvents?: boolean | Repo$sotEventsArgs<ExtArgs>
     syncRuns?: boolean | Repo$syncRunsArgs<ExtArgs>
+    workPackets?: boolean | Repo$workPacketsArgs<ExtArgs>
     _count?: boolean | RepoCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type RepoIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2503,6 +2621,7 @@ export namespace Prisma {
       fileIndexes: Prisma.$FileIndexPayload<ExtArgs>[]
       sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
       syncRuns: Prisma.$SyncRunPayload<ExtArgs>[]
+      workPackets: Prisma.$WorkPacketPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -2917,6 +3036,7 @@ export namespace Prisma {
     fileIndexes<T extends Repo$fileIndexesArgs<ExtArgs> = {}>(args?: Subset<T, Repo$fileIndexesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FileIndexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sotEvents<T extends Repo$sotEventsArgs<ExtArgs> = {}>(args?: Subset<T, Repo$sotEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SotEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     syncRuns<T extends Repo$syncRunsArgs<ExtArgs> = {}>(args?: Subset<T, Repo$syncRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SyncRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    workPackets<T extends Repo$workPacketsArgs<ExtArgs> = {}>(args?: Subset<T, Repo$workPacketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3441,6 +3561,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SyncRunScalarFieldEnum | SyncRunScalarFieldEnum[]
+  }
+
+  /**
+   * Repo.workPackets
+   */
+  export type Repo$workPacketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    where?: WorkPacketWhereInput
+    orderBy?: WorkPacketOrderByWithRelationInput | WorkPacketOrderByWithRelationInput[]
+    cursor?: WorkPacketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkPacketScalarFieldEnum | WorkPacketScalarFieldEnum[]
   }
 
   /**
@@ -17273,6 +17417,1212 @@ export namespace Prisma {
 
 
   /**
+   * Model WorkPacket
+   */
+
+  export type AggregateWorkPacket = {
+    _count: WorkPacketCountAggregateOutputType | null
+    _avg: WorkPacketAvgAggregateOutputType | null
+    _sum: WorkPacketSumAggregateOutputType | null
+    _min: WorkPacketMinAggregateOutputType | null
+    _max: WorkPacketMaxAggregateOutputType | null
+  }
+
+  export type WorkPacketAvgAggregateOutputType = {
+    id: number | null
+    repoId: number | null
+  }
+
+  export type WorkPacketSumAggregateOutputType = {
+    id: number | null
+    repoId: number | null
+  }
+
+  export type WorkPacketMinAggregateOutputType = {
+    id: number | null
+    nhId: string | null
+    title: string | null
+    status: $Enums.WorkPacketStatus | null
+    ac: string | null
+    plan: string | null
+    githubIssueUrl: string | null
+    githubPrUrl: string | null
+    verificationUrl: string | null
+    repoId: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WorkPacketMaxAggregateOutputType = {
+    id: number | null
+    nhId: string | null
+    title: string | null
+    status: $Enums.WorkPacketStatus | null
+    ac: string | null
+    plan: string | null
+    githubIssueUrl: string | null
+    githubPrUrl: string | null
+    verificationUrl: string | null
+    repoId: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type WorkPacketCountAggregateOutputType = {
+    id: number
+    nhId: number
+    title: number
+    status: number
+    ac: number
+    plan: number
+    githubIssueUrl: number
+    githubPrUrl: number
+    verificationUrl: number
+    repoId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type WorkPacketAvgAggregateInputType = {
+    id?: true
+    repoId?: true
+  }
+
+  export type WorkPacketSumAggregateInputType = {
+    id?: true
+    repoId?: true
+  }
+
+  export type WorkPacketMinAggregateInputType = {
+    id?: true
+    nhId?: true
+    title?: true
+    status?: true
+    ac?: true
+    plan?: true
+    githubIssueUrl?: true
+    githubPrUrl?: true
+    verificationUrl?: true
+    repoId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WorkPacketMaxAggregateInputType = {
+    id?: true
+    nhId?: true
+    title?: true
+    status?: true
+    ac?: true
+    plan?: true
+    githubIssueUrl?: true
+    githubPrUrl?: true
+    verificationUrl?: true
+    repoId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type WorkPacketCountAggregateInputType = {
+    id?: true
+    nhId?: true
+    title?: true
+    status?: true
+    ac?: true
+    plan?: true
+    githubIssueUrl?: true
+    githubPrUrl?: true
+    verificationUrl?: true
+    repoId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type WorkPacketAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkPacket to aggregate.
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkPackets to fetch.
+     */
+    orderBy?: WorkPacketOrderByWithRelationInput | WorkPacketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkPacketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkPackets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkPackets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkPackets
+    **/
+    _count?: true | WorkPacketCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WorkPacketAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WorkPacketSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkPacketMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkPacketMaxAggregateInputType
+  }
+
+  export type GetWorkPacketAggregateType<T extends WorkPacketAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkPacket]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkPacket[P]>
+      : GetScalarType<T[P], AggregateWorkPacket[P]>
+  }
+
+
+
+
+  export type WorkPacketGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkPacketWhereInput
+    orderBy?: WorkPacketOrderByWithAggregationInput | WorkPacketOrderByWithAggregationInput[]
+    by: WorkPacketScalarFieldEnum[] | WorkPacketScalarFieldEnum
+    having?: WorkPacketScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkPacketCountAggregateInputType | true
+    _avg?: WorkPacketAvgAggregateInputType
+    _sum?: WorkPacketSumAggregateInputType
+    _min?: WorkPacketMinAggregateInputType
+    _max?: WorkPacketMaxAggregateInputType
+  }
+
+  export type WorkPacketGroupByOutputType = {
+    id: number
+    nhId: string
+    title: string
+    status: $Enums.WorkPacketStatus
+    ac: string
+    plan: string
+    githubIssueUrl: string | null
+    githubPrUrl: string | null
+    verificationUrl: string | null
+    repoId: number | null
+    createdAt: Date
+    updatedAt: Date
+    _count: WorkPacketCountAggregateOutputType | null
+    _avg: WorkPacketAvgAggregateOutputType | null
+    _sum: WorkPacketSumAggregateOutputType | null
+    _min: WorkPacketMinAggregateOutputType | null
+    _max: WorkPacketMaxAggregateOutputType | null
+  }
+
+  type GetWorkPacketGroupByPayload<T extends WorkPacketGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkPacketGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkPacketGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkPacketGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkPacketGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkPacketSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nhId?: boolean
+    title?: boolean
+    status?: boolean
+    ac?: boolean
+    plan?: boolean
+    githubIssueUrl?: boolean
+    githubPrUrl?: boolean
+    verificationUrl?: boolean
+    repoId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }, ExtArgs["result"]["workPacket"]>
+
+  export type WorkPacketSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nhId?: boolean
+    title?: boolean
+    status?: boolean
+    ac?: boolean
+    plan?: boolean
+    githubIssueUrl?: boolean
+    githubPrUrl?: boolean
+    verificationUrl?: boolean
+    repoId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }, ExtArgs["result"]["workPacket"]>
+
+  export type WorkPacketSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    nhId?: boolean
+    title?: boolean
+    status?: boolean
+    ac?: boolean
+    plan?: boolean
+    githubIssueUrl?: boolean
+    githubPrUrl?: boolean
+    verificationUrl?: boolean
+    repoId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }, ExtArgs["result"]["workPacket"]>
+
+  export type WorkPacketSelectScalar = {
+    id?: boolean
+    nhId?: boolean
+    title?: boolean
+    status?: boolean
+    ac?: boolean
+    plan?: boolean
+    githubIssueUrl?: boolean
+    githubPrUrl?: boolean
+    verificationUrl?: boolean
+    repoId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type WorkPacketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nhId" | "title" | "status" | "ac" | "plan" | "githubIssueUrl" | "githubPrUrl" | "verificationUrl" | "repoId" | "createdAt" | "updatedAt", ExtArgs["result"]["workPacket"]>
+  export type WorkPacketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }
+  export type WorkPacketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }
+  export type WorkPacketIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+  }
+
+  export type $WorkPacketPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkPacket"
+    objects: {
+      repo: Prisma.$RepoPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      nhId: string
+      title: string
+      status: $Enums.WorkPacketStatus
+      ac: string
+      plan: string
+      githubIssueUrl: string | null
+      githubPrUrl: string | null
+      verificationUrl: string | null
+      repoId: number | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["workPacket"]>
+    composites: {}
+  }
+
+  type WorkPacketGetPayload<S extends boolean | null | undefined | WorkPacketDefaultArgs> = $Result.GetResult<Prisma.$WorkPacketPayload, S>
+
+  type WorkPacketCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WorkPacketFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WorkPacketCountAggregateInputType | true
+    }
+
+  export interface WorkPacketDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkPacket'], meta: { name: 'WorkPacket' } }
+    /**
+     * Find zero or one WorkPacket that matches the filter.
+     * @param {WorkPacketFindUniqueArgs} args - Arguments to find a WorkPacket
+     * @example
+     * // Get one WorkPacket
+     * const workPacket = await prisma.workPacket.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkPacketFindUniqueArgs>(args: SelectSubset<T, WorkPacketFindUniqueArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WorkPacket that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WorkPacketFindUniqueOrThrowArgs} args - Arguments to find a WorkPacket
+     * @example
+     * // Get one WorkPacket
+     * const workPacket = await prisma.workPacket.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkPacketFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkPacketFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkPacket that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketFindFirstArgs} args - Arguments to find a WorkPacket
+     * @example
+     * // Get one WorkPacket
+     * const workPacket = await prisma.workPacket.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkPacketFindFirstArgs>(args?: SelectSubset<T, WorkPacketFindFirstArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WorkPacket that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketFindFirstOrThrowArgs} args - Arguments to find a WorkPacket
+     * @example
+     * // Get one WorkPacket
+     * const workPacket = await prisma.workPacket.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkPacketFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkPacketFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WorkPackets that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkPackets
+     * const workPackets = await prisma.workPacket.findMany()
+     * 
+     * // Get first 10 WorkPackets
+     * const workPackets = await prisma.workPacket.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workPacketWithIdOnly = await prisma.workPacket.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkPacketFindManyArgs>(args?: SelectSubset<T, WorkPacketFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WorkPacket.
+     * @param {WorkPacketCreateArgs} args - Arguments to create a WorkPacket.
+     * @example
+     * // Create one WorkPacket
+     * const WorkPacket = await prisma.workPacket.create({
+     *   data: {
+     *     // ... data to create a WorkPacket
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkPacketCreateArgs>(args: SelectSubset<T, WorkPacketCreateArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WorkPackets.
+     * @param {WorkPacketCreateManyArgs} args - Arguments to create many WorkPackets.
+     * @example
+     * // Create many WorkPackets
+     * const workPacket = await prisma.workPacket.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkPacketCreateManyArgs>(args?: SelectSubset<T, WorkPacketCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkPackets and returns the data saved in the database.
+     * @param {WorkPacketCreateManyAndReturnArgs} args - Arguments to create many WorkPackets.
+     * @example
+     * // Create many WorkPackets
+     * const workPacket = await prisma.workPacket.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkPackets and only return the `id`
+     * const workPacketWithIdOnly = await prisma.workPacket.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkPacketCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkPacketCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WorkPacket.
+     * @param {WorkPacketDeleteArgs} args - Arguments to delete one WorkPacket.
+     * @example
+     * // Delete one WorkPacket
+     * const WorkPacket = await prisma.workPacket.delete({
+     *   where: {
+     *     // ... filter to delete one WorkPacket
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkPacketDeleteArgs>(args: SelectSubset<T, WorkPacketDeleteArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WorkPacket.
+     * @param {WorkPacketUpdateArgs} args - Arguments to update one WorkPacket.
+     * @example
+     * // Update one WorkPacket
+     * const workPacket = await prisma.workPacket.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkPacketUpdateArgs>(args: SelectSubset<T, WorkPacketUpdateArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WorkPackets.
+     * @param {WorkPacketDeleteManyArgs} args - Arguments to filter WorkPackets to delete.
+     * @example
+     * // Delete a few WorkPackets
+     * const { count } = await prisma.workPacket.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkPacketDeleteManyArgs>(args?: SelectSubset<T, WorkPacketDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkPackets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkPackets
+     * const workPacket = await prisma.workPacket.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkPacketUpdateManyArgs>(args: SelectSubset<T, WorkPacketUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkPackets and returns the data updated in the database.
+     * @param {WorkPacketUpdateManyAndReturnArgs} args - Arguments to update many WorkPackets.
+     * @example
+     * // Update many WorkPackets
+     * const workPacket = await prisma.workPacket.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WorkPackets and only return the `id`
+     * const workPacketWithIdOnly = await prisma.workPacket.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WorkPacketUpdateManyAndReturnArgs>(args: SelectSubset<T, WorkPacketUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WorkPacket.
+     * @param {WorkPacketUpsertArgs} args - Arguments to update or create a WorkPacket.
+     * @example
+     * // Update or create a WorkPacket
+     * const workPacket = await prisma.workPacket.upsert({
+     *   create: {
+     *     // ... data to create a WorkPacket
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkPacket we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkPacketUpsertArgs>(args: SelectSubset<T, WorkPacketUpsertArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WorkPackets.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketCountArgs} args - Arguments to filter WorkPackets to count.
+     * @example
+     * // Count the number of WorkPackets
+     * const count = await prisma.workPacket.count({
+     *   where: {
+     *     // ... the filter for the WorkPackets we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkPacketCountArgs>(
+      args?: Subset<T, WorkPacketCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkPacketCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkPacket.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkPacketAggregateArgs>(args: Subset<T, WorkPacketAggregateArgs>): Prisma.PrismaPromise<GetWorkPacketAggregateType<T>>
+
+    /**
+     * Group by WorkPacket.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkPacketGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkPacketGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkPacketGroupByArgs['orderBy'] }
+        : { orderBy?: WorkPacketGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkPacketGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkPacketGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkPacket model
+   */
+  readonly fields: WorkPacketFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkPacket.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkPacketClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    repo<T extends WorkPacket$repoArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$repoArgs<ExtArgs>>): Prisma__RepoClient<$Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkPacket model
+   */
+  interface WorkPacketFieldRefs {
+    readonly id: FieldRef<"WorkPacket", 'Int'>
+    readonly nhId: FieldRef<"WorkPacket", 'String'>
+    readonly title: FieldRef<"WorkPacket", 'String'>
+    readonly status: FieldRef<"WorkPacket", 'WorkPacketStatus'>
+    readonly ac: FieldRef<"WorkPacket", 'String'>
+    readonly plan: FieldRef<"WorkPacket", 'String'>
+    readonly githubIssueUrl: FieldRef<"WorkPacket", 'String'>
+    readonly githubPrUrl: FieldRef<"WorkPacket", 'String'>
+    readonly verificationUrl: FieldRef<"WorkPacket", 'String'>
+    readonly repoId: FieldRef<"WorkPacket", 'Int'>
+    readonly createdAt: FieldRef<"WorkPacket", 'DateTime'>
+    readonly updatedAt: FieldRef<"WorkPacket", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkPacket findUnique
+   */
+  export type WorkPacketFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkPacket to fetch.
+     */
+    where: WorkPacketWhereUniqueInput
+  }
+
+  /**
+   * WorkPacket findUniqueOrThrow
+   */
+  export type WorkPacketFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkPacket to fetch.
+     */
+    where: WorkPacketWhereUniqueInput
+  }
+
+  /**
+   * WorkPacket findFirst
+   */
+  export type WorkPacketFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkPacket to fetch.
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkPackets to fetch.
+     */
+    orderBy?: WorkPacketOrderByWithRelationInput | WorkPacketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkPackets.
+     */
+    cursor?: WorkPacketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkPackets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkPackets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkPackets.
+     */
+    distinct?: WorkPacketScalarFieldEnum | WorkPacketScalarFieldEnum[]
+  }
+
+  /**
+   * WorkPacket findFirstOrThrow
+   */
+  export type WorkPacketFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkPacket to fetch.
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkPackets to fetch.
+     */
+    orderBy?: WorkPacketOrderByWithRelationInput | WorkPacketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkPackets.
+     */
+    cursor?: WorkPacketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkPackets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkPackets.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkPackets.
+     */
+    distinct?: WorkPacketScalarFieldEnum | WorkPacketScalarFieldEnum[]
+  }
+
+  /**
+   * WorkPacket findMany
+   */
+  export type WorkPacketFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkPackets to fetch.
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkPackets to fetch.
+     */
+    orderBy?: WorkPacketOrderByWithRelationInput | WorkPacketOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkPackets.
+     */
+    cursor?: WorkPacketWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkPackets from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkPackets.
+     */
+    skip?: number
+    distinct?: WorkPacketScalarFieldEnum | WorkPacketScalarFieldEnum[]
+  }
+
+  /**
+   * WorkPacket create
+   */
+  export type WorkPacketCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkPacket.
+     */
+    data: XOR<WorkPacketCreateInput, WorkPacketUncheckedCreateInput>
+  }
+
+  /**
+   * WorkPacket createMany
+   */
+  export type WorkPacketCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkPackets.
+     */
+    data: WorkPacketCreateManyInput | WorkPacketCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkPacket createManyAndReturn
+   */
+  export type WorkPacketCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * The data used to create many WorkPackets.
+     */
+    data: WorkPacketCreateManyInput | WorkPacketCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkPacket update
+   */
+  export type WorkPacketUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkPacket.
+     */
+    data: XOR<WorkPacketUpdateInput, WorkPacketUncheckedUpdateInput>
+    /**
+     * Choose, which WorkPacket to update.
+     */
+    where: WorkPacketWhereUniqueInput
+  }
+
+  /**
+   * WorkPacket updateMany
+   */
+  export type WorkPacketUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkPackets.
+     */
+    data: XOR<WorkPacketUpdateManyMutationInput, WorkPacketUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkPackets to update
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * Limit how many WorkPackets to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkPacket updateManyAndReturn
+   */
+  export type WorkPacketUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * The data used to update WorkPackets.
+     */
+    data: XOR<WorkPacketUpdateManyMutationInput, WorkPacketUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkPackets to update
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * Limit how many WorkPackets to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkPacket upsert
+   */
+  export type WorkPacketUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkPacket to update in case it exists.
+     */
+    where: WorkPacketWhereUniqueInput
+    /**
+     * In case the WorkPacket found by the `where` argument doesn't exist, create a new WorkPacket with this data.
+     */
+    create: XOR<WorkPacketCreateInput, WorkPacketUncheckedCreateInput>
+    /**
+     * In case the WorkPacket was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkPacketUpdateInput, WorkPacketUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkPacket delete
+   */
+  export type WorkPacketDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    /**
+     * Filter which WorkPacket to delete.
+     */
+    where: WorkPacketWhereUniqueInput
+  }
+
+  /**
+   * WorkPacket deleteMany
+   */
+  export type WorkPacketDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkPackets to delete
+     */
+    where?: WorkPacketWhereInput
+    /**
+     * Limit how many WorkPackets to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WorkPacket.repo
+   */
+  export type WorkPacket$repoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Repo
+     */
+    select?: RepoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Repo
+     */
+    omit?: RepoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RepoInclude<ExtArgs> | null
+    where?: RepoWhereInput
+  }
+
+  /**
+   * WorkPacket without action
+   */
+  export type WorkPacketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -17495,6 +18845,24 @@ export namespace Prisma {
   export type VerificationTokenScalarFieldEnum = (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum]
 
 
+  export const WorkPacketScalarFieldEnum: {
+    id: 'id',
+    nhId: 'nhId',
+    title: 'title',
+    status: 'status',
+    ac: 'ac',
+    plan: 'plan',
+    githubIssueUrl: 'githubIssueUrl',
+    githubPrUrl: 'githubPrUrl',
+    verificationUrl: 'verificationUrl',
+    repoId: 'repoId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type WorkPacketScalarFieldEnum = (typeof WorkPacketScalarFieldEnum)[keyof typeof WorkPacketScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -17612,6 +18980,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'WorkPacketStatus'
+   */
+  export type EnumWorkPacketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkPacketStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'WorkPacketStatus[]'
+   */
+  export type ListEnumWorkPacketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkPacketStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -17650,6 +19032,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexListRelationFilter
     sotEvents?: SotEventListRelationFilter
     syncRuns?: SyncRunListRelationFilter
+    workPackets?: WorkPacketListRelationFilter
   }
 
   export type RepoOrderByWithRelationInput = {
@@ -17671,6 +19054,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexOrderByRelationAggregateInput
     sotEvents?: SotEventOrderByRelationAggregateInput
     syncRuns?: SyncRunOrderByRelationAggregateInput
+    workPackets?: WorkPacketOrderByRelationAggregateInput
   }
 
   export type RepoWhereUniqueInput = Prisma.AtLeast<{
@@ -17695,6 +19079,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexListRelationFilter
     sotEvents?: SotEventListRelationFilter
     syncRuns?: SyncRunListRelationFilter
+    workPackets?: WorkPacketListRelationFilter
   }, "id" | "name">
 
   export type RepoOrderByWithAggregationInput = {
@@ -18711,6 +20096,98 @@ export namespace Prisma {
     expires?: DateTimeWithAggregatesFilter<"VerificationToken"> | Date | string
   }
 
+  export type WorkPacketWhereInput = {
+    AND?: WorkPacketWhereInput | WorkPacketWhereInput[]
+    OR?: WorkPacketWhereInput[]
+    NOT?: WorkPacketWhereInput | WorkPacketWhereInput[]
+    id?: IntFilter<"WorkPacket"> | number
+    nhId?: StringFilter<"WorkPacket"> | string
+    title?: StringFilter<"WorkPacket"> | string
+    status?: EnumWorkPacketStatusFilter<"WorkPacket"> | $Enums.WorkPacketStatus
+    ac?: StringFilter<"WorkPacket"> | string
+    plan?: StringFilter<"WorkPacket"> | string
+    githubIssueUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    githubPrUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    verificationUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    repoId?: IntNullableFilter<"WorkPacket"> | number | null
+    createdAt?: DateTimeFilter<"WorkPacket"> | Date | string
+    updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
+    repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+  }
+
+  export type WorkPacketOrderByWithRelationInput = {
+    id?: SortOrder
+    nhId?: SortOrder
+    title?: SortOrder
+    status?: SortOrder
+    ac?: SortOrder
+    plan?: SortOrder
+    githubIssueUrl?: SortOrderInput | SortOrder
+    githubPrUrl?: SortOrderInput | SortOrder
+    verificationUrl?: SortOrderInput | SortOrder
+    repoId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    repo?: RepoOrderByWithRelationInput
+  }
+
+  export type WorkPacketWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: WorkPacketWhereInput | WorkPacketWhereInput[]
+    OR?: WorkPacketWhereInput[]
+    NOT?: WorkPacketWhereInput | WorkPacketWhereInput[]
+    nhId?: StringFilter<"WorkPacket"> | string
+    title?: StringFilter<"WorkPacket"> | string
+    status?: EnumWorkPacketStatusFilter<"WorkPacket"> | $Enums.WorkPacketStatus
+    ac?: StringFilter<"WorkPacket"> | string
+    plan?: StringFilter<"WorkPacket"> | string
+    githubIssueUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    githubPrUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    verificationUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    repoId?: IntNullableFilter<"WorkPacket"> | number | null
+    createdAt?: DateTimeFilter<"WorkPacket"> | Date | string
+    updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
+    repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+  }, "id">
+
+  export type WorkPacketOrderByWithAggregationInput = {
+    id?: SortOrder
+    nhId?: SortOrder
+    title?: SortOrder
+    status?: SortOrder
+    ac?: SortOrder
+    plan?: SortOrder
+    githubIssueUrl?: SortOrderInput | SortOrder
+    githubPrUrl?: SortOrderInput | SortOrder
+    verificationUrl?: SortOrderInput | SortOrder
+    repoId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: WorkPacketCountOrderByAggregateInput
+    _avg?: WorkPacketAvgOrderByAggregateInput
+    _max?: WorkPacketMaxOrderByAggregateInput
+    _min?: WorkPacketMinOrderByAggregateInput
+    _sum?: WorkPacketSumOrderByAggregateInput
+  }
+
+  export type WorkPacketScalarWhereWithAggregatesInput = {
+    AND?: WorkPacketScalarWhereWithAggregatesInput | WorkPacketScalarWhereWithAggregatesInput[]
+    OR?: WorkPacketScalarWhereWithAggregatesInput[]
+    NOT?: WorkPacketScalarWhereWithAggregatesInput | WorkPacketScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"WorkPacket"> | number
+    nhId?: StringWithAggregatesFilter<"WorkPacket"> | string
+    title?: StringWithAggregatesFilter<"WorkPacket"> | string
+    status?: EnumWorkPacketStatusWithAggregatesFilter<"WorkPacket"> | $Enums.WorkPacketStatus
+    ac?: StringWithAggregatesFilter<"WorkPacket"> | string
+    plan?: StringWithAggregatesFilter<"WorkPacket"> | string
+    githubIssueUrl?: StringNullableWithAggregatesFilter<"WorkPacket"> | string | null
+    githubPrUrl?: StringNullableWithAggregatesFilter<"WorkPacket"> | string | null
+    verificationUrl?: StringNullableWithAggregatesFilter<"WorkPacket"> | string | null
+    repoId?: IntNullableWithAggregatesFilter<"WorkPacket"> | number | null
+    createdAt?: DateTimeWithAggregatesFilter<"WorkPacket"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"WorkPacket"> | Date | string
+  }
+
   export type RepoCreateInput = {
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -18729,6 +20206,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUncheckedCreateInput = {
@@ -18750,6 +20228,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunUncheckedCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketUncheckedCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUpdateInput = {
@@ -18770,6 +20249,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoUncheckedUpdateInput = {
@@ -18791,6 +20271,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoCreateManyInput = {
@@ -19901,6 +21382,107 @@ export namespace Prisma {
     expires?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WorkPacketCreateInput = {
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    repo?: RepoCreateNestedOneWithoutWorkPacketsInput
+  }
+
+  export type WorkPacketUncheckedCreateInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    repoId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WorkPacketUpdateInput = {
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
+  }
+
+  export type WorkPacketUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkPacketCreateManyInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    repoId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WorkPacketUpdateManyMutationInput = {
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkPacketUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -20000,6 +21582,12 @@ export namespace Prisma {
     none?: SyncRunWhereInput
   }
 
+  export type WorkPacketListRelationFilter = {
+    every?: WorkPacketWhereInput
+    some?: WorkPacketWhereInput
+    none?: WorkPacketWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -20018,6 +21606,10 @@ export namespace Prisma {
   }
 
   export type SyncRunOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WorkPacketOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -20851,6 +22443,78 @@ export namespace Prisma {
     expires?: SortOrder
   }
 
+  export type EnumWorkPacketStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WorkPacketStatus | EnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWorkPacketStatusFilter<$PrismaModel> | $Enums.WorkPacketStatus
+  }
+
+  export type WorkPacketCountOrderByAggregateInput = {
+    id?: SortOrder
+    nhId?: SortOrder
+    title?: SortOrder
+    status?: SortOrder
+    ac?: SortOrder
+    plan?: SortOrder
+    githubIssueUrl?: SortOrder
+    githubPrUrl?: SortOrder
+    verificationUrl?: SortOrder
+    repoId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WorkPacketAvgOrderByAggregateInput = {
+    id?: SortOrder
+    repoId?: SortOrder
+  }
+
+  export type WorkPacketMaxOrderByAggregateInput = {
+    id?: SortOrder
+    nhId?: SortOrder
+    title?: SortOrder
+    status?: SortOrder
+    ac?: SortOrder
+    plan?: SortOrder
+    githubIssueUrl?: SortOrder
+    githubPrUrl?: SortOrder
+    verificationUrl?: SortOrder
+    repoId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WorkPacketMinOrderByAggregateInput = {
+    id?: SortOrder
+    nhId?: SortOrder
+    title?: SortOrder
+    status?: SortOrder
+    ac?: SortOrder
+    plan?: SortOrder
+    githubIssueUrl?: SortOrder
+    githubPrUrl?: SortOrder
+    verificationUrl?: SortOrder
+    repoId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type WorkPacketSumOrderByAggregateInput = {
+    id?: SortOrder
+    repoId?: SortOrder
+  }
+
+  export type EnumWorkPacketStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WorkPacketStatus | EnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWorkPacketStatusWithAggregatesFilter<$PrismaModel> | $Enums.WorkPacketStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
+    _max?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
+  }
+
   export type DomainCreateNestedManyWithoutRepoInput = {
     create?: XOR<DomainCreateWithoutRepoInput, DomainUncheckedCreateWithoutRepoInput> | DomainCreateWithoutRepoInput[] | DomainUncheckedCreateWithoutRepoInput[]
     connectOrCreate?: DomainCreateOrConnectWithoutRepoInput | DomainCreateOrConnectWithoutRepoInput[]
@@ -20879,6 +22543,13 @@ export namespace Prisma {
     connect?: SyncRunWhereUniqueInput | SyncRunWhereUniqueInput[]
   }
 
+  export type WorkPacketCreateNestedManyWithoutRepoInput = {
+    create?: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput> | WorkPacketCreateWithoutRepoInput[] | WorkPacketUncheckedCreateWithoutRepoInput[]
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutRepoInput | WorkPacketCreateOrConnectWithoutRepoInput[]
+    createMany?: WorkPacketCreateManyRepoInputEnvelope
+    connect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+  }
+
   export type DomainUncheckedCreateNestedManyWithoutRepoInput = {
     create?: XOR<DomainCreateWithoutRepoInput, DomainUncheckedCreateWithoutRepoInput> | DomainCreateWithoutRepoInput[] | DomainUncheckedCreateWithoutRepoInput[]
     connectOrCreate?: DomainCreateOrConnectWithoutRepoInput | DomainCreateOrConnectWithoutRepoInput[]
@@ -20905,6 +22576,13 @@ export namespace Prisma {
     connectOrCreate?: SyncRunCreateOrConnectWithoutRepoInput | SyncRunCreateOrConnectWithoutRepoInput[]
     createMany?: SyncRunCreateManyRepoInputEnvelope
     connect?: SyncRunWhereUniqueInput | SyncRunWhereUniqueInput[]
+  }
+
+  export type WorkPacketUncheckedCreateNestedManyWithoutRepoInput = {
+    create?: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput> | WorkPacketCreateWithoutRepoInput[] | WorkPacketUncheckedCreateWithoutRepoInput[]
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutRepoInput | WorkPacketCreateOrConnectWithoutRepoInput[]
+    createMany?: WorkPacketCreateManyRepoInputEnvelope
+    connect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -20975,6 +22653,20 @@ export namespace Prisma {
     deleteMany?: SyncRunScalarWhereInput | SyncRunScalarWhereInput[]
   }
 
+  export type WorkPacketUpdateManyWithoutRepoNestedInput = {
+    create?: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput> | WorkPacketCreateWithoutRepoInput[] | WorkPacketUncheckedCreateWithoutRepoInput[]
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutRepoInput | WorkPacketCreateOrConnectWithoutRepoInput[]
+    upsert?: WorkPacketUpsertWithWhereUniqueWithoutRepoInput | WorkPacketUpsertWithWhereUniqueWithoutRepoInput[]
+    createMany?: WorkPacketCreateManyRepoInputEnvelope
+    set?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    disconnect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    delete?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    connect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    update?: WorkPacketUpdateWithWhereUniqueWithoutRepoInput | WorkPacketUpdateWithWhereUniqueWithoutRepoInput[]
+    updateMany?: WorkPacketUpdateManyWithWhereWithoutRepoInput | WorkPacketUpdateManyWithWhereWithoutRepoInput[]
+    deleteMany?: WorkPacketScalarWhereInput | WorkPacketScalarWhereInput[]
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -21037,6 +22729,20 @@ export namespace Prisma {
     update?: SyncRunUpdateWithWhereUniqueWithoutRepoInput | SyncRunUpdateWithWhereUniqueWithoutRepoInput[]
     updateMany?: SyncRunUpdateManyWithWhereWithoutRepoInput | SyncRunUpdateManyWithWhereWithoutRepoInput[]
     deleteMany?: SyncRunScalarWhereInput | SyncRunScalarWhereInput[]
+  }
+
+  export type WorkPacketUncheckedUpdateManyWithoutRepoNestedInput = {
+    create?: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput> | WorkPacketCreateWithoutRepoInput[] | WorkPacketUncheckedCreateWithoutRepoInput[]
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutRepoInput | WorkPacketCreateOrConnectWithoutRepoInput[]
+    upsert?: WorkPacketUpsertWithWhereUniqueWithoutRepoInput | WorkPacketUpsertWithWhereUniqueWithoutRepoInput[]
+    createMany?: WorkPacketCreateManyRepoInputEnvelope
+    set?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    disconnect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    delete?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    connect?: WorkPacketWhereUniqueInput | WorkPacketWhereUniqueInput[]
+    update?: WorkPacketUpdateWithWhereUniqueWithoutRepoInput | WorkPacketUpdateWithWhereUniqueWithoutRepoInput[]
+    updateMany?: WorkPacketUpdateManyWithWhereWithoutRepoInput | WorkPacketUpdateManyWithWhereWithoutRepoInput[]
+    deleteMany?: WorkPacketScalarWhereInput | WorkPacketScalarWhereInput[]
   }
 
   export type RepoCreateNestedOneWithoutDomainsInput = {
@@ -21401,6 +23107,26 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSessionsInput, UserUpdateWithoutSessionsInput>, UserUncheckedUpdateWithoutSessionsInput>
   }
 
+  export type RepoCreateNestedOneWithoutWorkPacketsInput = {
+    create?: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
+    connectOrCreate?: RepoCreateOrConnectWithoutWorkPacketsInput
+    connect?: RepoWhereUniqueInput
+  }
+
+  export type EnumWorkPacketStatusFieldUpdateOperationsInput = {
+    set?: $Enums.WorkPacketStatus
+  }
+
+  export type RepoUpdateOneWithoutWorkPacketsNestedInput = {
+    create?: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
+    connectOrCreate?: RepoCreateOrConnectWithoutWorkPacketsInput
+    upsert?: RepoUpsertWithoutWorkPacketsInput
+    disconnect?: RepoWhereInput | boolean
+    delete?: RepoWhereInput | boolean
+    connect?: RepoWhereUniqueInput
+    update?: XOR<XOR<RepoUpdateToOneWithWhereWithoutWorkPacketsInput, RepoUpdateWithoutWorkPacketsInput>, RepoUncheckedUpdateWithoutWorkPacketsInput>
+  }
+
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -21629,6 +23355,23 @@ export namespace Prisma {
     _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
+  export type NestedEnumWorkPacketStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WorkPacketStatus | EnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWorkPacketStatusFilter<$PrismaModel> | $Enums.WorkPacketStatus
+  }
+
+  export type NestedEnumWorkPacketStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WorkPacketStatus | EnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WorkPacketStatus[] | ListEnumWorkPacketStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWorkPacketStatusWithAggregatesFilter<$PrismaModel> | $Enums.WorkPacketStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
+    _max?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
+  }
+
   export type DomainCreateWithoutRepoInput = {
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21781,6 +23524,43 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WorkPacketCreateWithoutRepoInput = {
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WorkPacketUncheckedCreateWithoutRepoInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WorkPacketCreateOrConnectWithoutRepoInput = {
+    where: WorkPacketWhereUniqueInput
+    create: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput>
+  }
+
+  export type WorkPacketCreateManyRepoInputEnvelope = {
+    data: WorkPacketCreateManyRepoInput | WorkPacketCreateManyRepoInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DomainUpsertWithWhereUniqueWithoutRepoInput = {
     where: DomainWhereUniqueInput
     update: XOR<DomainUpdateWithoutRepoInput, DomainUncheckedUpdateWithoutRepoInput>
@@ -21917,6 +23697,40 @@ export namespace Prisma {
     repoId?: IntNullableFilter<"SyncRun"> | number | null
   }
 
+  export type WorkPacketUpsertWithWhereUniqueWithoutRepoInput = {
+    where: WorkPacketWhereUniqueInput
+    update: XOR<WorkPacketUpdateWithoutRepoInput, WorkPacketUncheckedUpdateWithoutRepoInput>
+    create: XOR<WorkPacketCreateWithoutRepoInput, WorkPacketUncheckedCreateWithoutRepoInput>
+  }
+
+  export type WorkPacketUpdateWithWhereUniqueWithoutRepoInput = {
+    where: WorkPacketWhereUniqueInput
+    data: XOR<WorkPacketUpdateWithoutRepoInput, WorkPacketUncheckedUpdateWithoutRepoInput>
+  }
+
+  export type WorkPacketUpdateManyWithWhereWithoutRepoInput = {
+    where: WorkPacketScalarWhereInput
+    data: XOR<WorkPacketUpdateManyMutationInput, WorkPacketUncheckedUpdateManyWithoutRepoInput>
+  }
+
+  export type WorkPacketScalarWhereInput = {
+    AND?: WorkPacketScalarWhereInput | WorkPacketScalarWhereInput[]
+    OR?: WorkPacketScalarWhereInput[]
+    NOT?: WorkPacketScalarWhereInput | WorkPacketScalarWhereInput[]
+    id?: IntFilter<"WorkPacket"> | number
+    nhId?: StringFilter<"WorkPacket"> | string
+    title?: StringFilter<"WorkPacket"> | string
+    status?: EnumWorkPacketStatusFilter<"WorkPacket"> | $Enums.WorkPacketStatus
+    ac?: StringFilter<"WorkPacket"> | string
+    plan?: StringFilter<"WorkPacket"> | string
+    githubIssueUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    githubPrUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    verificationUrl?: StringNullableFilter<"WorkPacket"> | string | null
+    repoId?: IntNullableFilter<"WorkPacket"> | number | null
+    createdAt?: DateTimeFilter<"WorkPacket"> | Date | string
+    updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
+  }
+
   export type RepoCreateWithoutDomainsInput = {
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -21934,6 +23748,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUncheckedCreateWithoutDomainsInput = {
@@ -21954,6 +23769,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunUncheckedCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketUncheckedCreateNestedManyWithoutRepoInput
   }
 
   export type RepoCreateOrConnectWithoutDomainsInput = {
@@ -22024,6 +23840,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoUncheckedUpdateWithoutDomainsInput = {
@@ -22044,6 +23861,7 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
   }
 
   export type SotEventUpsertWithWhereUniqueWithoutDomainInput = {
@@ -22118,6 +23936,7 @@ export namespace Prisma {
     domains?: DomainCreateNestedManyWithoutRepoInput
     fileIndexes?: FileIndexCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUncheckedCreateWithoutSyncRunsInput = {
@@ -22138,6 +23957,7 @@ export namespace Prisma {
     domains?: DomainUncheckedCreateNestedManyWithoutRepoInput
     fileIndexes?: FileIndexUncheckedCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketUncheckedCreateNestedManyWithoutRepoInput
   }
 
   export type RepoCreateOrConnectWithoutSyncRunsInput = {
@@ -22189,6 +24009,7 @@ export namespace Prisma {
     domains?: DomainUpdateManyWithoutRepoNestedInput
     fileIndexes?: FileIndexUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoUncheckedUpdateWithoutSyncRunsInput = {
@@ -22209,6 +24030,7 @@ export namespace Prisma {
     domains?: DomainUncheckedUpdateManyWithoutRepoNestedInput
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoCreateWithoutFileIndexesInput = {
@@ -22228,6 +24050,7 @@ export namespace Prisma {
     domains?: DomainCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUncheckedCreateWithoutFileIndexesInput = {
@@ -22248,6 +24071,7 @@ export namespace Prisma {
     domains?: DomainUncheckedCreateNestedManyWithoutRepoInput
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunUncheckedCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketUncheckedCreateNestedManyWithoutRepoInput
   }
 
   export type RepoCreateOrConnectWithoutFileIndexesInput = {
@@ -22317,6 +24141,7 @@ export namespace Prisma {
     domains?: DomainUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoUncheckedUpdateWithoutFileIndexesInput = {
@@ -22337,6 +24162,7 @@ export namespace Prisma {
     domains?: DomainUncheckedUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
   }
 
   export type SyncRunUpsertWithoutFileIndexesInput = {
@@ -22561,6 +24387,7 @@ export namespace Prisma {
     domains?: DomainCreateNestedManyWithoutRepoInput
     fileIndexes?: FileIndexCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketCreateNestedManyWithoutRepoInput
   }
 
   export type RepoUncheckedCreateWithoutSotEventsInput = {
@@ -22581,6 +24408,7 @@ export namespace Prisma {
     domains?: DomainUncheckedCreateNestedManyWithoutRepoInput
     fileIndexes?: FileIndexUncheckedCreateNestedManyWithoutRepoInput
     syncRuns?: SyncRunUncheckedCreateNestedManyWithoutRepoInput
+    workPackets?: WorkPacketUncheckedCreateNestedManyWithoutRepoInput
   }
 
   export type RepoCreateOrConnectWithoutSotEventsInput = {
@@ -22656,6 +24484,7 @@ export namespace Prisma {
     domains?: DomainUpdateManyWithoutRepoNestedInput
     fileIndexes?: FileIndexUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUpdateManyWithoutRepoNestedInput
   }
 
   export type RepoUncheckedUpdateWithoutSotEventsInput = {
@@ -22676,6 +24505,7 @@ export namespace Prisma {
     domains?: DomainUncheckedUpdateManyWithoutRepoNestedInput
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
+    workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -22934,6 +24764,104 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
+  export type RepoCreateWithoutWorkPacketsInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    nhId?: string
+    name: string
+    description?: string | null
+    domainPod?: string | null
+    engineGroup?: string | null
+    language?: string | null
+    status?: string | null
+    owner?: string | null
+    defaultBranch?: string | null
+    githubUrl?: string | null
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    domains?: DomainCreateNestedManyWithoutRepoInput
+    fileIndexes?: FileIndexCreateNestedManyWithoutRepoInput
+    sotEvents?: SotEventCreateNestedManyWithoutRepoInput
+    syncRuns?: SyncRunCreateNestedManyWithoutRepoInput
+  }
+
+  export type RepoUncheckedCreateWithoutWorkPacketsInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    nhId?: string
+    name: string
+    description?: string | null
+    domainPod?: string | null
+    engineGroup?: string | null
+    language?: string | null
+    status?: string | null
+    owner?: string | null
+    defaultBranch?: string | null
+    githubUrl?: string | null
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    domains?: DomainUncheckedCreateNestedManyWithoutRepoInput
+    fileIndexes?: FileIndexUncheckedCreateNestedManyWithoutRepoInput
+    sotEvents?: SotEventUncheckedCreateNestedManyWithoutRepoInput
+    syncRuns?: SyncRunUncheckedCreateNestedManyWithoutRepoInput
+  }
+
+  export type RepoCreateOrConnectWithoutWorkPacketsInput = {
+    where: RepoWhereUniqueInput
+    create: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
+  }
+
+  export type RepoUpsertWithoutWorkPacketsInput = {
+    update: XOR<RepoUpdateWithoutWorkPacketsInput, RepoUncheckedUpdateWithoutWorkPacketsInput>
+    create: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
+    where?: RepoWhereInput
+  }
+
+  export type RepoUpdateToOneWithWhereWithoutWorkPacketsInput = {
+    where?: RepoWhereInput
+    data: XOR<RepoUpdateWithoutWorkPacketsInput, RepoUncheckedUpdateWithoutWorkPacketsInput>
+  }
+
+  export type RepoUpdateWithoutWorkPacketsInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nhId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    domainPod?: NullableStringFieldUpdateOperationsInput | string | null
+    engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    owner?: NullableStringFieldUpdateOperationsInput | string | null
+    defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    domains?: DomainUpdateManyWithoutRepoNestedInput
+    fileIndexes?: FileIndexUpdateManyWithoutRepoNestedInput
+    sotEvents?: SotEventUpdateManyWithoutRepoNestedInput
+    syncRuns?: SyncRunUpdateManyWithoutRepoNestedInput
+  }
+
+  export type RepoUncheckedUpdateWithoutWorkPacketsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nhId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    domainPod?: NullableStringFieldUpdateOperationsInput | string | null
+    engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
+    language?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableStringFieldUpdateOperationsInput | string | null
+    owner?: NullableStringFieldUpdateOperationsInput | string | null
+    defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
+    githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    domains?: DomainUncheckedUpdateManyWithoutRepoNestedInput
+    fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
+    sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
+    syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
+  }
+
   export type DomainCreateManyRepoInput = {
     id?: number
     createdAt?: Date | string
@@ -22988,6 +24916,20 @@ export namespace Prisma {
     workflowRunUrl?: string | null
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type WorkPacketCreateManyRepoInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DomainUpdateWithoutRepoInput = {
@@ -23156,6 +25098,47 @@ export namespace Prisma {
     workflowRunUrl?: NullableStringFieldUpdateOperationsInput | string | null
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type WorkPacketUpdateWithoutRepoInput = {
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkPacketUncheckedUpdateWithoutRepoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkPacketUncheckedUpdateManyWithoutRepoInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SotEventCreateManyDomainInput = {

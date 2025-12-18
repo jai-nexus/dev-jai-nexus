@@ -9,11 +9,11 @@ datasource db {
 }
 
 model Repo {
-  id            Int         @id @default(autoincrement())
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @default(now()) @updatedAt
-  nhId          String      @default("")
-  name          String      @unique
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  nhId          String   @default("")
+  name          String   @unique
   description   String?
   domainPod     String?
   engineGroup   String?
@@ -23,10 +23,14 @@ model Repo {
   defaultBranch String?
   githubUrl     String?
   notes         Json?
-  domains       Domain[]
-  fileIndexes   FileIndex[]
-  sotEvents     SotEvent[]
-  syncRuns      SyncRun[]
+
+  domains     Domain[]
+  fileIndexes FileIndex[]
+  sotEvents   SotEvent[]
+  syncRuns    SyncRun[]
+
+  // ✅ inverse relation for WorkPacket.repo
+  workPackets WorkPacket[]
 }
 
 model Domain {
@@ -223,4 +227,36 @@ model VerificationToken {
 enum Role {
   ADMIN
   AGENT
+}
+
+enum WorkPacketStatus {
+  DRAFT
+  PLANNED
+  IN_PROGRESS
+  IN_REVIEW
+  BLOCKED
+  DONE
+}
+
+model WorkPacket {
+  id     Int              @id @default(autoincrement())
+  nhId   String
+  title  String
+  status WorkPacketStatus @default(DRAFT)
+
+  ac   String @default("")
+  plan String @default("")
+
+  githubIssueUrl  String?
+  githubPrUrl     String?
+  verificationUrl String?
+
+  repoId Int?
+  repo   Repo? @relation(fields: [repoId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt // ✅ ADD default(now())
+
+  @@index([nhId])
+  @@index([status])
 }

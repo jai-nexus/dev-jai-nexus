@@ -290,6 +290,21 @@ exports.Prisma.VerificationTokenScalarFieldEnum = {
   expires: 'expires'
 };
 
+exports.Prisma.WorkPacketScalarFieldEnum = {
+  id: 'id',
+  nhId: 'nhId',
+  title: 'title',
+  status: 'status',
+  ac: 'ac',
+  plan: 'plan',
+  githubIssueUrl: 'githubIssueUrl',
+  githubPrUrl: 'githubPrUrl',
+  verificationUrl: 'verificationUrl',
+  repoId: 'repoId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -320,6 +335,15 @@ exports.Role = exports.$Enums.Role = {
   AGENT: 'AGENT'
 };
 
+exports.WorkPacketStatus = exports.$Enums.WorkPacketStatus = {
+  DRAFT: 'DRAFT',
+  PLANNED: 'PLANNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  IN_REVIEW: 'IN_REVIEW',
+  BLOCKED: 'BLOCKED',
+  DONE: 'DONE'
+};
+
 exports.Prisma.ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
@@ -333,7 +357,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   Account: 'Account',
   Session: 'Session',
-  VerificationToken: 'VerificationToken'
+  VerificationToken: 'VerificationToken',
+  WorkPacket: 'WorkPacket'
 };
 
 /**
