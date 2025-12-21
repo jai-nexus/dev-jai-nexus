@@ -173,7 +173,12 @@ model SotEvent {
   domain    Domain?  @relation(fields: [domainId], references: [id])
   repo      Repo?    @relation(fields: [repoId], references: [id])
 
+  /// ✅ Stable anchor for WorkPacket streams (nhId can change)
+  workPacketId Int?
+  workPacket   WorkPacket? @relation(fields: [workPacketId], references: [id])
+
   @@index([ts, repoId, domainId])
+  @@index([workPacketId, ts])
 }
 
 model User {
@@ -254,8 +259,11 @@ model WorkPacket {
   repoId    Int?
   repo      Repo?            @relation(fields: [repoId], references: [id])
 
+  /// ✅ Inverse relation for SotEvent.workPacket
+  sotEvents SotEvent[]
+
   createdAt DateTime         @default(now())
-  updatedAt DateTime         @default(now()) @updatedAt   // ✅ ADD default(now())
+  updatedAt DateTime         @default(now()) @updatedAt
 
   @@index([nhId])
   @@index([status])

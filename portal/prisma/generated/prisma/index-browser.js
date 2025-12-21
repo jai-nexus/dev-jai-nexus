@@ -247,7 +247,8 @@ exports.Prisma.SotEventScalarFieldEnum = {
   summary: 'summary',
   payload: 'payload',
   repoId: 'repoId',
-  domainId: 'domainId'
+  domainId: 'domainId',
+  workPacketId: 'workPacketId'
 };
 
 exports.Prisma.UserScalarFieldEnum = {

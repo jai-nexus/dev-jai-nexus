@@ -25,14 +25,16 @@
     "prisma:format": "prisma format",
     "prisma:format:local": "dotenv -e .env.local -- prisma format",
 
-    "prisma:generate": "prisma generate",
-    "prisma:generate:local": "dotenv -e .env.local -- prisma generate",
+    "prisma:generate": "dotenv -e .env.local -- prisma generate",
+    "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
 
     "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:status:local": "dotenv -e .env.local -- prisma migrate status",
 
     "prisma:studio": "prisma studio",
     "prisma:studio:local": "dotenv -e .env.local -- prisma studio",
+
+    "backfill:workpacket-sot": "dotenv -e .env.local -- tsx scripts/backfill-sotevent-workpacketid.ts",
 
     "seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
     "db:seed": "dotenv -e .env.local -- tsx prisma/seed.ts",

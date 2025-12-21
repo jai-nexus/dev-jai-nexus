@@ -1,4 +1,3 @@
-// portal/src/lib/sotWorkPackets.ts
 import { prisma } from "@/lib/prisma";
 import type { Prisma, WorkPacket, WorkPacketStatus } from "../../prisma/generated/prisma";
 
@@ -109,6 +108,9 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
       summary: args.summary,
       payload,
       repoId: args.repoId ?? null,
+
+      // ✅ Stable anchor for streams, independent of nhId edits
+      workPacketId: args.workPacket.id,
     },
   });
 }

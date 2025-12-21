@@ -132,10 +132,11 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     "WORK_PACKET_STATUS_CHANGED",
   ] as const;
 
+  // ✅ canonical anchor = workPacketId; legacy fallback = nhId (pre-backfill)
   const events = await prisma.sotEvent.findMany({
     where: {
-      nhId: p.nhId,
       kind: { in: [...WORK_PACKET_KINDS] },
+      OR: [{ workPacketId: p.id }, { workPacketId: null, nhId: p.nhId }],
     },
     orderBy: { ts: "desc" },
     take: 50,
@@ -251,8 +252,9 @@ export default async function WorkPacketDetailPage({ params }: Props) {
       <section className="mt-10 max-w-4xl">
         <h2 className="text-lg font-semibold">SoT Event Stream</h2>
         <p className="mt-1 text-sm text-gray-400">
-          Latest {events.length} events for nhId:{" "}
-          <span className="font-mono">{p.nhId}</span>
+          Latest {events.length} events for WorkPacket{" "}
+          <span className="font-mono">#{p.id}</span> (nhId:{" "}
+          <span className="font-mono">{p.nhId}</span>)
         </p>
 
         <div className="mt-4 space-y-3">

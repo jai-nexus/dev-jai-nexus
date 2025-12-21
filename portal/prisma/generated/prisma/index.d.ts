@@ -2274,6 +2274,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type WorkPacketCountOutputType
+   */
+
+  export type WorkPacketCountOutputType = {
+    sotEvents: number
+  }
+
+  export type WorkPacketCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sotEvents?: boolean | WorkPacketCountOutputTypeCountSotEventsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * WorkPacketCountOutputType without action
+   */
+  export type WorkPacketCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacketCountOutputType
+     */
+    select?: WorkPacketCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * WorkPacketCountOutputType without action
+   */
+  export type WorkPacketCountOutputTypeCountSotEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SotEventWhereInput
+  }
+
+
+  /**
    * Models
    */
 
@@ -11844,12 +11875,14 @@ export namespace Prisma {
     id: number | null
     repoId: number | null
     domainId: number | null
+    workPacketId: number | null
   }
 
   export type SotEventSumAggregateOutputType = {
     id: number | null
     repoId: number | null
     domainId: number | null
+    workPacketId: number | null
   }
 
   export type SotEventMinAggregateOutputType = {
@@ -11863,6 +11896,7 @@ export namespace Prisma {
     summary: string | null
     repoId: number | null
     domainId: number | null
+    workPacketId: number | null
   }
 
   export type SotEventMaxAggregateOutputType = {
@@ -11876,6 +11910,7 @@ export namespace Prisma {
     summary: string | null
     repoId: number | null
     domainId: number | null
+    workPacketId: number | null
   }
 
   export type SotEventCountAggregateOutputType = {
@@ -11890,6 +11925,7 @@ export namespace Prisma {
     payload: number
     repoId: number
     domainId: number
+    workPacketId: number
     _all: number
   }
 
@@ -11898,12 +11934,14 @@ export namespace Prisma {
     id?: true
     repoId?: true
     domainId?: true
+    workPacketId?: true
   }
 
   export type SotEventSumAggregateInputType = {
     id?: true
     repoId?: true
     domainId?: true
+    workPacketId?: true
   }
 
   export type SotEventMinAggregateInputType = {
@@ -11917,6 +11955,7 @@ export namespace Prisma {
     summary?: true
     repoId?: true
     domainId?: true
+    workPacketId?: true
   }
 
   export type SotEventMaxAggregateInputType = {
@@ -11930,6 +11969,7 @@ export namespace Prisma {
     summary?: true
     repoId?: true
     domainId?: true
+    workPacketId?: true
   }
 
   export type SotEventCountAggregateInputType = {
@@ -11944,6 +11984,7 @@ export namespace Prisma {
     payload?: true
     repoId?: true
     domainId?: true
+    workPacketId?: true
     _all?: true
   }
 
@@ -12045,6 +12086,7 @@ export namespace Prisma {
     payload: JsonValue | null
     repoId: number | null
     domainId: number | null
+    workPacketId: number | null
     _count: SotEventCountAggregateOutputType | null
     _avg: SotEventAvgAggregateOutputType | null
     _sum: SotEventSumAggregateOutputType | null
@@ -12078,8 +12120,10 @@ export namespace Prisma {
     payload?: boolean
     repoId?: boolean
     domainId?: boolean
+    workPacketId?: boolean
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }, ExtArgs["result"]["sotEvent"]>
 
   export type SotEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12094,8 +12138,10 @@ export namespace Prisma {
     payload?: boolean
     repoId?: boolean
     domainId?: boolean
+    workPacketId?: boolean
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }, ExtArgs["result"]["sotEvent"]>
 
   export type SotEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -12110,8 +12156,10 @@ export namespace Prisma {
     payload?: boolean
     repoId?: boolean
     domainId?: boolean
+    workPacketId?: boolean
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }, ExtArgs["result"]["sotEvent"]>
 
   export type SotEventSelectScalar = {
@@ -12126,20 +12174,24 @@ export namespace Prisma {
     payload?: boolean
     repoId?: boolean
     domainId?: boolean
+    workPacketId?: boolean
   }
 
-  export type SotEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "ts" | "source" | "kind" | "nhId" | "summary" | "payload" | "repoId" | "domainId", ExtArgs["result"]["sotEvent"]>
+  export type SotEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "ts" | "source" | "kind" | "nhId" | "summary" | "payload" | "repoId" | "domainId" | "workPacketId", ExtArgs["result"]["sotEvent"]>
   export type SotEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }
   export type SotEventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }
   export type SotEventIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     domain?: boolean | SotEvent$domainArgs<ExtArgs>
     repo?: boolean | SotEvent$repoArgs<ExtArgs>
+    workPacket?: boolean | SotEvent$workPacketArgs<ExtArgs>
   }
 
   export type $SotEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12147,6 +12199,7 @@ export namespace Prisma {
     objects: {
       domain: Prisma.$DomainPayload<ExtArgs> | null
       repo: Prisma.$RepoPayload<ExtArgs> | null
+      workPacket: Prisma.$WorkPacketPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -12181,6 +12234,10 @@ export namespace Prisma {
        */
       repoId: number | null
       domainId: number | null
+      /**
+       * ✅ Stable anchor for WorkPacket streams (nhId can change)
+       */
+      workPacketId: number | null
     }, ExtArgs["result"]["sotEvent"]>
     composites: {}
   }
@@ -12577,6 +12634,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     domain<T extends SotEvent$domainArgs<ExtArgs> = {}>(args?: Subset<T, SotEvent$domainArgs<ExtArgs>>): Prisma__DomainClient<$Result.GetResult<Prisma.$DomainPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     repo<T extends SotEvent$repoArgs<ExtArgs> = {}>(args?: Subset<T, SotEvent$repoArgs<ExtArgs>>): Prisma__RepoClient<$Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    workPacket<T extends SotEvent$workPacketArgs<ExtArgs> = {}>(args?: Subset<T, SotEvent$workPacketArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12617,6 +12675,7 @@ export namespace Prisma {
     readonly payload: FieldRef<"SotEvent", 'Json'>
     readonly repoId: FieldRef<"SotEvent", 'Int'>
     readonly domainId: FieldRef<"SotEvent", 'Int'>
+    readonly workPacketId: FieldRef<"SotEvent", 'Int'>
   }
     
 
@@ -13048,6 +13107,25 @@ export namespace Prisma {
      */
     include?: RepoInclude<ExtArgs> | null
     where?: RepoWhereInput
+  }
+
+  /**
+   * SotEvent.workPacket
+   */
+  export type SotEvent$workPacketArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkPacket
+     */
+    select?: WorkPacketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WorkPacket
+     */
+    omit?: WorkPacketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkPacketInclude<ExtArgs> | null
+    where?: WorkPacketWhereInput
   }
 
   /**
@@ -17675,6 +17753,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+    sotEvents?: boolean | WorkPacket$sotEventsArgs<ExtArgs>
+    _count?: boolean | WorkPacketCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workPacket"]>
 
   export type WorkPacketSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -17727,6 +17807,8 @@ export namespace Prisma {
   export type WorkPacketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nhId" | "title" | "status" | "ac" | "plan" | "githubIssueUrl" | "githubPrUrl" | "verificationUrl" | "repoId" | "createdAt" | "updatedAt", ExtArgs["result"]["workPacket"]>
   export type WorkPacketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     repo?: boolean | WorkPacket$repoArgs<ExtArgs>
+    sotEvents?: boolean | WorkPacket$sotEventsArgs<ExtArgs>
+    _count?: boolean | WorkPacketCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkPacketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     repo?: boolean | WorkPacket$repoArgs<ExtArgs>
@@ -17739,6 +17821,10 @@ export namespace Prisma {
     name: "WorkPacket"
     objects: {
       repo: Prisma.$RepoPayload<ExtArgs> | null
+      /**
+       * ✅ Inverse relation for SotEvent.workPacket
+       */
+      sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -18148,6 +18234,7 @@ export namespace Prisma {
   export interface Prisma__WorkPacketClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     repo<T extends WorkPacket$repoArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$repoArgs<ExtArgs>>): Prisma__RepoClient<$Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    sotEvents<T extends WorkPacket$sotEventsArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$sotEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SotEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18604,6 +18691,30 @@ export namespace Prisma {
   }
 
   /**
+   * WorkPacket.sotEvents
+   */
+  export type WorkPacket$sotEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SotEvent
+     */
+    select?: SotEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SotEvent
+     */
+    omit?: SotEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SotEventInclude<ExtArgs> | null
+    where?: SotEventWhereInput
+    orderBy?: SotEventOrderByWithRelationInput | SotEventOrderByWithRelationInput[]
+    cursor?: SotEventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SotEventScalarFieldEnum | SotEventScalarFieldEnum[]
+  }
+
+  /**
    * WorkPacket without action
    */
   export type WorkPacketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18787,7 +18898,8 @@ export namespace Prisma {
     summary: 'summary',
     payload: 'payload',
     repoId: 'repoId',
-    domainId: 'domainId'
+    domainId: 'domainId',
+    workPacketId: 'workPacketId'
   };
 
   export type SotEventScalarFieldEnum = (typeof SotEventScalarFieldEnum)[keyof typeof SotEventScalarFieldEnum]
@@ -19757,8 +19869,10 @@ export namespace Prisma {
     payload?: JsonNullableFilter<"SotEvent">
     repoId?: IntNullableFilter<"SotEvent"> | number | null
     domainId?: IntNullableFilter<"SotEvent"> | number | null
+    workPacketId?: IntNullableFilter<"SotEvent"> | number | null
     domain?: XOR<DomainNullableScalarRelationFilter, DomainWhereInput> | null
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    workPacket?: XOR<WorkPacketNullableScalarRelationFilter, WorkPacketWhereInput> | null
   }
 
   export type SotEventOrderByWithRelationInput = {
@@ -19773,8 +19887,10 @@ export namespace Prisma {
     payload?: SortOrderInput | SortOrder
     repoId?: SortOrderInput | SortOrder
     domainId?: SortOrderInput | SortOrder
+    workPacketId?: SortOrderInput | SortOrder
     domain?: DomainOrderByWithRelationInput
     repo?: RepoOrderByWithRelationInput
+    workPacket?: WorkPacketOrderByWithRelationInput
   }
 
   export type SotEventWhereUniqueInput = Prisma.AtLeast<{
@@ -19792,8 +19908,10 @@ export namespace Prisma {
     payload?: JsonNullableFilter<"SotEvent">
     repoId?: IntNullableFilter<"SotEvent"> | number | null
     domainId?: IntNullableFilter<"SotEvent"> | number | null
+    workPacketId?: IntNullableFilter<"SotEvent"> | number | null
     domain?: XOR<DomainNullableScalarRelationFilter, DomainWhereInput> | null
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    workPacket?: XOR<WorkPacketNullableScalarRelationFilter, WorkPacketWhereInput> | null
   }, "id">
 
   export type SotEventOrderByWithAggregationInput = {
@@ -19808,6 +19926,7 @@ export namespace Prisma {
     payload?: SortOrderInput | SortOrder
     repoId?: SortOrderInput | SortOrder
     domainId?: SortOrderInput | SortOrder
+    workPacketId?: SortOrderInput | SortOrder
     _count?: SotEventCountOrderByAggregateInput
     _avg?: SotEventAvgOrderByAggregateInput
     _max?: SotEventMaxOrderByAggregateInput
@@ -19830,6 +19949,7 @@ export namespace Prisma {
     payload?: JsonNullableWithAggregatesFilter<"SotEvent">
     repoId?: IntNullableWithAggregatesFilter<"SotEvent"> | number | null
     domainId?: IntNullableWithAggregatesFilter<"SotEvent"> | number | null
+    workPacketId?: IntNullableWithAggregatesFilter<"SotEvent"> | number | null
   }
 
   export type UserWhereInput = {
@@ -20113,6 +20233,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"WorkPacket"> | Date | string
     updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    sotEvents?: SotEventListRelationFilter
   }
 
   export type WorkPacketOrderByWithRelationInput = {
@@ -20129,6 +20250,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     repo?: RepoOrderByWithRelationInput
+    sotEvents?: SotEventOrderByRelationAggregateInput
   }
 
   export type WorkPacketWhereUniqueInput = Prisma.AtLeast<{
@@ -20148,6 +20270,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"WorkPacket"> | Date | string
     updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    sotEvents?: SotEventListRelationFilter
   }, "id">
 
   export type WorkPacketOrderByWithAggregationInput = {
@@ -21014,6 +21137,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     domain?: DomainCreateNestedOneWithoutSotEventsInput
     repo?: RepoCreateNestedOneWithoutSotEventsInput
+    workPacket?: WorkPacketCreateNestedOneWithoutSotEventsInput
   }
 
   export type SotEventUncheckedCreateInput = {
@@ -21028,6 +21152,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
     domainId?: number | null
+    workPacketId?: number | null
   }
 
   export type SotEventUpdateInput = {
@@ -21041,6 +21166,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     domain?: DomainUpdateOneWithoutSotEventsNestedInput
     repo?: RepoUpdateOneWithoutSotEventsNestedInput
+    workPacket?: WorkPacketUpdateOneWithoutSotEventsNestedInput
   }
 
   export type SotEventUncheckedUpdateInput = {
@@ -21055,6 +21181,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     domainId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type SotEventCreateManyInput = {
@@ -21069,6 +21196,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
     domainId?: number | null
+    workPacketId?: number | null
   }
 
   export type SotEventUpdateManyMutationInput = {
@@ -21094,6 +21222,7 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     domainId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type UserCreateInput = {
@@ -21394,6 +21523,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     repo?: RepoCreateNestedOneWithoutWorkPacketsInput
+    sotEvents?: SotEventCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUncheckedCreateInput = {
@@ -21409,6 +21539,7 @@ export namespace Prisma {
     repoId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    sotEvents?: SotEventUncheckedCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUpdateInput = {
@@ -21423,6 +21554,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
+    sotEvents?: SotEventUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateInput = {
@@ -21438,6 +21570,7 @@ export namespace Prisma {
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sotEvents?: SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketCreateManyInput = {
@@ -22211,6 +22344,11 @@ export namespace Prisma {
     isNot?: DomainWhereInput | null
   }
 
+  export type WorkPacketNullableScalarRelationFilter = {
+    is?: WorkPacketWhereInput | null
+    isNot?: WorkPacketWhereInput | null
+  }
+
   export type SotEventCountOrderByAggregateInput = {
     id?: SortOrder
     createdAt?: SortOrder
@@ -22223,12 +22361,14 @@ export namespace Prisma {
     payload?: SortOrder
     repoId?: SortOrder
     domainId?: SortOrder
+    workPacketId?: SortOrder
   }
 
   export type SotEventAvgOrderByAggregateInput = {
     id?: SortOrder
     repoId?: SortOrder
     domainId?: SortOrder
+    workPacketId?: SortOrder
   }
 
   export type SotEventMaxOrderByAggregateInput = {
@@ -22242,6 +22382,7 @@ export namespace Prisma {
     summary?: SortOrder
     repoId?: SortOrder
     domainId?: SortOrder
+    workPacketId?: SortOrder
   }
 
   export type SotEventMinOrderByAggregateInput = {
@@ -22255,12 +22396,14 @@ export namespace Prisma {
     summary?: SortOrder
     repoId?: SortOrder
     domainId?: SortOrder
+    workPacketId?: SortOrder
   }
 
   export type SotEventSumOrderByAggregateInput = {
     id?: SortOrder
     repoId?: SortOrder
     domainId?: SortOrder
+    workPacketId?: SortOrder
   }
 
   export type EnumRoleFilter<$PrismaModel = never> = {
@@ -22971,6 +23114,12 @@ export namespace Prisma {
     connect?: RepoWhereUniqueInput
   }
 
+  export type WorkPacketCreateNestedOneWithoutSotEventsInput = {
+    create?: XOR<WorkPacketCreateWithoutSotEventsInput, WorkPacketUncheckedCreateWithoutSotEventsInput>
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutSotEventsInput
+    connect?: WorkPacketWhereUniqueInput
+  }
+
   export type DomainUpdateOneWithoutSotEventsNestedInput = {
     create?: XOR<DomainCreateWithoutSotEventsInput, DomainUncheckedCreateWithoutSotEventsInput>
     connectOrCreate?: DomainCreateOrConnectWithoutSotEventsInput
@@ -22989,6 +23138,16 @@ export namespace Prisma {
     delete?: RepoWhereInput | boolean
     connect?: RepoWhereUniqueInput
     update?: XOR<XOR<RepoUpdateToOneWithWhereWithoutSotEventsInput, RepoUpdateWithoutSotEventsInput>, RepoUncheckedUpdateWithoutSotEventsInput>
+  }
+
+  export type WorkPacketUpdateOneWithoutSotEventsNestedInput = {
+    create?: XOR<WorkPacketCreateWithoutSotEventsInput, WorkPacketUncheckedCreateWithoutSotEventsInput>
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutSotEventsInput
+    upsert?: WorkPacketUpsertWithoutSotEventsInput
+    disconnect?: WorkPacketWhereInput | boolean
+    delete?: WorkPacketWhereInput | boolean
+    connect?: WorkPacketWhereUniqueInput
+    update?: XOR<XOR<WorkPacketUpdateToOneWithWhereWithoutSotEventsInput, WorkPacketUpdateWithoutSotEventsInput>, WorkPacketUncheckedUpdateWithoutSotEventsInput>
   }
 
   export type AccountCreateNestedManyWithoutUserInput = {
@@ -23113,6 +23272,20 @@ export namespace Prisma {
     connect?: RepoWhereUniqueInput
   }
 
+  export type SotEventCreateNestedManyWithoutWorkPacketInput = {
+    create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
+    createMany?: SotEventCreateManyWorkPacketInputEnvelope
+    connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+  }
+
+  export type SotEventUncheckedCreateNestedManyWithoutWorkPacketInput = {
+    create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
+    createMany?: SotEventCreateManyWorkPacketInputEnvelope
+    connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+  }
+
   export type EnumWorkPacketStatusFieldUpdateOperationsInput = {
     set?: $Enums.WorkPacketStatus
   }
@@ -23125,6 +23298,34 @@ export namespace Prisma {
     delete?: RepoWhereInput | boolean
     connect?: RepoWhereUniqueInput
     update?: XOR<XOR<RepoUpdateToOneWithWhereWithoutWorkPacketsInput, RepoUpdateWithoutWorkPacketsInput>, RepoUncheckedUpdateWithoutWorkPacketsInput>
+  }
+
+  export type SotEventUpdateManyWithoutWorkPacketNestedInput = {
+    create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
+    upsert?: SotEventUpsertWithWhereUniqueWithoutWorkPacketInput | SotEventUpsertWithWhereUniqueWithoutWorkPacketInput[]
+    createMany?: SotEventCreateManyWorkPacketInputEnvelope
+    set?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    disconnect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    delete?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    update?: SotEventUpdateWithWhereUniqueWithoutWorkPacketInput | SotEventUpdateWithWhereUniqueWithoutWorkPacketInput[]
+    updateMany?: SotEventUpdateManyWithWhereWithoutWorkPacketInput | SotEventUpdateManyWithWhereWithoutWorkPacketInput[]
+    deleteMany?: SotEventScalarWhereInput | SotEventScalarWhereInput[]
+  }
+
+  export type SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput = {
+    create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
+    upsert?: SotEventUpsertWithWhereUniqueWithoutWorkPacketInput | SotEventUpsertWithWhereUniqueWithoutWorkPacketInput[]
+    createMany?: SotEventCreateManyWorkPacketInputEnvelope
+    set?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    disconnect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    delete?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+    update?: SotEventUpdateWithWhereUniqueWithoutWorkPacketInput | SotEventUpdateWithWhereUniqueWithoutWorkPacketInput[]
+    updateMany?: SotEventUpdateManyWithWhereWithoutWorkPacketInput | SotEventUpdateManyWithWhereWithoutWorkPacketInput[]
+    deleteMany?: SotEventScalarWhereInput | SotEventScalarWhereInput[]
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -23460,6 +23661,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domain?: DomainCreateNestedOneWithoutSotEventsInput
+    workPacket?: WorkPacketCreateNestedOneWithoutSotEventsInput
   }
 
   export type SotEventUncheckedCreateWithoutRepoInput = {
@@ -23473,6 +23675,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domainId?: number | null
+    workPacketId?: number | null
   }
 
   export type SotEventCreateOrConnectWithoutRepoInput = {
@@ -23535,6 +23738,7 @@ export namespace Prisma {
     verificationUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    sotEvents?: SotEventCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUncheckedCreateWithoutRepoInput = {
@@ -23549,6 +23753,7 @@ export namespace Prisma {
     verificationUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    sotEvents?: SotEventUncheckedCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketCreateOrConnectWithoutRepoInput = {
@@ -23661,6 +23866,7 @@ export namespace Prisma {
     payload?: JsonNullableFilter<"SotEvent">
     repoId?: IntNullableFilter<"SotEvent"> | number | null
     domainId?: IntNullableFilter<"SotEvent"> | number | null
+    workPacketId?: IntNullableFilter<"SotEvent"> | number | null
   }
 
   export type SyncRunUpsertWithWhereUniqueWithoutRepoInput = {
@@ -23787,6 +23993,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoCreateNestedOneWithoutSotEventsInput
+    workPacket?: WorkPacketCreateNestedOneWithoutSotEventsInput
   }
 
   export type SotEventUncheckedCreateWithoutDomainInput = {
@@ -23800,6 +24007,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
+    workPacketId?: number | null
   }
 
   export type SotEventCreateOrConnectWithoutDomainInput = {
@@ -24416,6 +24624,40 @@ export namespace Prisma {
     create: XOR<RepoCreateWithoutSotEventsInput, RepoUncheckedCreateWithoutSotEventsInput>
   }
 
+  export type WorkPacketCreateWithoutSotEventsInput = {
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    repo?: RepoCreateNestedOneWithoutWorkPacketsInput
+  }
+
+  export type WorkPacketUncheckedCreateWithoutSotEventsInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    repoId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type WorkPacketCreateOrConnectWithoutSotEventsInput = {
+    where: WorkPacketWhereUniqueInput
+    create: XOR<WorkPacketCreateWithoutSotEventsInput, WorkPacketUncheckedCreateWithoutSotEventsInput>
+  }
+
   export type DomainUpsertWithoutSotEventsInput = {
     update: XOR<DomainUpdateWithoutSotEventsInput, DomainUncheckedUpdateWithoutSotEventsInput>
     create: XOR<DomainCreateWithoutSotEventsInput, DomainUncheckedCreateWithoutSotEventsInput>
@@ -24506,6 +24748,46 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
     workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
+  }
+
+  export type WorkPacketUpsertWithoutSotEventsInput = {
+    update: XOR<WorkPacketUpdateWithoutSotEventsInput, WorkPacketUncheckedUpdateWithoutSotEventsInput>
+    create: XOR<WorkPacketCreateWithoutSotEventsInput, WorkPacketUncheckedCreateWithoutSotEventsInput>
+    where?: WorkPacketWhereInput
+  }
+
+  export type WorkPacketUpdateToOneWithWhereWithoutSotEventsInput = {
+    where?: WorkPacketWhereInput
+    data: XOR<WorkPacketUpdateWithoutSotEventsInput, WorkPacketUncheckedUpdateWithoutSotEventsInput>
+  }
+
+  export type WorkPacketUpdateWithoutSotEventsInput = {
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
+  }
+
+  export type WorkPacketUncheckedUpdateWithoutSotEventsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -24810,6 +25092,43 @@ export namespace Prisma {
     create: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
   }
 
+  export type SotEventCreateWithoutWorkPacketInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ts: Date | string
+    source: string
+    kind: string
+    nhId?: string
+    summary?: string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    domain?: DomainCreateNestedOneWithoutSotEventsInput
+    repo?: RepoCreateNestedOneWithoutSotEventsInput
+  }
+
+  export type SotEventUncheckedCreateWithoutWorkPacketInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ts: Date | string
+    source: string
+    kind: string
+    nhId?: string
+    summary?: string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    repoId?: number | null
+    domainId?: number | null
+  }
+
+  export type SotEventCreateOrConnectWithoutWorkPacketInput = {
+    where: SotEventWhereUniqueInput
+    create: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput>
+  }
+
+  export type SotEventCreateManyWorkPacketInputEnvelope = {
+    data: SotEventCreateManyWorkPacketInput | SotEventCreateManyWorkPacketInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RepoUpsertWithoutWorkPacketsInput = {
     update: XOR<RepoUpdateWithoutWorkPacketsInput, RepoUncheckedUpdateWithoutWorkPacketsInput>
     create: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
@@ -24862,6 +25181,22 @@ export namespace Prisma {
     syncRuns?: SyncRunUncheckedUpdateManyWithoutRepoNestedInput
   }
 
+  export type SotEventUpsertWithWhereUniqueWithoutWorkPacketInput = {
+    where: SotEventWhereUniqueInput
+    update: XOR<SotEventUpdateWithoutWorkPacketInput, SotEventUncheckedUpdateWithoutWorkPacketInput>
+    create: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput>
+  }
+
+  export type SotEventUpdateWithWhereUniqueWithoutWorkPacketInput = {
+    where: SotEventWhereUniqueInput
+    data: XOR<SotEventUpdateWithoutWorkPacketInput, SotEventUncheckedUpdateWithoutWorkPacketInput>
+  }
+
+  export type SotEventUpdateManyWithWhereWithoutWorkPacketInput = {
+    where: SotEventScalarWhereInput
+    data: XOR<SotEventUpdateManyMutationInput, SotEventUncheckedUpdateManyWithoutWorkPacketInput>
+  }
+
   export type DomainCreateManyRepoInput = {
     id?: number
     createdAt?: Date | string
@@ -24902,6 +25237,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domainId?: number | null
+    workPacketId?: number | null
   }
 
   export type SyncRunCreateManyRepoInput = {
@@ -25029,6 +25365,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domain?: DomainUpdateOneWithoutSotEventsNestedInput
+    workPacket?: WorkPacketUpdateOneWithoutSotEventsNestedInput
   }
 
   export type SotEventUncheckedUpdateWithoutRepoInput = {
@@ -25042,6 +25379,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domainId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type SotEventUncheckedUpdateManyWithoutRepoInput = {
@@ -25055,6 +25393,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     domainId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type SyncRunUpdateWithoutRepoInput = {
@@ -25111,6 +25450,7 @@ export namespace Prisma {
     verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sotEvents?: SotEventUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateWithoutRepoInput = {
@@ -25125,6 +25465,7 @@ export namespace Prisma {
     verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sotEvents?: SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateManyWithoutRepoInput = {
@@ -25152,6 +25493,7 @@ export namespace Prisma {
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
+    workPacketId?: number | null
   }
 
   export type SotEventUpdateWithoutDomainInput = {
@@ -25164,6 +25506,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoUpdateOneWithoutSotEventsNestedInput
+    workPacket?: WorkPacketUpdateOneWithoutSotEventsNestedInput
   }
 
   export type SotEventUncheckedUpdateWithoutDomainInput = {
@@ -25177,6 +25520,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type SotEventUncheckedUpdateManyWithoutDomainInput = {
@@ -25190,6 +25534,7 @@ export namespace Prisma {
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    workPacketId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
   export type FileIndexCreateManySyncRunInput = {
@@ -25376,6 +25721,61 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     sessionToken?: StringFieldUpdateOperationsInput | string
     expires?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SotEventCreateManyWorkPacketInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ts: Date | string
+    source: string
+    kind: string
+    nhId?: string
+    summary?: string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    repoId?: number | null
+    domainId?: number | null
+  }
+
+  export type SotEventUpdateWithoutWorkPacketInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ts?: DateTimeFieldUpdateOperationsInput | Date | string
+    source?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    nhId?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    domain?: DomainUpdateOneWithoutSotEventsNestedInput
+    repo?: RepoUpdateOneWithoutSotEventsNestedInput
+  }
+
+  export type SotEventUncheckedUpdateWithoutWorkPacketInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ts?: DateTimeFieldUpdateOperationsInput | Date | string
+    source?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    nhId?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    domainId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type SotEventUncheckedUpdateManyWithoutWorkPacketInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ts?: DateTimeFieldUpdateOperationsInput | Date | string
+    source?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    nhId?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    payload?: NullableJsonNullValueInput | InputJsonValue
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    domainId?: NullableIntFieldUpdateOperationsInput | number | null
   }
 
 
