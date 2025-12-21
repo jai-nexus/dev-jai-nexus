@@ -11,81 +11,108 @@ import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/p
 
 type Props = { params: { id: string } };
 
+const ALLOWED_STATUSES = new Set(Object.values(WorkPacketStatus));
+
 function parseStatus(value: unknown): WorkPacketStatus {
   const s = String(value ?? WorkPacketStatus.DRAFT).trim();
-  const allowed = new Set(Object.values(WorkPacketStatus));
-  return allowed.has(s as WorkPacketStatus)
+  return ALLOWED_STATUSES.has(s as WorkPacketStatus)
     ? (s as WorkPacketStatus)
     : WorkPacketStatus.DRAFT;
+}
+
+// JSON helpers (no `any`)
+type JsonValue = Prisma.JsonValue;
+type JsonObject = { [k: string]: JsonValue };
+
+function isJsonObject(v: JsonValue | null | undefined): v is JsonObject {
+  return v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
+}
+
+function getJsonProp(v: JsonValue | null | undefined, key: string): JsonValue | undefined {
+  if (!isJsonObject(v)) return undefined;
+  return v[key];
+}
+
+function getPayloadChanges(payload: JsonValue | null | undefined): JsonValue | undefined {
+  const data = getJsonProp(payload, "data");
+  return getJsonProp(data, "changes");
 }
 
 async function updatePacket(id: number, formData: FormData) {
   "use server";
 
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-
-  const before = await prisma.workPacket.findUnique({ where: { id } });
-  if (!before) redirect("/operator/work");
+  const user = session?.user;
+  if (!user) redirect("/login");
 
   const title = String(formData.get("title") ?? "").trim();
   const nhId = String(formData.get("nhId") ?? "").trim();
   const status = parseStatus(formData.get("status"));
   const ac = String(formData.get("ac") ?? "");
   const plan = String(formData.get("plan") ?? "");
+
   const githubIssueUrl = String(formData.get("githubIssueUrl") ?? "").trim() || null;
   const githubPrUrl = String(formData.get("githubPrUrl") ?? "").trim() || null;
   const verificationUrl = String(formData.get("verificationUrl") ?? "").trim() || null;
 
   if (!nhId || !title) redirect(`/operator/work/${id}`);
 
-  const after = await prisma.workPacket.update({
-    where: { id },
-    data: {
-      title,
-      nhId,
-      status,
-      ac,
-      plan,
-      githubIssueUrl,
-      githubPrUrl,
-      verificationUrl,
-    },
-  });
-
-  const { changes, statusChanged } = diffWorkPacket(before, after);
-
-  if (!statusChanged && Object.keys(changes).length === 0) {
-    redirect(`/operator/work/${id}`);
-  }
-
-  const kind = statusChanged ? "WORK_PACKET_STATUS_CHANGED" : "WORK_PACKET_UPDATED";
-
-  const summary = statusChanged
-    ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(
-        statusChanged.to,
-      )}`
-    : `WorkPacket updated: ${after.nhId} · ${after.title}`;
-
   const mutationId = crypto.randomUUID();
 
-  const data: Prisma.InputJsonValue = {
-    workPacketId: after.id,
-    changes, // JSON-safe scalars only (see sotWorkPackets.ts)
-    statusChanged: statusChanged ?? "(null)",
-  };
+  const result = await prisma.$transaction(async (tx) => {
+    const before = await tx.workPacket.findUnique({ where: { id } });
+    if (!before) return { type: "missing" as const };
 
-  await emitWorkPacketSotEvent({
-    kind,
-    nhId: after.nhId,
-    repoId: after.repoId ?? null,
-    summary,
-    mutationId,
-    workPacket: { id: after.id, nhId: after.nhId },
-    actor: { email: session.user.email ?? null, name: session.user.name ?? null },
-    data,
+    const after = await tx.workPacket.update({
+      where: { id },
+      data: {
+        title,
+        nhId,
+        status,
+        ac,
+        plan,
+        githubIssueUrl,
+        githubPrUrl,
+        verificationUrl,
+      },
+    });
+
+    const { changes, statusChanged } = diffWorkPacket(before, after);
+
+    if (!statusChanged && Object.keys(changes).length === 0) {
+      return { type: "noop" as const };
+    }
+
+    const kind = statusChanged ? "WORK_PACKET_STATUS_CHANGED" : "WORK_PACKET_UPDATED";
+
+    const summary = statusChanged
+      ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(
+          statusChanged.to,
+        )}`
+      : `WorkPacket updated: ${after.nhId} · ${after.title}`;
+
+    const data: Prisma.InputJsonValue = {
+      workPacketId: after.id,
+      changes,
+      ...(statusChanged ? { statusChanged } : {}),
+    };
+
+    await emitWorkPacketSotEvent({
+      db: tx,
+      kind,
+      nhId: after.nhId,
+      repoId: after.repoId ?? null,
+      summary,
+      mutationId,
+      workPacket: { id: after.id, nhId: after.nhId },
+      actor: { email: user.email ?? null, name: user.name ?? null },
+      data,
+    });
+
+    return { type: "ok" as const };
   });
 
+  if (result.type === "missing") redirect("/operator/work");
   redirect(`/operator/work/${id}`);
 }
 
@@ -98,6 +125,21 @@ export default async function WorkPacketDetailPage({ params }: Props) {
 
   const p = await prisma.workPacket.findUnique({ where: { id } });
   if (!p) redirect("/operator/work");
+
+  const WORK_PACKET_KINDS = [
+    "WORK_PACKET_CREATED",
+    "WORK_PACKET_UPDATED",
+    "WORK_PACKET_STATUS_CHANGED",
+  ] as const;
+
+  const events = await prisma.sotEvent.findMany({
+    where: {
+      nhId: p.nhId,
+      kind: { in: [...WORK_PACKET_KINDS] },
+    },
+    orderBy: { ts: "desc" },
+    take: 50,
+  });
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -204,6 +246,51 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           Save
         </button>
       </form>
+
+      {/* SoT Event Stream */}
+      <section className="mt-10 max-w-4xl">
+        <h2 className="text-lg font-semibold">SoT Event Stream</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Latest {events.length} events for nhId:{" "}
+          <span className="font-mono">{p.nhId}</span>
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {events.length === 0 ? (
+            <div className="rounded-md border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+              No events yet.
+            </div>
+          ) : (
+            events.map((evt) => {
+              const payload = evt.payload;
+              const changes = getPayloadChanges(payload);
+
+              return (
+                <details
+                  key={evt.id}
+                  className="rounded-md border border-gray-800 bg-zinc-950 p-3"
+                >
+                  <summary className="cursor-pointer select-none">
+                    <span className="font-mono text-xs text-gray-400">
+                      {evt.ts.toISOString()}
+                    </span>
+                    <span className="ml-3 text-xs font-semibold text-gray-200">
+                      {evt.kind}
+                    </span>
+                    {evt.summary ? (
+                      <span className="ml-3 text-sm text-gray-200">{evt.summary}</span>
+                    ) : null}
+                  </summary>
+
+                  <pre className="mt-3 overflow-x-auto text-xs text-gray-200">
+                    {JSON.stringify(changes ?? payload, null, 2)}
+                  </pre>
+                </details>
+              );
+            })
+          )}
+        </div>
+      </section>
     </main>
   );
 }

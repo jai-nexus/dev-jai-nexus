@@ -5,6 +5,13 @@ import type { Prisma, WorkPacket, WorkPacketStatus } from "../../prisma/generate
 type JsonScalar = string | number | boolean;
 type JsonChange = { from: JsonScalar; to: JsonScalar };
 
+// minimal “db-like” type for either prisma or tx
+type DbLike = {
+  sotEvent: {
+    create: (args: Prisma.SotEventCreateArgs) => Promise<unknown>;
+  };
+};
+
 export type WorkPacketActor = {
   email: string | null;
   name: string | null;
@@ -62,7 +69,10 @@ export function diffWorkPacket(before: WorkPacket, after: WorkPacket): WorkPacke
 }
 
 export type EmitWorkPacketSotEventArgs = {
-  source?: string; // default "jai-work-ui"
+  db?: DbLike; // prisma or tx
+  ts?: Date;
+
+  source?: string;
   kind: "WORK_PACKET_CREATED" | "WORK_PACKET_UPDATED" | "WORK_PACKET_STATUS_CHANGED";
   summary: string;
 
@@ -73,11 +83,12 @@ export type EmitWorkPacketSotEventArgs = {
   actor: WorkPacketActor;
 
   mutationId: string;
-
-  data?: Prisma.InputJsonValue; // must be JSON-safe (no null/undefined)
+  data?: Prisma.InputJsonValue;
 };
 
 export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
+  const db = args.db ?? prisma;
+
   const payload: Prisma.InputJsonValue = {
     schema: "work-packet-sot-0.1",
     mutationId: args.mutationId,
@@ -89,9 +100,9 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
     data: args.data ?? {},
   };
 
-  await prisma.sotEvent.create({
+  await db.sotEvent.create({
     data: {
-      ts: new Date(),
+      ts: args.ts ?? new Date(),
       source: args.source ?? "jai-work-ui",
       kind: args.kind,
       nhId: args.nhId,

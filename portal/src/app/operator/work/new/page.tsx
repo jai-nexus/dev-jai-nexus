@@ -6,14 +6,15 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
-import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
+import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
 
 async function createPacket(formData: FormData) {
   "use server";
 
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
+  const user = session?.user;
+  if (!user) redirect("/login");
 
   const nhId = String(formData.get("nhId") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
@@ -22,35 +23,40 @@ async function createPacket(formData: FormData) {
 
   if (!nhId || !title) redirect("/operator/work/new");
 
-  const created = await prisma.workPacket.create({
-    data: {
-      nhId,
-      title,
-      ac,
-      plan,
-      status: WorkPacketStatus.DRAFT,
-    },
-  });
-
   const mutationId = crypto.randomUUID();
 
-  const data: Prisma.InputJsonValue = {
-    workPacketId: created.id,
-    nhId: created.nhId,
-    title: created.title,
-    status: created.status,
-    repoId: created.repoId ?? "(null)",
-  };
+  const created = await prisma.$transaction(async (tx) => {
+    const created = await tx.workPacket.create({
+      data: {
+        nhId,
+        title,
+        ac,
+        plan,
+        status: WorkPacketStatus.DRAFT,
+      },
+    });
 
-  await emitWorkPacketSotEvent({
-    kind: "WORK_PACKET_CREATED",
-    nhId: created.nhId,
-    repoId: created.repoId ?? null,
-    summary: `WorkPacket created: ${created.nhId} · ${created.title}`,
-    mutationId,
-    workPacket: { id: created.id, nhId: created.nhId },
-    actor: { email: session.user.email ?? null, name: session.user.name ?? null },
-    data,
+    const data: Prisma.InputJsonValue = {
+      workPacketId: created.id,
+      nhId: created.nhId,
+      title: created.title,
+      status: created.status,
+      ...(created.repoId != null ? { repoId: created.repoId } : {}),
+    };
+
+    await emitWorkPacketSotEvent({
+      db: tx,
+      kind: "WORK_PACKET_CREATED",
+      nhId: created.nhId,
+      repoId: created.repoId ?? null,
+      summary: `WorkPacket created: ${created.nhId} · ${created.title}`,
+      mutationId,
+      workPacket: { id: created.id, nhId: created.nhId },
+      actor: { email: user.email ?? null, name: user.name ?? null },
+      data,
+    });
+
+    return created;
   });
 
   redirect(`/operator/work/${created.id}`);
