@@ -1,14 +1,21 @@
 // portal/prisma.config.ts
 import "dotenv/config";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
+
+// Prefer DIRECT_URL when available (non-pooled). Fall back to DATABASE_URL.
+const url = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (!url) {
+  throw new Error("[prisma.config] Set DIRECT_URL or DATABASE_URL");
+}
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
   datasource: {
-    url: env("DATABASE_URL"),
+    url,
+    // shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL, // optional
   },
   migrations: {
-    // This is the command Prisma runs for `prisma db seed`
     seed: "tsx prisma/seed.ts",
   },
 });

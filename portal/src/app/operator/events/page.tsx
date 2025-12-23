@@ -13,20 +13,26 @@ function firstParam(value: SearchParamValue): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
+type SearchParamsObj = {
+  nh?: SearchParamValue;
+  source?: SearchParamValue;
+  kind?: SearchParamValue;
+};
+
 interface OperatorEventsPageProps {
-  searchParams?: {
-    nh?: SearchParamValue;
-    source?: SearchParamValue;
-    kind?: SearchParamValue;
-  };
+  // Next.js 16 can provide this as a Promise in some cases (sync dynamic APIs)
+  searchParams?: SearchParamsObj | Promise<SearchParamsObj>;
 }
 
 export default async function OperatorEventsPage({
   searchParams,
 }: OperatorEventsPageProps) {
-  const nhFilter = firstParam(searchParams?.nh);
-  const sourceFilter = firstParam(searchParams?.source);
-  const kindFilter = firstParam(searchParams?.kind);
+  // ✅ Unwrap whether it's an object or Promise (avoids "searchParams is a Promise" crash)
+  const sp = await Promise.resolve(searchParams ?? {});
+
+  const nhFilter = firstParam(sp.nh);
+  const sourceFilter = firstParam(sp.source);
+  const kindFilter = firstParam(sp.kind);
 
   // Simple typed where clause
   const where: {

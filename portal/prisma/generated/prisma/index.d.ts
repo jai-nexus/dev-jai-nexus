@@ -5123,8 +5123,8 @@ export namespace Prisma {
     summary?: boolean
     payload?: boolean
     repoId?: boolean
-    fileIndexes?: boolean | SyncRun$fileIndexesArgs<ExtArgs>
     repo?: boolean | SyncRun$repoArgs<ExtArgs>
+    fileIndexes?: boolean | SyncRun$fileIndexesArgs<ExtArgs>
     _count?: boolean | SyncRunCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["syncRun"]>
 
@@ -5177,8 +5177,8 @@ export namespace Prisma {
 
   export type SyncRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "type" | "status" | "trigger" | "startedAt" | "finishedAt" | "workflowRunUrl" | "summary" | "payload" | "repoId", ExtArgs["result"]["syncRun"]>
   export type SyncRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    fileIndexes?: boolean | SyncRun$fileIndexesArgs<ExtArgs>
     repo?: boolean | SyncRun$repoArgs<ExtArgs>
+    fileIndexes?: boolean | SyncRun$fileIndexesArgs<ExtArgs>
     _count?: boolean | SyncRunCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SyncRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5191,8 +5191,8 @@ export namespace Prisma {
   export type $SyncRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SyncRun"
     objects: {
-      fileIndexes: Prisma.$FileIndexPayload<ExtArgs>[]
       repo: Prisma.$RepoPayload<ExtArgs> | null
+      fileIndexes: Prisma.$FileIndexPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5601,8 +5601,8 @@ export namespace Prisma {
    */
   export interface Prisma__SyncRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    fileIndexes<T extends SyncRun$fileIndexesArgs<ExtArgs> = {}>(args?: Subset<T, SyncRun$fileIndexesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FileIndexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     repo<T extends SyncRun$repoArgs<ExtArgs> = {}>(args?: Subset<T, SyncRun$repoArgs<ExtArgs>>): Prisma__RepoClient<$Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    fileIndexes<T extends SyncRun$fileIndexesArgs<ExtArgs> = {}>(args?: Subset<T, SyncRun$fileIndexesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FileIndexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6040,6 +6040,25 @@ export namespace Prisma {
   }
 
   /**
+   * SyncRun.repo
+   */
+  export type SyncRun$repoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Repo
+     */
+    select?: RepoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Repo
+     */
+    omit?: RepoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RepoInclude<ExtArgs> | null
+    where?: RepoWhereInput
+  }
+
+  /**
    * SyncRun.fileIndexes
    */
   export type SyncRun$fileIndexesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6061,25 +6080,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: FileIndexScalarFieldEnum | FileIndexScalarFieldEnum[]
-  }
-
-  /**
-   * SyncRun.repo
-   */
-  export type SyncRun$repoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Repo
-     */
-    select?: RepoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Repo
-     */
-    omit?: RepoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RepoInclude<ExtArgs> | null
-    where?: RepoWhereInput
   }
 
   /**
@@ -12210,32 +12210,23 @@ export namespace Prisma {
        */
       ts: Date
       /**
-       * High-level source: chatgpt | github | notion | manual | jai-format | etc.
+       * High-level source: chatgpt | github | notion | manual | dev-portal | etc.
        */
       source: string
       /**
-       * Logical type: conversation | decision | task | design_note | sync | etc.
+       * Logical type: conversation | decision | task | sync | WORK_PACKET_CREATED | etc.
        */
       kind: string
       /**
        * Optional NH marker for this event in your hierarchy (e.g. "2.1.3.5")
        */
       nhId: string
-      /**
-       * Short human-readable summary for dashboards
-       */
       summary: string | null
-      /**
-       * Full canonical blob (usually jai-format or raw export)
-       */
       payload: Prisma.JsonValue | null
-      /**
-       * Optional links into repo/domain registries
-       */
       repoId: number | null
       domainId: number | null
       /**
-       * ✅ Stable anchor for WorkPacket streams (nhId can change)
+       * Stable anchor for WorkPacket streams (nhId can change)
        */
       workPacketId: number | null
     }, ExtArgs["result"]["sotEvent"]>
@@ -17822,7 +17813,7 @@ export namespace Prisma {
     objects: {
       repo: Prisma.$RepoPayload<ExtArgs> | null
       /**
-       * ✅ Inverse relation for SotEvent.workPacket
+       * Inverse relation for SotEvent.workPacket
        */
       sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
     }
@@ -19347,8 +19338,8 @@ export namespace Prisma {
     summary?: StringNullableFilter<"SyncRun"> | string | null
     payload?: JsonNullableFilter<"SyncRun">
     repoId?: IntNullableFilter<"SyncRun"> | number | null
-    fileIndexes?: FileIndexListRelationFilter
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    fileIndexes?: FileIndexListRelationFilter
   }
 
   export type SyncRunOrderByWithRelationInput = {
@@ -19364,8 +19355,8 @@ export namespace Prisma {
     summary?: SortOrderInput | SortOrder
     payload?: SortOrderInput | SortOrder
     repoId?: SortOrderInput | SortOrder
-    fileIndexes?: FileIndexOrderByRelationAggregateInput
     repo?: RepoOrderByWithRelationInput
+    fileIndexes?: FileIndexOrderByRelationAggregateInput
   }
 
   export type SyncRunWhereUniqueInput = Prisma.AtLeast<{
@@ -19384,8 +19375,8 @@ export namespace Prisma {
     summary?: StringNullableFilter<"SyncRun"> | string | null
     payload?: JsonNullableFilter<"SyncRun">
     repoId?: IntNullableFilter<"SyncRun"> | number | null
-    fileIndexes?: FileIndexListRelationFilter
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
+    fileIndexes?: FileIndexListRelationFilter
   }, "id">
 
   export type SyncRunOrderByWithAggregationInput = {
@@ -20563,8 +20554,8 @@ export namespace Prisma {
     workflowRunUrl?: string | null
     summary?: string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
-    fileIndexes?: FileIndexCreateNestedManyWithoutSyncRunInput
     repo?: RepoCreateNestedOneWithoutSyncRunsInput
+    fileIndexes?: FileIndexCreateNestedManyWithoutSyncRunInput
   }
 
   export type SyncRunUncheckedCreateInput = {
@@ -20594,8 +20585,8 @@ export namespace Prisma {
     workflowRunUrl?: NullableStringFieldUpdateOperationsInput | string | null
     summary?: NullableStringFieldUpdateOperationsInput | string | null
     payload?: NullableJsonNullValueInput | InputJsonValue
-    fileIndexes?: FileIndexUpdateManyWithoutSyncRunNestedInput
     repo?: RepoUpdateOneWithoutSyncRunsNestedInput
+    fileIndexes?: FileIndexUpdateManyWithoutSyncRunNestedInput
   }
 
   export type SyncRunUncheckedUpdateInput = {
@@ -22958,6 +22949,12 @@ export namespace Prisma {
     deleteMany?: SotEventScalarWhereInput | SotEventScalarWhereInput[]
   }
 
+  export type RepoCreateNestedOneWithoutSyncRunsInput = {
+    create?: XOR<RepoCreateWithoutSyncRunsInput, RepoUncheckedCreateWithoutSyncRunsInput>
+    connectOrCreate?: RepoCreateOrConnectWithoutSyncRunsInput
+    connect?: RepoWhereUniqueInput
+  }
+
   export type FileIndexCreateNestedManyWithoutSyncRunInput = {
     create?: XOR<FileIndexCreateWithoutSyncRunInput, FileIndexUncheckedCreateWithoutSyncRunInput> | FileIndexCreateWithoutSyncRunInput[] | FileIndexUncheckedCreateWithoutSyncRunInput[]
     connectOrCreate?: FileIndexCreateOrConnectWithoutSyncRunInput | FileIndexCreateOrConnectWithoutSyncRunInput[]
@@ -22965,17 +22962,21 @@ export namespace Prisma {
     connect?: FileIndexWhereUniqueInput | FileIndexWhereUniqueInput[]
   }
 
-  export type RepoCreateNestedOneWithoutSyncRunsInput = {
-    create?: XOR<RepoCreateWithoutSyncRunsInput, RepoUncheckedCreateWithoutSyncRunsInput>
-    connectOrCreate?: RepoCreateOrConnectWithoutSyncRunsInput
-    connect?: RepoWhereUniqueInput
-  }
-
   export type FileIndexUncheckedCreateNestedManyWithoutSyncRunInput = {
     create?: XOR<FileIndexCreateWithoutSyncRunInput, FileIndexUncheckedCreateWithoutSyncRunInput> | FileIndexCreateWithoutSyncRunInput[] | FileIndexUncheckedCreateWithoutSyncRunInput[]
     connectOrCreate?: FileIndexCreateOrConnectWithoutSyncRunInput | FileIndexCreateOrConnectWithoutSyncRunInput[]
     createMany?: FileIndexCreateManySyncRunInputEnvelope
     connect?: FileIndexWhereUniqueInput | FileIndexWhereUniqueInput[]
+  }
+
+  export type RepoUpdateOneWithoutSyncRunsNestedInput = {
+    create?: XOR<RepoCreateWithoutSyncRunsInput, RepoUncheckedCreateWithoutSyncRunsInput>
+    connectOrCreate?: RepoCreateOrConnectWithoutSyncRunsInput
+    upsert?: RepoUpsertWithoutSyncRunsInput
+    disconnect?: RepoWhereInput | boolean
+    delete?: RepoWhereInput | boolean
+    connect?: RepoWhereUniqueInput
+    update?: XOR<XOR<RepoUpdateToOneWithWhereWithoutSyncRunsInput, RepoUpdateWithoutSyncRunsInput>, RepoUncheckedUpdateWithoutSyncRunsInput>
   }
 
   export type FileIndexUpdateManyWithoutSyncRunNestedInput = {
@@ -22990,16 +22991,6 @@ export namespace Prisma {
     update?: FileIndexUpdateWithWhereUniqueWithoutSyncRunInput | FileIndexUpdateWithWhereUniqueWithoutSyncRunInput[]
     updateMany?: FileIndexUpdateManyWithWhereWithoutSyncRunInput | FileIndexUpdateManyWithWhereWithoutSyncRunInput[]
     deleteMany?: FileIndexScalarWhereInput | FileIndexScalarWhereInput[]
-  }
-
-  export type RepoUpdateOneWithoutSyncRunsNestedInput = {
-    create?: XOR<RepoCreateWithoutSyncRunsInput, RepoUncheckedCreateWithoutSyncRunsInput>
-    connectOrCreate?: RepoCreateOrConnectWithoutSyncRunsInput
-    upsert?: RepoUpsertWithoutSyncRunsInput
-    disconnect?: RepoWhereInput | boolean
-    delete?: RepoWhereInput | boolean
-    connect?: RepoWhereUniqueInput
-    update?: XOR<XOR<RepoUpdateToOneWithWhereWithoutSyncRunsInput, RepoUpdateWithoutSyncRunsInput>, RepoUncheckedUpdateWithoutSyncRunsInput>
   }
 
   export type FileIndexUncheckedUpdateManyWithoutSyncRunNestedInput = {
@@ -24088,45 +24079,6 @@ export namespace Prisma {
     data: XOR<SotEventUpdateManyMutationInput, SotEventUncheckedUpdateManyWithoutDomainInput>
   }
 
-  export type FileIndexCreateWithoutSyncRunInput = {
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    path: string
-    dir: string
-    filename: string
-    extension: string
-    sizeBytes: number
-    sha256: string
-    lastCommitSha?: string | null
-    indexedAt?: Date | string
-    repo: RepoCreateNestedOneWithoutFileIndexesInput
-  }
-
-  export type FileIndexUncheckedCreateWithoutSyncRunInput = {
-    id?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    repoId: number
-    path: string
-    dir: string
-    filename: string
-    extension: string
-    sizeBytes: number
-    sha256: string
-    lastCommitSha?: string | null
-    indexedAt?: Date | string
-  }
-
-  export type FileIndexCreateOrConnectWithoutSyncRunInput = {
-    where: FileIndexWhereUniqueInput
-    create: XOR<FileIndexCreateWithoutSyncRunInput, FileIndexUncheckedCreateWithoutSyncRunInput>
-  }
-
-  export type FileIndexCreateManySyncRunInputEnvelope = {
-    data: FileIndexCreateManySyncRunInput | FileIndexCreateManySyncRunInput[]
-    skipDuplicates?: boolean
-  }
-
   export type RepoCreateWithoutSyncRunsInput = {
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -24173,20 +24125,43 @@ export namespace Prisma {
     create: XOR<RepoCreateWithoutSyncRunsInput, RepoUncheckedCreateWithoutSyncRunsInput>
   }
 
-  export type FileIndexUpsertWithWhereUniqueWithoutSyncRunInput = {
+  export type FileIndexCreateWithoutSyncRunInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    path: string
+    dir: string
+    filename: string
+    extension: string
+    sizeBytes: number
+    sha256: string
+    lastCommitSha?: string | null
+    indexedAt?: Date | string
+    repo: RepoCreateNestedOneWithoutFileIndexesInput
+  }
+
+  export type FileIndexUncheckedCreateWithoutSyncRunInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    repoId: number
+    path: string
+    dir: string
+    filename: string
+    extension: string
+    sizeBytes: number
+    sha256: string
+    lastCommitSha?: string | null
+    indexedAt?: Date | string
+  }
+
+  export type FileIndexCreateOrConnectWithoutSyncRunInput = {
     where: FileIndexWhereUniqueInput
-    update: XOR<FileIndexUpdateWithoutSyncRunInput, FileIndexUncheckedUpdateWithoutSyncRunInput>
     create: XOR<FileIndexCreateWithoutSyncRunInput, FileIndexUncheckedCreateWithoutSyncRunInput>
   }
 
-  export type FileIndexUpdateWithWhereUniqueWithoutSyncRunInput = {
-    where: FileIndexWhereUniqueInput
-    data: XOR<FileIndexUpdateWithoutSyncRunInput, FileIndexUncheckedUpdateWithoutSyncRunInput>
-  }
-
-  export type FileIndexUpdateManyWithWhereWithoutSyncRunInput = {
-    where: FileIndexScalarWhereInput
-    data: XOR<FileIndexUpdateManyMutationInput, FileIndexUncheckedUpdateManyWithoutSyncRunInput>
+  export type FileIndexCreateManySyncRunInputEnvelope = {
+    data: FileIndexCreateManySyncRunInput | FileIndexCreateManySyncRunInput[]
+    skipDuplicates?: boolean
   }
 
   export type RepoUpsertWithoutSyncRunsInput = {
@@ -24239,6 +24214,22 @@ export namespace Prisma {
     fileIndexes?: FileIndexUncheckedUpdateManyWithoutRepoNestedInput
     sotEvents?: SotEventUncheckedUpdateManyWithoutRepoNestedInput
     workPackets?: WorkPacketUncheckedUpdateManyWithoutRepoNestedInput
+  }
+
+  export type FileIndexUpsertWithWhereUniqueWithoutSyncRunInput = {
+    where: FileIndexWhereUniqueInput
+    update: XOR<FileIndexUpdateWithoutSyncRunInput, FileIndexUncheckedUpdateWithoutSyncRunInput>
+    create: XOR<FileIndexCreateWithoutSyncRunInput, FileIndexUncheckedCreateWithoutSyncRunInput>
+  }
+
+  export type FileIndexUpdateWithWhereUniqueWithoutSyncRunInput = {
+    where: FileIndexWhereUniqueInput
+    data: XOR<FileIndexUpdateWithoutSyncRunInput, FileIndexUncheckedUpdateWithoutSyncRunInput>
+  }
+
+  export type FileIndexUpdateManyWithWhereWithoutSyncRunInput = {
+    where: FileIndexScalarWhereInput
+    data: XOR<FileIndexUpdateManyMutationInput, FileIndexUncheckedUpdateManyWithoutSyncRunInput>
   }
 
   export type RepoCreateWithoutFileIndexesInput = {

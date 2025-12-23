@@ -1,0 +1,6 @@
+packages:
+  - portal
+
+ignoredBuiltDependencies:
+  - '@prisma/engines'
+  - prisma

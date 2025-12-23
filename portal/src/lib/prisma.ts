@@ -5,10 +5,11 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString =
+  process.env.DATABASE_URL || process.env.DIRECT_URL;
 
 if (!connectionString) {
-  throw new Error("[prisma] DATABASE_URL is not set");
+  throw new Error("[prisma] DATABASE_URL or DIRECT_URL is not set");
 }
 
 const globalForPrisma = globalThis as unknown as {
