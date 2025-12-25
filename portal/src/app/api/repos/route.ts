@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const repos = await prisma.repo.findMany({
-      where: { status: "ACTIVE" },
+      // ✅ Repo.status is now enum-backed: active|frozen|planned|parked
+      where: { status: "active" },
       select: {
         id: true,
         nhId: true,
@@ -41,6 +42,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(payload, { status: 200 });
   } catch (error) {
     console.error("[GET /api/repos] Failed to load repos", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
