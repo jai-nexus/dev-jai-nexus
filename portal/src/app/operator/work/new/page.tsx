@@ -40,21 +40,14 @@ async function createPacket(formData: FormData) {
       },
     });
 
-    // ✅ Q1: enqueue a single backlog item (unassigned) so agents can claim it later
-    const inboxItem = await tx.agentInboxItem.create({
+    const inbox = await tx.agentInboxItem.create({
       data: {
+        workPacketId: created.id,
         status: InboxItemStatus.QUEUED,
         priority: 50,
-        workPacket: { connect: { id: created.id } },
-        // agentUserId intentionally omitted => unassigned backlog
         tags: [],
-        // notes omitted => undefined
       },
-      select: {
-        id: true,
-        status: true,
-        priority: true,
-      },
+      select: { id: true, status: true, priority: true },
     });
 
     const data: Prisma.InputJsonValue = {
@@ -64,9 +57,9 @@ async function createPacket(formData: FormData) {
       status: created.status,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
       inbox: {
-        inboxItemId: inboxItem.id,
-        status: inboxItem.status,
-        priority: inboxItem.priority,
+        inboxItemId: inbox.id,
+        status: inbox.status,
+        priority: inbox.priority,
       },
     };
 

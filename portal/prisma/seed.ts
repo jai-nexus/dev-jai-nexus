@@ -9,11 +9,6 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import { normalizeRepoStatus } from "../src/lib/registryEnums";
 
-// IMPORTANT: match the SAME Prisma client output your app uses.
-// Given schema.prisma output = "generated/prisma", and seed.ts is in prisma/,
-// this should be "./generated/prisma".
-import type { Prisma, Role } from "./generated/prisma";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -72,10 +67,10 @@ function inferGithubUrl(repo: string): string {
   return `https://github.com/${repo}`;
 }
 
-// Json? fields: use object OR omit (undefined). Do NOT pass null.
-function notesJson(notes?: string): Prisma.InputJsonValue | undefined {
+function notesJson(notes?: string) {
   const t = (notes ?? "").trim();
-  return t ? ({ text: t } as Prisma.InputJsonValue) : undefined;
+  // IMPORTANT: return undefined (omit) instead of null
+  return t ? ({ text: t } as const) : undefined;
 }
 
 async function seedReposFromYaml() {
@@ -86,7 +81,7 @@ async function seedReposFromYaml() {
   }
 
   for (const r of rows) {
-    const createData: Prisma.RepoCreateInput = {
+    const data = {
       name: r.repo,
       nhId: r.nh_id ?? "",
       description: r.description ?? null,
@@ -100,19 +95,20 @@ async function seedReposFromYaml() {
     };
 
     await prisma.repo.upsert({
-      where: { name: createData.name },
+      where: { name: data.name },
       update: {
-        nhId: createData.nhId,
-        description: createData.description,
-        domainPod: createData.domainPod,
-        engineGroup: createData.engineGroup,
-        status: createData.status,
-        owner: createData.owner,
-        githubUrl: createData.githubUrl,
-        defaultBranch: createData.defaultBranch,
-        notes: createData.notes, // InputJsonValue | undefined
+        nhId: data.nhId,
+        description: data.description,
+        domainPod: data.domainPod,
+        engineGroup: data.engineGroup,
+        status: data.status,
+        owner: data.owner,
+        githubUrl: data.githubUrl,
+        defaultBranch: data.defaultBranch,
+        // JSON field: must be InputJsonValue | undefined (NOT null)
+        notes: data.notes,
       },
-      create: createData,
+      create: data,
     });
   }
 
@@ -125,13 +121,13 @@ async function seedUsers() {
     where: { email: "admin@jai.nexus" },
     update: {
       name: "JAI Admin",
-      role: "ADMIN" as Role,
+      role: "ADMIN",
       passwordHash: adminPasswordHash,
     },
     create: {
       email: "admin@jai.nexus",
       name: "JAI Admin",
-      role: "ADMIN" as Role,
+      role: "ADMIN",
       passwordHash: adminPasswordHash,
     },
   });
@@ -141,13 +137,13 @@ async function seedUsers() {
     where: { email: "agent@jai.nexus" },
     update: {
       name: "JAI Agent",
-      role: "AGENT" as Role,
+      role: "AGENT",
       passwordHash: agentPasswordHash,
     },
     create: {
       email: "agent@jai.nexus",
       name: "JAI Agent",
-      role: "AGENT" as Role,
+      role: "AGENT",
       passwordHash: agentPasswordHash,
     },
   });
@@ -155,9 +151,34 @@ async function seedUsers() {
   console.log("✅ Users seeded: admin@jai.nexus, agent@jai.nexus");
 }
 
-// keep as no-op until InboxItem model is migrated + you decide the default behavior
+/**
+ * Seed backlog inbox items:
+ * - Schema guarantees 1 inbox item per WorkPacket via `workPacketId @unique`.
+ * - So we can create for every WorkPacket and skip duplicates safely.
+ * - This avoids N+1 queries and is race-safe.
+ */
 async function seedAgentInboxItems() {
-  return;
+  const packets = await prisma.workPacket.findMany({
+    select: { id: true },
+    orderBy: { id: "asc" },
+  });
+
+  if (packets.length === 0) {
+    console.log("ℹ️ No WorkPackets found; skipping AgentInboxItem seed.");
+    return;
+  }
+
+  const res = await prisma.agentInboxItem.createMany({
+    data: packets.map((wp) => ({
+      workPacketId: wp.id,
+      status: "QUEUED",
+      priority: 50,
+      tags: [],
+    })),
+    skipDuplicates: true,
+  });
+
+  console.log(`✅ Agent inbox seeded (${res.count} created)`);
 }
 
 async function main() {

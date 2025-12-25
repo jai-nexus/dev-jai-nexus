@@ -5,39 +5,90 @@ import type {
   DomainEnv,
 } from "../../prisma/generated/prisma";
 
-// RepoStatus: active | frozen | planned | parked
+// Canonical values (useful for UI selects / validation)
+// NOTE: frozen to avoid accidental mutation in UI code.
+export const REPO_STATUS_VALUES = Object.freeze<RepoStatus[]>([
+  "active",
+  "frozen",
+  "planned",
+  "parked",
+]);
+
+export const DOMAIN_STATUS_VALUES = Object.freeze<DomainStatus[]>([
+  "live",
+  "planned",
+  "parked",
+]);
+
+export const DOMAIN_ENV_VALUES = Object.freeze<DomainEnv[]>([
+  "prod",
+  "stage",
+  "dev",
+]);
+
+// ✅ Back-compat exports (older pages import these)
+export const REPO_STATUSES = REPO_STATUS_VALUES;
+export const DOMAIN_STATUSES = DOMAIN_STATUS_VALUES;
+export const DOMAIN_ENVS = DOMAIN_ENV_VALUES;
+
+// ---- RepoStatus ----
+const REPO_STATUS_ALIASES: Record<string, RepoStatus> = {
+  active: "active",
+  live: "active",
+  enabled: "active",
+
+  frozen: "frozen",
+  freeze: "frozen",
+  locked: "frozen",
+
+  parked: "parked",
+  paused: "parked",
+  hold: "parked",
+
+  planned: "planned",
+  plan: "planned",
+  todo: "planned",
+  backlog: "planned",
+};
+
 export function normalizeRepoStatus(v: unknown): RepoStatus {
   const s = String(v ?? "").trim().toLowerCase();
-
-  if (s === "active" || s === "live" || s === "enabled") return "active";
-  if (s === "frozen" || s === "freeze" || s === "locked") return "frozen";
-  if (s === "parked" || s === "paused" || s === "hold") return "parked";
-  if (s === "planned" || s === "plan" || s === "todo" || s === "backlog")
-    return "planned";
-
-  // safe default
-  return "planned";
+  return REPO_STATUS_ALIASES[s] ?? "planned";
 }
 
-// DomainStatus: live | planned | parked
+// ---- DomainStatus ----
+const DOMAIN_STATUS_ALIASES: Record<string, DomainStatus> = {
+  live: "live",
+  active: "live",
+
+  planned: "planned",
+  plan: "planned",
+  todo: "planned",
+
+  parked: "parked",
+  paused: "parked",
+  hold: "parked",
+};
+
 export function normalizeDomainStatus(v: unknown): DomainStatus {
   const s = String(v ?? "").trim().toLowerCase();
-
-  if (s === "live" || s === "active") return "live";
-  if (s === "planned" || s === "plan" || s === "todo") return "planned";
-  if (s === "parked" || s === "paused" || s === "hold") return "parked";
-
-  return "planned";
+  return DOMAIN_STATUS_ALIASES[s] ?? "planned";
 }
 
-// DomainEnv: prod | stage | dev
+// ---- DomainEnv ----
+const DOMAIN_ENV_ALIASES: Record<string, DomainEnv> = {
+  prod: "prod",
+  production: "prod",
+
+  stage: "stage",
+  staging: "stage",
+
+  dev: "dev",
+  development: "dev",
+  local: "dev",
+};
+
 export function normalizeDomainEnv(v: unknown): DomainEnv {
   const s = String(v ?? "").trim().toLowerCase();
-
-  if (s === "prod" || s === "production") return "prod";
-  if (s === "stage" || s === "staging") return "stage";
-  if (s === "dev" || s === "development" || s === "local") return "dev";
-
-  // safe default
-  return "dev";
+  return DOMAIN_ENV_ALIASES[s] ?? "dev";
 }

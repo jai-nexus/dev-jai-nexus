@@ -229,7 +229,7 @@ model User {
   accounts Account[]
   sessions Session[]
 
-  // ✅ Agent inbox items assigned to this user (optional assignment)
+  // ✅ Agent inbox relation
   inboxItems AgentInboxItem[]
 }
 
@@ -302,7 +302,7 @@ model WorkPacket {
   /// Inverse relation for SotEvent.workPacket
   sotEvents SotEvent[]
 
-  // ✅ Agent inbox queue entries for this work packet
+  // ✅ Inbox items for agents (Q1)
   inboxItems AgentInboxItem[]
 
   createdAt DateTime @default(now())
@@ -312,7 +312,6 @@ model WorkPacket {
   @@index([status])
 }
 
-// ✅ Q1: Agent Inbox
 enum InboxItemStatus {
   QUEUED
   CLAIMED
@@ -328,25 +327,25 @@ model AgentInboxItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  status      InboxItemStatus @default(QUEUED)
-  priority    Int             @default(50)
+  status   InboxItemStatus @default(QUEUED)
+  priority Int             @default(50)
+
   lockedAt    DateTime?
-  lockedByRun String? // runner instance id (optional)
+  lockedByRun String?
   claimedAt   DateTime?
   completedAt DateTime?
 
-  // who it’s assigned to (optional; can start as unassigned backlog)
+  // who it’s assigned to (optional)
   agentUserId String?
   agent       User?   @relation(fields: [agentUserId], references: [id], onDelete: SetNull)
 
-  workPacketId Int
+  // ✅ 1 inbox item per WorkPacket (clean uniqueness)
+  workPacketId Int        @unique
   workPacket   WorkPacket @relation(fields: [workPacketId], references: [id], onDelete: Cascade)
 
-  // small metadata for routing (keep it simple)
   tags  String[] @default([])
   notes Json?
 
-  @@unique([workPacketId, agentUserId])
   @@index([status, priority])
   @@index([agentUserId, status])
 }

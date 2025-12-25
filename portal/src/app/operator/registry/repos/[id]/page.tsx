@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
@@ -22,7 +23,7 @@ function optStr(v: FormDataEntryValue | null): string | null {
 async function requireAdmin() {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/repos");
+  if (!isAdmin) redirect("/operator/registry/repos");
 }
 
 async function updateRepo(formData: FormData) {
@@ -222,12 +223,12 @@ export default async function EditRepoPage({
             Save
           </button>
 
-          <a
+          <Link
             href="/operator/registry/repos"
             className="text-sm text-gray-400 hover:text-gray-200"
           >
             Cancel
-          </a>
+          </Link>
         </div>
       </form>
 

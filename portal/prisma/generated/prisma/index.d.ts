@@ -21869,7 +21869,7 @@ export namespace Prisma {
 
   export type AgentInboxItemWhereUniqueInput = Prisma.AtLeast<{
     id?: number
-    workPacketId_agentUserId?: AgentInboxItemWorkPacketIdAgentUserIdCompoundUniqueInput
+    workPacketId?: number
     AND?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
     OR?: AgentInboxItemWhereInput[]
     NOT?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
@@ -21882,12 +21882,11 @@ export namespace Prisma {
     claimedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
     completedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
     agentUserId?: StringNullableFilter<"AgentInboxItem"> | string | null
-    workPacketId?: IntFilter<"AgentInboxItem"> | number
     tags?: StringNullableListFilter<"AgentInboxItem">
     notes?: JsonNullableFilter<"AgentInboxItem">
     agent?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     workPacket?: XOR<WorkPacketScalarRelationFilter, WorkPacketWhereInput>
-  }, "id" | "workPacketId_agentUserId">
+  }, "id" | "workPacketId">
 
   export type AgentInboxItemOrderByWithAggregationInput = {
     id?: SortOrder
@@ -24475,11 +24474,6 @@ export namespace Prisma {
   export type WorkPacketScalarRelationFilter = {
     is?: WorkPacketWhereInput
     isNot?: WorkPacketWhereInput
-  }
-
-  export type AgentInboxItemWorkPacketIdAgentUserIdCompoundUniqueInput = {
-    workPacketId: number
-    agentUserId: string
   }
 
   export type AgentInboxItemCountOrderByAggregateInput = {

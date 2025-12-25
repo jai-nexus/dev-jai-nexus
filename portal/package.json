@@ -5,10 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv -e .env.local -- next dev",
-    "build": "next build",
+
+    "postinstall": "prisma generate --schema prisma/schema.prisma",
+
+    "build": "prisma generate --schema prisma/schema.prisma && next build",
     "start": "next start",
 
-    "build:local": "dotenv -e .env.local -- next build",
+    "build:local": "dotenv -e .env.local -- prisma generate --schema prisma/schema.prisma && dotenv -e .env.local -- next build",
     "start:local": "dotenv -e .env.local -- next start",
 
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
@@ -17,6 +20,7 @@
     "prisma:format:local": "dotenv -e .env.local -- prisma format",
 
     "prisma:generate": "dotenv -e .env.local -- prisma generate",
+    "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:status:local": "dotenv -e .env.local -- prisma migrate status",
 
