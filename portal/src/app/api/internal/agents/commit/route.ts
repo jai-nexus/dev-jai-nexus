@@ -1,3 +1,4 @@
+// portal/src/app/api/internal/agents/commit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { assertInternalToken } from "@/lib/internalAuth";
 import { prisma } from "@/lib/prisma";
@@ -79,7 +80,7 @@ function sanitizeRelPath(input: string) {
  *   { repoId, path, content, message?, agent? }
  */
 export async function POST(req: NextRequest) {
-  // This endpoint writes to local disk; don’t run it on Vercel.
+  // This endpoint writes to local disk; don't run it on Vercel.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -109,26 +110,54 @@ export async function POST(req: NextRequest) {
     typeof content !== "string"
   ) {
     return NextResponse.json(
-      { error: "Missing/invalid fields: repoId (number), path (string), content (string)" },
+      {
+        error:
+          "Missing/invalid fields: repoId (number), path (string), content (string)",
+      },
       { status: 400 },
     );
   }
 
-  const relPath = sanitizeRelPath(relPathRaw);
+  let relPath: string;
+  try {
+    relPath = sanitizeRelPath(relPathRaw);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Invalid path" },
+      { status: 400 },
+    );
+  }
 
   const repo = await prisma.repo.findUnique({ where: { id: repoId } });
   if (!repo) {
     return NextResponse.json({ error: "Repo not found" }, { status: 404 });
   }
   if (!repo.githubUrl) {
-    return NextResponse.json({ error: "Repo missing githubUrl" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Repo missing githubUrl" },
+      { status: 400 },
+    );
   }
 
   const { owner, name } = parseGithubUrl(repo.githubUrl);
 
   const workspaceRoot = getWorkspaceRoot();
   const repoRoot = path.join(workspaceRoot, owner, name);
+
+  if (!existsSync(repoRoot)) {
+    return NextResponse.json(
+      {
+        error: "Workspace repo not found on disk",
+        detail: `Expected repo at ${repoRoot}. Clone it (or ensure workspace is populated).`,
+      },
+      { status: 404 },
+    );
+  }
+
   const editsRoot = path.join(repoRoot, ".jai-agent-edits");
+
+  // Ensure edits root exists
+  mkdirSync(editsRoot, { recursive: true });
 
   // Write the staged edit under .jai-agent-edits/<relPath>
   const outAbs = path.resolve(editsRoot, relPath);
@@ -141,7 +170,10 @@ export async function POST(req: NextRequest) {
   mkdirSync(path.dirname(outAbs), { recursive: true });
   writeFileSync(outAbs, content, "utf8");
 
-  const checksum = crypto.createHash("sha256").update(content, "utf8").digest("hex");
+  const checksum = crypto
+    .createHash("sha256")
+    .update(content, "utf8")
+    .digest("hex");
 
   const now = new Date();
 

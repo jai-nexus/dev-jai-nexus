@@ -1,9 +1,9 @@
 // portal/src/lib/sotEvents.ts
-import { prisma } from '@/lib/prisma';
-import type { Prisma } from '../../prisma/generated/prisma';
+import { prisma } from "@/lib/prisma";
+import type { Prisma } from "../../prisma/generated/prisma";
 
 export type SotEventEnvelopeV01 = {
-  version?: 'sot-event-0.1';
+  version?: "sot-event-0.1";
 
   ts: string;
   source: string;
@@ -17,17 +17,20 @@ export type SotEventEnvelopeV01 = {
   domainId?: number;
   repoName?: string;
   domainName?: string;
+
+  // Optional: link event stream to a WorkPacket
+  workPacketId?: number;
 };
 
 export async function recordSotEvent(input: SotEventEnvelopeV01) {
-  if (input.version && input.version !== 'sot-event-0.1') {
+  if (input.version && input.version !== "sot-event-0.1") {
     console.warn(
       `recordSotEvent: unexpected version "${input.version}", expected "sot-event-0.1"`,
     );
   }
 
   if (!input.ts || !input.source || !input.kind || !input.summary) {
-    throw new Error('recordSotEvent: missing ts/source/kind/summary');
+    throw new Error("recordSotEvent: missing ts/source/kind/summary");
   }
 
   const ts = new Date(input.ts);
@@ -37,10 +40,12 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
 
   let repoId = input.repoId;
   let domainId = input.domainId;
+  const workPacketId = input.workPacketId ?? null;
 
   if (!repoId && input.repoName) {
     const repo = await prisma.repo.findUnique({
       where: { name: input.repoName },
+      select: { id: true },
     });
     repoId = repo?.id;
   }
@@ -48,6 +53,7 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
   if (!domainId && input.domainName) {
     const domain = await prisma.domain.findUnique({
       where: { domain: input.domainName },
+      select: { id: true },
     });
     domainId = domain?.id;
   }
@@ -57,11 +63,12 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
       ts,
       source: input.source,
       kind: input.kind,
-      nhId: input.nhId ?? '',
+      nhId: input.nhId ?? "",
       summary: input.summary,
       payload: input.payload,
       repoId,
       domainId,
+      workPacketId,
     },
   });
 
