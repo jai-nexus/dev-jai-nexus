@@ -3,7 +3,11 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
+
 import { prisma } from "@/lib/prisma";
+import { getServerAuthSession } from "@/auth";
 import { getAgencyConfig, type AgencyAgent } from "@/lib/agencyConfig";
 import { WorkPacketStatus } from "../../../../prisma/generated/prisma";
 
@@ -28,7 +32,7 @@ function firstParam(value: SearchParamValue): string | undefined {
 function sanitizeNhLike(input?: string): string | undefined {
   const raw = (input ?? "").trim();
   if (!raw) return undefined;
-  if (!/^\d[\d.]*$/.test(raw)) return undefined;
+  if (!/^\d+(\.\d+)*$/.test(raw)) return undefined;
   return raw;
 }
 
@@ -63,7 +67,7 @@ function Chip({
   children,
   tone = "slate",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   tone?: "slate" | "emerald" | "sky" | "amber" | "purple";
 }) {
   const cls =
@@ -78,9 +82,7 @@ function Chip({
       : "bg-zinc-900 text-gray-200 border-gray-800";
 
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${cls}`}
-    >
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${cls}`}>
       {children}
     </span>
   );
@@ -116,19 +118,21 @@ function hrefWith(
   return qs ? `/operator/work?${qs}` : "/operator/work";
 }
 
-type WorkPacketFindManyArgs = NonNullable<
-  Parameters<typeof prisma.workPacket.findMany>[0]
->;
+type WorkPacketFindManyArgs = NonNullable<Parameters<typeof prisma.workPacket.findMany>[0]>;
 type WorkPacketWhereInput = WorkPacketFindManyArgs["where"];
 
 export default async function WorkPage({ searchParams }: Props) {
+  // ✅ hard auth guard (prevents incognito/prod crashes & leaks)
+  const session = await getServerAuthSession();
+  if (!session?.user) redirect("/login?next=/operator/work");
+
   const agency = getAgencyConfig();
   const agents: AgencyAgent[] = [...agency.agents].sort((a, b) =>
     a.nh_id.localeCompare(b.nh_id),
   );
 
-  const sp =
-    (await Promise.resolve(searchParams)) ?? ({} as SearchParams);
+  // ✅ Next 16.1: searchParams may be a Promise
+  const sp = (await Promise.resolve(searchParams)) ?? ({} as SearchParams);
 
   const assignee = sanitizeNhLike(firstParam(sp.assignee));
   const view = firstParam(sp.view);
@@ -158,7 +162,7 @@ export default async function WorkPage({ searchParams }: Props) {
   const inboxItems = ids.length
     ? await prisma.agentInboxItem.findMany({
         where: { workPacketId: { in: ids } },
-        orderBy: { id: "desc" },
+        orderBy: { id: "desc" }, // newest first
         select: {
           id: true,
           workPacketId: true,
@@ -169,18 +173,16 @@ export default async function WorkPage({ searchParams }: Props) {
       })
     : [];
 
+  // pick latest inbox row per packet
   const inboxByPacket = new Map<number, (typeof inboxItems)[number]>();
   for (const item of inboxItems) {
-    if (!inboxByPacket.has(item.workPacketId)) {
-      inboxByPacket.set(item.workPacketId, item);
-    }
+    if (!inboxByPacket.has(item.workPacketId)) inboxByPacket.set(item.workPacketId, item);
   }
 
   const rows = packets.map((p) => {
     const inbox = inboxByPacket.get(p.id) ?? null;
     const tags = coerceStringArray(inbox?.tags);
     const assigneeNh = getAssigneeFromTags(tags);
-
     return { packet: p, inbox, assigneeNh };
   });
 
@@ -212,7 +214,11 @@ export default async function WorkPage({ searchParams }: Props) {
         </div>
 
         <Link
-          href={assignee ? `/operator/work/new?assignee=${assignee}` : "/operator/work/new"}
+          href={
+            assignee
+              ? `/operator/work/new?assignee=${encodeURIComponent(assignee)}`
+              : "/operator/work/new"
+          }
           className="w-fit rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
         >
           New packet
@@ -237,8 +243,7 @@ export default async function WorkPage({ searchParams }: Props) {
 
             <Link href={hrefWith(current, { view: "unassigned" })}>
               <Chip tone="amber">
-                Unassigned{" "}
-                <span className="ml-2 text-amber-200/80">{unassignedCount}</span>
+                Unassigned <span className="ml-2 text-amber-200/80">{unassignedCount}</span>
               </Chip>
             </Link>
 
@@ -352,11 +357,7 @@ export default async function WorkPage({ searchParams }: Props) {
                 <td className="py-2 px-3 text-xs">{p.status}</td>
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
-                  {assigneeNh ? (
-                    <Chip tone="purple">{assigneeNh}</Chip>
-                  ) : (
-                    <span className="text-gray-500">—</span>
-                  )}
+                  {assigneeNh ? <Chip tone="purple">{assigneeNh}</Chip> : <span className="text-gray-500">—</span>}
                 </td>
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
@@ -370,7 +371,6 @@ export default async function WorkPage({ searchParams }: Props) {
                 </td>
 
                 <td className="py-2 px-3 text-xs">{p.repo?.name ?? "—"}</td>
-
                 <td className="py-2 px-3 text-xs">{p.updatedAt.toISOString()}</td>
 
                 <td className="py-2 px-3 text-xs space-x-2 whitespace-nowrap">

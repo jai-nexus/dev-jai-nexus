@@ -32,7 +32,6 @@ function firstParam(v: SearchParamValue): string | undefined {
 function sanitizeNh(v: string | undefined): string | null {
   const s = String(v ?? "").trim();
   if (!s) return null;
-  // NH ids are digits + dots (e.g., 1.2.3). Keep it strict.
   if (!/^\d+(\.\d+)*$/.test(s)) return null;
   return s;
 }
@@ -66,8 +65,6 @@ async function createPacket(formData: FormData) {
       },
     });
 
-    // If we have an assignee, store it as an inbox tag for now.
-    // This avoids a DB migration while still making delegation real + queryable.
     const tags: string[] = [];
     if (assigneeNhId) tags.push(`assignee:${assigneeNhId}`);
 
@@ -116,9 +113,8 @@ async function createPacket(formData: FormData) {
 
 export default async function NewWorkPacketPage({ searchParams }: Props) {
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect("/login?next=/operator/work/new");
 
-  // Next 16: searchParams can be a Promise.
   const sp = await Promise.resolve(searchParams);
 
   const prefillNh = firstParam(sp?.nhId);
@@ -129,8 +125,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
 
   const assigneeFromQuery = sanitizeNh(firstParam(sp?.assignee));
   const assigneeIsValid =
-    assigneeFromQuery &&
-    agents.some((a) => a.nh_id === assigneeFromQuery);
+    !!assigneeFromQuery && agents.some((a) => a.nh_id === assigneeFromQuery);
 
   const defaultAssignee = assigneeIsValid ? assigneeFromQuery : "";
 
@@ -171,8 +166,9 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
               ))}
             </select>
             <p className="text-[11px] text-gray-500">
-              Delegation is recorded as an inbox tag <span className="font-mono">assignee:&lt;nh&gt;</span>{" "}
-              + included in the SoT event payload.
+              Delegation is recorded as an inbox tag{" "}
+              <span className="font-mono">assignee:&lt;nh&gt;</span> + included in the SoT
+              event payload.
             </p>
           </div>
         </div>
@@ -189,9 +185,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-xs text-gray-300">
-            Acceptance Criteria (AC)
-          </label>
+          <label className="block text-xs text-gray-300">Acceptance Criteria (AC)</label>
           <textarea
             name="ac"
             rows={8}
