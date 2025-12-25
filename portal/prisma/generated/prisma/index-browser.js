@@ -331,6 +331,25 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.RepoStatus = exports.$Enums.RepoStatus = {
+  active: 'active',
+  frozen: 'frozen',
+  planned: 'planned',
+  parked: 'parked'
+};
+
+exports.DomainStatus = exports.$Enums.DomainStatus = {
+  live: 'live',
+  planned: 'planned',
+  parked: 'parked'
+};
+
+exports.DomainEnv = exports.$Enums.DomainEnv = {
+  prod: 'prod',
+  stage: 'stage',
+  dev: 'dev'
+};
+
 exports.Role = exports.$Enums.Role = {
   ADMIN: 'ADMIN',
   AGENT: 'AGENT'

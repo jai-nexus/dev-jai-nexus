@@ -88,7 +88,35 @@ export type WorkPacket = $Result.DefaultSelection<Prisma.$WorkPacketPayload>
  * Enums
  */
 export namespace $Enums {
-  export const Role: {
+  export const RepoStatus: {
+  active: 'active',
+  frozen: 'frozen',
+  planned: 'planned',
+  parked: 'parked'
+};
+
+export type RepoStatus = (typeof RepoStatus)[keyof typeof RepoStatus]
+
+
+export const DomainStatus: {
+  live: 'live',
+  planned: 'planned',
+  parked: 'parked'
+};
+
+export type DomainStatus = (typeof DomainStatus)[keyof typeof DomainStatus]
+
+
+export const DomainEnv: {
+  prod: 'prod',
+  stage: 'stage',
+  dev: 'dev'
+};
+
+export type DomainEnv = (typeof DomainEnv)[keyof typeof DomainEnv]
+
+
+export const Role: {
   ADMIN: 'ADMIN',
   AGENT: 'AGENT'
 };
@@ -108,6 +136,18 @@ export const WorkPacketStatus: {
 export type WorkPacketStatus = (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus]
 
 }
+
+export type RepoStatus = $Enums.RepoStatus
+
+export const RepoStatus: typeof $Enums.RepoStatus
+
+export type DomainStatus = $Enums.DomainStatus
+
+export const DomainStatus: typeof $Enums.DomainStatus
+
+export type DomainEnv = $Enums.DomainEnv
+
+export const DomainEnv: typeof $Enums.DomainEnv
 
 export type Role = $Enums.Role
 
@@ -2338,7 +2378,7 @@ export namespace Prisma {
     domainPod: string | null
     engineGroup: string | null
     language: string | null
-    status: string | null
+    status: $Enums.RepoStatus | null
     owner: string | null
     defaultBranch: string | null
     githubUrl: string | null
@@ -2354,7 +2394,7 @@ export namespace Prisma {
     domainPod: string | null
     engineGroup: string | null
     language: string | null
-    status: string | null
+    status: $Enums.RepoStatus | null
     owner: string | null
     defaultBranch: string | null
     githubUrl: string | null
@@ -2533,7 +2573,7 @@ export namespace Prisma {
     domainPod: string | null
     engineGroup: string | null
     language: string | null
-    status: string | null
+    status: $Enums.RepoStatus | null
     owner: string | null
     defaultBranch: string | null
     githubUrl: string | null
@@ -2664,7 +2704,7 @@ export namespace Prisma {
       domainPod: string | null
       engineGroup: string | null
       language: string | null
-      status: string | null
+      status: $Enums.RepoStatus | null
       owner: string | null
       defaultBranch: string | null
       githubUrl: string | null
@@ -3106,7 +3146,7 @@ export namespace Prisma {
     readonly domainPod: FieldRef<"Repo", 'String'>
     readonly engineGroup: FieldRef<"Repo", 'String'>
     readonly language: FieldRef<"Repo", 'String'>
-    readonly status: FieldRef<"Repo", 'String'>
+    readonly status: FieldRef<"Repo", 'RepoStatus'>
     readonly owner: FieldRef<"Repo", 'String'>
     readonly defaultBranch: FieldRef<"Repo", 'String'>
     readonly githubUrl: FieldRef<"Repo", 'String'>
@@ -3665,10 +3705,10 @@ export namespace Prisma {
     updatedAt: Date | null
     nhId: string | null
     domain: string | null
-    status: string | null
+    status: $Enums.DomainStatus | null
     domainKey: string | null
     engineType: string | null
-    env: string | null
+    env: $Enums.DomainEnv | null
     expiresAt: Date | null
     repoId: number | null
   }
@@ -3679,10 +3719,10 @@ export namespace Prisma {
     updatedAt: Date | null
     nhId: string | null
     domain: string | null
-    status: string | null
+    status: $Enums.DomainStatus | null
     domainKey: string | null
     engineType: string | null
-    env: string | null
+    env: $Enums.DomainEnv | null
     expiresAt: Date | null
     repoId: number | null
   }
@@ -3850,10 +3890,10 @@ export namespace Prisma {
     updatedAt: Date
     nhId: string
     domain: string
-    status: string | null
+    status: $Enums.DomainStatus | null
     domainKey: string | null
     engineType: string | null
-    env: string | null
+    env: $Enums.DomainEnv | null
     expiresAt: Date | null
     notes: JsonValue | null
     repoId: number | null
@@ -3968,10 +4008,10 @@ export namespace Prisma {
       updatedAt: Date
       nhId: string
       domain: string
-      status: string | null
+      status: $Enums.DomainStatus | null
       domainKey: string | null
       engineType: string | null
-      env: string | null
+      env: $Enums.DomainEnv | null
       expiresAt: Date | null
       notes: Prisma.JsonValue | null
       repoId: number | null
@@ -4405,10 +4445,10 @@ export namespace Prisma {
     readonly updatedAt: FieldRef<"Domain", 'DateTime'>
     readonly nhId: FieldRef<"Domain", 'String'>
     readonly domain: FieldRef<"Domain", 'String'>
-    readonly status: FieldRef<"Domain", 'String'>
+    readonly status: FieldRef<"Domain", 'DomainStatus'>
     readonly domainKey: FieldRef<"Domain", 'String'>
     readonly engineType: FieldRef<"Domain", 'String'>
-    readonly env: FieldRef<"Domain", 'String'>
+    readonly env: FieldRef<"Domain", 'DomainEnv'>
     readonly expiresAt: FieldRef<"Domain", 'DateTime'>
     readonly notes: FieldRef<"Domain", 'Json'>
     readonly repoId: FieldRef<"Domain", 'Int'>
@@ -19055,6 +19095,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'RepoStatus'
+   */
+  export type EnumRepoStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RepoStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RepoStatus[]'
+   */
+  export type ListEnumRepoStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RepoStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Json'
    */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -19065,6 +19119,34 @@ export namespace Prisma {
    * Reference to a field of type 'QueryMode'
    */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'DomainStatus'
+   */
+  export type EnumDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'DomainStatus[]'
+   */
+  export type ListEnumDomainStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DomainEnv'
+   */
+  export type EnumDomainEnvFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainEnv'>
+    
+
+
+  /**
+   * Reference to a field of type 'DomainEnv[]'
+   */
+  export type ListEnumDomainEnvFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DomainEnv[]'>
     
 
 
@@ -19126,7 +19208,7 @@ export namespace Prisma {
     domainPod?: StringNullableFilter<"Repo"> | string | null
     engineGroup?: StringNullableFilter<"Repo"> | string | null
     language?: StringNullableFilter<"Repo"> | string | null
-    status?: StringNullableFilter<"Repo"> | string | null
+    status?: EnumRepoStatusNullableFilter<"Repo"> | $Enums.RepoStatus | null
     owner?: StringNullableFilter<"Repo"> | string | null
     defaultBranch?: StringNullableFilter<"Repo"> | string | null
     githubUrl?: StringNullableFilter<"Repo"> | string | null
@@ -19173,7 +19255,7 @@ export namespace Prisma {
     domainPod?: StringNullableFilter<"Repo"> | string | null
     engineGroup?: StringNullableFilter<"Repo"> | string | null
     language?: StringNullableFilter<"Repo"> | string | null
-    status?: StringNullableFilter<"Repo"> | string | null
+    status?: EnumRepoStatusNullableFilter<"Repo"> | $Enums.RepoStatus | null
     owner?: StringNullableFilter<"Repo"> | string | null
     defaultBranch?: StringNullableFilter<"Repo"> | string | null
     githubUrl?: StringNullableFilter<"Repo"> | string | null
@@ -19220,7 +19302,7 @@ export namespace Prisma {
     domainPod?: StringNullableWithAggregatesFilter<"Repo"> | string | null
     engineGroup?: StringNullableWithAggregatesFilter<"Repo"> | string | null
     language?: StringNullableWithAggregatesFilter<"Repo"> | string | null
-    status?: StringNullableWithAggregatesFilter<"Repo"> | string | null
+    status?: EnumRepoStatusNullableWithAggregatesFilter<"Repo"> | $Enums.RepoStatus | null
     owner?: StringNullableWithAggregatesFilter<"Repo"> | string | null
     defaultBranch?: StringNullableWithAggregatesFilter<"Repo"> | string | null
     githubUrl?: StringNullableWithAggregatesFilter<"Repo"> | string | null
@@ -19236,10 +19318,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Domain"> | Date | string
     nhId?: StringFilter<"Domain"> | string
     domain?: StringFilter<"Domain"> | string
-    status?: StringNullableFilter<"Domain"> | string | null
+    status?: EnumDomainStatusNullableFilter<"Domain"> | $Enums.DomainStatus | null
     domainKey?: StringNullableFilter<"Domain"> | string | null
     engineType?: StringNullableFilter<"Domain"> | string | null
-    env?: StringNullableFilter<"Domain"> | string | null
+    env?: EnumDomainEnvNullableFilter<"Domain"> | $Enums.DomainEnv | null
     expiresAt?: DateTimeNullableFilter<"Domain"> | Date | string | null
     notes?: JsonNullableFilter<"Domain">
     repoId?: IntNullableFilter<"Domain"> | number | null
@@ -19273,10 +19355,10 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Domain"> | Date | string
     updatedAt?: DateTimeFilter<"Domain"> | Date | string
     nhId?: StringFilter<"Domain"> | string
-    status?: StringNullableFilter<"Domain"> | string | null
+    status?: EnumDomainStatusNullableFilter<"Domain"> | $Enums.DomainStatus | null
     domainKey?: StringNullableFilter<"Domain"> | string | null
     engineType?: StringNullableFilter<"Domain"> | string | null
-    env?: StringNullableFilter<"Domain"> | string | null
+    env?: EnumDomainEnvNullableFilter<"Domain"> | $Enums.DomainEnv | null
     expiresAt?: DateTimeNullableFilter<"Domain"> | Date | string | null
     notes?: JsonNullableFilter<"Domain">
     repoId?: IntNullableFilter<"Domain"> | number | null
@@ -19313,10 +19395,10 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Domain"> | Date | string
     nhId?: StringWithAggregatesFilter<"Domain"> | string
     domain?: StringWithAggregatesFilter<"Domain"> | string
-    status?: StringNullableWithAggregatesFilter<"Domain"> | string | null
+    status?: EnumDomainStatusNullableWithAggregatesFilter<"Domain"> | $Enums.DomainStatus | null
     domainKey?: StringNullableWithAggregatesFilter<"Domain"> | string | null
     engineType?: StringNullableWithAggregatesFilter<"Domain"> | string | null
-    env?: StringNullableWithAggregatesFilter<"Domain"> | string | null
+    env?: EnumDomainEnvNullableWithAggregatesFilter<"Domain"> | $Enums.DomainEnv | null
     expiresAt?: DateTimeNullableWithAggregatesFilter<"Domain"> | Date | string | null
     notes?: JsonNullableWithAggregatesFilter<"Domain">
     repoId?: IntNullableWithAggregatesFilter<"Domain"> | number | null
@@ -20311,7 +20393,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -20333,7 +20415,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -20354,7 +20436,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20376,7 +20458,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20398,7 +20480,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -20414,7 +20496,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20431,7 +20513,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20443,10 +20525,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoCreateNestedOneWithoutDomainsInput
@@ -20459,10 +20541,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
@@ -20474,10 +20556,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoUpdateOneWithoutDomainsNestedInput
@@ -20490,10 +20572,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -20506,10 +20588,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
@@ -20520,10 +20602,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
   }
@@ -20534,10 +20616,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -21658,6 +21740,13 @@ export namespace Prisma {
     mode?: QueryMode
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
+
+  export type EnumRepoStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.RepoStatus | EnumRepoStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRepoStatusNullableFilter<$PrismaModel> | $Enums.RepoStatus | null
+  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -21859,6 +21948,16 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+
+  export type EnumRepoStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RepoStatus | EnumRepoStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRepoStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.RepoStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumRepoStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumRepoStatusNullableFilter<$PrismaModel>
+  }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
@@ -21884,6 +21983,20 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedJsonNullableFilter<$PrismaModel>
     _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type EnumDomainStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainStatus | EnumDomainStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainStatusNullableFilter<$PrismaModel> | $Enums.DomainStatus | null
+  }
+
+  export type EnumDomainEnvNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainEnv | EnumDomainEnvFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainEnvNullableFilter<$PrismaModel> | $Enums.DomainEnv | null
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -21964,6 +22077,26 @@ export namespace Prisma {
   export type DomainSumOrderByAggregateInput = {
     id?: SortOrder
     repoId?: SortOrder
+  }
+
+  export type EnumDomainStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainStatus | EnumDomainStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.DomainStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDomainStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumDomainStatusNullableFilter<$PrismaModel>
+  }
+
+  export type EnumDomainEnvNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainEnv | EnumDomainEnvFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainEnvNullableWithAggregatesFilter<$PrismaModel> | $Enums.DomainEnv | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDomainEnvNullableFilter<$PrismaModel>
+    _max?: NestedEnumDomainEnvNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -22731,6 +22864,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type NullableEnumRepoStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RepoStatus | null
+  }
+
   export type DomainUpdateManyWithoutRepoNestedInput = {
     create?: XOR<DomainCreateWithoutRepoInput, DomainUncheckedCreateWithoutRepoInput> | DomainCreateWithoutRepoInput[] | DomainUncheckedCreateWithoutRepoInput[]
     connectOrCreate?: DomainCreateOrConnectWithoutRepoInput | DomainCreateOrConnectWithoutRepoInput[]
@@ -22897,6 +23034,14 @@ export namespace Prisma {
     connectOrCreate?: SotEventCreateOrConnectWithoutDomainInput | SotEventCreateOrConnectWithoutDomainInput[]
     createMany?: SotEventCreateManyDomainInputEnvelope
     connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+  }
+
+  export type NullableEnumDomainStatusFieldUpdateOperationsInput = {
+    set?: $Enums.DomainStatus | null
+  }
+
+  export type NullableEnumDomainEnvFieldUpdateOperationsInput = {
+    set?: $Enums.DomainEnv | null
   }
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -23369,6 +23514,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumRepoStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.RepoStatus | EnumRepoStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRepoStatusNullableFilter<$PrismaModel> | $Enums.RepoStatus | null
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[] | ListIntFieldRefInput<$PrismaModel>
@@ -23454,6 +23606,16 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
+
+  export type NestedEnumRepoStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RepoStatus | EnumRepoStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.RepoStatus[] | ListEnumRepoStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumRepoStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.RepoStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumRepoStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumRepoStatusNullableFilter<$PrismaModel>
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -23478,6 +23640,20 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
+  export type NestedEnumDomainStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainStatus | EnumDomainStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainStatusNullableFilter<$PrismaModel> | $Enums.DomainStatus | null
+  }
+
+  export type NestedEnumDomainEnvNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainEnv | EnumDomainEnvFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainEnvNullableFilter<$PrismaModel> | $Enums.DomainEnv | null
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -23487,6 +23663,26 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumDomainStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainStatus | EnumDomainStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainStatus[] | ListEnumDomainStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.DomainStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDomainStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumDomainStatusNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDomainEnvNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DomainEnv | EnumDomainEnvFieldRefInput<$PrismaModel> | null
+    in?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.DomainEnv[] | ListEnumDomainEnvFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumDomainEnvNullableWithAggregatesFilter<$PrismaModel> | $Enums.DomainEnv | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumDomainEnvNullableFilter<$PrismaModel>
+    _max?: NestedEnumDomainEnvNullableFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -23569,10 +23765,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     sotEvents?: SotEventCreateNestedManyWithoutDomainInput
@@ -23584,10 +23780,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutDomainInput
@@ -23782,10 +23978,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Domain"> | Date | string
     nhId?: StringFilter<"Domain"> | string
     domain?: StringFilter<"Domain"> | string
-    status?: StringNullableFilter<"Domain"> | string | null
+    status?: EnumDomainStatusNullableFilter<"Domain"> | $Enums.DomainStatus | null
     domainKey?: StringNullableFilter<"Domain"> | string | null
     engineType?: StringNullableFilter<"Domain"> | string | null
-    env?: StringNullableFilter<"Domain"> | string | null
+    env?: EnumDomainEnvNullableFilter<"Domain"> | $Enums.DomainEnv | null
     expiresAt?: DateTimeNullableFilter<"Domain"> | Date | string | null
     notes?: JsonNullableFilter<"Domain">
     repoId?: IntNullableFilter<"Domain"> | number | null
@@ -23937,7 +24133,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -23958,7 +24154,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24031,7 +24227,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24052,7 +24248,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24088,7 +24284,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24109,7 +24305,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24184,7 +24380,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24205,7 +24401,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24241,7 +24437,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24262,7 +24458,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24332,7 +24528,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24353,7 +24549,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24540,10 +24736,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoCreateNestedOneWithoutDomainsInput
@@ -24555,10 +24751,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
@@ -24578,7 +24774,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24599,7 +24795,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -24665,10 +24861,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repo?: RepoUpdateOneWithoutDomainsNestedInput
@@ -24680,10 +24876,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -24709,7 +24905,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24730,7 +24926,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25046,7 +25242,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -25067,7 +25263,7 @@ export namespace Prisma {
     domainPod?: string | null
     engineGroup?: string | null
     language?: string | null
-    status?: string | null
+    status?: $Enums.RepoStatus | null
     owner?: string | null
     defaultBranch?: string | null
     githubUrl?: string | null
@@ -25140,7 +25336,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25161,7 +25357,7 @@ export namespace Prisma {
     domainPod?: NullableStringFieldUpdateOperationsInput | string | null
     engineGroup?: NullableStringFieldUpdateOperationsInput | string | null
     language?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumRepoStatusFieldUpdateOperationsInput | $Enums.RepoStatus | null
     owner?: NullableStringFieldUpdateOperationsInput | string | null
     defaultBranch?: NullableStringFieldUpdateOperationsInput | string | null
     githubUrl?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25194,10 +25390,10 @@ export namespace Prisma {
     updatedAt?: Date | string
     nhId?: string
     domain: string
-    status?: string | null
+    status?: $Enums.DomainStatus | null
     domainKey?: string | null
     engineType?: string | null
-    env?: string | null
+    env?: $Enums.DomainEnv | null
     expiresAt?: Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
   }
@@ -25264,10 +25460,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     sotEvents?: SotEventUpdateManyWithoutDomainNestedInput
@@ -25279,10 +25475,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
     sotEvents?: SotEventUncheckedUpdateManyWithoutDomainNestedInput
@@ -25294,10 +25490,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     nhId?: StringFieldUpdateOperationsInput | string
     domain?: StringFieldUpdateOperationsInput | string
-    status?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: NullableEnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus | null
     domainKey?: NullableStringFieldUpdateOperationsInput | string | null
     engineType?: NullableStringFieldUpdateOperationsInput | string | null
-    env?: NullableStringFieldUpdateOperationsInput | string | null
+    env?: NullableEnumDomainEnvFieldUpdateOperationsInput | $Enums.DomainEnv | null
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     notes?: NullableJsonNullValueInput | InputJsonValue
   }

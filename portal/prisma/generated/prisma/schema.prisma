@@ -7,17 +7,37 @@ datasource db {
   provider = "postgresql"
 }
 
+// ENUMS (Q1 hardening: eliminate status/env drift)
+enum RepoStatus {
+  active
+  frozen
+  planned
+  parked
+}
+
+enum DomainStatus {
+  live
+  planned
+  parked
+}
+
+enum DomainEnv {
+  prod
+  stage
+  dev
+}
+
 model Repo {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
-  nhId          String   @default("")
-  name          String   @unique
+  id            Int         @id @default(autoincrement())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
+  nhId          String      @default("")
+  name          String      @unique
   description   String?
   domainPod     String?
   engineGroup   String?
   language      String?
-  status        String?
+  status        RepoStatus?
   owner         String?
   defaultBranch String?
   githubUrl     String?
@@ -35,15 +55,15 @@ model Repo {
 }
 
 model Domain {
-  id         Int       @id @default(autoincrement())
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now()) @updatedAt
-  nhId       String    @default("")
-  domain     String    @unique
-  status     String?
+  id         Int           @id @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @default(now()) @updatedAt
+  nhId       String        @default("")
+  domain     String        @unique
+  status     DomainStatus?
   domainKey  String?
   engineType String?
-  env        String?
+  env        DomainEnv?
   expiresAt  DateTime?
   notes      Json?
 
