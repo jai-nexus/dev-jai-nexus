@@ -44,7 +44,7 @@ repos:
     notes: "Primary home for design docs (e.g., offbook.v0 design)"
 
   - nh_id: "2.1"
-    repo: "jai-nexus/offbook-ai"
+    repo: "JerryIngram/offbook-ai"
     description: "OffBook.ai application"
     tier: 1
     role: "product"
