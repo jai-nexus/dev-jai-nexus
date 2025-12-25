@@ -2,6 +2,7 @@
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+import Link from "next/link";
 import {
   getAgencyConfig,
   type AgencyAgent,
@@ -75,8 +76,8 @@ function capabilityTone(c: string) {
 function formatConstraints(v2: AgentV2Shape) {
   const c = v2.constraints;
   if (!c) return "—";
-  const parts: string[] = [];
 
+  const parts: string[] = [];
   if (typeof c.canEditCode === "boolean")
     parts.push(`edit:${c.canEditCode ? "✓" : "—"}`);
   if (typeof c.canRunCommands === "boolean")
@@ -127,9 +128,11 @@ export default function AgentsPage() {
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
           <h2 className="text-lg font-medium">Agents</h2>
           <p className="text-xs text-gray-400">
-            Tip: If schema ≥ 0.2, agents can expose <span className="font-mono">type</span>,{" "}
+            Tip: If schema ≥ 0.2, agents can expose{" "}
+            <span className="font-mono">type</span>,{" "}
             <span className="font-mono">capabilities</span>, and{" "}
-            <span className="font-mono">constraints</span> (UI falls back safely if missing).
+            <span className="font-mono">constraints</span> (UI falls back safely
+            if missing).
           </p>
         </div>
 
@@ -145,8 +148,13 @@ export default function AgentsPage() {
                 <th className="py-2 px-3 text-xs text-gray-400">Capabilities</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Constraints</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Scope</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Delegates to</th>
-                <th className="py-2 px-3 text-xs text-gray-400">GitHub labels</th>
+                <th className="py-2 px-3 text-xs text-gray-400">
+                  Delegates to
+                </th>
+                <th className="py-2 px-3 text-xs text-gray-400">
+                  GitHub labels
+                </th>
+                <th className="py-2 px-3 text-xs text-gray-400">Actions</th>
               </tr>
             </thead>
 
@@ -237,6 +245,17 @@ export default function AgentsPage() {
 
                     <td className="py-2 px-3 text-xs whitespace-nowrap">
                       {agent.github_labels.join(", ")}
+                    </td>
+
+                    <td className="py-2 px-3 whitespace-nowrap text-xs">
+                      <Link
+                        href={`/operator/work/new?assignee=${encodeURIComponent(
+                          agent.nh_id,
+                        )}`}
+                        className="inline-flex items-center rounded-md border border-gray-700 bg-zinc-950 px-2 py-1 text-xs text-gray-200 hover:bg-zinc-900"
+                      >
+                        Delegate → Work
+                      </Link>
                     </td>
                   </tr>
                 );
