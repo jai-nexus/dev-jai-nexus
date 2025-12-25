@@ -134,10 +134,10 @@ model PilotSession {
 }
 
 model PilotAction {
-  id           Int          @id @default(autoincrement())
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @default(now()) @updatedAt
-  ts           DateTime     @default(now())
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+  ts           DateTime @default(now())
   sessionId    Int
   mode         String
   targetNodeId String?
@@ -228,6 +228,9 @@ model User {
 
   accounts Account[]
   sessions Session[]
+
+  // ✅ Agent inbox items assigned to this user (optional assignment)
+  inboxItems AgentInboxItem[]
 }
 
 model Account {
@@ -299,9 +302,51 @@ model WorkPacket {
   /// Inverse relation for SotEvent.workPacket
   sotEvents SotEvent[]
 
+  // ✅ Agent inbox queue entries for this work packet
+  inboxItems AgentInboxItem[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
   @@index([nhId])
   @@index([status])
+}
+
+// ✅ Q1: Agent Inbox
+enum InboxItemStatus {
+  QUEUED
+  CLAIMED
+  IN_PROGRESS
+  PROPOSED
+  DONE
+  BLOCKED
+  CANCELED
+}
+
+model AgentInboxItem {
+  id          Int             @id @default(autoincrement())
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+
+  status      InboxItemStatus @default(QUEUED)
+  priority    Int             @default(50)
+  lockedAt    DateTime?
+  lockedByRun String?         // runner instance id (optional)
+  claimedAt   DateTime?
+  completedAt DateTime?
+
+  // who it’s assigned to (optional; can start as unassigned backlog)
+  agentUserId String?
+  agent       User?           @relation(fields: [agentUserId], references: [id], onDelete: SetNull)
+
+  workPacketId Int
+  workPacket   WorkPacket     @relation(fields: [workPacketId], references: [id], onDelete: Cascade)
+
+  // small metadata for routing (keep it simple)
+  tags        String[]        @default([])
+  notes       Json?
+
+  @@index([status, priority])
+  @@index([agentUserId, status])
+  @@unique([workPacketId, agentUserId])
 }

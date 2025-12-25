@@ -9,6 +9,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import { normalizeRepoStatus } from "../src/lib/registryEnums";
 
+// IMPORTANT: match the SAME Prisma client output your app uses.
+// Given schema.prisma output = "generated/prisma", and seed.ts is in prisma/,
+// this should be "./generated/prisma".
+import type { Prisma, Role } from "./generated/prisma";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -22,13 +27,6 @@ type YamlRepoRow = {
   owner_agent_nh_id?: string;
   notes?: string;
 };
-
-type RepoConfigFile =
-  | YamlRepoRow[]
-  | {
-      schema_version?: string;
-      repos?: YamlRepoRow[];
-    };
 
 function readReposYaml(): YamlRepoRow[] {
   const candidates = [
@@ -74,10 +72,10 @@ function inferGithubUrl(repo: string): string {
   return `https://github.com/${repo}`;
 }
 
-function notesJson(notes?: string) {
+// Json? fields: use object OR omit (undefined). Do NOT pass null.
+function notesJson(notes?: string): Prisma.InputJsonValue | undefined {
   const t = (notes ?? "").trim();
-  // IMPORTANT: return undefined (omit) instead of null
-  return t ? ({ text: t } as const) : undefined;
+  return t ? ({ text: t } as Prisma.InputJsonValue) : undefined;
 }
 
 async function seedReposFromYaml() {
@@ -88,7 +86,7 @@ async function seedReposFromYaml() {
   }
 
   for (const r of rows) {
-    const data = {
+    const createData: Prisma.RepoCreateInput = {
       name: r.repo,
       nhId: r.nh_id ?? "",
       description: r.description ?? null,
@@ -102,20 +100,19 @@ async function seedReposFromYaml() {
     };
 
     await prisma.repo.upsert({
-      where: { name: data.name },
+      where: { name: createData.name },
       update: {
-        nhId: data.nhId,
-        description: data.description,
-        domainPod: data.domainPod,
-        engineGroup: data.engineGroup,
-        status: data.status,
-        owner: data.owner,
-        githubUrl: data.githubUrl,
-        defaultBranch: data.defaultBranch,
-        // JSON field: must be InputJsonValue | undefined (NOT null)
-        notes: data.notes,
+        nhId: createData.nhId,
+        description: createData.description,
+        domainPod: createData.domainPod,
+        engineGroup: createData.engineGroup,
+        status: createData.status,
+        owner: createData.owner,
+        githubUrl: createData.githubUrl,
+        defaultBranch: createData.defaultBranch,
+        notes: createData.notes, // InputJsonValue | undefined
       },
-      create: data,
+      create: createData,
     });
   }
 
@@ -128,13 +125,13 @@ async function seedUsers() {
     where: { email: "admin@jai.nexus" },
     update: {
       name: "JAI Admin",
-      role: "ADMIN",
+      role: "ADMIN" as Role,
       passwordHash: adminPasswordHash,
     },
     create: {
       email: "admin@jai.nexus",
       name: "JAI Admin",
-      role: "ADMIN",
+      role: "ADMIN" as Role,
       passwordHash: adminPasswordHash,
     },
   });
@@ -144,13 +141,13 @@ async function seedUsers() {
     where: { email: "agent@jai.nexus" },
     update: {
       name: "JAI Agent",
-      role: "AGENT",
+      role: "AGENT" as Role,
       passwordHash: agentPasswordHash,
     },
     create: {
       email: "agent@jai.nexus",
       name: "JAI Agent",
-      role: "AGENT",
+      role: "AGENT" as Role,
       passwordHash: agentPasswordHash,
     },
   });
@@ -158,10 +155,16 @@ async function seedUsers() {
   console.log("✅ Users seeded: admin@jai.nexus, agent@jai.nexus");
 }
 
+// keep as no-op until InboxItem model is migrated + you decide the default behavior
+async function seedAgentInboxItems() {
+  return;
+}
+
 async function main() {
   console.log("🌱 Using DATABASE_URL:", process.env.DATABASE_URL);
   await seedReposFromYaml();
   await seedUsers();
+  await seedAgentInboxItems();
 }
 
 main()

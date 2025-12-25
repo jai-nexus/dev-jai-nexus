@@ -1,45 +1,43 @@
 // portal/src/lib/registryEnums.ts
+import type {
+  RepoStatus,
+  DomainStatus,
+  DomainEnv,
+} from "../../prisma/generated/prisma";
 
-export const REPO_STATUSES = ["active", "frozen", "planned", "parked"] as const;
-export type RepoStatusValue = (typeof REPO_STATUSES)[number];
+// RepoStatus: active | frozen | planned | parked
+export function normalizeRepoStatus(v: unknown): RepoStatus {
+  const s = String(v ?? "").trim().toLowerCase();
 
-export const DOMAIN_STATUSES = ["live", "planned", "parked"] as const;
-export type DomainStatusValue = (typeof DOMAIN_STATUSES)[number];
+  if (s === "active" || s === "live" || s === "enabled") return "active";
+  if (s === "frozen" || s === "freeze" || s === "locked") return "frozen";
+  if (s === "parked" || s === "paused" || s === "hold") return "parked";
+  if (s === "planned" || s === "plan" || s === "todo" || s === "backlog")
+    return "planned";
 
-export const DOMAIN_ENVS = ["prod", "stage", "dev"] as const;
-export type DomainEnvValue = (typeof DOMAIN_ENVS)[number];
-
-function clean(v: unknown): string {
-  return String(v ?? "").trim().toLowerCase();
-}
-
-function isOneOf<T extends readonly string[]>(
-  value: string,
-  allowed: T
-): value is T[number] {
-  return (allowed as readonly string[]).includes(value);
-}
-
-export function normalizeRepoStatus(v: unknown): RepoStatusValue {
-  const s = clean(v);
-  if (isOneOf(s, REPO_STATUSES)) return s;
+  // safe default
   return "planned";
 }
 
-export function normalizeDomainStatus(v: unknown): DomainStatusValue {
-  const s = clean(v);
-  if (isOneOf(s, DOMAIN_STATUSES)) return s;
+// DomainStatus: live | planned | parked
+export function normalizeDomainStatus(v: unknown): DomainStatus {
+  const s = String(v ?? "").trim().toLowerCase();
+
+  if (s === "live" || s === "active") return "live";
+  if (s === "planned" || s === "plan" || s === "todo") return "planned";
+  if (s === "parked" || s === "paused" || s === "hold") return "parked";
+
   return "planned";
 }
 
-export function normalizeDomainEnv(v: unknown): DomainEnvValue | null {
-  const s = clean(v);
-  if (!s) return null;
+// DomainEnv: prod | stage | dev
+export function normalizeDomainEnv(v: unknown): DomainEnv {
+  const s = String(v ?? "").trim().toLowerCase();
 
-  // light aliases (optional)
-  if (s === "production") return "prod";
-  if (s === "staging") return "stage";
+  if (s === "prod" || s === "production") return "prod";
+  if (s === "stage" || s === "staging") return "stage";
+  if (s === "dev" || s === "development" || s === "local") return "dev";
 
-  if (isOneOf(s, DOMAIN_ENVS)) return s;
-  return null;
+  // safe default
+  return "dev";
 }
