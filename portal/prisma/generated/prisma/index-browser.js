@@ -306,6 +306,22 @@ exports.Prisma.WorkPacketScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AgentInboxItemScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  status: 'status',
+  priority: 'priority',
+  lockedAt: 'lockedAt',
+  lockedByRun: 'lockedByRun',
+  claimedAt: 'claimedAt',
+  completedAt: 'completedAt',
+  agentUserId: 'agentUserId',
+  workPacketId: 'workPacketId',
+  tags: 'tags',
+  notes: 'notes'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -364,6 +380,16 @@ exports.WorkPacketStatus = exports.$Enums.WorkPacketStatus = {
   DONE: 'DONE'
 };
 
+exports.InboxItemStatus = exports.$Enums.InboxItemStatus = {
+  QUEUED: 'QUEUED',
+  CLAIMED: 'CLAIMED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  PROPOSED: 'PROPOSED',
+  DONE: 'DONE',
+  BLOCKED: 'BLOCKED',
+  CANCELED: 'CANCELED'
+};
+
 exports.Prisma.ModelName = {
   Repo: 'Repo',
   Domain: 'Domain',
@@ -378,7 +404,8 @@ exports.Prisma.ModelName = {
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
-  WorkPacket: 'WorkPacket'
+  WorkPacket: 'WorkPacket',
+  AgentInboxItem: 'AgentInboxItem'
 };
 
 /**

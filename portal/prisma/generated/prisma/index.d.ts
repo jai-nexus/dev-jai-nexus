@@ -83,6 +83,11 @@ export type VerificationToken = $Result.DefaultSelection<Prisma.$VerificationTok
  * 
  */
 export type WorkPacket = $Result.DefaultSelection<Prisma.$WorkPacketPayload>
+/**
+ * Model AgentInboxItem
+ * 
+ */
+export type AgentInboxItem = $Result.DefaultSelection<Prisma.$AgentInboxItemPayload>
 
 /**
  * Enums
@@ -135,6 +140,19 @@ export const WorkPacketStatus: {
 
 export type WorkPacketStatus = (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus]
 
+
+export const InboxItemStatus: {
+  QUEUED: 'QUEUED',
+  CLAIMED: 'CLAIMED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  PROPOSED: 'PROPOSED',
+  DONE: 'DONE',
+  BLOCKED: 'BLOCKED',
+  CANCELED: 'CANCELED'
+};
+
+export type InboxItemStatus = (typeof InboxItemStatus)[keyof typeof InboxItemStatus]
+
 }
 
 export type RepoStatus = $Enums.RepoStatus
@@ -156,6 +174,10 @@ export const Role: typeof $Enums.Role
 export type WorkPacketStatus = $Enums.WorkPacketStatus
 
 export const WorkPacketStatus: typeof $Enums.WorkPacketStatus
+
+export type InboxItemStatus = $Enums.InboxItemStatus
+
+export const InboxItemStatus: typeof $Enums.InboxItemStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -413,6 +435,16 @@ export class PrismaClient<
     * ```
     */
   get workPacket(): Prisma.WorkPacketDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agentInboxItem`: Exposes CRUD operations for the **AgentInboxItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgentInboxItems
+    * const agentInboxItems = await prisma.agentInboxItem.findMany()
+    * ```
+    */
+  get agentInboxItem(): Prisma.AgentInboxItemDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -860,7 +892,8 @@ export namespace Prisma {
     Account: 'Account',
     Session: 'Session',
     VerificationToken: 'VerificationToken',
-    WorkPacket: 'WorkPacket'
+    WorkPacket: 'WorkPacket',
+    AgentInboxItem: 'AgentInboxItem'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -876,7 +909,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "pilotRun" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken" | "workPacket"
+      modelProps: "repo" | "domain" | "syncRun" | "fileIndex" | "pilotSession" | "pilotAction" | "pilotRun" | "jaiTool" | "sotEvent" | "user" | "account" | "session" | "verificationToken" | "workPacket" | "agentInboxItem"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1916,6 +1949,80 @@ export namespace Prisma {
           }
         }
       }
+      AgentInboxItem: {
+        payload: Prisma.$AgentInboxItemPayload<ExtArgs>
+        fields: Prisma.AgentInboxItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgentInboxItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgentInboxItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          findFirst: {
+            args: Prisma.AgentInboxItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgentInboxItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          findMany: {
+            args: Prisma.AgentInboxItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>[]
+          }
+          create: {
+            args: Prisma.AgentInboxItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          createMany: {
+            args: Prisma.AgentInboxItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgentInboxItemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>[]
+          }
+          delete: {
+            args: Prisma.AgentInboxItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          update: {
+            args: Prisma.AgentInboxItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgentInboxItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgentInboxItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgentInboxItemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgentInboxItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentInboxItemPayload>
+          }
+          aggregate: {
+            args: Prisma.AgentInboxItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgentInboxItem>
+          }
+          groupBy: {
+            args: Prisma.AgentInboxItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgentInboxItemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgentInboxItemCountArgs<ExtArgs>
+            result: $Utils.Optional<AgentInboxItemCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2038,6 +2145,7 @@ export namespace Prisma {
     session?: SessionOmit
     verificationToken?: VerificationTokenOmit
     workPacket?: WorkPacketOmit
+    agentInboxItem?: AgentInboxItemOmit
   }
 
   /* Types for Logging */
@@ -2280,11 +2388,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     accounts: number
     sessions: number
+    inboxItems: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+    inboxItems?: boolean | UserCountOutputTypeCountInboxItemsArgs
   }
 
   // Custom InputTypes
@@ -2312,6 +2422,13 @@ export namespace Prisma {
     where?: SessionWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInboxItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentInboxItemWhereInput
+  }
+
 
   /**
    * Count Type WorkPacketCountOutputType
@@ -2319,10 +2436,12 @@ export namespace Prisma {
 
   export type WorkPacketCountOutputType = {
     sotEvents: number
+    inboxItems: number
   }
 
   export type WorkPacketCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sotEvents?: boolean | WorkPacketCountOutputTypeCountSotEventsArgs
+    inboxItems?: boolean | WorkPacketCountOutputTypeCountInboxItemsArgs
   }
 
   // Custom InputTypes
@@ -2341,6 +2460,13 @@ export namespace Prisma {
    */
   export type WorkPacketCountOutputTypeCountSotEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SotEventWhereInput
+  }
+
+  /**
+   * WorkPacketCountOutputType without action
+   */
+  export type WorkPacketCountOutputTypeCountInboxItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentInboxItemWhereInput
   }
 
 
@@ -13376,6 +13502,7 @@ export namespace Prisma {
     passwordHash?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    inboxItems?: boolean | User$inboxItemsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -13419,6 +13546,7 @@ export namespace Prisma {
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    inboxItems?: boolean | User$inboxItemsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -13429,6 +13557,7 @@ export namespace Prisma {
     objects: {
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       sessions: Prisma.$SessionPayload<ExtArgs>[]
+      inboxItems: Prisma.$AgentInboxItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -13836,6 +13965,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    inboxItems<T extends User$inboxItemsArgs<ExtArgs> = {}>(args?: Subset<T, User$inboxItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -14307,6 +14437,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
+  }
+
+  /**
+   * User.inboxItems
+   */
+  export type User$inboxItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    where?: AgentInboxItemWhereInput
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    cursor?: AgentInboxItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentInboxItemScalarFieldEnum | AgentInboxItemScalarFieldEnum[]
   }
 
   /**
@@ -17785,6 +17939,7 @@ export namespace Prisma {
     updatedAt?: boolean
     repo?: boolean | WorkPacket$repoArgs<ExtArgs>
     sotEvents?: boolean | WorkPacket$sotEventsArgs<ExtArgs>
+    inboxItems?: boolean | WorkPacket$inboxItemsArgs<ExtArgs>
     _count?: boolean | WorkPacketCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workPacket"]>
 
@@ -17839,6 +17994,7 @@ export namespace Prisma {
   export type WorkPacketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     repo?: boolean | WorkPacket$repoArgs<ExtArgs>
     sotEvents?: boolean | WorkPacket$sotEventsArgs<ExtArgs>
+    inboxItems?: boolean | WorkPacket$inboxItemsArgs<ExtArgs>
     _count?: boolean | WorkPacketCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkPacketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17856,6 +18012,7 @@ export namespace Prisma {
        * Inverse relation for SotEvent.workPacket
        */
       sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
+      inboxItems: Prisma.$AgentInboxItemPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -18266,6 +18423,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     repo<T extends WorkPacket$repoArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$repoArgs<ExtArgs>>): Prisma__RepoClient<$Result.GetResult<Prisma.$RepoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     sotEvents<T extends WorkPacket$sotEventsArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$sotEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SotEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    inboxItems<T extends WorkPacket$inboxItemsArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacket$inboxItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18746,6 +18904,30 @@ export namespace Prisma {
   }
 
   /**
+   * WorkPacket.inboxItems
+   */
+  export type WorkPacket$inboxItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    where?: AgentInboxItemWhereInput
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    cursor?: AgentInboxItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentInboxItemScalarFieldEnum | AgentInboxItemScalarFieldEnum[]
+  }
+
+  /**
    * WorkPacket without action
    */
   export type WorkPacketDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18761,6 +18943,1229 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: WorkPacketInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AgentInboxItem
+   */
+
+  export type AggregateAgentInboxItem = {
+    _count: AgentInboxItemCountAggregateOutputType | null
+    _avg: AgentInboxItemAvgAggregateOutputType | null
+    _sum: AgentInboxItemSumAggregateOutputType | null
+    _min: AgentInboxItemMinAggregateOutputType | null
+    _max: AgentInboxItemMaxAggregateOutputType | null
+  }
+
+  export type AgentInboxItemAvgAggregateOutputType = {
+    id: number | null
+    priority: number | null
+    workPacketId: number | null
+  }
+
+  export type AgentInboxItemSumAggregateOutputType = {
+    id: number | null
+    priority: number | null
+    workPacketId: number | null
+  }
+
+  export type AgentInboxItemMinAggregateOutputType = {
+    id: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    status: $Enums.InboxItemStatus | null
+    priority: number | null
+    lockedAt: Date | null
+    lockedByRun: string | null
+    claimedAt: Date | null
+    completedAt: Date | null
+    agentUserId: string | null
+    workPacketId: number | null
+  }
+
+  export type AgentInboxItemMaxAggregateOutputType = {
+    id: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    status: $Enums.InboxItemStatus | null
+    priority: number | null
+    lockedAt: Date | null
+    lockedByRun: string | null
+    claimedAt: Date | null
+    completedAt: Date | null
+    agentUserId: string | null
+    workPacketId: number | null
+  }
+
+  export type AgentInboxItemCountAggregateOutputType = {
+    id: number
+    createdAt: number
+    updatedAt: number
+    status: number
+    priority: number
+    lockedAt: number
+    lockedByRun: number
+    claimedAt: number
+    completedAt: number
+    agentUserId: number
+    workPacketId: number
+    tags: number
+    notes: number
+    _all: number
+  }
+
+
+  export type AgentInboxItemAvgAggregateInputType = {
+    id?: true
+    priority?: true
+    workPacketId?: true
+  }
+
+  export type AgentInboxItemSumAggregateInputType = {
+    id?: true
+    priority?: true
+    workPacketId?: true
+  }
+
+  export type AgentInboxItemMinAggregateInputType = {
+    id?: true
+    createdAt?: true
+    updatedAt?: true
+    status?: true
+    priority?: true
+    lockedAt?: true
+    lockedByRun?: true
+    claimedAt?: true
+    completedAt?: true
+    agentUserId?: true
+    workPacketId?: true
+  }
+
+  export type AgentInboxItemMaxAggregateInputType = {
+    id?: true
+    createdAt?: true
+    updatedAt?: true
+    status?: true
+    priority?: true
+    lockedAt?: true
+    lockedByRun?: true
+    claimedAt?: true
+    completedAt?: true
+    agentUserId?: true
+    workPacketId?: true
+  }
+
+  export type AgentInboxItemCountAggregateInputType = {
+    id?: true
+    createdAt?: true
+    updatedAt?: true
+    status?: true
+    priority?: true
+    lockedAt?: true
+    lockedByRun?: true
+    claimedAt?: true
+    completedAt?: true
+    agentUserId?: true
+    workPacketId?: true
+    tags?: true
+    notes?: true
+    _all?: true
+  }
+
+  export type AgentInboxItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentInboxItem to aggregate.
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentInboxItems to fetch.
+     */
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgentInboxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentInboxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentInboxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgentInboxItems
+    **/
+    _count?: true | AgentInboxItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: AgentInboxItemAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: AgentInboxItemSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgentInboxItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgentInboxItemMaxAggregateInputType
+  }
+
+  export type GetAgentInboxItemAggregateType<T extends AgentInboxItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgentInboxItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgentInboxItem[P]>
+      : GetScalarType<T[P], AggregateAgentInboxItem[P]>
+  }
+
+
+
+
+  export type AgentInboxItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentInboxItemWhereInput
+    orderBy?: AgentInboxItemOrderByWithAggregationInput | AgentInboxItemOrderByWithAggregationInput[]
+    by: AgentInboxItemScalarFieldEnum[] | AgentInboxItemScalarFieldEnum
+    having?: AgentInboxItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgentInboxItemCountAggregateInputType | true
+    _avg?: AgentInboxItemAvgAggregateInputType
+    _sum?: AgentInboxItemSumAggregateInputType
+    _min?: AgentInboxItemMinAggregateInputType
+    _max?: AgentInboxItemMaxAggregateInputType
+  }
+
+  export type AgentInboxItemGroupByOutputType = {
+    id: number
+    createdAt: Date
+    updatedAt: Date
+    status: $Enums.InboxItemStatus
+    priority: number
+    lockedAt: Date | null
+    lockedByRun: string | null
+    claimedAt: Date | null
+    completedAt: Date | null
+    agentUserId: string | null
+    workPacketId: number
+    tags: string[]
+    notes: JsonValue | null
+    _count: AgentInboxItemCountAggregateOutputType | null
+    _avg: AgentInboxItemAvgAggregateOutputType | null
+    _sum: AgentInboxItemSumAggregateOutputType | null
+    _min: AgentInboxItemMinAggregateOutputType | null
+    _max: AgentInboxItemMaxAggregateOutputType | null
+  }
+
+  type GetAgentInboxItemGroupByPayload<T extends AgentInboxItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgentInboxItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgentInboxItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgentInboxItemGroupByOutputType[P]>
+            : GetScalarType<T[P], AgentInboxItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgentInboxItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    status?: boolean
+    priority?: boolean
+    lockedAt?: boolean
+    lockedByRun?: boolean
+    claimedAt?: boolean
+    completedAt?: boolean
+    agentUserId?: boolean
+    workPacketId?: boolean
+    tags?: boolean
+    notes?: boolean
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentInboxItem"]>
+
+  export type AgentInboxItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    status?: boolean
+    priority?: boolean
+    lockedAt?: boolean
+    lockedByRun?: boolean
+    claimedAt?: boolean
+    completedAt?: boolean
+    agentUserId?: boolean
+    workPacketId?: boolean
+    tags?: boolean
+    notes?: boolean
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentInboxItem"]>
+
+  export type AgentInboxItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    status?: boolean
+    priority?: boolean
+    lockedAt?: boolean
+    lockedByRun?: boolean
+    claimedAt?: boolean
+    completedAt?: boolean
+    agentUserId?: boolean
+    workPacketId?: boolean
+    tags?: boolean
+    notes?: boolean
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentInboxItem"]>
+
+  export type AgentInboxItemSelectScalar = {
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    status?: boolean
+    priority?: boolean
+    lockedAt?: boolean
+    lockedByRun?: boolean
+    claimedAt?: boolean
+    completedAt?: boolean
+    agentUserId?: boolean
+    workPacketId?: boolean
+    tags?: boolean
+    notes?: boolean
+  }
+
+  export type AgentInboxItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "priority" | "lockedAt" | "lockedByRun" | "claimedAt" | "completedAt" | "agentUserId" | "workPacketId" | "tags" | "notes", ExtArgs["result"]["agentInboxItem"]>
+  export type AgentInboxItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }
+  export type AgentInboxItemIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }
+  export type AgentInboxItemIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    agent?: boolean | AgentInboxItem$agentArgs<ExtArgs>
+    workPacket?: boolean | WorkPacketDefaultArgs<ExtArgs>
+  }
+
+  export type $AgentInboxItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgentInboxItem"
+    objects: {
+      agent: Prisma.$UserPayload<ExtArgs> | null
+      workPacket: Prisma.$WorkPacketPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      createdAt: Date
+      updatedAt: Date
+      status: $Enums.InboxItemStatus
+      priority: number
+      lockedAt: Date | null
+      lockedByRun: string | null
+      claimedAt: Date | null
+      completedAt: Date | null
+      agentUserId: string | null
+      workPacketId: number
+      tags: string[]
+      notes: Prisma.JsonValue | null
+    }, ExtArgs["result"]["agentInboxItem"]>
+    composites: {}
+  }
+
+  type AgentInboxItemGetPayload<S extends boolean | null | undefined | AgentInboxItemDefaultArgs> = $Result.GetResult<Prisma.$AgentInboxItemPayload, S>
+
+  type AgentInboxItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgentInboxItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgentInboxItemCountAggregateInputType | true
+    }
+
+  export interface AgentInboxItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentInboxItem'], meta: { name: 'AgentInboxItem' } }
+    /**
+     * Find zero or one AgentInboxItem that matches the filter.
+     * @param {AgentInboxItemFindUniqueArgs} args - Arguments to find a AgentInboxItem
+     * @example
+     * // Get one AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgentInboxItemFindUniqueArgs>(args: SelectSubset<T, AgentInboxItemFindUniqueArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgentInboxItem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgentInboxItemFindUniqueOrThrowArgs} args - Arguments to find a AgentInboxItem
+     * @example
+     * // Get one AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgentInboxItemFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentInboxItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentInboxItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemFindFirstArgs} args - Arguments to find a AgentInboxItem
+     * @example
+     * // Get one AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgentInboxItemFindFirstArgs>(args?: SelectSubset<T, AgentInboxItemFindFirstArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentInboxItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemFindFirstOrThrowArgs} args - Arguments to find a AgentInboxItem
+     * @example
+     * // Get one AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgentInboxItemFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentInboxItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgentInboxItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgentInboxItems
+     * const agentInboxItems = await prisma.agentInboxItem.findMany()
+     * 
+     * // Get first 10 AgentInboxItems
+     * const agentInboxItems = await prisma.agentInboxItem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agentInboxItemWithIdOnly = await prisma.agentInboxItem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgentInboxItemFindManyArgs>(args?: SelectSubset<T, AgentInboxItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgentInboxItem.
+     * @param {AgentInboxItemCreateArgs} args - Arguments to create a AgentInboxItem.
+     * @example
+     * // Create one AgentInboxItem
+     * const AgentInboxItem = await prisma.agentInboxItem.create({
+     *   data: {
+     *     // ... data to create a AgentInboxItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgentInboxItemCreateArgs>(args: SelectSubset<T, AgentInboxItemCreateArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgentInboxItems.
+     * @param {AgentInboxItemCreateManyArgs} args - Arguments to create many AgentInboxItems.
+     * @example
+     * // Create many AgentInboxItems
+     * const agentInboxItem = await prisma.agentInboxItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgentInboxItemCreateManyArgs>(args?: SelectSubset<T, AgentInboxItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgentInboxItems and returns the data saved in the database.
+     * @param {AgentInboxItemCreateManyAndReturnArgs} args - Arguments to create many AgentInboxItems.
+     * @example
+     * // Create many AgentInboxItems
+     * const agentInboxItem = await prisma.agentInboxItem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgentInboxItems and only return the `id`
+     * const agentInboxItemWithIdOnly = await prisma.agentInboxItem.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgentInboxItemCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentInboxItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgentInboxItem.
+     * @param {AgentInboxItemDeleteArgs} args - Arguments to delete one AgentInboxItem.
+     * @example
+     * // Delete one AgentInboxItem
+     * const AgentInboxItem = await prisma.agentInboxItem.delete({
+     *   where: {
+     *     // ... filter to delete one AgentInboxItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgentInboxItemDeleteArgs>(args: SelectSubset<T, AgentInboxItemDeleteArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgentInboxItem.
+     * @param {AgentInboxItemUpdateArgs} args - Arguments to update one AgentInboxItem.
+     * @example
+     * // Update one AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgentInboxItemUpdateArgs>(args: SelectSubset<T, AgentInboxItemUpdateArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgentInboxItems.
+     * @param {AgentInboxItemDeleteManyArgs} args - Arguments to filter AgentInboxItems to delete.
+     * @example
+     * // Delete a few AgentInboxItems
+     * const { count } = await prisma.agentInboxItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgentInboxItemDeleteManyArgs>(args?: SelectSubset<T, AgentInboxItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentInboxItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgentInboxItems
+     * const agentInboxItem = await prisma.agentInboxItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgentInboxItemUpdateManyArgs>(args: SelectSubset<T, AgentInboxItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentInboxItems and returns the data updated in the database.
+     * @param {AgentInboxItemUpdateManyAndReturnArgs} args - Arguments to update many AgentInboxItems.
+     * @example
+     * // Update many AgentInboxItems
+     * const agentInboxItem = await prisma.agentInboxItem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgentInboxItems and only return the `id`
+     * const agentInboxItemWithIdOnly = await prisma.agentInboxItem.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgentInboxItemUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentInboxItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgentInboxItem.
+     * @param {AgentInboxItemUpsertArgs} args - Arguments to update or create a AgentInboxItem.
+     * @example
+     * // Update or create a AgentInboxItem
+     * const agentInboxItem = await prisma.agentInboxItem.upsert({
+     *   create: {
+     *     // ... data to create a AgentInboxItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgentInboxItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgentInboxItemUpsertArgs>(args: SelectSubset<T, AgentInboxItemUpsertArgs<ExtArgs>>): Prisma__AgentInboxItemClient<$Result.GetResult<Prisma.$AgentInboxItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgentInboxItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemCountArgs} args - Arguments to filter AgentInboxItems to count.
+     * @example
+     * // Count the number of AgentInboxItems
+     * const count = await prisma.agentInboxItem.count({
+     *   where: {
+     *     // ... the filter for the AgentInboxItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgentInboxItemCountArgs>(
+      args?: Subset<T, AgentInboxItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgentInboxItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgentInboxItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgentInboxItemAggregateArgs>(args: Subset<T, AgentInboxItemAggregateArgs>): Prisma.PrismaPromise<GetAgentInboxItemAggregateType<T>>
+
+    /**
+     * Group by AgentInboxItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentInboxItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgentInboxItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgentInboxItemGroupByArgs['orderBy'] }
+        : { orderBy?: AgentInboxItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgentInboxItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentInboxItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgentInboxItem model
+   */
+  readonly fields: AgentInboxItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgentInboxItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgentInboxItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    agent<T extends AgentInboxItem$agentArgs<ExtArgs> = {}>(args?: Subset<T, AgentInboxItem$agentArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    workPacket<T extends WorkPacketDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkPacketDefaultArgs<ExtArgs>>): Prisma__WorkPacketClient<$Result.GetResult<Prisma.$WorkPacketPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgentInboxItem model
+   */
+  interface AgentInboxItemFieldRefs {
+    readonly id: FieldRef<"AgentInboxItem", 'Int'>
+    readonly createdAt: FieldRef<"AgentInboxItem", 'DateTime'>
+    readonly updatedAt: FieldRef<"AgentInboxItem", 'DateTime'>
+    readonly status: FieldRef<"AgentInboxItem", 'InboxItemStatus'>
+    readonly priority: FieldRef<"AgentInboxItem", 'Int'>
+    readonly lockedAt: FieldRef<"AgentInboxItem", 'DateTime'>
+    readonly lockedByRun: FieldRef<"AgentInboxItem", 'String'>
+    readonly claimedAt: FieldRef<"AgentInboxItem", 'DateTime'>
+    readonly completedAt: FieldRef<"AgentInboxItem", 'DateTime'>
+    readonly agentUserId: FieldRef<"AgentInboxItem", 'String'>
+    readonly workPacketId: FieldRef<"AgentInboxItem", 'Int'>
+    readonly tags: FieldRef<"AgentInboxItem", 'String[]'>
+    readonly notes: FieldRef<"AgentInboxItem", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgentInboxItem findUnique
+   */
+  export type AgentInboxItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentInboxItem to fetch.
+     */
+    where: AgentInboxItemWhereUniqueInput
+  }
+
+  /**
+   * AgentInboxItem findUniqueOrThrow
+   */
+  export type AgentInboxItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentInboxItem to fetch.
+     */
+    where: AgentInboxItemWhereUniqueInput
+  }
+
+  /**
+   * AgentInboxItem findFirst
+   */
+  export type AgentInboxItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentInboxItem to fetch.
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentInboxItems to fetch.
+     */
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentInboxItems.
+     */
+    cursor?: AgentInboxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentInboxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentInboxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentInboxItems.
+     */
+    distinct?: AgentInboxItemScalarFieldEnum | AgentInboxItemScalarFieldEnum[]
+  }
+
+  /**
+   * AgentInboxItem findFirstOrThrow
+   */
+  export type AgentInboxItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentInboxItem to fetch.
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentInboxItems to fetch.
+     */
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentInboxItems.
+     */
+    cursor?: AgentInboxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentInboxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentInboxItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentInboxItems.
+     */
+    distinct?: AgentInboxItemScalarFieldEnum | AgentInboxItemScalarFieldEnum[]
+  }
+
+  /**
+   * AgentInboxItem findMany
+   */
+  export type AgentInboxItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentInboxItems to fetch.
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentInboxItems to fetch.
+     */
+    orderBy?: AgentInboxItemOrderByWithRelationInput | AgentInboxItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgentInboxItems.
+     */
+    cursor?: AgentInboxItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentInboxItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentInboxItems.
+     */
+    skip?: number
+    distinct?: AgentInboxItemScalarFieldEnum | AgentInboxItemScalarFieldEnum[]
+  }
+
+  /**
+   * AgentInboxItem create
+   */
+  export type AgentInboxItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgentInboxItem.
+     */
+    data: XOR<AgentInboxItemCreateInput, AgentInboxItemUncheckedCreateInput>
+  }
+
+  /**
+   * AgentInboxItem createMany
+   */
+  export type AgentInboxItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgentInboxItems.
+     */
+    data: AgentInboxItemCreateManyInput | AgentInboxItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgentInboxItem createManyAndReturn
+   */
+  export type AgentInboxItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgentInboxItems.
+     */
+    data: AgentInboxItemCreateManyInput | AgentInboxItemCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentInboxItem update
+   */
+  export type AgentInboxItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgentInboxItem.
+     */
+    data: XOR<AgentInboxItemUpdateInput, AgentInboxItemUncheckedUpdateInput>
+    /**
+     * Choose, which AgentInboxItem to update.
+     */
+    where: AgentInboxItemWhereUniqueInput
+  }
+
+  /**
+   * AgentInboxItem updateMany
+   */
+  export type AgentInboxItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgentInboxItems.
+     */
+    data: XOR<AgentInboxItemUpdateManyMutationInput, AgentInboxItemUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentInboxItems to update
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * Limit how many AgentInboxItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentInboxItem updateManyAndReturn
+   */
+  export type AgentInboxItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * The data used to update AgentInboxItems.
+     */
+    data: XOR<AgentInboxItemUpdateManyMutationInput, AgentInboxItemUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentInboxItems to update
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * Limit how many AgentInboxItems to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentInboxItem upsert
+   */
+  export type AgentInboxItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgentInboxItem to update in case it exists.
+     */
+    where: AgentInboxItemWhereUniqueInput
+    /**
+     * In case the AgentInboxItem found by the `where` argument doesn't exist, create a new AgentInboxItem with this data.
+     */
+    create: XOR<AgentInboxItemCreateInput, AgentInboxItemUncheckedCreateInput>
+    /**
+     * In case the AgentInboxItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgentInboxItemUpdateInput, AgentInboxItemUncheckedUpdateInput>
+  }
+
+  /**
+   * AgentInboxItem delete
+   */
+  export type AgentInboxItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
+    /**
+     * Filter which AgentInboxItem to delete.
+     */
+    where: AgentInboxItemWhereUniqueInput
+  }
+
+  /**
+   * AgentInboxItem deleteMany
+   */
+  export type AgentInboxItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentInboxItems to delete
+     */
+    where?: AgentInboxItemWhereInput
+    /**
+     * Limit how many AgentInboxItems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentInboxItem.agent
+   */
+  export type AgentInboxItem$agentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * AgentInboxItem without action
+   */
+  export type AgentInboxItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentInboxItem
+     */
+    select?: AgentInboxItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentInboxItem
+     */
+    omit?: AgentInboxItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentInboxItemInclude<ExtArgs> | null
   }
 
 
@@ -19006,6 +20411,25 @@ export namespace Prisma {
   export type WorkPacketScalarFieldEnum = (typeof WorkPacketScalarFieldEnum)[keyof typeof WorkPacketScalarFieldEnum]
 
 
+  export const AgentInboxItemScalarFieldEnum: {
+    id: 'id',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    status: 'status',
+    priority: 'priority',
+    lockedAt: 'lockedAt',
+    lockedByRun: 'lockedByRun',
+    claimedAt: 'claimedAt',
+    completedAt: 'completedAt',
+    agentUserId: 'agentUserId',
+    workPacketId: 'workPacketId',
+    tags: 'tags',
+    notes: 'notes'
+  };
+
+  export type AgentInboxItemScalarFieldEnum = (typeof AgentInboxItemScalarFieldEnum)[keyof typeof AgentInboxItemScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -19175,6 +20599,20 @@ export namespace Prisma {
    * Reference to a field of type 'WorkPacketStatus[]'
    */
   export type ListEnumWorkPacketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WorkPacketStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'InboxItemStatus'
+   */
+  export type EnumInboxItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InboxItemStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'InboxItemStatus[]'
+   */
+  export type ListEnumInboxItemStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InboxItemStatus[]'>
     
 
 
@@ -20040,6 +21478,7 @@ export namespace Prisma {
     passwordHash?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
+    inboxItems?: AgentInboxItemListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -20054,6 +21493,7 @@ export namespace Prisma {
     passwordHash?: SortOrderInput | SortOrder
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
+    inboxItems?: AgentInboxItemOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -20071,6 +21511,7 @@ export namespace Prisma {
     passwordHash?: StringNullableFilter<"User"> | string | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
+    inboxItems?: AgentInboxItemListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -20307,6 +21748,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
     sotEvents?: SotEventListRelationFilter
+    inboxItems?: AgentInboxItemListRelationFilter
   }
 
   export type WorkPacketOrderByWithRelationInput = {
@@ -20324,6 +21766,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     repo?: RepoOrderByWithRelationInput
     sotEvents?: SotEventOrderByRelationAggregateInput
+    inboxItems?: AgentInboxItemOrderByRelationAggregateInput
   }
 
   export type WorkPacketWhereUniqueInput = Prisma.AtLeast<{
@@ -20344,6 +21787,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"WorkPacket"> | Date | string
     repo?: XOR<RepoNullableScalarRelationFilter, RepoWhereInput> | null
     sotEvents?: SotEventListRelationFilter
+    inboxItems?: AgentInboxItemListRelationFilter
   }, "id">
 
   export type WorkPacketOrderByWithAggregationInput = {
@@ -20382,6 +21826,107 @@ export namespace Prisma {
     repoId?: IntNullableWithAggregatesFilter<"WorkPacket"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"WorkPacket"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"WorkPacket"> | Date | string
+  }
+
+  export type AgentInboxItemWhereInput = {
+    AND?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
+    OR?: AgentInboxItemWhereInput[]
+    NOT?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
+    id?: IntFilter<"AgentInboxItem"> | number
+    createdAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    status?: EnumInboxItemStatusFilter<"AgentInboxItem"> | $Enums.InboxItemStatus
+    priority?: IntFilter<"AgentInboxItem"> | number
+    lockedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    lockedByRun?: StringNullableFilter<"AgentInboxItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    agentUserId?: StringNullableFilter<"AgentInboxItem"> | string | null
+    workPacketId?: IntFilter<"AgentInboxItem"> | number
+    tags?: StringNullableListFilter<"AgentInboxItem">
+    notes?: JsonNullableFilter<"AgentInboxItem">
+    agent?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    workPacket?: XOR<WorkPacketScalarRelationFilter, WorkPacketWhereInput>
+  }
+
+  export type AgentInboxItemOrderByWithRelationInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    lockedAt?: SortOrderInput | SortOrder
+    lockedByRun?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    agentUserId?: SortOrderInput | SortOrder
+    workPacketId?: SortOrder
+    tags?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    agent?: UserOrderByWithRelationInput
+    workPacket?: WorkPacketOrderByWithRelationInput
+  }
+
+  export type AgentInboxItemWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    workPacketId_agentUserId?: AgentInboxItemWorkPacketIdAgentUserIdCompoundUniqueInput
+    AND?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
+    OR?: AgentInboxItemWhereInput[]
+    NOT?: AgentInboxItemWhereInput | AgentInboxItemWhereInput[]
+    createdAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    status?: EnumInboxItemStatusFilter<"AgentInboxItem"> | $Enums.InboxItemStatus
+    priority?: IntFilter<"AgentInboxItem"> | number
+    lockedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    lockedByRun?: StringNullableFilter<"AgentInboxItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    agentUserId?: StringNullableFilter<"AgentInboxItem"> | string | null
+    workPacketId?: IntFilter<"AgentInboxItem"> | number
+    tags?: StringNullableListFilter<"AgentInboxItem">
+    notes?: JsonNullableFilter<"AgentInboxItem">
+    agent?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    workPacket?: XOR<WorkPacketScalarRelationFilter, WorkPacketWhereInput>
+  }, "id" | "workPacketId_agentUserId">
+
+  export type AgentInboxItemOrderByWithAggregationInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    lockedAt?: SortOrderInput | SortOrder
+    lockedByRun?: SortOrderInput | SortOrder
+    claimedAt?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    agentUserId?: SortOrderInput | SortOrder
+    workPacketId?: SortOrder
+    tags?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    _count?: AgentInboxItemCountOrderByAggregateInput
+    _avg?: AgentInboxItemAvgOrderByAggregateInput
+    _max?: AgentInboxItemMaxOrderByAggregateInput
+    _min?: AgentInboxItemMinOrderByAggregateInput
+    _sum?: AgentInboxItemSumOrderByAggregateInput
+  }
+
+  export type AgentInboxItemScalarWhereWithAggregatesInput = {
+    AND?: AgentInboxItemScalarWhereWithAggregatesInput | AgentInboxItemScalarWhereWithAggregatesInput[]
+    OR?: AgentInboxItemScalarWhereWithAggregatesInput[]
+    NOT?: AgentInboxItemScalarWhereWithAggregatesInput | AgentInboxItemScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"AgentInboxItem"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"AgentInboxItem"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AgentInboxItem"> | Date | string
+    status?: EnumInboxItemStatusWithAggregatesFilter<"AgentInboxItem"> | $Enums.InboxItemStatus
+    priority?: IntWithAggregatesFilter<"AgentInboxItem"> | number
+    lockedAt?: DateTimeNullableWithAggregatesFilter<"AgentInboxItem"> | Date | string | null
+    lockedByRun?: StringNullableWithAggregatesFilter<"AgentInboxItem"> | string | null
+    claimedAt?: DateTimeNullableWithAggregatesFilter<"AgentInboxItem"> | Date | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"AgentInboxItem"> | Date | string | null
+    agentUserId?: StringNullableWithAggregatesFilter<"AgentInboxItem"> | string | null
+    workPacketId?: IntWithAggregatesFilter<"AgentInboxItem"> | number
+    tags?: StringNullableListFilter<"AgentInboxItem">
+    notes?: JsonNullableWithAggregatesFilter<"AgentInboxItem">
   }
 
   export type RepoCreateInput = {
@@ -21310,6 +22855,7 @@ export namespace Prisma {
     passwordHash?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutAgentInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -21324,6 +22870,7 @@ export namespace Prisma {
     passwordHash?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutAgentInput
   }
 
   export type UserUpdateInput = {
@@ -21338,6 +22885,7 @@ export namespace Prisma {
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutAgentNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -21352,6 +22900,7 @@ export namespace Prisma {
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutAgentNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -21597,6 +23146,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     repo?: RepoCreateNestedOneWithoutWorkPacketsInput
     sotEvents?: SotEventCreateNestedManyWithoutWorkPacketInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUncheckedCreateInput = {
@@ -21613,6 +23163,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutWorkPacketInput
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUpdateInput = {
@@ -21628,6 +23179,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
     sotEvents?: SotEventUpdateManyWithoutWorkPacketNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateInput = {
@@ -21644,6 +23196,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sotEvents?: SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketCreateManyInput = {
@@ -21687,6 +23240,113 @@ export namespace Prisma {
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentInboxItemCreateInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    agent?: UserCreateNestedOneWithoutInboxItemsInput
+    workPacket: WorkPacketCreateNestedOneWithoutInboxItemsInput
+  }
+
+  export type AgentInboxItemUncheckedCreateInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    agentUserId?: string | null
+    workPacketId: number
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemUpdateInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    agent?: UserUpdateOneWithoutInboxItemsNestedInput
+    workPacket?: WorkPacketUpdateOneRequiredWithoutInboxItemsNestedInput
+  }
+
+  export type AgentInboxItemUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    agentUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    workPacketId?: IntFieldUpdateOperationsInput | number
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemCreateManyInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    agentUserId?: string | null
+    workPacketId: number
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemUpdateManyMutationInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    agentUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    workPacketId?: IntFieldUpdateOperationsInput | number
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -22549,11 +24209,21 @@ export namespace Prisma {
     none?: SessionWhereInput
   }
 
+  export type AgentInboxItemListRelationFilter = {
+    every?: AgentInboxItemWhereInput
+    some?: AgentInboxItemWhereInput
+    none?: AgentInboxItemWhereInput
+  }
+
   export type AccountOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type SessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgentInboxItemOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -22780,6 +24450,102 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
     _max?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
+  }
+
+  export type EnumInboxItemStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InboxItemStatus | EnumInboxItemStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInboxItemStatusFilter<$PrismaModel> | $Enums.InboxItemStatus
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type WorkPacketScalarRelationFilter = {
+    is?: WorkPacketWhereInput
+    isNot?: WorkPacketWhereInput
+  }
+
+  export type AgentInboxItemWorkPacketIdAgentUserIdCompoundUniqueInput = {
+    workPacketId: number
+    agentUserId: string
+  }
+
+  export type AgentInboxItemCountOrderByAggregateInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    lockedAt?: SortOrder
+    lockedByRun?: SortOrder
+    claimedAt?: SortOrder
+    completedAt?: SortOrder
+    agentUserId?: SortOrder
+    workPacketId?: SortOrder
+    tags?: SortOrder
+    notes?: SortOrder
+  }
+
+  export type AgentInboxItemAvgOrderByAggregateInput = {
+    id?: SortOrder
+    priority?: SortOrder
+    workPacketId?: SortOrder
+  }
+
+  export type AgentInboxItemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    lockedAt?: SortOrder
+    lockedByRun?: SortOrder
+    claimedAt?: SortOrder
+    completedAt?: SortOrder
+    agentUserId?: SortOrder
+    workPacketId?: SortOrder
+  }
+
+  export type AgentInboxItemMinOrderByAggregateInput = {
+    id?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    status?: SortOrder
+    priority?: SortOrder
+    lockedAt?: SortOrder
+    lockedByRun?: SortOrder
+    claimedAt?: SortOrder
+    completedAt?: SortOrder
+    agentUserId?: SortOrder
+    workPacketId?: SortOrder
+  }
+
+  export type AgentInboxItemSumOrderByAggregateInput = {
+    id?: SortOrder
+    priority?: SortOrder
+    workPacketId?: SortOrder
+  }
+
+  export type EnumInboxItemStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InboxItemStatus | EnumInboxItemStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInboxItemStatusWithAggregatesFilter<$PrismaModel> | $Enums.InboxItemStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInboxItemStatusFilter<$PrismaModel>
+    _max?: NestedEnumInboxItemStatusFilter<$PrismaModel>
   }
 
   export type DomainCreateNestedManyWithoutRepoInput = {
@@ -23300,6 +25066,13 @@ export namespace Prisma {
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
   }
 
+  export type AgentInboxItemCreateNestedManyWithoutAgentInput = {
+    create?: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput> | AgentInboxItemCreateWithoutAgentInput[] | AgentInboxItemUncheckedCreateWithoutAgentInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutAgentInput | AgentInboxItemCreateOrConnectWithoutAgentInput[]
+    createMany?: AgentInboxItemCreateManyAgentInputEnvelope
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -23312,6 +25085,13 @@ export namespace Prisma {
     connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
     createMany?: SessionCreateManyUserInputEnvelope
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type AgentInboxItemUncheckedCreateNestedManyWithoutAgentInput = {
+    create?: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput> | AgentInboxItemCreateWithoutAgentInput[] | AgentInboxItemUncheckedCreateWithoutAgentInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutAgentInput | AgentInboxItemCreateOrConnectWithoutAgentInput[]
+    createMany?: AgentInboxItemCreateManyAgentInputEnvelope
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
   }
 
   export type EnumRoleFieldUpdateOperationsInput = {
@@ -23346,6 +25126,20 @@ export namespace Prisma {
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
   }
 
+  export type AgentInboxItemUpdateManyWithoutAgentNestedInput = {
+    create?: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput> | AgentInboxItemCreateWithoutAgentInput[] | AgentInboxItemUncheckedCreateWithoutAgentInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutAgentInput | AgentInboxItemCreateOrConnectWithoutAgentInput[]
+    upsert?: AgentInboxItemUpsertWithWhereUniqueWithoutAgentInput | AgentInboxItemUpsertWithWhereUniqueWithoutAgentInput[]
+    createMany?: AgentInboxItemCreateManyAgentInputEnvelope
+    set?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    disconnect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    delete?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    update?: AgentInboxItemUpdateWithWhereUniqueWithoutAgentInput | AgentInboxItemUpdateWithWhereUniqueWithoutAgentInput[]
+    updateMany?: AgentInboxItemUpdateManyWithWhereWithoutAgentInput | AgentInboxItemUpdateManyWithWhereWithoutAgentInput[]
+    deleteMany?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -23372,6 +25166,20 @@ export namespace Prisma {
     update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type AgentInboxItemUncheckedUpdateManyWithoutAgentNestedInput = {
+    create?: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput> | AgentInboxItemCreateWithoutAgentInput[] | AgentInboxItemUncheckedCreateWithoutAgentInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutAgentInput | AgentInboxItemCreateOrConnectWithoutAgentInput[]
+    upsert?: AgentInboxItemUpsertWithWhereUniqueWithoutAgentInput | AgentInboxItemUpsertWithWhereUniqueWithoutAgentInput[]
+    createMany?: AgentInboxItemCreateManyAgentInputEnvelope
+    set?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    disconnect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    delete?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    update?: AgentInboxItemUpdateWithWhereUniqueWithoutAgentInput | AgentInboxItemUpdateWithWhereUniqueWithoutAgentInput[]
+    updateMany?: AgentInboxItemUpdateManyWithWhereWithoutAgentInput | AgentInboxItemUpdateManyWithWhereWithoutAgentInput[]
+    deleteMany?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -23415,11 +25223,25 @@ export namespace Prisma {
     connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
   }
 
+  export type AgentInboxItemCreateNestedManyWithoutWorkPacketInput = {
+    create?: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput> | AgentInboxItemCreateWithoutWorkPacketInput[] | AgentInboxItemUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutWorkPacketInput | AgentInboxItemCreateOrConnectWithoutWorkPacketInput[]
+    createMany?: AgentInboxItemCreateManyWorkPacketInputEnvelope
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+  }
+
   export type SotEventUncheckedCreateNestedManyWithoutWorkPacketInput = {
     create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
     connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
     createMany?: SotEventCreateManyWorkPacketInputEnvelope
     connect?: SotEventWhereUniqueInput | SotEventWhereUniqueInput[]
+  }
+
+  export type AgentInboxItemUncheckedCreateNestedManyWithoutWorkPacketInput = {
+    create?: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput> | AgentInboxItemCreateWithoutWorkPacketInput[] | AgentInboxItemUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutWorkPacketInput | AgentInboxItemCreateOrConnectWithoutWorkPacketInput[]
+    createMany?: AgentInboxItemCreateManyWorkPacketInputEnvelope
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
   }
 
   export type EnumWorkPacketStatusFieldUpdateOperationsInput = {
@@ -23450,6 +25272,20 @@ export namespace Prisma {
     deleteMany?: SotEventScalarWhereInput | SotEventScalarWhereInput[]
   }
 
+  export type AgentInboxItemUpdateManyWithoutWorkPacketNestedInput = {
+    create?: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput> | AgentInboxItemCreateWithoutWorkPacketInput[] | AgentInboxItemUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutWorkPacketInput | AgentInboxItemCreateOrConnectWithoutWorkPacketInput[]
+    upsert?: AgentInboxItemUpsertWithWhereUniqueWithoutWorkPacketInput | AgentInboxItemUpsertWithWhereUniqueWithoutWorkPacketInput[]
+    createMany?: AgentInboxItemCreateManyWorkPacketInputEnvelope
+    set?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    disconnect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    delete?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    update?: AgentInboxItemUpdateWithWhereUniqueWithoutWorkPacketInput | AgentInboxItemUpdateWithWhereUniqueWithoutWorkPacketInput[]
+    updateMany?: AgentInboxItemUpdateManyWithWhereWithoutWorkPacketInput | AgentInboxItemUpdateManyWithWhereWithoutWorkPacketInput[]
+    deleteMany?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
+  }
+
   export type SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput = {
     create?: XOR<SotEventCreateWithoutWorkPacketInput, SotEventUncheckedCreateWithoutWorkPacketInput> | SotEventCreateWithoutWorkPacketInput[] | SotEventUncheckedCreateWithoutWorkPacketInput[]
     connectOrCreate?: SotEventCreateOrConnectWithoutWorkPacketInput | SotEventCreateOrConnectWithoutWorkPacketInput[]
@@ -23462,6 +25298,63 @@ export namespace Prisma {
     update?: SotEventUpdateWithWhereUniqueWithoutWorkPacketInput | SotEventUpdateWithWhereUniqueWithoutWorkPacketInput[]
     updateMany?: SotEventUpdateManyWithWhereWithoutWorkPacketInput | SotEventUpdateManyWithWhereWithoutWorkPacketInput[]
     deleteMany?: SotEventScalarWhereInput | SotEventScalarWhereInput[]
+  }
+
+  export type AgentInboxItemUncheckedUpdateManyWithoutWorkPacketNestedInput = {
+    create?: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput> | AgentInboxItemCreateWithoutWorkPacketInput[] | AgentInboxItemUncheckedCreateWithoutWorkPacketInput[]
+    connectOrCreate?: AgentInboxItemCreateOrConnectWithoutWorkPacketInput | AgentInboxItemCreateOrConnectWithoutWorkPacketInput[]
+    upsert?: AgentInboxItemUpsertWithWhereUniqueWithoutWorkPacketInput | AgentInboxItemUpsertWithWhereUniqueWithoutWorkPacketInput[]
+    createMany?: AgentInboxItemCreateManyWorkPacketInputEnvelope
+    set?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    disconnect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    delete?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    connect?: AgentInboxItemWhereUniqueInput | AgentInboxItemWhereUniqueInput[]
+    update?: AgentInboxItemUpdateWithWhereUniqueWithoutWorkPacketInput | AgentInboxItemUpdateWithWhereUniqueWithoutWorkPacketInput[]
+    updateMany?: AgentInboxItemUpdateManyWithWhereWithoutWorkPacketInput | AgentInboxItemUpdateManyWithWhereWithoutWorkPacketInput[]
+    deleteMany?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
+  }
+
+  export type AgentInboxItemCreatetagsInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutInboxItemsInput = {
+    create?: XOR<UserCreateWithoutInboxItemsInput, UserUncheckedCreateWithoutInboxItemsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInboxItemsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type WorkPacketCreateNestedOneWithoutInboxItemsInput = {
+    create?: XOR<WorkPacketCreateWithoutInboxItemsInput, WorkPacketUncheckedCreateWithoutInboxItemsInput>
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutInboxItemsInput
+    connect?: WorkPacketWhereUniqueInput
+  }
+
+  export type EnumInboxItemStatusFieldUpdateOperationsInput = {
+    set?: $Enums.InboxItemStatus
+  }
+
+  export type AgentInboxItemUpdatetagsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneWithoutInboxItemsNestedInput = {
+    create?: XOR<UserCreateWithoutInboxItemsInput, UserUncheckedCreateWithoutInboxItemsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInboxItemsInput
+    upsert?: UserUpsertWithoutInboxItemsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInboxItemsInput, UserUpdateWithoutInboxItemsInput>, UserUncheckedUpdateWithoutInboxItemsInput>
+  }
+
+  export type WorkPacketUpdateOneRequiredWithoutInboxItemsNestedInput = {
+    create?: XOR<WorkPacketCreateWithoutInboxItemsInput, WorkPacketUncheckedCreateWithoutInboxItemsInput>
+    connectOrCreate?: WorkPacketCreateOrConnectWithoutInboxItemsInput
+    upsert?: WorkPacketUpsertWithoutInboxItemsInput
+    connect?: WorkPacketWhereUniqueInput
+    update?: XOR<XOR<WorkPacketUpdateToOneWithWhereWithoutInboxItemsInput, WorkPacketUpdateWithoutInboxItemsInput>, WorkPacketUncheckedUpdateWithoutInboxItemsInput>
   }
 
   export type NestedIntFilter<$PrismaModel = never> = {
@@ -23760,6 +25653,23 @@ export namespace Prisma {
     _max?: NestedEnumWorkPacketStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumInboxItemStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.InboxItemStatus | EnumInboxItemStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInboxItemStatusFilter<$PrismaModel> | $Enums.InboxItemStatus
+  }
+
+  export type NestedEnumInboxItemStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.InboxItemStatus | EnumInboxItemStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.InboxItemStatus[] | ListEnumInboxItemStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumInboxItemStatusWithAggregatesFilter<$PrismaModel> | $Enums.InboxItemStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumInboxItemStatusFilter<$PrismaModel>
+    _max?: NestedEnumInboxItemStatusFilter<$PrismaModel>
+  }
+
   export type DomainCreateWithoutRepoInput = {
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -23926,6 +25836,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sotEvents?: SotEventCreateNestedManyWithoutWorkPacketInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUncheckedCreateWithoutRepoInput = {
@@ -23941,6 +25852,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sotEvents?: SotEventUncheckedCreateNestedManyWithoutWorkPacketInput
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketCreateOrConnectWithoutRepoInput = {
@@ -24823,6 +26735,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     repo?: RepoCreateNestedOneWithoutWorkPacketsInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketUncheckedCreateWithoutSotEventsInput = {
@@ -24838,6 +26751,7 @@ export namespace Prisma {
     repoId?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutWorkPacketInput
   }
 
   export type WorkPacketCreateOrConnectWithoutSotEventsInput = {
@@ -24960,6 +26874,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateWithoutSotEventsInput = {
@@ -24975,6 +26890,7 @@ export namespace Prisma {
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type AccountCreateWithoutUserInput = {
@@ -25034,6 +26950,45 @@ export namespace Prisma {
 
   export type SessionCreateManyUserInputEnvelope = {
     data: SessionCreateManyUserInput | SessionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgentInboxItemCreateWithoutAgentInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    workPacket: WorkPacketCreateNestedOneWithoutInboxItemsInput
+  }
+
+  export type AgentInboxItemUncheckedCreateWithoutAgentInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    workPacketId: number
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemCreateOrConnectWithoutAgentInput = {
+    where: AgentInboxItemWhereUniqueInput
+    create: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput>
+  }
+
+  export type AgentInboxItemCreateManyAgentInputEnvelope = {
+    data: AgentInboxItemCreateManyAgentInput | AgentInboxItemCreateManyAgentInput[]
     skipDuplicates?: boolean
   }
 
@@ -25097,6 +27052,41 @@ export namespace Prisma {
     expires?: DateTimeFilter<"Session"> | Date | string
   }
 
+  export type AgentInboxItemUpsertWithWhereUniqueWithoutAgentInput = {
+    where: AgentInboxItemWhereUniqueInput
+    update: XOR<AgentInboxItemUpdateWithoutAgentInput, AgentInboxItemUncheckedUpdateWithoutAgentInput>
+    create: XOR<AgentInboxItemCreateWithoutAgentInput, AgentInboxItemUncheckedCreateWithoutAgentInput>
+  }
+
+  export type AgentInboxItemUpdateWithWhereUniqueWithoutAgentInput = {
+    where: AgentInboxItemWhereUniqueInput
+    data: XOR<AgentInboxItemUpdateWithoutAgentInput, AgentInboxItemUncheckedUpdateWithoutAgentInput>
+  }
+
+  export type AgentInboxItemUpdateManyWithWhereWithoutAgentInput = {
+    where: AgentInboxItemScalarWhereInput
+    data: XOR<AgentInboxItemUpdateManyMutationInput, AgentInboxItemUncheckedUpdateManyWithoutAgentInput>
+  }
+
+  export type AgentInboxItemScalarWhereInput = {
+    AND?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
+    OR?: AgentInboxItemScalarWhereInput[]
+    NOT?: AgentInboxItemScalarWhereInput | AgentInboxItemScalarWhereInput[]
+    id?: IntFilter<"AgentInboxItem"> | number
+    createdAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentInboxItem"> | Date | string
+    status?: EnumInboxItemStatusFilter<"AgentInboxItem"> | $Enums.InboxItemStatus
+    priority?: IntFilter<"AgentInboxItem"> | number
+    lockedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    lockedByRun?: StringNullableFilter<"AgentInboxItem"> | string | null
+    claimedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    completedAt?: DateTimeNullableFilter<"AgentInboxItem"> | Date | string | null
+    agentUserId?: StringNullableFilter<"AgentInboxItem"> | string | null
+    workPacketId?: IntFilter<"AgentInboxItem"> | number
+    tags?: StringNullableListFilter<"AgentInboxItem">
+    notes?: JsonNullableFilter<"AgentInboxItem">
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     createdAt?: Date | string
@@ -25108,6 +27098,7 @@ export namespace Prisma {
     role?: $Enums.Role
     passwordHash?: string | null
     sessions?: SessionCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutAgentInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -25121,6 +27112,7 @@ export namespace Prisma {
     role?: $Enums.Role
     passwordHash?: string | null
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutAgentInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -25150,6 +27142,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutAgentNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -25163,6 +27156,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutAgentNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -25176,6 +27170,7 @@ export namespace Prisma {
     role?: $Enums.Role
     passwordHash?: string | null
     accounts?: AccountCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemCreateNestedManyWithoutAgentInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -25189,6 +27184,7 @@ export namespace Prisma {
     role?: $Enums.Role
     passwordHash?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    inboxItems?: AgentInboxItemUncheckedCreateNestedManyWithoutAgentInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -25218,6 +27214,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutAgentNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -25231,6 +27228,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutAgentNestedInput
   }
 
   export type RepoCreateWithoutWorkPacketsInput = {
@@ -25316,6 +27314,45 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type AgentInboxItemCreateWithoutWorkPacketInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    agent?: UserCreateNestedOneWithoutInboxItemsInput
+  }
+
+  export type AgentInboxItemUncheckedCreateWithoutWorkPacketInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    agentUserId?: string | null
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemCreateOrConnectWithoutWorkPacketInput = {
+    where: AgentInboxItemWhereUniqueInput
+    create: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput>
+  }
+
+  export type AgentInboxItemCreateManyWorkPacketInputEnvelope = {
+    data: AgentInboxItemCreateManyWorkPacketInput | AgentInboxItemCreateManyWorkPacketInput[]
+    skipDuplicates?: boolean
+  }
+
   export type RepoUpsertWithoutWorkPacketsInput = {
     update: XOR<RepoUpdateWithoutWorkPacketsInput, RepoUncheckedUpdateWithoutWorkPacketsInput>
     create: XOR<RepoCreateWithoutWorkPacketsInput, RepoUncheckedCreateWithoutWorkPacketsInput>
@@ -25382,6 +27419,172 @@ export namespace Prisma {
   export type SotEventUpdateManyWithWhereWithoutWorkPacketInput = {
     where: SotEventScalarWhereInput
     data: XOR<SotEventUpdateManyMutationInput, SotEventUncheckedUpdateManyWithoutWorkPacketInput>
+  }
+
+  export type AgentInboxItemUpsertWithWhereUniqueWithoutWorkPacketInput = {
+    where: AgentInboxItemWhereUniqueInput
+    update: XOR<AgentInboxItemUpdateWithoutWorkPacketInput, AgentInboxItemUncheckedUpdateWithoutWorkPacketInput>
+    create: XOR<AgentInboxItemCreateWithoutWorkPacketInput, AgentInboxItemUncheckedCreateWithoutWorkPacketInput>
+  }
+
+  export type AgentInboxItemUpdateWithWhereUniqueWithoutWorkPacketInput = {
+    where: AgentInboxItemWhereUniqueInput
+    data: XOR<AgentInboxItemUpdateWithoutWorkPacketInput, AgentInboxItemUncheckedUpdateWithoutWorkPacketInput>
+  }
+
+  export type AgentInboxItemUpdateManyWithWhereWithoutWorkPacketInput = {
+    where: AgentInboxItemScalarWhereInput
+    data: XOR<AgentInboxItemUpdateManyMutationInput, AgentInboxItemUncheckedUpdateManyWithoutWorkPacketInput>
+  }
+
+  export type UserCreateWithoutInboxItemsInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    name?: string | null
+    email: string
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: $Enums.Role
+    passwordHash?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutInboxItemsInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    name?: string | null
+    email: string
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: $Enums.Role
+    passwordHash?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutInboxItemsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInboxItemsInput, UserUncheckedCreateWithoutInboxItemsInput>
+  }
+
+  export type WorkPacketCreateWithoutInboxItemsInput = {
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    repo?: RepoCreateNestedOneWithoutWorkPacketsInput
+    sotEvents?: SotEventCreateNestedManyWithoutWorkPacketInput
+  }
+
+  export type WorkPacketUncheckedCreateWithoutInboxItemsInput = {
+    id?: number
+    nhId: string
+    title: string
+    status?: $Enums.WorkPacketStatus
+    ac?: string
+    plan?: string
+    githubIssueUrl?: string | null
+    githubPrUrl?: string | null
+    verificationUrl?: string | null
+    repoId?: number | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sotEvents?: SotEventUncheckedCreateNestedManyWithoutWorkPacketInput
+  }
+
+  export type WorkPacketCreateOrConnectWithoutInboxItemsInput = {
+    where: WorkPacketWhereUniqueInput
+    create: XOR<WorkPacketCreateWithoutInboxItemsInput, WorkPacketUncheckedCreateWithoutInboxItemsInput>
+  }
+
+  export type UserUpsertWithoutInboxItemsInput = {
+    update: XOR<UserUpdateWithoutInboxItemsInput, UserUncheckedUpdateWithoutInboxItemsInput>
+    create: XOR<UserCreateWithoutInboxItemsInput, UserUncheckedCreateWithoutInboxItemsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInboxItemsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInboxItemsInput, UserUncheckedUpdateWithoutInboxItemsInput>
+  }
+
+  export type UserUpdateWithoutInboxItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInboxItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type WorkPacketUpsertWithoutInboxItemsInput = {
+    update: XOR<WorkPacketUpdateWithoutInboxItemsInput, WorkPacketUncheckedUpdateWithoutInboxItemsInput>
+    create: XOR<WorkPacketCreateWithoutInboxItemsInput, WorkPacketUncheckedCreateWithoutInboxItemsInput>
+    where?: WorkPacketWhereInput
+  }
+
+  export type WorkPacketUpdateToOneWithWhereWithoutInboxItemsInput = {
+    where?: WorkPacketWhereInput
+    data: XOR<WorkPacketUpdateWithoutInboxItemsInput, WorkPacketUncheckedUpdateWithoutInboxItemsInput>
+  }
+
+  export type WorkPacketUpdateWithoutInboxItemsInput = {
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    repo?: RepoUpdateOneWithoutWorkPacketsNestedInput
+    sotEvents?: SotEventUpdateManyWithoutWorkPacketNestedInput
+  }
+
+  export type WorkPacketUncheckedUpdateWithoutInboxItemsInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    nhId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    status?: EnumWorkPacketStatusFieldUpdateOperationsInput | $Enums.WorkPacketStatus
+    ac?: StringFieldUpdateOperationsInput | string
+    plan?: StringFieldUpdateOperationsInput | string
+    githubIssueUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    githubPrUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    verificationUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    repoId?: NullableIntFieldUpdateOperationsInput | number | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sotEvents?: SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type DomainCreateManyRepoInput = {
@@ -25638,6 +27841,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sotEvents?: SotEventUpdateManyWithoutWorkPacketNestedInput
+    inboxItems?: AgentInboxItemUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateWithoutRepoInput = {
@@ -25653,6 +27857,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sotEvents?: SotEventUncheckedUpdateManyWithoutWorkPacketNestedInput
+    inboxItems?: AgentInboxItemUncheckedUpdateManyWithoutWorkPacketNestedInput
   }
 
   export type WorkPacketUncheckedUpdateManyWithoutRepoInput = {
@@ -25850,6 +28055,21 @@ export namespace Prisma {
     expires: Date | string
   }
 
+  export type AgentInboxItemCreateManyAgentInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    workPacketId: number
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
   export type AccountUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -25910,6 +28130,50 @@ export namespace Prisma {
     expires?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgentInboxItemUpdateWithoutAgentInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    workPacket?: WorkPacketUpdateOneRequiredWithoutInboxItemsNestedInput
+  }
+
+  export type AgentInboxItemUncheckedUpdateWithoutAgentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPacketId?: IntFieldUpdateOperationsInput | number
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemUncheckedUpdateManyWithoutAgentInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    workPacketId?: IntFieldUpdateOperationsInput | number
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
   export type SotEventCreateManyWorkPacketInput = {
     id?: number
     createdAt?: Date | string
@@ -25922,6 +28186,21 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: number | null
     domainId?: number | null
+  }
+
+  export type AgentInboxItemCreateManyWorkPacketInput = {
+    id?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    status?: $Enums.InboxItemStatus
+    priority?: number
+    lockedAt?: Date | string | null
+    lockedByRun?: string | null
+    claimedAt?: Date | string | null
+    completedAt?: Date | string | null
+    agentUserId?: string | null
+    tags?: AgentInboxItemCreatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type SotEventUpdateWithoutWorkPacketInput = {
@@ -25963,6 +28242,50 @@ export namespace Prisma {
     payload?: NullableJsonNullValueInput | InputJsonValue
     repoId?: NullableIntFieldUpdateOperationsInput | number | null
     domainId?: NullableIntFieldUpdateOperationsInput | number | null
+  }
+
+  export type AgentInboxItemUpdateWithoutWorkPacketInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+    agent?: UserUpdateOneWithoutInboxItemsNestedInput
+  }
+
+  export type AgentInboxItemUncheckedUpdateWithoutWorkPacketInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    agentUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type AgentInboxItemUncheckedUpdateManyWithoutWorkPacketInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    status?: EnumInboxItemStatusFieldUpdateOperationsInput | $Enums.InboxItemStatus
+    priority?: IntFieldUpdateOperationsInput | number
+    lockedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lockedByRun?: NullableStringFieldUpdateOperationsInput | string | null
+    claimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    agentUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    tags?: AgentInboxItemUpdatetagsInput | string[]
+    notes?: NullableJsonNullValueInput | InputJsonValue
   }
 
 

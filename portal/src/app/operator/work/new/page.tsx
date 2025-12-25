@@ -1,3 +1,4 @@
+// portal/src/app/operator/work/new/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
@@ -6,7 +7,11 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
-import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
+import {
+  InboxItemStatus,
+  WorkPacketStatus,
+  type Prisma,
+} from "../../../../../prisma/generated/prisma";
 
 async function createPacket(formData: FormData) {
   "use server";
@@ -35,12 +40,34 @@ async function createPacket(formData: FormData) {
       },
     });
 
+    // ✅ Q1: enqueue a single backlog item (unassigned) so agents can claim it later
+    const inboxItem = await tx.agentInboxItem.create({
+      data: {
+        status: InboxItemStatus.QUEUED,
+        priority: 50,
+        workPacket: { connect: { id: created.id } },
+        // agentUserId intentionally omitted => unassigned backlog
+        tags: [],
+        // notes omitted => undefined
+      },
+      select: {
+        id: true,
+        status: true,
+        priority: true,
+      },
+    });
+
     const data: Prisma.InputJsonValue = {
       workPacketId: created.id,
       nhId: created.nhId,
       title: created.title,
       status: created.status,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
+      inbox: {
+        inboxItemId: inboxItem.id,
+        status: inboxItem.status,
+        priority: inboxItem.priority,
+      },
     };
 
     await emitWorkPacketSotEvent({
