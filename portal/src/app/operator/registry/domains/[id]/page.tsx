@@ -12,6 +12,15 @@ import {
   normalizeDomainStatus,
 } from "@/lib/registryEnums";
 
+function parseDateOnly(v: FormDataEntryValue | null): Date | null {
+  const s = String(v ?? "").trim();
+  if (!s) return null;
+
+  // expects YYYY-MM-DD
+  const d = new Date(`${s}T00:00:00.000Z`);
+  return Number.isFinite(d.getTime()) ? d : null;
+}
+
 async function updateDomain(formData: FormData) {
   "use server";
 
@@ -30,6 +39,8 @@ async function updateDomain(formData: FormData) {
   const status = normalizeDomainStatus(formData.get("status"));
   const env = normalizeDomainEnv(formData.get("env"));
 
+  const expiresAt = parseDateOnly(formData.get("expiresAt"));
+
   const repoIdRaw = String(formData.get("repoId") ?? "").trim();
   const repoId = repoIdRaw ? Number(repoIdRaw) : null;
 
@@ -43,7 +54,8 @@ async function updateDomain(formData: FormData) {
       domainKey: domainKey || null,
       engineType: engineType || null,
       status,
-      env,
+      env, // DomainEnv | null
+      expiresAt,
       repo: repoId ? { connect: { id: repoId } } : { disconnect: true },
     },
   });
@@ -65,24 +77,35 @@ async function deleteDomain(formData: FormData) {
   redirect("/operator/registry/domains");
 }
 
-export default async function EditDomainPage({ params }: { params: { id: string } }) {
+export default async function EditDomainPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
   if (!isAdmin) redirect("/domains");
 
   const id = Number(params.id);
+  if (!Number.isFinite(id)) redirect("/operator/registry/domains");
+
   const domainRow = await prisma.domain.findUnique({
     where: { id },
     include: { repo: true },
   });
   if (!domainRow) redirect("/operator/registry/domains");
 
-  const repos = await prisma.repo.findMany({ orderBy: { name: "asc" } });
+  const repos = await prisma.repo.findMany({
+    orderBy: [{ name: "asc" }],
+    select: { id: true, name: true },
+  });
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Domain</h1>
+        <h1 className="text-3xl font-semibold">
+          Operator · Registry · Edit Domain
+        </h1>
         <p className="text-sm text-gray-400 mt-1">{domainRow.domain}</p>
       </header>
 
@@ -105,6 +128,7 @@ export default async function EditDomainPage({ params }: { params: { id: string 
             name="nhId"
             defaultValue={domainRow.nhId ?? ""}
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            placeholder="1.2.3"
           />
         </label>
 
@@ -114,6 +138,7 @@ export default async function EditDomainPage({ params }: { params: { id: string 
             name="domainKey"
             defaultValue={domainRow.domainKey ?? ""}
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            placeholder="infra"
           />
         </label>
 
@@ -123,6 +148,7 @@ export default async function EditDomainPage({ params }: { params: { id: string 
             name="engineType"
             defaultValue={domainRow.engineType ?? ""}
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            placeholder="nextjs | worker | static | api"
           />
         </label>
 
@@ -158,15 +184,29 @@ export default async function EditDomainPage({ params }: { params: { id: string 
         </label>
 
         <label className="block">
+          <div className="text-sm text-gray-300 mb-1">Expires</div>
+          <input
+            type="date"
+            name="expiresAt"
+            defaultValue={
+              domainRow.expiresAt
+                ? domainRow.expiresAt.toISOString().slice(0, 10)
+                : ""
+            }
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="block">
           <div className="text-sm text-gray-300 mb-1">Repo</div>
           <select
             name="repoId"
-            defaultValue={domainRow.repoId ?? ""}
+            defaultValue={domainRow.repoId ? String(domainRow.repoId) : ""}
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
           >
             <option value="">—</option>
             {repos.map((r) => (
-              <option key={r.id} value={r.id}>
+              <option key={r.id} value={String(r.id)}>
                 {r.name}
               </option>
             ))}
