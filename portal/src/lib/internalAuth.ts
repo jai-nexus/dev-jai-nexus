@@ -21,14 +21,12 @@ function readBearer(req: NextRequest) {
  * Internal auth for machine endpoints.
  *
  * Accepts either:
- *  - Authorization: Bearer <token>        (preferred; matches proxy.ts + curl)
+ *  - Authorization: Bearer <token>        (preferred)
  *  - x-jai-internal-token: <token>        (legacy/back-compat)
  */
 export function assertInternalToken(
   req: NextRequest,
-):
-  | { ok: true }
-  | { ok: false; response: NextResponse } {
+): { ok: true } | { ok: false; response: NextResponse } {
   const expected = process.env[VAR_NAME];
 
   if (!expected) {

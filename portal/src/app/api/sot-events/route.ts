@@ -25,9 +25,6 @@ type SotEventBody = {
   domainId?: number;
   repoName?: string;
   domainName?: string;
-
-  // Optional: attach event to a WorkPacket stream
-  workPacketId?: number | string;
 };
 
 function timingSafeEqualString(a: string, b: string) {
@@ -56,13 +53,6 @@ async function hasSession(req: NextRequest) {
   if (!secret) return false;
   const token = await getToken({ req, secret });
   return !!token;
-}
-
-function parseOptionalPositiveInt(raw: unknown): number | null {
-  if (raw === undefined || raw === null || raw === "") return null;
-  const n = typeof raw === "number" ? raw : Number(raw);
-  if (!Number.isFinite(n) || !Number.isInteger(n) || n <= 0) return null;
-  return n;
 }
 
 // POST /api/sot-events (internal token only)
@@ -95,15 +85,6 @@ export async function POST(req: NextRequest) {
     let repoId = body.repoId;
     let domainId = body.domainId;
 
-    const workPacketId = parseOptionalPositiveInt(body.workPacketId);
-
-    if (body.workPacketId !== undefined && workPacketId === null) {
-      return NextResponse.json(
-        { error: "Invalid workPacketId (must be a positive integer)" },
-        { status: 400 },
-      );
-    }
-
     if (!repoId && body.repoName) {
       const repo = await prisma.repo.findUnique({
         where: { name: body.repoName },
@@ -118,19 +99,6 @@ export async function POST(req: NextRequest) {
       domainId = domain?.id;
     }
 
-    if (workPacketId != null) {
-      const wp = await prisma.workPacket.findUnique({
-        where: { id: workPacketId },
-        select: { id: true },
-      });
-      if (!wp) {
-        return NextResponse.json(
-          { error: `Invalid workPacketId ${workPacketId}` },
-          { status: 400 },
-        );
-      }
-    }
-
     const created = await prisma.sotEvent.create({
       data: {
         ts,
@@ -141,7 +109,6 @@ export async function POST(req: NextRequest) {
         payload: body.payload,
         repoId,
         domainId,
-        workPacketId: workPacketId ?? undefined,
       },
     });
 
@@ -163,22 +130,13 @@ export async function GET(req: NextRequest) {
   const source = searchParams.get("source") ?? undefined;
   const kind = searchParams.get("kind") ?? undefined;
 
-  const wpParam = searchParams.get("workPacketId");
-  const workPacketId = parseOptionalPositiveInt(wpParam);
-
   const limitParam = searchParams.get("limit");
   const limit = Math.min(Math.max(Number(limitParam) || 50, 1), 200);
 
-  const where: {
-    nhId?: string;
-    source?: string;
-    kind?: string;
-    workPacketId?: number;
-  } = {};
+  const where: { nhId?: string; source?: string; kind?: string } = {};
   if (nh) where.nhId = nh;
   if (source) where.source = source;
   if (kind) where.kind = kind;
-  if (workPacketId != null) where.workPacketId = workPacketId;
 
   const events = await prisma.sotEvent.findMany({
     where,
@@ -187,11 +145,7 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({
-    meta: {
-      count: events.length,
-      limit,
-      filters: { nh, source, kind, workPacketId: workPacketId ?? undefined },
-    },
+    meta: { count: events.length, limit, filters: { nh, source, kind } },
     events: events.map((evt) => ({
       id: evt.id,
       ts: evt.ts.toISOString(),
@@ -201,7 +155,6 @@ export async function GET(req: NextRequest) {
       nhId: evt.nhId || null,
       summary: evt.summary,
       payload: evt.payload,
-      workPacketId: evt.workPacketId ?? null,
     })),
   });
 }

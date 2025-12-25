@@ -1,8 +1,13 @@
 // portal/src/app/login/page.tsx
 import LoginForm from "./LoginForm";
 
+type SearchParams = {
+  next?: string | string[];
+};
+
 type Props = {
-  searchParams?: { next?: string | string[] };
+  // Next 16.1+ can deliver this as a Promise under Turbopack
+  searchParams?: SearchParams | Promise<SearchParams>;
 };
 
 function sanitizeNext(next: string | string[] | undefined) {
@@ -21,7 +26,8 @@ function sanitizeNext(next: string | string[] | undefined) {
   return raw;
 }
 
-export default function LoginPage({ searchParams }: Props) {
-  const nextPath = sanitizeNext(searchParams?.next);
+export default async function LoginPage({ searchParams }: Props) {
+  const sp = await Promise.resolve(searchParams);
+  const nextPath = sanitizeNext(sp?.next);
   return <LoginForm nextPath={nextPath} />;
 }

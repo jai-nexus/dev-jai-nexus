@@ -80,7 +80,7 @@ function sanitizeRelPath(input: string) {
  *   { repoId, path, content, message?, agent? }
  */
 export async function POST(req: NextRequest) {
-  // This endpoint writes to local disk; don't run it on Vercel.
+  // This endpoint writes to local disk; don’t run it on Vercel.
   if (IS_VERCEL) {
     return NextResponse.json(
       {
@@ -118,15 +118,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let relPath: string;
-  try {
-    relPath = sanitizeRelPath(relPathRaw);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Invalid path" },
-      { status: 400 },
-    );
-  }
+  const relPath = sanitizeRelPath(relPathRaw);
 
   const repo = await prisma.repo.findUnique({ where: { id: repoId } });
   if (!repo) {
@@ -143,21 +135,7 @@ export async function POST(req: NextRequest) {
 
   const workspaceRoot = getWorkspaceRoot();
   const repoRoot = path.join(workspaceRoot, owner, name);
-
-  if (!existsSync(repoRoot)) {
-    return NextResponse.json(
-      {
-        error: "Workspace repo not found on disk",
-        detail: `Expected repo at ${repoRoot}. Clone it (or ensure workspace is populated).`,
-      },
-      { status: 404 },
-    );
-  }
-
   const editsRoot = path.join(repoRoot, ".jai-agent-edits");
-
-  // Ensure edits root exists
-  mkdirSync(editsRoot, { recursive: true });
 
   // Write the staged edit under .jai-agent-edits/<relPath>
   const outAbs = path.resolve(editsRoot, relPath);

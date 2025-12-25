@@ -2,14 +2,18 @@
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
-import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
+import { redirect } from "next/navigation";
+
+import { getServerAuthSession } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
 
-type Props = { params: { id: string } };
+type Props = {
+  // Next.js 16 sync-dynamic APIs: params is a Promise in server components
+  params: Promise<{ id: string }>;
+};
 
 const ALLOWED_STATUSES = new Set(Object.values(WorkPacketStatus));
 
@@ -22,13 +26,16 @@ function parseStatus(value: unknown): WorkPacketStatus {
 
 // JSON helpers (no `any`)
 type JsonValue = Prisma.JsonValue;
-type JsonObject = { [k: string]: JsonValue };
+type JsonObject = Record<string, JsonValue>;
 
 function isJsonObject(v: JsonValue | null | undefined): v is JsonObject {
   return v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
 }
 
-function getJsonProp(v: JsonValue | null | undefined, key: string): JsonValue | undefined {
+function getJsonProp(
+  v: JsonValue | null | undefined,
+  key: string,
+): JsonValue | undefined {
   if (!isJsonObject(v)) return undefined;
   return v[key];
 }
@@ -117,7 +124,9 @@ async function updatePacket(id: number, formData: FormData) {
 }
 
 export default async function WorkPacketDetailPage({ params }: Props) {
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+
+  const id = Number(idParam);
   if (!Number.isFinite(id)) redirect("/operator/work");
 
   const session = await getServerAuthSession();
@@ -132,6 +141,14 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     "WORK_PACKET_STATUS_CHANGED",
   ] as const;
 
+  const DEBUG_KINDS = [
+    "debug.plan", // Architect
+    "debug.patch", // Builder
+    "debug.verify", // Verifier
+    "debug.docs", // Librarian
+    "debug.approve", // Operator
+  ] as const;
+
   // ✅ canonical anchor = workPacketId; legacy fallback = nhId (pre-backfill)
   const events = await prisma.sotEvent.findMany({
     where: {
@@ -141,6 +158,27 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     orderBy: { ts: "desc" },
     take: 50,
   });
+
+  const debugEvents = await prisma.sotEvent.findMany({
+    where: {
+      kind: { in: [...DEBUG_KINDS] },
+      OR: [{ workPacketId: p.id }, { workPacketId: null, nhId: p.nhId }],
+    },
+    orderBy: { ts: "desc" },
+    take: 200,
+  });
+
+  const latestByKind = new Map<string, (typeof debugEvents)[number]>();
+  for (const evt of debugEvents) {
+    if (!latestByKind.has(evt.kind)) latestByKind.set(evt.kind, evt);
+  }
+
+  const checklist = DEBUG_KINDS.map((k) => ({
+    kind: k,
+    evt: latestByKind.get(k) ?? null,
+  }));
+
+  const completedCount = checklist.filter((x) => !!x.evt).length;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -190,9 +228,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </div>
 
         <div className="space-y-1">
-          <label className="block text-xs text-gray-300">
-            Acceptance Criteria (AC)
-          </label>
+          <label className="block text-xs text-gray-300">Acceptance Criteria (AC)</label>
           <textarea
             name="ac"
             rows={8}
@@ -248,7 +284,42 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </button>
       </form>
 
-      {/* SoT Event Stream */}
+      {/* Debug Loop Checklist + Timeline */}
+      <section className="mt-10 max-w-4xl">
+        <h2 className="text-lg font-semibold">Debug Loop Timeline</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          {completedCount}/{checklist.length} artifacts present (plan → patch → verify → docs → approve).
+          This is soft-gated (informational), not blocking status changes.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {checklist.map(({ kind, evt }) => (
+            <details key={kind} className="rounded-md border border-gray-800 bg-zinc-950 p-3">
+              <summary className="cursor-pointer select-none">
+                <span className="text-xs font-semibold text-gray-200">{kind}</span>
+                {evt ? (
+                  <>
+                    <span className="ml-3 font-mono text-xs text-gray-400">
+                      {evt.ts.toISOString()}
+                    </span>
+                    {evt.summary ? (
+                      <span className="ml-3 text-sm text-gray-200">{evt.summary}</span>
+                    ) : null}
+                  </>
+                ) : (
+                  <span className="ml-3 text-xs text-amber-300">missing</span>
+                )}
+              </summary>
+
+              <pre className="mt-3 overflow-x-auto text-xs text-gray-200">
+                {JSON.stringify(evt?.payload ?? null, null, 2)}
+              </pre>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* SoT Event Stream (WorkPacket mutations) */}
       <section className="mt-10 max-w-4xl">
         <h2 className="text-lg font-semibold">SoT Event Stream</h2>
         <p className="mt-1 text-sm text-gray-400">
@@ -264,21 +335,16 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             </div>
           ) : (
             events.map((evt) => {
-              const payload = evt.payload;
+              const payload = evt.payload as JsonValue | null;
               const changes = getPayloadChanges(payload);
 
               return (
-                <details
-                  key={evt.id}
-                  className="rounded-md border border-gray-800 bg-zinc-950 p-3"
-                >
+                <details key={evt.id} className="rounded-md border border-gray-800 bg-zinc-950 p-3">
                   <summary className="cursor-pointer select-none">
                     <span className="font-mono text-xs text-gray-400">
                       {evt.ts.toISOString()}
                     </span>
-                    <span className="ml-3 text-xs font-semibold text-gray-200">
-                      {evt.kind}
-                    </span>
+                    <span className="ml-3 text-xs font-semibold text-gray-200">{evt.kind}</span>
                     {evt.summary ? (
                       <span className="ml-3 text-sm text-gray-200">{evt.summary}</span>
                     ) : null}

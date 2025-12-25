@@ -1,6 +1,7 @@
 // portal/src/lib/sotEvents.ts
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "../../prisma/generated/prisma";
+import { parseSotTimestamp } from "@/lib/time";
 
 export type SotEventEnvelopeV01 = {
   version?: "sot-event-0.1";
@@ -17,9 +18,6 @@ export type SotEventEnvelopeV01 = {
   domainId?: number;
   repoName?: string;
   domainName?: string;
-
-  // Optional: link event stream to a WorkPacket
-  workPacketId?: number;
 };
 
 export async function recordSotEvent(input: SotEventEnvelopeV01) {
@@ -33,19 +31,17 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
     throw new Error("recordSotEvent: missing ts/source/kind/summary");
   }
 
-  const ts = new Date(input.ts);
-  if (Number.isNaN(ts.getTime())) {
+  const ts = parseSotTimestamp(input.ts);
+  if (!ts) {
     throw new Error(`recordSotEvent: invalid ts "${input.ts}"`);
   }
 
   let repoId = input.repoId;
   let domainId = input.domainId;
-  const workPacketId = input.workPacketId ?? null;
 
   if (!repoId && input.repoName) {
     const repo = await prisma.repo.findUnique({
       where: { name: input.repoName },
-      select: { id: true },
     });
     repoId = repo?.id;
   }
@@ -53,12 +49,11 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
   if (!domainId && input.domainName) {
     const domain = await prisma.domain.findUnique({
       where: { domain: input.domainName },
-      select: { id: true },
     });
     domainId = domain?.id;
   }
 
-  const created = await prisma.sotEvent.create({
+  return prisma.sotEvent.create({
     data: {
       ts,
       source: input.source,
@@ -68,9 +63,6 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
       payload: input.payload,
       repoId,
       domainId,
-      workPacketId,
     },
   });
-
-  return created;
 }
