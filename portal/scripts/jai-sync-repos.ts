@@ -17,51 +17,34 @@ const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..", "workspace");
 
 const ACTIVE_REPO_STATUS = "active" as const;
 
-async function main() {
-  fs.mkdirSync(WORKSPACE_ROOT, { recursive: true });
-
-  // ✅ enum-safe (RepoStatus is a union of string literals; "active" is valid)
-  const repos = await prisma.repo.findMany({
-    where: { status: ACTIVE_REPO_STATUS },
-  });
-
-  for (const repo of repos) {
-    if (!repo.githubUrl) {
-      console.warn(`Skipping repo ${repo.name}: no githubUrl`);
-      continue;
-    }
-
-    const { owner, name } = parseGithubUrl(repo.githubUrl);
-    const cloneDir = path.join(WORKSPACE_ROOT, owner, name);
-
-    const branch = repo.defaultBranch || "main";
-
-    gitSync(repo.githubUrl, cloneDir, branch);
-
-    const syncRun = await prisma.syncRun.create({
-      data: {
-        type: "file-index",
-        status: "running",
-        trigger: "manual",
-        startedAt: new Date(),
-        finishedAt: new Date(), // updated after indexing
-        repo: { connect: { id: repo.id } },
-      },
-    });
-
-    await rebuildFileIndexForRepo(repo.id, cloneDir, syncRun.id);
-
-    await prisma.syncRun.update({
-      where: { id: syncRun.id },
-      data: {
-        status: "success",
-        finishedAt: new Date(),
-        summary: "FileIndex rebuilt",
-      },
-    });
-
-    console.log(`Indexed repo ${repo.name}`);
+function safeBranch(branch: string): string {
+  const b = (branch || "main").trim();
+  // conservative branch-name allowlist
+  if (!/^[A-Za-z0-9._/-]+$/.test(b)) {
+    throw new Error(`Unsafe branch name: ${JSON.stringify(branch)}`);
   }
+  return b;
+}
+
+function git(cmd: string) {
+  execSync(cmd, {
+    stdio: "inherit",
+    env: {
+      ...process.env,
+      GIT_TERMINAL_PROMPT: "0",
+    },
+  });
+}
+
+function gitOut(cmd: string): string {
+  return execSync(cmd, {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    env: {
+      ...process.env,
+      GIT_TERMINAL_PROMPT: "0",
+    },
+  }).trim();
 }
 
 function parseGithubUrl(url: string): { owner: string; name: string } {
@@ -83,37 +66,50 @@ function parseGithubUrl(url: string): { owner: string; name: string } {
   return { owner, name };
 }
 
-function git(cmd: string) {
-  execSync(cmd, {
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      GIT_TERMINAL_PROMPT: "0",
-    },
-  });
+function ensureEmptyDirIfNoGit(dir: string) {
+  if (!fs.existsSync(dir)) return;
+
+  const gitDir = path.join(dir, ".git");
+  if (fs.existsSync(gitDir)) return;
+
+  // dir exists but is not a git repo. For a mirror workspace, wipe it.
+  const entries = fs.readdirSync(dir);
+  if (entries.length > 0) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
 
-function gitSync(remote: string, dir: string, branch: string) {
+function gitSync(remote: string, dir: string, branchRaw: string) {
+  const branch = safeBranch(branchRaw);
   const hasGit = fs.existsSync(path.join(dir, ".git"));
 
   if (!hasGit) {
     fs.mkdirSync(dir, { recursive: true });
+    ensureEmptyDirIfNoGit(dir);
     git(`git clone --depth 1 --branch ${branch} ${remote} "${dir}"`);
     return;
   }
 
+  // deterministic update
   git(`git -C "${dir}" remote set-url origin ${remote}`);
   git(`git -C "${dir}" fetch origin ${branch} --depth 1`);
-  git(
-    `git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`
-  );
+  git(`git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`);
   git(`git -C "${dir}" reset --hard origin/${branch}`);
+}
+
+function serializeError(err: unknown) {
+  if (err instanceof Error) {
+    return { name: err.name, message: err.message, stack: err.stack };
+  }
+  return { message: String(err) };
 }
 
 async function rebuildFileIndexForRepo(
   repoId: number,
   root: string,
-  syncRunId: number
+  syncRunId: number,
+  lastCommitSha: string | null
 ) {
   await prisma.fileIndex.deleteMany({ where: { repoId } });
 
@@ -126,6 +122,7 @@ async function rebuildFileIndexForRepo(
     extension: string;
     sizeBytes: number;
     sha256: string;
+    lastCommitSha: string | null;
     indexedAt: Date;
   }[] = [];
 
@@ -163,6 +160,7 @@ async function rebuildFileIndexForRepo(
           extension: ext,
           sizeBytes: stat.size,
           sha256,
+          lastCommitSha,
           indexedAt: new Date(),
         });
       }
@@ -175,8 +173,90 @@ async function rebuildFileIndexForRepo(
   for (let i = 0; i < files.length; i += chunkSize) {
     await prisma.fileIndex.createMany({
       data: files.slice(i, i + chunkSize),
-      skipDuplicates: true,
     });
+  }
+
+  return { fileCount: files.length };
+}
+
+async function main() {
+  fs.mkdirSync(WORKSPACE_ROOT, { recursive: true });
+
+  const repos = await prisma.repo.findMany({
+    where: { status: ACTIVE_REPO_STATUS },
+  });
+
+  for (const repo of repos) {
+    if (!repo.githubUrl) {
+      console.warn(`Skipping repo ${repo.name}: no githubUrl`);
+      continue;
+    }
+
+    // Create a SyncRun for this attempt *before* doing git work,
+    // so failures still show up in DB.
+    const syncRun = await prisma.syncRun.create({
+      data: {
+        type: "file-index",
+        status: "running",
+        trigger: "manual",
+        startedAt: new Date(),
+        finishedAt: new Date(), // required by schema; updated at end
+        repo: { connect: { id: repo.id } },
+      },
+    });
+
+    try {
+      const { owner, name } = parseGithubUrl(repo.githubUrl);
+      const cloneDir = path.join(WORKSPACE_ROOT, owner, name);
+      const branch = repo.defaultBranch || "main";
+
+      gitSync(repo.githubUrl, cloneDir, branch);
+
+      const headSha = gitOut(`git -C "${cloneDir}" rev-parse HEAD`) || null;
+
+      const { fileCount } = await rebuildFileIndexForRepo(
+        repo.id,
+        cloneDir,
+        syncRun.id,
+        headSha
+      );
+
+      await prisma.syncRun.update({
+        where: { id: syncRun.id },
+        data: {
+          status: "success",
+          finishedAt: new Date(),
+          summary: `FileIndex rebuilt (${fileCount} files)`,
+          payload: {
+            repoName: repo.name,
+            githubUrl: repo.githubUrl,
+            branch,
+            headSha,
+            fileCount,
+          },
+        },
+      });
+
+      console.log(`Indexed repo ${repo.name}`);
+    } catch (err) {
+      await prisma.syncRun.update({
+        where: { id: syncRun.id },
+        data: {
+          status: "failed",
+          finishedAt: new Date(),
+          summary: "Sync failed (see payload.error)",
+          payload: {
+            repoName: repo.name,
+            githubUrl: repo.githubUrl,
+            error: serializeError(err),
+          },
+        },
+      });
+
+      console.error(`❌ Failed repo ${repo.name} — continuing`);
+      console.error(err);
+      continue;
+    }
   }
 }
 
