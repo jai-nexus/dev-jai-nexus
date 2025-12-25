@@ -1,32 +1,68 @@
+// portal/src/app/operator/registry/repos/[id]/page.tsx
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
+import { normalizeRepoStatus } from "@/lib/registryEnums";
+
+const REPO_STATUS_OPTIONS = ["active", "frozen", "planned", "parked"] as const;
+type RepoStatus = (typeof REPO_STATUS_OPTIONS)[number];
+
+function str(v: FormDataEntryValue | null): string {
+  return String(v ?? "").trim();
+}
+
+function optStr(v: FormDataEntryValue | null): string | null {
+  const s = str(v);
+  return s.length ? s : null;
+}
+
+async function requireAdmin() {
+  const session = await getServerAuthSession();
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/repos");
+}
 
 async function updateRepo(formData: FormData) {
   "use server";
 
-  const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  await requireAdmin();
 
   const id = Number(formData.get("id"));
-  const name = String(formData.get("name") ?? "").trim();
-  const nhId = String(formData.get("nhId") ?? "").trim(); // never null
-  const status = String(formData.get("status") ?? "").trim();
-  const owner = String(formData.get("owner") ?? "").trim();
+  if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
-  if (!id || !name) redirect("/operator/registry/repos");
+  const name = str(formData.get("name"));
+  if (!name) redirect(`/operator/registry/repos/${id}`);
+
+  const nhId = str(formData.get("nhId"));
+  const owner = optStr(formData.get("owner"));
+
+  const description = optStr(formData.get("description"));
+  const domainPod = optStr(formData.get("domainPod"));
+  const engineGroup = optStr(formData.get("engineGroup"));
+  const language = optStr(formData.get("language"));
+  const githubUrl = optStr(formData.get("githubUrl"));
+  const defaultBranch = optStr(formData.get("defaultBranch"));
+
+  // normalizeRepoStatus may accept uppercase like "ACTIVE"
+  const status = normalizeRepoStatus(formData.get("status")) as RepoStatus;
 
   await prisma.repo.update({
     where: { id },
     data: {
       name,
-      ...(nhId ? { nhId } : {}),
-      ...(status ? { status } : {}),
-      ...(owner ? { owner } : {}),
+      nhId,
+      status,
+      owner,
+
+      description,
+      domainPod,
+      engineGroup,
+      language,
+      githubUrl,
+      defaultBranch,
     },
   });
 
@@ -36,33 +72,38 @@ async function updateRepo(formData: FormData) {
 async function deleteRepo(formData: FormData) {
   "use server";
 
-  const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  await requireAdmin();
 
   const id = Number(formData.get("id"));
-  if (!id) redirect("/operator/registry/repos");
+  if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
   await prisma.repo.delete({ where: { id } });
   redirect("/operator/registry/repos");
 }
 
-export default async function EditRepoPage({ params }: { params: { id: string } }) {
-  const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+export default async function EditRepoPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  await requireAdmin();
 
   const id = Number(params.id);
-  if (!id) notFound();
+  if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
   const repo = await prisma.repo.findUnique({ where: { id } });
-  if (!repo) notFound();
+  if (!repo) redirect("/operator/registry/repos");
+
+  const statusDefault = String(repo.status ?? "planned");
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
-      <h1 className="text-2xl font-semibold mb-6">Edit Repo</h1>
+      <header className="mb-6">
+        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Repo</h1>
+        <p className="text-sm text-gray-400 mt-1">{repo.name}</p>
+      </header>
 
-      <form action={updateRepo} className="max-w-xl space-y-4">
+      <form action={updateRepo} className="max-w-2xl space-y-4">
         <input type="hidden" name="id" value={repo.id} />
 
         <label className="block">
@@ -70,53 +111,131 @@ export default async function EditRepoPage({ params }: { params: { id: string } 
           <input
             name="name"
             defaultValue={repo.name}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
             required
           />
         </label>
 
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">NH_ID</div>
-          <input
-            name="nhId"
-            defaultValue={repo.nhId}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
-          />
-        </label>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">NH_ID</div>
+            <input
+              name="nhId"
+              defaultValue={repo.nhId ?? ""}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            />
+          </label>
 
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Status</div>
-          <input
-            name="status"
-            defaultValue={repo.status ?? ""}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
-          />
-        </label>
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">Status</div>
+            <select
+              name="status"
+              defaultValue={statusDefault}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            >
+              {REPO_STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         <label className="block">
           <div className="text-sm text-gray-300 mb-1">Owner</div>
           <input
             name="owner"
             defaultValue={repo.owner ?? ""}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            placeholder='e.g. "agent:1.2" or a name'
           />
         </label>
 
-        <div className="flex items-center gap-2 pt-2">
+        <label className="block">
+          <div className="text-sm text-gray-300 mb-1">Description</div>
+          <textarea
+            name="description"
+            defaultValue={repo.description ?? ""}
+            rows={3}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">Domain Pod</div>
+            <input
+              name="domainPod"
+              defaultValue={repo.domainPod ?? ""}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="DEV / DOCS / NEXUS / ..."
+            />
+          </label>
+
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">Engine Group</div>
+            <input
+              name="engineGroup"
+              defaultValue={repo.engineGroup ?? ""}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="operator-console / tooling / docs / ..."
+            />
+          </label>
+
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">Language</div>
+            <input
+              name="language"
+              defaultValue={repo.language ?? ""}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="ts / md / py / ..."
+            />
+          </label>
+
+          <label className="block">
+            <div className="text-sm text-gray-300 mb-1">Default Branch</div>
+            <input
+              name="defaultBranch"
+              defaultValue={repo.defaultBranch ?? ""}
+              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="main"
+            />
+          </label>
+        </div>
+
+        <label className="block">
+          <div className="text-sm text-gray-300 mb-1">GitHub URL</div>
+          <input
+            name="githubUrl"
+            defaultValue={repo.githubUrl ?? ""}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+            placeholder="https://github.com/org/repo"
+          />
+        </label>
+
+        <div className="flex items-center gap-3">
           <button
             type="submit"
             className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
           >
             Save
           </button>
+
+          <a
+            href="/operator/registry/repos"
+            className="text-sm text-gray-400 hover:text-gray-200"
+          >
+            Cancel
+          </a>
         </div>
       </form>
 
-      <form action={deleteRepo} className="max-w-xl mt-6">
+      <form action={deleteRepo} className="max-w-2xl mt-8">
         <input type="hidden" name="id" value={repo.id} />
         <button
           type="submit"
-          className="rounded-md border border-red-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+          className="rounded-md border border-red-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-red-950"
         >
           Delete
         </button>

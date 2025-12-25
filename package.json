@@ -1,34 +1,27 @@
 {
-  "name": "portal",
-  "version": "0.1.0",
+  "name": "dev-jai-nexus",
   "private": true,
+  "packageManager": "pnpm@10.26.0",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "pnpm --filter portal lint",
-    "ingest:sample-event": "tsx scripts/ingest-sample-sot-event.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm -C portal dev",
+    "build": "pnpm -C portal build",
+    "start": "pnpm -C portal start",
+    "lint": "pnpm -C portal lint",
+
+    "seed": "pnpm -C portal db:seed",
+    "db:seed": "pnpm -C portal db:seed",
+
+    "prisma:generate": "pnpm -C portal prisma:generate",
+    "prisma:migrate:local": "pnpm -C portal prisma:migrate:local",
+    "prisma:studio:local": "pnpm -C portal prisma:studio:local"
   },
-  "dependencies": {
-    "@prisma/adapter-pg": "7.0.1",
-    "js-yaml": "^4.1.1",
-    "next": "16.0.5",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "autoprefixer": "^10.4.0",
-    "baseline-browser-mapping": "^2.8.32",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "16.0.5",
-    "postcss": "^8.4.0",
-    "prisma": "7.0.1",
-    "tailwindcss": "^3.4.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

@@ -1,40 +1,86 @@
+// portal/src/app/operator/registry/repos/page.tsx
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import fs from "node:fs";
+import path from "node:path";
+import YAML from "yaml";
+
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
-import { loadRepoConfigs } from "@/lib/reposConfig";
+import { normalizeRepoStatus, REPO_STATUSES } from "@/lib/registryEnums";
 
-async function importReposFromYaml() {
+type RepoYamlRow = {
+  nh_id?: string;
+  repo: string;
+  description?: string;
+  domain_pod?: string;
+  engine_group?: string;
+  language?: string;
+  status?: string;
+  owner?: string;
+  owner_agent_nh_id?: string;
+  default_branch?: string;
+  github_url?: string;
+};
+
+type RepoYamlFile =
+  | RepoYamlRow[]
+  | {
+      schema_version?: string;
+      repos?: RepoYamlRow[];
+    };
+
+function readReposYaml(): RepoYamlRow[] {
+  const configPath = path.join(process.cwd(), "config", "repos.yaml");
+  const raw = fs.readFileSync(configPath, "utf8");
+  const parsed = YAML.parse(raw) as RepoYamlFile;
+
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed && Array.isArray(parsed.repos)) return parsed.repos;
+  return [];
+}
+
+function inferOwner(row: RepoYamlRow): string | null {
+  if (row.owner && row.owner.trim()) return row.owner.trim();
+  if (row.owner_agent_nh_id && row.owner_agent_nh_id.trim()) {
+    return `agent:${row.owner_agent_nh_id.trim()}`;
+  }
+  return null;
+}
+
+async function importFromReposYaml() {
   "use server";
 
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/repos");
 
-  const yamlRepos = loadRepoConfigs();
+  const rows = readReposYaml();
 
-  for (const r of yamlRepos) {
-    const name = r.repo.trim();
+  for (const row of rows) {
+    const name = String(row.repo ?? "").trim();
     if (!name) continue;
 
-    const nhId = (r.nh_id ?? "").trim();
-    const status = (r.status ?? "").trim();
+    const data = {
+      name,
+      nhId: String(row.nh_id ?? "").trim(),
+      description: row.description ?? null,
+      domainPod: row.domain_pod ?? null,
+      engineGroup: row.engine_group ?? null,
+      language: row.language ?? null,
+      status: normalizeRepoStatus(row.status), // ✅ enum-safe
+      owner: inferOwner(row),
+      defaultBranch: row.default_branch ?? null,
+      githubUrl: row.github_url ?? null,
+    };
 
     await prisma.repo.upsert({
       where: { name },
-      update: {
-        // never null
-        ...(nhId ? { nhId } : {}),
-        ...(status ? { status } : {}),
-      },
-      create: {
-        name,
-        ...(nhId ? { nhId } : {}),
-        ...(status ? { status } : {}),
-      },
+      update: data,
+      create: data,
     });
   }
 
@@ -43,9 +89,8 @@ async function importReposFromYaml() {
 
 export default async function OperatorRegistryReposPage() {
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  const isAdmin = session.user.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/operator");
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/repos");
 
   const repos = await prisma.repo.findMany({
     orderBy: [{ name: "asc" }],
@@ -59,8 +104,8 @@ export default async function OperatorRegistryReposPage() {
           <p className="text-sm text-gray-400 mt-1">DB-backed repo registry.</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <form action={importReposFromYaml}>
+        <div className="flex gap-2">
+          <form action={importFromReposYaml}>
             <button
               type="submit"
               className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
@@ -96,30 +141,33 @@ export default async function OperatorRegistryReposPage() {
                 className="border-b border-gray-900 hover:bg-zinc-900/60"
               >
                 <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{r.nhId}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{r.status ?? "—"}</td>
+                <td className="py-2 px-3 whitespace-nowrap">{r.nhId ?? "—"}</td>
+                <td className="py-2 px-3 whitespace-nowrap">
+                  {r.status ?? "planned"}
+                </td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
-                  <Link
-                    className="underline hover:text-white"
-                    href={`/operator/registry/repos/${r.id}`}
-                  >
+                  <Link href={`/operator/registry/repos/${r.id}`} className="underline">
                     Edit
                   </Link>
                 </td>
               </tr>
             ))}
-
             {repos.length === 0 ? (
               <tr>
-                <td className="py-6 px-3 text-gray-400" colSpan={5}>
-                  No repos yet. Import from YAML or create one.
+                <td className="py-3 px-3 text-gray-400" colSpan={5}>
+                  No repos yet.
                 </td>
               </tr>
             ) : null}
           </tbody>
         </table>
       </div>
+
+      {/* (Optional) quick reference for allowed statuses */}
+      <p className="mt-4 text-xs text-gray-500">
+        Allowed repo statuses: {REPO_STATUSES.join(", ")}
+      </p>
     </main>
   );
 }

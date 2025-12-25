@@ -3,15 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "prisma",
-      "esbuild",
-      "sharp",
-      "unrs-resolver"
-    ]
-  },
   "scripts": {
     "dev": "dotenv -e .env.local -- next dev",
     "build": "next build",
@@ -26,8 +17,6 @@
     "prisma:format:local": "dotenv -e .env.local -- prisma format",
 
     "prisma:generate": "dotenv -e .env.local -- prisma generate",
-    "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
-
     "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:status:local": "dotenv -e .env.local -- prisma migrate status",
 

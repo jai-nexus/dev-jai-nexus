@@ -1,40 +1,50 @@
+// portal/src/app/operator/registry/domains/[id]/page.tsx
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
+import {
+  DOMAIN_ENVS,
+  DOMAIN_STATUSES,
+  normalizeDomainEnv,
+  normalizeDomainStatus,
+} from "@/lib/registryEnums";
 
 async function updateDomain(formData: FormData) {
   "use server";
 
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/domains");
 
   const id = Number(formData.get("id"));
-  if (!id) redirect("/operator/registry/domains");
+  if (!Number.isFinite(id)) redirect("/operator/registry/domains");
 
   const domain = String(formData.get("domain") ?? "").trim();
-  const nhId = String(formData.get("nhId") ?? "").trim(); // never null
+  const nhId = String(formData.get("nhId") ?? "").trim();
+  const domainKey = String(formData.get("domainKey") ?? "").trim();
   const engineType = String(formData.get("engineType") ?? "").trim();
-  const env = String(formData.get("env") ?? "").trim();
-  const status = String(formData.get("status") ?? "").trim();
+
+  const status = normalizeDomainStatus(formData.get("status"));
+  const env = normalizeDomainEnv(formData.get("env"));
+
   const repoIdRaw = String(formData.get("repoId") ?? "").trim();
+  const repoId = repoIdRaw ? Number(repoIdRaw) : null;
 
   if (!domain) redirect(`/operator/registry/domains/${id}`);
-
-  const repoId = repoIdRaw ? Number(repoIdRaw) : undefined;
 
   await prisma.domain.update({
     where: { id },
     data: {
       domain,
-      ...(nhId ? { nhId } : {}),
-      ...(engineType ? { engineType } : {}),
-      ...(env ? { env } : {}),
-      ...(status ? { status } : {}),
-      ...(repoId ? { repo: { connect: { id: repoId } } } : {}),
+      nhId,
+      domainKey: domainKey || null,
+      engineType: engineType || null,
+      status,
+      env,
+      repo: repoId ? { connect: { id: repoId } } : { disconnect: true },
     },
   });
 
@@ -45,11 +55,11 @@ async function deleteDomain(formData: FormData) {
   "use server";
 
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/domains");
 
   const id = Number(formData.get("id"));
-  if (!id) redirect("/operator/registry/domains");
+  if (!Number.isFinite(id)) redirect("/operator/registry/domains");
 
   await prisma.domain.delete({ where: { id } });
   redirect("/operator/registry/domains");
@@ -57,23 +67,24 @@ async function deleteDomain(formData: FormData) {
 
 export default async function EditDomainPage({ params }: { params: { id: string } }) {
   const session = await getServerAuthSession();
-  if (!session?.user) redirect("/login");
-  if (session.user.email !== "admin@jai.nexus") redirect("/operator");
+  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/domains");
 
   const id = Number(params.id);
-  if (!id) notFound();
-
   const domainRow = await prisma.domain.findUnique({
     where: { id },
     include: { repo: true },
   });
-  if (!domainRow) notFound();
+  if (!domainRow) redirect("/operator/registry/domains");
 
-  const repos = await prisma.repo.findMany({ orderBy: [{ name: "asc" }] });
+  const repos = await prisma.repo.findMany({ orderBy: { name: "asc" } });
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
-      <h1 className="text-2xl font-semibold mb-6">Edit Domain</h1>
+      <header className="mb-6">
+        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Domain</h1>
+        <p className="text-sm text-gray-400 mt-1">{domainRow.domain}</p>
+      </header>
 
       <form action={updateDomain} className="max-w-xl space-y-4">
         <input type="hidden" name="id" value={domainRow.id} />
@@ -83,7 +94,7 @@ export default async function EditDomainPage({ params }: { params: { id: string 
           <input
             name="domain"
             defaultValue={domainRow.domain}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
             required
           />
         </label>
@@ -92,8 +103,17 @@ export default async function EditDomainPage({ params }: { params: { id: string 
           <div className="text-sm text-gray-300 mb-1">NH_ID</div>
           <input
             name="nhId"
-            defaultValue={domainRow.nhId}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+            defaultValue={domainRow.nhId ?? ""}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+          />
+        </label>
+
+        <label className="block">
+          <div className="text-sm text-gray-300 mb-1">Key</div>
+          <input
+            name="domainKey"
+            defaultValue={domainRow.domainKey ?? ""}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
           />
         </label>
 
@@ -102,34 +122,47 @@ export default async function EditDomainPage({ params }: { params: { id: string 
           <input
             name="engineType"
             defaultValue={domainRow.engineType ?? ""}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
           />
         </label>
 
         <label className="block">
           <div className="text-sm text-gray-300 mb-1">Env</div>
-          <input
+          <select
             name="env"
             defaultValue={domainRow.env ?? ""}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
-          />
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+          >
+            <option value="">—</option>
+            {DOMAIN_ENVS.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="block">
           <div className="text-sm text-gray-300 mb-1">Status</div>
-          <input
+          <select
             name="status"
-            defaultValue={domainRow.status ?? ""}
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
-          />
+            defaultValue={String(domainRow.status ?? "planned")}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+          >
+            {DOMAIN_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="block">
           <div className="text-sm text-gray-300 mb-1">Repo</div>
           <select
             name="repoId"
-            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
-            defaultValue={domainRow.repo?.id ?? ""}
+            defaultValue={domainRow.repoId ?? ""}
+            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
           >
             <option value="">—</option>
             {repos.map((r) => (
@@ -140,21 +173,19 @@ export default async function EditDomainPage({ params }: { params: { id: string 
           </select>
         </label>
 
-        <div className="flex items-center gap-2 pt-2">
-          <button
-            type="submit"
-            className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
-          >
-            Save
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+        >
+          Save
+        </button>
       </form>
 
       <form action={deleteDomain} className="max-w-xl mt-6">
         <input type="hidden" name="id" value={domainRow.id} />
         <button
           type="submit"
-          className="rounded-md border border-red-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+          className="rounded-md border border-red-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-red-950"
         >
           Delete
         </button>

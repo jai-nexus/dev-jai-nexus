@@ -6,6 +6,7 @@ import { execSync } from "node:child_process";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import "dotenv/config";
+
 import { prisma } from "../src/lib/prisma";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,11 +15,14 @@ const __dirname = path.dirname(__filename);
 // portal/scripts -> portal -> repo root -> workspace
 const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..", "workspace");
 
+const ACTIVE_REPO_STATUS = "active" as const;
+
 async function main() {
   fs.mkdirSync(WORKSPACE_ROOT, { recursive: true });
 
+  // ✅ enum-safe (RepoStatus is a union of string literals; "active" is valid)
   const repos = await prisma.repo.findMany({
-    where: { status: "ACTIVE" },
+    where: { status: ACTIVE_REPO_STATUS },
   });
 
   for (const repo of repos) {
@@ -93,20 +97,24 @@ function gitSync(remote: string, dir: string, branch: string) {
   const hasGit = fs.existsSync(path.join(dir, ".git"));
 
   if (!hasGit) {
-    // clone into dir; ok if dir exists but is empty
     fs.mkdirSync(dir, { recursive: true });
     git(`git clone --depth 1 --branch ${branch} ${remote} "${dir}"`);
     return;
   }
 
-  // deterministic update
   git(`git -C "${dir}" remote set-url origin ${remote}`);
   git(`git -C "${dir}" fetch origin ${branch} --depth 1`);
-  git(`git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`);
+  git(
+    `git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`
+  );
   git(`git -C "${dir}" reset --hard origin/${branch}`);
 }
 
-async function rebuildFileIndexForRepo(repoId: number, root: string, syncRunId: number) {
+async function rebuildFileIndexForRepo(
+  repoId: number,
+  root: string,
+  syncRunId: number
+) {
   await prisma.fileIndex.deleteMany({ where: { repoId } });
 
   const files: {
