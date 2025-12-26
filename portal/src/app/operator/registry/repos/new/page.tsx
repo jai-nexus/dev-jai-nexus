@@ -2,13 +2,13 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
-import { normalizeRepoStatus } from "@/lib/registryEnums";
-
-const REPO_STATUS_OPTIONS = ["active", "frozen", "planned", "parked"] as const;
-type RepoStatus = (typeof REPO_STATUS_OPTIONS)[number];
+import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
+import type { RepoStatus } from "@/lib/dbEnums";
+import { RepoStatus as RepoStatusEnum } from "@/lib/dbEnums";
 
 function str(v: FormDataEntryValue | null): string {
   return String(v ?? "").trim();
@@ -19,10 +19,15 @@ function optStr(v: FormDataEntryValue | null): string | null {
   return s.length ? s : null;
 }
 
+function labelStatus(s: RepoStatus): string {
+  const lower = s.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 async function requireAdmin() {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/repos");
+  if (!isAdmin) redirect("/operator/registry/repos");
 }
 
 async function createRepo(formData: FormData) {
@@ -43,7 +48,7 @@ async function createRepo(formData: FormData) {
   const githubUrl = optStr(formData.get("githubUrl"));
   const defaultBranch = optStr(formData.get("defaultBranch"));
 
-  const status = normalizeRepoStatus(formData.get("status")) as RepoStatus;
+  const status = normalizeRepoStatus(formData.get("status"));
 
   await prisma.repo.create({
     data: {
@@ -51,7 +56,6 @@ async function createRepo(formData: FormData) {
       nhId,
       status,
       owner,
-
       description,
       domainPod,
       engineGroup,
@@ -67,11 +71,13 @@ async function createRepo(formData: FormData) {
 export default async function NewRepoPage() {
   await requireAdmin();
 
+  const statusDefault: RepoStatus = RepoStatusEnum.PLANNED;
+
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
         <h1 className="text-3xl font-semibold">Operator · Registry · New Repo</h1>
-        <p className="text-sm text-gray-400 mt-1">Create a DB-backed repo entry.</p>
+        <p className="text-sm text-gray-400 mt-1">Create a repo row in the DB.</p>
       </header>
 
       <form action={createRepo} className="max-w-2xl space-y-4">
@@ -80,7 +86,7 @@ export default async function NewRepoPage() {
           <input
             name="name"
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder="jai-nexus/dev-jai-nexus"
+            placeholder="dev-jai-nexus"
             required
           />
         </label>
@@ -91,7 +97,7 @@ export default async function NewRepoPage() {
             <input
               name="nhId"
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="1.2"
+              placeholder="1.2.3"
             />
           </label>
 
@@ -99,12 +105,12 @@ export default async function NewRepoPage() {
             <div className="text-sm text-gray-300 mb-1">Status</div>
             <select
               name="status"
-              defaultValue="planned"
+              defaultValue={statusDefault}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
             >
-              {REPO_STATUS_OPTIONS.map((s) => (
+              {REPO_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {labelStatus(s)}
                 </option>
               ))}
             </select>
@@ -116,7 +122,7 @@ export default async function NewRepoPage() {
           <input
             name="owner"
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder="agent:1.0"
+            placeholder='e.g. "agent:1.2" or a name'
           />
         </label>
 
@@ -176,12 +182,21 @@ export default async function NewRepoPage() {
           />
         </label>
 
-        <button
-          type="submit"
-          className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
-        >
-          Create
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+          >
+            Create
+          </button>
+
+          <Link
+            href="/operator/registry/repos"
+            className="text-sm text-gray-400 hover:text-gray-200"
+          >
+            Cancel
+          </Link>
+        </div>
       </form>
     </main>
   );

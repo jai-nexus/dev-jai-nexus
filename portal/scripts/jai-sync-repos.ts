@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+// portal/scripts/jai-sync-repos.ts
 
 import fs from "node:fs";
 import path from "node:path";
@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 
 import { prisma } from "../src/lib/prisma";
+import { RepoStatus } from "../src/lib/dbEnums";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,11 +16,11 @@ const __dirname = path.dirname(__filename);
 // portal/scripts -> portal -> repo root -> workspace
 const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..", "workspace");
 
-const ACTIVE_REPO_STATUS = "active" as const;
+// ✅ Prisma enum (no string drift)
+const ACTIVE_REPO_STATUS: RepoStatus = RepoStatus.ACTIVE;
 
 function safeBranch(branch: string): string {
   const b = (branch || "main").trim();
-  // conservative branch-name allowlist
   if (!/^[A-Za-z0-9._/-]+$/.test(b)) {
     throw new Error(`Unsafe branch name: ${JSON.stringify(branch)}`);
   }
@@ -94,7 +95,9 @@ function gitSync(remote: string, dir: string, branchRaw: string) {
   // deterministic update
   git(`git -C "${dir}" remote set-url origin ${remote}`);
   git(`git -C "${dir}" fetch origin ${branch} --depth 1`);
-  git(`git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`);
+  git(
+    `git -C "${dir}" checkout ${branch} || git -C "${dir}" checkout -b ${branch}`,
+  );
   git(`git -C "${dir}" reset --hard origin/${branch}`);
 }
 
@@ -109,7 +112,7 @@ async function rebuildFileIndexForRepo(
   repoId: number,
   root: string,
   syncRunId: number,
-  lastCommitSha: string | null
+  lastCommitSha: string | null,
 ) {
   await prisma.fileIndex.deleteMany({ where: { repoId } });
 
@@ -192,8 +195,6 @@ async function main() {
       continue;
     }
 
-    // Create a SyncRun for this attempt *before* doing git work,
-    // so failures still show up in DB.
     const syncRun = await prisma.syncRun.create({
       data: {
         type: "file-index",
@@ -218,7 +219,7 @@ async function main() {
         repo.id,
         cloneDir,
         syncRun.id,
-        headSha
+        headSha,
       );
 
       await prisma.syncRun.update({
@@ -255,7 +256,6 @@ async function main() {
 
       console.error(`❌ Failed repo ${repo.name} — continuing`);
       console.error(err);
-      continue;
     }
   }
 }

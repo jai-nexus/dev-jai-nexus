@@ -94,10 +94,10 @@ export type AgentInboxItem = $Result.DefaultSelection<Prisma.$AgentInboxItemPayl
  */
 export namespace $Enums {
   export const RepoStatus: {
-  active: 'active',
-  frozen: 'frozen',
-  planned: 'planned',
-  parked: 'parked'
+  ACTIVE: 'ACTIVE',
+  FROZEN: 'FROZEN',
+  PLANNED: 'PLANNED',
+  PARKED: 'PARKED'
 };
 
 export type RepoStatus = (typeof RepoStatus)[keyof typeof RepoStatus]
@@ -12371,29 +12371,14 @@ export namespace Prisma {
       id: number
       createdAt: Date
       updatedAt: Date
-      /**
-       * When the event actually happened (not when we ingested it)
-       */
       ts: Date
-      /**
-       * High-level source: chatgpt | github | notion | manual | dev-portal | etc.
-       */
       source: string
-      /**
-       * Logical type: conversation | decision | task | sync | WORK_PACKET_CREATED | etc.
-       */
       kind: string
-      /**
-       * Optional NH marker for this event in your hierarchy (e.g. "2.1.3.5")
-       */
       nhId: string
       summary: string | null
       payload: Prisma.JsonValue | null
       repoId: number | null
       domainId: number | null
-      /**
-       * Stable anchor for WorkPacket streams (nhId can change)
-       */
       workPacketId: number | null
     }, ExtArgs["result"]["sotEvent"]>
     composites: {}
@@ -18008,9 +17993,6 @@ export namespace Prisma {
     name: "WorkPacket"
     objects: {
       repo: Prisma.$RepoPayload<ExtArgs> | null
-      /**
-       * Inverse relation for SotEvent.workPacket
-       */
       sotEvents: Prisma.$SotEventPayload<ExtArgs>[]
       inboxItems: Prisma.$AgentInboxItemPayload<ExtArgs>[]
     }

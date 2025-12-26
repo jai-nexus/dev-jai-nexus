@@ -11,6 +11,7 @@ import YAML from "yaml";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { normalizeRepoStatus, REPO_STATUSES } from "@/lib/registryEnums";
+import { RepoStatus } from "@/lib/dbEnums";
 
 type RepoYamlRow = {
   nh_id?: string;
@@ -71,7 +72,7 @@ async function importFromReposYaml() {
       domainPod: row.domain_pod ?? null,
       engineGroup: row.engine_group ?? null,
       language: row.language ?? null,
-      status: normalizeRepoStatus(row.status), // ✅ enum-safe
+      status: normalizeRepoStatus(row.status), // ✅ enum-safe (UPPERCASE)
       owner: inferOwner(row),
       defaultBranch: row.default_branch ?? null,
       githubUrl: row.github_url ?? null,
@@ -143,7 +144,7 @@ export default async function OperatorRegistryReposPage() {
                 <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.nhId ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
-                  {r.status ?? "planned"}
+                  {r.status ?? RepoStatus.PLANNED}
                 </td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
@@ -164,7 +165,6 @@ export default async function OperatorRegistryReposPage() {
         </table>
       </div>
 
-      {/* (Optional) quick reference for allowed statuses */}
       <p className="mt-4 text-xs text-gray-500">
         Allowed repo statuses: {REPO_STATUSES.join(", ")}
       </p>

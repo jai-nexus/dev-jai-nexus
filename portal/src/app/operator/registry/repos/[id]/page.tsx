@@ -6,10 +6,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
-import { normalizeRepoStatus } from "@/lib/registryEnums";
-
-const REPO_STATUS_OPTIONS = ["active", "frozen", "planned", "parked"] as const;
-type RepoStatus = (typeof REPO_STATUS_OPTIONS)[number];
+import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
+import type { RepoStatus } from "@/lib/dbEnums";
+import { RepoStatus as RepoStatusEnum } from "@/lib/dbEnums";
 
 function str(v: FormDataEntryValue | null): string {
   return String(v ?? "").trim();
@@ -18,6 +17,12 @@ function str(v: FormDataEntryValue | null): string {
 function optStr(v: FormDataEntryValue | null): string | null {
   const s = str(v);
   return s.length ? s : null;
+}
+
+function labelStatus(s: RepoStatus): string {
+  // "ACTIVE" -> "Active"
+  const lower = s.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 async function requireAdmin() {
@@ -47,8 +52,8 @@ async function updateRepo(formData: FormData) {
   const githubUrl = optStr(formData.get("githubUrl"));
   const defaultBranch = optStr(formData.get("defaultBranch"));
 
-  // normalizeRepoStatus may accept uppercase like "ACTIVE"
-  const status = normalizeRepoStatus(formData.get("status")) as RepoStatus;
+  // ✅ returns Prisma RepoStatus (UPPERCASE)
+  const status = normalizeRepoStatus(formData.get("status"));
 
   await prisma.repo.update({
     where: { id },
@@ -57,7 +62,6 @@ async function updateRepo(formData: FormData) {
       nhId,
       status,
       owner,
-
       description,
       domainPod,
       engineGroup,
@@ -95,7 +99,7 @@ export default async function EditRepoPage({
   const repo = await prisma.repo.findUnique({ where: { id } });
   if (!repo) redirect("/operator/registry/repos");
 
-  const statusDefault = String(repo.status ?? "planned");
+  const statusDefault: RepoStatus = repo.status ?? RepoStatusEnum.PLANNED;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -134,9 +138,9 @@ export default async function EditRepoPage({
               defaultValue={statusDefault}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
             >
-              {REPO_STATUS_OPTIONS.map((s) => (
+              {REPO_STATUS_VALUES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {labelStatus(s)}
                 </option>
               ))}
             </select>

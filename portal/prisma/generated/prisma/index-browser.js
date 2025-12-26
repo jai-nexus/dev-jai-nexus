@@ -348,10 +348,10 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 exports.RepoStatus = exports.$Enums.RepoStatus = {
-  active: 'active',
-  frozen: 'frozen',
-  planned: 'planned',
-  parked: 'parked'
+  ACTIVE: 'ACTIVE',
+  FROZEN: 'FROZEN',
+  PLANNED: 'PLANNED',
+  PARKED: 'PARKED'
 };
 
 exports.DomainStatus = exports.$Enums.DomainStatus = {

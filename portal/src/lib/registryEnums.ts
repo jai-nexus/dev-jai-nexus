@@ -1,17 +1,13 @@
 // portal/src/lib/registryEnums.ts
-import type {
-  RepoStatus,
-  DomainStatus,
-  DomainEnv,
-} from "../../prisma/generated/prisma";
+import type { RepoStatus, DomainStatus, DomainEnv } from "@/lib/dbEnums";
 
 // Canonical values (useful for UI selects / validation)
 // NOTE: frozen to avoid accidental mutation in UI code.
 export const REPO_STATUS_VALUES = Object.freeze<RepoStatus[]>([
-  "active",
-  "frozen",
-  "planned",
-  "parked",
+  "ACTIVE",
+  "FROZEN",
+  "PLANNED",
+  "PARKED",
 ]);
 
 export const DOMAIN_STATUS_VALUES = Object.freeze<DomainStatus[]>([
@@ -32,28 +28,29 @@ export const DOMAIN_STATUSES = DOMAIN_STATUS_VALUES;
 export const DOMAIN_ENVS = DOMAIN_ENV_VALUES;
 
 // ---- RepoStatus ----
+// Accept lowercase inputs (YAML/config/query params) but return Prisma enum values (UPPERCASE).
 const REPO_STATUS_ALIASES: Record<string, RepoStatus> = {
-  active: "active",
-  live: "active",
-  enabled: "active",
+  active: "ACTIVE",
+  live: "ACTIVE",
+  enabled: "ACTIVE",
 
-  frozen: "frozen",
-  freeze: "frozen",
-  locked: "frozen",
+  frozen: "FROZEN",
+  freeze: "FROZEN",
+  locked: "FROZEN",
 
-  parked: "parked",
-  paused: "parked",
-  hold: "parked",
+  parked: "PARKED",
+  paused: "PARKED",
+  hold: "PARKED",
 
-  planned: "planned",
-  plan: "planned",
-  todo: "planned",
-  backlog: "planned",
+  planned: "PLANNED",
+  plan: "PLANNED",
+  todo: "PLANNED",
+  backlog: "PLANNED",
 };
 
 export function normalizeRepoStatus(v: unknown): RepoStatus {
   const s = String(v ?? "").trim().toLowerCase();
-  return REPO_STATUS_ALIASES[s] ?? "planned";
+  return REPO_STATUS_ALIASES[s] ?? "PLANNED";
 }
 
 // ---- DomainStatus ----

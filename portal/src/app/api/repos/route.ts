@@ -1,7 +1,9 @@
+// portal/src/app/api/repos/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { RepoSummary } from "@/lib/types/context-api";
 import { requireContextApiAuth } from "@/lib/contextApiAuth";
+import { RepoStatus } from "@/lib/dbEnums";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,8 +15,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const repos = await prisma.repo.findMany({
-      // ✅ Repo.status is now enum-backed: active|frozen|planned|parked
-      where: { status: "active" },
+      // ✅ enum-backed (matches schema.prisma)
+      where: { status: RepoStatus.ACTIVE },
       select: {
         id: true,
         nhId: true,
@@ -42,9 +44,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(payload, { status: 200 });
   } catch (error) {
     console.error("[GET /api/repos] Failed to load repos", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
