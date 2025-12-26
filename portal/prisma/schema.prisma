@@ -9,7 +9,7 @@ datasource db {
 
 // ENUMS (Q1 hardening: eliminate status/env drift)
 enum RepoStatus {
-  active
+  ACTIVE
   frozen
   planned
   parked
