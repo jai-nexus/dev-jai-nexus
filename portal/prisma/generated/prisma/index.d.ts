@@ -94,10 +94,10 @@ export type AgentInboxItem = $Result.DefaultSelection<Prisma.$AgentInboxItemPayl
  */
 export namespace $Enums {
   export const RepoStatus: {
-  ACTIVE: 'active',
-  FROZEN: 'frozen',
-  PLANNED: 'planned',
-  PARKED: 'parked'
+  ACTIVE: 'ACTIVE',
+  FROZEN: 'FROZEN',
+  PLANNED: 'PLANNED',
+  PARKED: 'PARKED'
 };
 
 export type RepoStatus = (typeof RepoStatus)[keyof typeof RepoStatus]
