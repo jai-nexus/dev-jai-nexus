@@ -1,23 +1,19 @@
 // portal/scripts/jai-sync-repos.ts
-
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
-import "dotenv/config";
 
 import { prisma } from "../src/lib/prisma";
-import { RepoStatus } from "../src/lib/dbEnums";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // portal/scripts -> portal -> repo root -> workspace
-const WORKSPACE_ROOT = path.resolve(__dirname, "..", "..", "workspace");
-
-// ✅ Prisma enum (no string drift)
-const ACTIVE_REPO_STATUS: RepoStatus = RepoStatus.ACTIVE;
+const WORKSPACE_ROOT =
+  process.env.JAI_WORKSPACE_ROOT ??
+  path.resolve(__dirname, "..", "..", "workspace");
 
 function safeBranch(branch: string): string {
   const b = (branch || "main").trim();
@@ -108,6 +104,58 @@ function serializeError(err: unknown) {
   return { message: String(err) };
 }
 
+/**
+ * Resolve the *actual* DB enum label for RepoStatus "active".
+ * This avoids drift between Prisma enum names (e.g. ACTIVE) and Postgres enum labels (e.g. active).
+ */
+async function resolveActiveRepoStatusDbLabel(): Promise<string> {
+  const enumTypeName = "RepoStatus";
+
+  const rows = await prisma.$queryRaw<{ enumlabel: string }[]>`
+    SELECT e.enumlabel
+    FROM pg_type t
+    JOIN pg_enum e ON t.oid = e.enumtypid
+    WHERE t.typname = ${enumTypeName}
+    ORDER BY e.enumsortorder
+  `;
+
+  const labels = rows.map((r) => r.enumlabel);
+
+  const hit =
+    labels.find((l) => l.toLowerCase() === "active") ??
+    labels.find((l) => l.toUpperCase() === "ACTIVE");
+
+  if (!hit) {
+    throw new Error(
+      `Could not resolve RepoStatus label for active. DB has: ${JSON.stringify(labels)}`,
+    );
+  }
+
+  return hit;
+}
+
+type ActiveRepoRow = {
+  id: number;
+  name: string;
+  githubUrl: string | null;
+  defaultBranch: string | null;
+};
+
+async function fetchActiveRepos(activeDbLabel: string): Promise<ActiveRepoRow[]> {
+  // NOTE: `"Repo"` is Prisma’s default table name for model Repo (quoted, case-sensitive).
+  // If your schema uses @@map / different casing, adjust the table/column names here.
+  return prisma.$queryRaw<ActiveRepoRow[]>`
+    SELECT
+      id,
+      name,
+      "githubUrl",
+      "defaultBranch"
+    FROM "Repo"
+    WHERE status = ${activeDbLabel}::"RepoStatus"
+    ORDER BY name ASC
+  `;
+}
+
 async function rebuildFileIndexForRepo(
   repoId: number,
   root: string,
@@ -185,9 +233,12 @@ async function rebuildFileIndexForRepo(
 async function main() {
   fs.mkdirSync(WORKSPACE_ROOT, { recursive: true });
 
-  const repos = await prisma.repo.findMany({
-    where: { status: ACTIVE_REPO_STATUS },
-  });
+  const activeDbLabel = await resolveActiveRepoStatusDbLabel();
+  console.log(
+    `[sync:repos] RepoStatus active DB label = ${JSON.stringify(activeDbLabel)}`,
+  );
+
+  const repos = await fetchActiveRepos(activeDbLabel);
 
   for (const repo of repos) {
     if (!repo.githubUrl) {

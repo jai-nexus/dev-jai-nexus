@@ -9,10 +9,10 @@ datasource db {
 
 // ENUMS (Q1 hardening: eliminate status/env drift)
 enum RepoStatus {
-  ACTIVE
-  FROZEN
-  PLANNED
-  PARKED
+  ACTIVE  @map("active")
+  FROZEN  @map("frozen")
+  PLANNED @map("planned")
+  PARKED  @map("parked")
 }
 
 enum DomainStatus {

@@ -11,11 +11,11 @@ import YAML from "yaml";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { normalizeRepoStatus, REPO_STATUSES } from "@/lib/registryEnums";
-import { RepoStatus } from "@/lib/dbEnums";
 
 type RepoYamlRow = {
+  // “portal” schema keys
   nh_id?: string;
-  repo: string;
+  repo?: string;
   description?: string;
   domain_pod?: string;
   engine_group?: string;
@@ -25,6 +25,13 @@ type RepoYamlRow = {
   owner_agent_nh_id?: string;
   default_branch?: string;
   github_url?: string;
+
+  // “root dev-jai-nexus/config” schema keys
+  repo_id?: string;
+  org_repo?: string;
+  nh_root?: string;
+  notes?: string;
+  role?: string;
 };
 
 type RepoYamlFile =
@@ -35,10 +42,28 @@ type RepoYamlFile =
     };
 
 function readReposYaml(): RepoYamlRow[] {
-  const configPath = path.join(process.cwd(), "config", "repos.yaml");
-  const raw = fs.readFileSync(configPath, "utf8");
-  const parsed = YAML.parse(raw) as RepoYamlFile;
+  // Support both:
+  // - portal/config/repos.yaml (when cwd = portal)
+  // - dev-jai-nexus/config/repos.yaml (when file is kept at repo root)
+  const candidates = [
+    path.join(process.cwd(), "config", "repos.yaml"),
+    path.join(process.cwd(), "..", "config", "repos.yaml"),
+  ];
 
+  let raw: string | null = null;
+  let picked: string | null = null;
+
+  for (const p of candidates) {
+    if (fs.existsSync(p)) {
+      raw = fs.readFileSync(p, "utf8");
+      picked = p;
+      break;
+    }
+  }
+
+  if (!raw || !picked) return [];
+
+  const parsed = YAML.parse(raw) as RepoYamlFile;
   if (Array.isArray(parsed)) return parsed;
   if (parsed && Array.isArray(parsed.repos)) return parsed.repos;
   return [];
@@ -52,6 +77,46 @@ function inferOwner(row: RepoYamlRow): string | null {
   return null;
 }
 
+function inferName(row: RepoYamlRow): string {
+  const direct = (row.repo ?? row.repo_id ?? "").trim();
+  if (direct) return direct;
+
+  const orgRepo = (row.org_repo ?? "").trim();
+  if (orgRepo) {
+    const cleaned = orgRepo
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/\.git$/, "");
+    const parts = cleaned.split("/");
+    return (parts[parts.length - 1] ?? "").trim();
+  }
+
+  return "";
+}
+
+function inferGithubUrl(row: RepoYamlRow): string | null {
+  const direct = (row.github_url ?? "").trim();
+  if (direct) return direct;
+
+  const orgRepo = (row.org_repo ?? "").trim();
+  if (!orgRepo) return null;
+
+  const cleaned = orgRepo
+    .replace(/^https?:\/\/github\.com\//, "")
+    .replace(/\.git$/, "");
+
+  return `https://github.com/${cleaned}`;
+}
+
+function inferNhId(row: RepoYamlRow): string {
+  const nh = (row.nh_id ?? row.nh_root ?? "").trim();
+  return nh;
+}
+
+function inferDescription(row: RepoYamlRow): string | null {
+  const d = (row.description ?? row.notes ?? "").trim();
+  return d ? d : null;
+}
+
 async function importFromReposYaml() {
   "use server";
 
@@ -62,20 +127,22 @@ async function importFromReposYaml() {
   const rows = readReposYaml();
 
   for (const row of rows) {
-    const name = String(row.repo ?? "").trim();
+    const name = inferName(row);
     if (!name) continue;
+
+    const githubUrl = inferGithubUrl(row);
 
     const data = {
       name,
-      nhId: String(row.nh_id ?? "").trim(),
-      description: row.description ?? null,
+      nhId: inferNhId(row),
+      description: inferDescription(row),
       domainPod: row.domain_pod ?? null,
-      engineGroup: row.engine_group ?? null,
+      engineGroup: row.engine_group ?? (row.role ?? null),
       language: row.language ?? null,
-      status: normalizeRepoStatus(row.status), // ✅ enum-safe (UPPERCASE)
+      status: normalizeRepoStatus(row.status), // enum-safe normalization
       owner: inferOwner(row),
-      defaultBranch: row.default_branch ?? null,
-      githubUrl: row.github_url ?? null,
+      defaultBranch: row.default_branch ?? "main",
+      githubUrl,
     };
 
     await prisma.repo.upsert({
@@ -144,11 +211,14 @@ export default async function OperatorRegistryReposPage() {
                 <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.nhId ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
-                  {r.status ?? RepoStatus.PLANNED}
+                  {r.status ?? "planned"}
                 </td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
-                  <Link href={`/operator/registry/repos/${r.id}`} className="underline">
+                  <Link
+                    href={`/operator/registry/repos/${r.id}`}
+                    className="underline"
+                  >
                     Edit
                   </Link>
                 </td>

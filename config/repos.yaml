@@ -48,7 +48,7 @@ repos:
     notes: "Canonical docs & GH pages"
 
   - repo_id: offbook-ai
-    org_repo: "jerryingram/offbook-ai"
+    org_repo: "JerryIngram/offbook-ai"
     tier: 1
     role: product-app
     project_ids: ["offbook"]

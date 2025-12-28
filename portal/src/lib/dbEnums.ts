@@ -1,30 +1,25 @@
 // portal/src/lib/dbEnums.ts
-// Central export surface for Prisma enum *values* + *types* (no re-export-from).
-// This avoids Turbopack/TS “exported multiple times” + import-path drift.
+// Central export for Prisma enums to avoid import-path drift.
+// IMPORTANT: Turbopack treats `export { X }` + `export type { X }` as duplicate exports.
+// So we export runtime enums, and export type aliases under different names.
 
 import {
-  RepoStatus as RepoStatusValue,
-  DomainStatus as DomainStatusValue,
-  DomainEnv as DomainEnvValue,
-  Role as RoleValue,
-  WorkPacketStatus as WorkPacketStatusValue,
-  InboxItemStatus as InboxItemStatusValue,
+  RepoStatus,
+  DomainStatus,
+  DomainEnv,
+  Role,
+  WorkPacketStatus,
+  InboxItemStatus,
 } from "../../prisma/generated/prisma";
 
-// Runtime enum-like objects (what you use at runtime: RepoStatus.ACTIVE, etc.)
-export const RepoStatus = RepoStatusValue;
-export const DomainStatus = DomainStatusValue;
-export const DomainEnv = DomainEnvValue;
-export const Role = RoleValue;
-export const WorkPacketStatus = WorkPacketStatusValue;
-export const InboxItemStatus = InboxItemStatusValue;
+export { RepoStatus, DomainStatus, DomainEnv, Role, WorkPacketStatus, InboxItemStatus };
 
-// Type unions derived from the runtime objects (what you use in type positions)
-export type RepoStatus = (typeof RepoStatus)[keyof typeof RepoStatus];
-export type DomainStatus = (typeof DomainStatus)[keyof typeof DomainStatus];
-export type DomainEnv = (typeof DomainEnv)[keyof typeof DomainEnv];
-export type Role = (typeof Role)[keyof typeof Role];
-export type WorkPacketStatus =
+// Type aliases (different names) derived from runtime enums
+export type RepoStatusValue = (typeof RepoStatus)[keyof typeof RepoStatus];
+export type DomainStatusValue = (typeof DomainStatus)[keyof typeof DomainStatus];
+export type DomainEnvValue = (typeof DomainEnv)[keyof typeof DomainEnv];
+export type RoleValue = (typeof Role)[keyof typeof Role];
+export type WorkPacketStatusValue =
   (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus];
-export type InboxItemStatus =
+export type InboxItemStatusValue =
   (typeof InboxItemStatus)[keyof typeof InboxItemStatus];
