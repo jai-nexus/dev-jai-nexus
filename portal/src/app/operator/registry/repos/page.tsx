@@ -42,123 +42,177 @@ type RepoYamlFile =
     };
 
 function readReposYaml(): RepoYamlRow[] {
-  // Support both:
-  // - portal/config/repos.yaml (when cwd = portal)
-  // - dev-jai-nexus/config/repos.yaml (when file is kept at repo root)
   const candidates = [
     path.join(process.cwd(), "config", "repos.yaml"),
     path.join(process.cwd(), "..", "config", "repos.yaml"),
   ];
 
-  let raw: string | null = null;
-  let picked: string | null = null;
-
   for (const p of candidates) {
-    if (fs.existsSync(p)) {
-      raw = fs.readFileSync(p, "utf8");
-      picked = p;
-      break;
-    }
+    if (!fs.existsSync(p)) continue;
+    const raw = fs.readFileSync(p, "utf8");
+    const parsed = YAML.parse(raw) as RepoYamlFile;
+
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && Array.isArray(parsed.repos)) return parsed.repos;
+    return [];
   }
 
-  if (!raw || !picked) return [];
-
-  const parsed = YAML.parse(raw) as RepoYamlFile;
-  if (Array.isArray(parsed)) return parsed;
-  if (parsed && Array.isArray(parsed.repos)) return parsed.repos;
   return [];
 }
 
-function inferOwner(row: RepoYamlRow): string | null {
-  if (row.owner && row.owner.trim()) return row.owner.trim();
-  if (row.owner_agent_nh_id && row.owner_agent_nh_id.trim()) {
-    return `agent:${row.owner_agent_nh_id.trim()}`;
-  }
-  return null;
+function opt(v: string | null | undefined): string | undefined {
+  const s = (v ?? "").trim();
+  return s.length ? s : undefined;
 }
 
-function inferName(row: RepoYamlRow): string {
-  const direct = (row.repo ?? row.repo_id ?? "").trim();
-  if (direct) return direct;
+function inferOwner(row: RepoYamlRow): string | undefined {
+  const owner = opt(row.owner);
+  if (owner) return owner;
 
+  const agent = opt(row.owner_agent_nh_id);
+  if (agent) return `agent:${agent}`;
+
+  return undefined;
+}
+
+/**
+ * Canonical Repo.name in DB should be FULL "org/repo"
+ */
+function inferName(row: RepoYamlRow): string {
   const orgRepo = (row.org_repo ?? "").trim();
+  if (orgRepo) {
+    return orgRepo
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/^git@github\.com:/, "")
+      .replace(/\.git$/, "")
+      .trim();
+  }
+
+  const repo = (row.repo ?? "").trim();
+  if (repo) {
+    return repo
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/^git@github\.com:/, "")
+      .replace(/\.git$/, "")
+      .trim();
+  }
+
+  return (row.repo_id ?? "").trim();
+}
+
+function inferGithubUrl(row: RepoYamlRow): string | undefined {
+  const direct = opt(row.github_url);
+  if (direct) {
+    const cleaned = direct
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/^git@github\.com:/, "")
+      .replace(/\.git$/, "")
+      .trim();
+
+    // If it looks like org/repo, normalize to https URL
+    if (cleaned.includes("/")) return `https://github.com/${cleaned}`;
+    return direct;
+  }
+
+  const orgRepo = opt(row.org_repo);
   if (orgRepo) {
     const cleaned = orgRepo
       .replace(/^https?:\/\/github\.com\//, "")
-      .replace(/\.git$/, "");
-    const parts = cleaned.split("/");
-    return (parts[parts.length - 1] ?? "").trim();
+      .replace(/^git@github\.com:/, "")
+      .replace(/\.git$/, "")
+      .trim();
+    return `https://github.com/${cleaned}`;
   }
 
-  return "";
+  const repo = opt(row.repo);
+  if (repo) {
+    const cleaned = repo
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/^git@github\.com:/, "")
+      .replace(/\.git$/, "")
+      .trim();
+    return `https://github.com/${cleaned}`;
+  }
+
+  return undefined;
 }
 
-function inferGithubUrl(row: RepoYamlRow): string | null {
-  const direct = (row.github_url ?? "").trim();
-  if (direct) return direct;
-
-  const orgRepo = (row.org_repo ?? "").trim();
-  if (!orgRepo) return null;
-
-  const cleaned = orgRepo
-    .replace(/^https?:\/\/github\.com\//, "")
-    .replace(/\.git$/, "");
-
-  return `https://github.com/${cleaned}`;
-}
-
-function inferNhId(row: RepoYamlRow): string {
+function inferNhId(row: RepoYamlRow): string | undefined {
   const nh = (row.nh_id ?? row.nh_root ?? "").trim();
-  return nh;
+  return nh.length ? nh : undefined;
 }
 
-function inferDescription(row: RepoYamlRow): string | null {
-  const d = (row.description ?? row.notes ?? "").trim();
-  return d ? d : null;
+function inferDescription(row: RepoYamlRow): string | undefined {
+  return opt(row.description ?? row.notes);
+}
+
+async function requireAdmin() {
+  const session = await getServerAuthSession();
+  if (!session?.user) redirect("/login");
+
+  const isAdmin = session.user.email === "admin@jai.nexus";
+  if (!isAdmin) redirect("/operator/registry/repos");
 }
 
 async function importFromReposYaml() {
   "use server";
 
-  const session = await getServerAuthSession();
-  const isAdmin = session?.user?.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/repos");
+  await requireAdmin();
 
   const rows = readReposYaml();
 
+  let imported = 0;
+  let skipped = 0;
+  let failed = 0;
+
   for (const row of rows) {
     const name = inferName(row);
-    if (!name) continue;
+    if (!name) {
+      skipped++;
+      continue;
+    }
 
+    const nhId = inferNhId(row);
     const githubUrl = inferGithubUrl(row);
 
+    // IMPORTANT: never send null into non-null columns (default("")).
+    // Use undefined to omit, or string to set.
     const data = {
       name,
-      nhId: inferNhId(row),
-      description: inferDescription(row),
-      domainPod: row.domain_pod ?? null,
-      engineGroup: row.engine_group ?? (row.role ?? null),
-      language: row.language ?? null,
-      status: normalizeRepoStatus(row.status), // enum-safe normalization
-      owner: inferOwner(row),
-      defaultBranch: row.default_branch ?? "main",
-      githubUrl,
+      nhId: nhId ?? undefined,
+      description: inferDescription(row) ?? undefined,
+      domainPod: opt(row.domain_pod),
+      engineGroup: opt(row.engine_group ?? row.role),
+      language: opt(row.language),
+      status: normalizeRepoStatus(row.status),
+      owner: inferOwner(row) ?? undefined,
+      defaultBranch: opt(row.default_branch) ?? "main",
+      githubUrl: githubUrl ?? undefined,
     };
 
-    await prisma.repo.upsert({
-      where: { name },
-      update: data,
-      create: data,
-    });
+    try {
+      await prisma.repo.upsert({
+        where: { name },
+        update: data,
+        create: data,
+      });
+      imported++;
+    } catch (err) {
+      failed++;
+      console.error("[repos.yaml import] failed", { name, row, err });
+      // keep going
+    }
   }
+
+  console.log(
+    `[repos.yaml import] imported=${imported} skipped=${skipped} failed=${failed}`,
+  );
 
   redirect("/operator/registry/repos");
 }
 
 export default async function OperatorRegistryReposPage() {
-  const session = await getServerAuthSession();
-  const isAdmin = session?.user?.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/repos");
+  await requireAdmin();
 
   const repos = await prisma.repo.findMany({
     orderBy: [{ name: "asc" }],
@@ -209,9 +263,11 @@ export default async function OperatorRegistryReposPage() {
                 className="border-b border-gray-900 hover:bg-zinc-900/60"
               >
                 <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{r.nhId ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
-                  {r.status ?? "planned"}
+                  {r.nhId && r.nhId.length ? r.nhId : "—"}
+                </td>
+                <td className="py-2 px-3 whitespace-nowrap">
+                  {r.status ?? "PLANNED"}
                 </td>
                 <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
                 <td className="py-2 px-3 whitespace-nowrap">
@@ -224,6 +280,7 @@ export default async function OperatorRegistryReposPage() {
                 </td>
               </tr>
             ))}
+
             {repos.length === 0 ? (
               <tr>
                 <td className="py-3 px-3 text-gray-400" colSpan={5}>

@@ -14,20 +14,16 @@ function str(v: FormDataEntryValue | null): string {
   return String(v ?? "").trim();
 }
 
-function optStr(v: FormDataEntryValue | null): string | null {
-  const s = str(v);
-  return s.length ? s : null;
-}
-
 function labelStatus(s: RepoStatus): string {
-  // "ACTIVE" -> "Active"
   const lower = s.toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 async function requireAdmin() {
   const session = await getServerAuthSession();
-  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!session?.user) redirect("/login");
+
+  const isAdmin = session.user.email === "admin@jai.nexus";
   if (!isAdmin) redirect("/operator/registry/repos");
 }
 
@@ -42,17 +38,16 @@ async function updateRepo(formData: FormData) {
   const name = str(formData.get("name"));
   if (!name) redirect(`/operator/registry/repos/${id}`);
 
-  const nhId = str(formData.get("nhId"));
-  const owner = optStr(formData.get("owner"));
+  // non-null string columns: never pass null.
+  const nhId = str(formData.get("nhId")); // "" allowed
+  const owner = str(formData.get("owner"));
+  const description = str(formData.get("description"));
+  const domainPod = str(formData.get("domainPod"));
+  const engineGroup = str(formData.get("engineGroup"));
+  const language = str(formData.get("language"));
+  const githubUrl = str(formData.get("githubUrl"));
+  const defaultBranch = str(formData.get("defaultBranch"));
 
-  const description = optStr(formData.get("description"));
-  const domainPod = optStr(formData.get("domainPod"));
-  const engineGroup = optStr(formData.get("engineGroup"));
-  const language = optStr(formData.get("language"));
-  const githubUrl = optStr(formData.get("githubUrl"));
-  const defaultBranch = optStr(formData.get("defaultBranch"));
-
-  // ✅ returns Prisma RepoStatus (UPPERCASE)
   const status = normalizeRepoStatus(formData.get("status"));
 
   await prisma.repo.update({
@@ -86,14 +81,13 @@ async function deleteRepo(formData: FormData) {
   redirect("/operator/registry/repos");
 }
 
-export default async function EditRepoPage({
-  params,
-}: {
-  params: { id: string };
+export default async function EditRepoPage(props: {
+  params: { id: string } | Promise<{ id: string }>;
 }) {
   await requireAdmin();
 
-  const id = Number(params.id);
+  const { id: idStr } = await Promise.resolve(props.params); // supports Promise or plain
+  const id = Number(idStr);
   if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
   const repo = await prisma.repo.findUnique({ where: { id } });
@@ -104,7 +98,9 @@ export default async function EditRepoPage({
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Repo</h1>
+        <h1 className="text-3xl font-semibold">
+          Operator · Registry · Edit Repo
+        </h1>
         <p className="text-sm text-gray-400 mt-1">{repo.name}</p>
       </header>
 
@@ -112,7 +108,7 @@ export default async function EditRepoPage({
         <input type="hidden" name="id" value={repo.id} />
 
         <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Repo (name)</div>
+          <div className="text-sm text-gray-300 mb-1">Repo (org/repo)</div>
           <input
             name="name"
             defaultValue={repo.name}
@@ -128,7 +124,11 @@ export default async function EditRepoPage({
               name="nhId"
               defaultValue={repo.nhId ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="e.g. 1.1.6"
             />
+            <div className="mt-1 text-xs text-gray-500">
+              Clear by leaving empty (stores empty string).
+            </div>
           </label>
 
           <label className="block">
@@ -174,7 +174,6 @@ export default async function EditRepoPage({
               name="domainPod"
               defaultValue={repo.domainPod ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="DEV / DOCS / NEXUS / ..."
             />
           </label>
 
@@ -184,7 +183,6 @@ export default async function EditRepoPage({
               name="engineGroup"
               defaultValue={repo.engineGroup ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="operator-console / tooling / docs / ..."
             />
           </label>
 
@@ -194,7 +192,6 @@ export default async function EditRepoPage({
               name="language"
               defaultValue={repo.language ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="ts / md / py / ..."
             />
           </label>
 
