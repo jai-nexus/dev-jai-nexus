@@ -1,95 +1,62 @@
 // portal/src/lib/registryEnums.ts
-import { RepoStatus, DomainStatus, DomainEnv } from "@/lib/dbEnums";
-import type {
-  RepoStatusValue,
-  DomainStatusValue,
-  DomainEnvValue,
-} from "@/lib/dbEnums";
+import { RepoStatus } from "./dbEnums";
 
-// Canonical values (useful for UI selects / validation)
-export const REPO_STATUS_VALUES = Object.freeze<RepoStatusValue[]>([
+export const REPO_STATUS_ORDER: RepoStatus[] = [
   RepoStatus.ACTIVE,
   RepoStatus.FROZEN,
   RepoStatus.PLANNED,
   RepoStatus.PARKED,
-]);
+];
 
-export const DOMAIN_STATUS_VALUES = Object.freeze<DomainStatusValue[]>([
-  DomainStatus.live,
-  DomainStatus.planned,
-  DomainStatus.parked,
-]);
+// What we accept in YAML / UI filters:
+export const REPO_STATUS_INPUTS = ["active", "frozen", "planned", "parked"] as const;
+export type RepoStatusInput = (typeof REPO_STATUS_INPUTS)[number];
 
-export const DOMAIN_ENV_VALUES = Object.freeze<DomainEnvValue[]>([
-  DomainEnv.prod,
-  DomainEnv.stage,
-  DomainEnv.dev,
-]);
+export function normalizeRepoStatus(input?: string | null): RepoStatus {
+  const raw = String(input ?? "").trim();
+  const v = raw.toLowerCase();
 
-// ✅ Back-compat exports (older pages import these)
-export const REPO_STATUSES = REPO_STATUS_VALUES;
-export const DOMAIN_STATUSES = DOMAIN_STATUS_VALUES;
-export const DOMAIN_ENVS = DOMAIN_ENV_VALUES;
+  // Accept either YAML style (active) or Prisma enum style (ACTIVE)
+  switch (v) {
+    case "active":
+    case "enabled":
+    case "on":
+      return RepoStatus.ACTIVE;
 
-// ---- RepoStatus ----
-// Accept lowercase inputs (YAML/config/query params) but return Prisma enum values.
-const REPO_STATUS_ALIASES: Record<string, RepoStatusValue> = {
-  active: RepoStatus.ACTIVE,
-  live: RepoStatus.ACTIVE,
-  enabled: RepoStatus.ACTIVE,
+    case "frozen":
+    case "paused":
+    case "hold":
+      return RepoStatus.FROZEN;
 
-  frozen: RepoStatus.FROZEN,
-  freeze: RepoStatus.FROZEN,
-  locked: RepoStatus.FROZEN,
+    case "planned":
+    case "plan":
+    case "todo":
+      return RepoStatus.PLANNED;
 
-  parked: RepoStatus.PARKED,
-  paused: RepoStatus.PARKED,
-  hold: RepoStatus.PARKED,
+    case "parked":
+    case "park":
+    case "backlog":
+      return RepoStatus.PARKED;
 
-  planned: RepoStatus.PLANNED,
-  plan: RepoStatus.PLANNED,
-  todo: RepoStatus.PLANNED,
-  backlog: RepoStatus.PLANNED,
-};
-
-export function normalizeRepoStatus(v: unknown): RepoStatusValue {
-  const s = String(v ?? "").trim().toLowerCase();
-  return REPO_STATUS_ALIASES[s] ?? RepoStatus.PLANNED;
+    default:
+      // Safe default: keep it out of sync runs until explicitly activated.
+      return RepoStatus.PLANNED;
+  }
 }
 
-// ---- DomainStatus ----
-const DOMAIN_STATUS_ALIASES: Record<string, DomainStatusValue> = {
-  live: DomainStatus.live,
-  active: DomainStatus.live,
-
-  planned: DomainStatus.planned,
-  plan: DomainStatus.planned,
-  todo: DomainStatus.planned,
-
-  parked: DomainStatus.parked,
-  paused: DomainStatus.parked,
-  hold: DomainStatus.parked,
-};
-
-export function normalizeDomainStatus(v: unknown): DomainStatusValue {
-  const s = String(v ?? "").trim().toLowerCase();
-  return DOMAIN_STATUS_ALIASES[s] ?? DomainStatus.planned;
-}
-
-// ---- DomainEnv ----
-const DOMAIN_ENV_ALIASES: Record<string, DomainEnvValue> = {
-  prod: DomainEnv.prod,
-  production: DomainEnv.prod,
-
-  stage: DomainEnv.stage,
-  staging: DomainEnv.stage,
-
-  dev: DomainEnv.dev,
-  development: DomainEnv.dev,
-  local: DomainEnv.dev,
-};
-
-export function normalizeDomainEnv(v: unknown): DomainEnvValue {
-  const s = String(v ?? "").trim().toLowerCase();
-  return DOMAIN_ENV_ALIASES[s] ?? DomainEnv.dev;
+export function repoStatusDbLabel(status: RepoStatus): RepoStatusInput {
+  // Your Prisma schema uses @map("active") etc, so DB labels are lowercase.
+  // This helper is only for display/debug, not required for Prisma writes.
+  switch (status) {
+    case RepoStatus.ACTIVE:
+      return "active";
+    case RepoStatus.FROZEN:
+      return "frozen";
+    case RepoStatus.PLANNED:
+      return "planned";
+    case RepoStatus.PARKED:
+      return "parked";
+    default:
+      return "planned";
+  }
 }

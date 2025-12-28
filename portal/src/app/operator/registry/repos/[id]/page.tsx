@@ -1,59 +1,34 @@
 // portal/src/app/operator/registry/repos/[id]/page.tsx
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { getServerAuthSession } from "@/auth";
-import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
-import type { RepoStatus } from "@/lib/dbEnums";
-import { RepoStatus as RepoStatusEnum } from "@/lib/dbEnums";
 
-function str(v: FormDataEntryValue | null): string {
-  return String(v ?? "").trim();
-}
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/internalAuth";
+import { RepoStatus } from "@/lib/dbEnums";
+import { REPO_STATUS_ORDER } from "@/lib/registryEnums";
 
-function optStr(v: FormDataEntryValue | null): string | null {
-  const s = str(v);
-  return s.length ? s : null;
-}
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
-function labelStatus(s: RepoStatus): string {
-  // "ACTIVE" -> "Active"
-  const lower = s.toLowerCase();
-  return lower.charAt(0).toUpperCase() + lower.slice(1);
-}
-
-async function requireAdmin() {
-  const session = await getServerAuthSession();
-  const isAdmin = session?.user?.email === "admin@jai.nexus";
-  if (!isAdmin) redirect("/operator/registry/repos");
-}
-
-async function updateRepo(formData: FormData) {
+async function saveRepo(formData: FormData) {
   "use server";
-
   await requireAdmin();
 
   const id = Number(formData.get("id"));
   if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
-  const name = str(formData.get("name"));
+  const nhId = String(formData.get("nhId") ?? "").trim() || "0.0";
+  const name = String(formData.get("name") ?? "").trim();
+  const githubUrl = String(formData.get("githubUrl") ?? "").trim() || null;
+  const defaultBranch = String(formData.get("defaultBranch") ?? "").trim() || null;
+
+  const statusRaw = String(formData.get("status") ?? "").trim();
+  const status = (RepoStatus as any)[statusRaw] ? (RepoStatus as any)[statusRaw] : RepoStatus.PLANNED;
+
   if (!name) redirect(`/operator/registry/repos/${id}`);
-
-  const nhId = str(formData.get("nhId"));
-  const owner = optStr(formData.get("owner"));
-
-  const description = optStr(formData.get("description"));
-  const domainPod = optStr(formData.get("domainPod"));
-  const engineGroup = optStr(formData.get("engineGroup"));
-  const language = optStr(formData.get("language"));
-  const githubUrl = optStr(formData.get("githubUrl"));
-  const defaultBranch = optStr(formData.get("defaultBranch"));
-
-  // ✅ returns Prisma RepoStatus (UPPERCASE)
-  const status = normalizeRepoStatus(formData.get("status"));
 
   await prisma.repo.update({
     where: { id },
@@ -61,11 +36,6 @@ async function updateRepo(formData: FormData) {
       name,
       nhId,
       status,
-      owner,
-      description,
-      domainPod,
-      engineGroup,
-      language,
       githubUrl,
       defaultBranch,
     },
@@ -74,176 +44,82 @@ async function updateRepo(formData: FormData) {
   redirect("/operator/registry/repos");
 }
 
-async function deleteRepo(formData: FormData) {
-  "use server";
-
+export default async function EditRepoPage({ params }: PageProps) {
   await requireAdmin();
 
-  const id = Number(formData.get("id"));
-  if (!Number.isFinite(id)) redirect("/operator/registry/repos");
-
-  await prisma.repo.delete({ where: { id } });
-  redirect("/operator/registry/repos");
-}
-
-export default async function EditRepoPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  await requireAdmin();
-
-  const id = Number(params.id);
+  const { id: idStr } = await params;
+  const id = Number(idStr);
   if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
   const repo = await prisma.repo.findUnique({ where: { id } });
   if (!repo) redirect("/operator/registry/repos");
 
-  const statusDefault: RepoStatus = repo.status ?? RepoStatusEnum.PLANNED;
-
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Repo</h1>
-        <p className="text-sm text-gray-400 mt-1">{repo.name}</p>
-      </header>
+      <h1 className="text-2xl font-semibold mb-6">Edit Repo</h1>
 
-      <form action={updateRepo} className="max-w-2xl space-y-4">
+      <form action={saveRepo} className="max-w-2xl space-y-4">
         <input type="hidden" name="id" value={repo.id} />
 
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Repo (name)</div>
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Repo</label>
           <input
             name="name"
             defaultValue={repo.name}
-            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            required
+            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
           />
-        </label>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">NH_ID</div>
-            <input
-              name="nhId"
-              defaultValue={repo.nhId ?? ""}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            />
-          </label>
-
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">Status</div>
-            <select
-              name="status"
-              defaultValue={statusDefault}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            >
-              {REPO_STATUS_VALUES.map((s) => (
-                <option key={s} value={s}>
-                  {labelStatus(s)}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Owner</div>
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">NH_ID</label>
           <input
-            name="owner"
-            defaultValue={repo.owner ?? ""}
-            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder='e.g. "agent:1.2" or a name'
+            name="nhId"
+            defaultValue={repo.nhId}
+            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
           />
-        </label>
-
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Description</div>
-          <textarea
-            name="description"
-            defaultValue={repo.description ?? ""}
-            rows={3}
-            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-          />
-        </label>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">Domain Pod</div>
-            <input
-              name="domainPod"
-              defaultValue={repo.domainPod ?? ""}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="DEV / DOCS / NEXUS / ..."
-            />
-          </label>
-
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">Engine Group</div>
-            <input
-              name="engineGroup"
-              defaultValue={repo.engineGroup ?? ""}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="operator-console / tooling / docs / ..."
-            />
-          </label>
-
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">Language</div>
-            <input
-              name="language"
-              defaultValue={repo.language ?? ""}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="ts / md / py / ..."
-            />
-          </label>
-
-          <label className="block">
-            <div className="text-sm text-gray-300 mb-1">Default Branch</div>
-            <input
-              name="defaultBranch"
-              defaultValue={repo.defaultBranch ?? ""}
-              className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-              placeholder="main"
-            />
-          </label>
         </div>
 
-        <label className="block">
-          <div className="text-sm text-gray-300 mb-1">GitHub URL</div>
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Status</label>
+          <select
+            name="status"
+            defaultValue={String(repo.status)}
+            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+          >
+            {REPO_STATUS_ORDER.map((s) => (
+              <option key={String(s)} value={String(s)}>
+                {String(s)}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">GitHub URL</label>
           <input
             name="githubUrl"
             defaultValue={repo.githubUrl ?? ""}
-            className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder="https://github.com/org/repo"
+            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
           />
-        </label>
+        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
-          >
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Default branch</label>
+          <input
+            name="defaultBranch"
+            defaultValue={repo.defaultBranch ?? ""}
+            className="w-full rounded-md bg-zinc-950 border border-gray-800 px-3 py-2"
+          />
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button className="rounded-lg bg-blue-600 hover:bg-blue-500 px-4 py-2 text-sm">
             Save
           </button>
-
-          <Link
-            href="/operator/registry/repos"
-            className="text-sm text-gray-400 hover:text-gray-200"
-          >
+          <a className="text-sm text-gray-300 underline" href="/operator/registry/repos">
             Cancel
-          </Link>
+          </a>
         </div>
-      </form>
-
-      <form action={deleteRepo} className="max-w-2xl mt-8">
-        <input type="hidden" name="id" value={repo.id} />
-        <button
-          type="submit"
-          className="rounded-md border border-red-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-red-950"
-        >
-          Delete
-        </button>
       </form>
     </main>
   );
