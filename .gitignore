@@ -11,3 +11,6 @@ data/private/
 Makefile.tmp
 .venv
 workspace/
+
+# Prisma generated client (do not commit)
+portal/prisma/generated/

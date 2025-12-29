@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma, WorkPacket, WorkPacketStatus } from "../../prisma/generated/prisma";
+import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
 
 type JsonScalar = string | number | boolean;
 type JsonChange = { from: JsonScalar; to: JsonScalar };

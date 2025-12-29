@@ -10,7 +10,9 @@ import YAML from "yaml";
 
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
-import { normalizeRepoStatus, REPO_STATUSES } from "@/lib/registryEnums";
+import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
+import type { RepoStatus } from "@/lib/dbEnums";
+import { RepoStatus as RepoStatusEnum } from "@/lib/dbEnums";
 
 type RepoYamlRow = {
   // “portal” schema keys
@@ -109,7 +111,6 @@ function inferGithubUrl(row: RepoYamlRow): string | undefined {
       .replace(/\.git$/, "")
       .trim();
 
-    // If it looks like org/repo, normalize to https URL
     if (cleaned.includes("/")) return `https://github.com/${cleaned}`;
     return direct;
   }
@@ -146,6 +147,11 @@ function inferDescription(row: RepoYamlRow): string | undefined {
   return opt(row.description ?? row.notes);
 }
 
+function labelStatus(s: RepoStatus): string {
+  const lower = String(s).toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 async function requireAdmin() {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/login");
@@ -175,7 +181,8 @@ async function importFromReposYaml() {
     const nhId = inferNhId(row);
     const githubUrl = inferGithubUrl(row);
 
-    // IMPORTANT: never send null into non-null columns (default("")).
+    // NOTE:
+    // Repo.nhId is non-null (default ""), so NEVER pass null.
     // Use undefined to omit, or string to set.
     const data = {
       name,
@@ -184,10 +191,14 @@ async function importFromReposYaml() {
       domainPod: opt(row.domain_pod),
       engineGroup: opt(row.engine_group ?? row.role),
       language: opt(row.language),
-      status: normalizeRepoStatus(row.status),
       owner: inferOwner(row) ?? undefined,
       defaultBranch: opt(row.default_branch) ?? "main",
       githubUrl: githubUrl ?? undefined,
+
+      // If YAML omits status, normalize will fall back (typically planned).
+      // If you want “omit when missing”, change to:
+      // status: row.status ? normalizeRepoStatus(row.status) : undefined,
+      status: normalizeRepoStatus(row.status),
     };
 
     try {
@@ -200,7 +211,6 @@ async function importFromReposYaml() {
     } catch (err) {
       failed++;
       console.error("[repos.yaml import] failed", { name, row, err });
-      // keep going
     }
   }
 
@@ -257,29 +267,36 @@ export default async function OperatorRegistryReposPage() {
             </tr>
           </thead>
           <tbody>
-            {repos.map((r) => (
-              <tr
-                key={r.id}
-                className="border-b border-gray-900 hover:bg-zinc-900/60"
-              >
-                <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
-                <td className="py-2 px-3 whitespace-nowrap">
-                  {r.nhId && r.nhId.length ? r.nhId : "—"}
-                </td>
-                <td className="py-2 px-3 whitespace-nowrap">
-                  {r.status ?? "PLANNED"}
-                </td>
-                <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
-                <td className="py-2 px-3 whitespace-nowrap">
-                  <Link
-                    href={`/operator/registry/repos/${r.id}`}
-                    className="underline"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
+            {repos.map((r) => {
+              // IMPORTANT:
+              // Never render magic strings like "PLANNED" here.
+              // Use a real enum fallback so you don’t accidentally create drift.
+              const s: RepoStatus = r.status ?? RepoStatusEnum.planned;
+
+              return (
+                <tr
+                  key={r.id}
+                  className="border-b border-gray-900 hover:bg-zinc-900/60"
+                >
+                  <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    {r.nhId && r.nhId.length ? r.nhId : "—"}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    {labelStatus(s)}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">{r.owner ?? "—"}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <Link
+                      href={`/operator/registry/repos/${r.id}`}
+                      className="underline"
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
 
             {repos.length === 0 ? (
               <tr>
@@ -293,7 +310,7 @@ export default async function OperatorRegistryReposPage() {
       </div>
 
       <p className="mt-4 text-xs text-gray-500">
-        Allowed repo statuses: {REPO_STATUSES.join(", ")}
+        Allowed repo statuses: {REPO_STATUS_VALUES.join(", ")}
       </p>
     </main>
   );

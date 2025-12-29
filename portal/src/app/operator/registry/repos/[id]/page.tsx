@@ -3,19 +3,26 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+
+import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
-import type { RepoStatus } from "@/lib/dbEnums";
-import { RepoStatus as RepoStatusEnum } from "@/lib/dbEnums";
+import { RepoStatus } from "@/lib/dbEnums";
+import type { RepoStatusValue } from "@/lib/dbEnums";
 
 function str(v: FormDataEntryValue | null): string {
   return String(v ?? "").trim();
 }
 
-function labelStatus(s: RepoStatus): string {
-  const lower = s.toLowerCase();
+function optStr(v: FormDataEntryValue | null): string | null {
+  const s = str(v);
+  return s.length ? s : null;
+}
+
+function labelStatus(s: RepoStatusValue): string {
+  // "planned" -> "Planned"
+  const lower = String(s).toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
@@ -38,15 +45,17 @@ async function updateRepo(formData: FormData) {
   const name = str(formData.get("name"));
   if (!name) redirect(`/operator/registry/repos/${id}`);
 
-  // non-null string columns: never pass null.
-  const nhId = str(formData.get("nhId")); // "" allowed
-  const owner = str(formData.get("owner"));
-  const description = str(formData.get("description"));
-  const domainPod = str(formData.get("domainPod"));
-  const engineGroup = str(formData.get("engineGroup"));
-  const language = str(formData.get("language"));
-  const githubUrl = str(formData.get("githubUrl"));
-  const defaultBranch = str(formData.get("defaultBranch"));
+  // Repo.nhId is non-null in schema (default ""), so keep it a string.
+  const nhId = str(formData.get("nhId"));
+
+  // Nullable fields: store null if empty.
+  const owner = optStr(formData.get("owner"));
+  const description = optStr(formData.get("description"));
+  const domainPod = optStr(formData.get("domainPod"));
+  const engineGroup = optStr(formData.get("engineGroup"));
+  const language = optStr(formData.get("language"));
+  const githubUrl = optStr(formData.get("githubUrl"));
+  const defaultBranch = optStr(formData.get("defaultBranch"));
 
   const status = normalizeRepoStatus(formData.get("status"));
 
@@ -86,21 +95,21 @@ export default async function EditRepoPage(props: {
 }) {
   await requireAdmin();
 
-  const { id: idStr } = await Promise.resolve(props.params); // supports Promise or plain
+  const { id: idStr } = await Promise.resolve(props.params);
   const id = Number(idStr);
   if (!Number.isFinite(id)) redirect("/operator/registry/repos");
 
   const repo = await prisma.repo.findUnique({ where: { id } });
   if (!repo) redirect("/operator/registry/repos");
 
-  const statusDefault: RepoStatus = repo.status ?? RepoStatusEnum.PLANNED;
+  // If your generated RepoStatus enum is lowercase (active/frozen/planned/parked),
+  // this is correct. If you later switch back to uppercase, this is where you’ll feel it.
+  const statusDefault: RepoStatusValue = repo.status ?? RepoStatus.planned;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-semibold">
-          Operator · Registry · Edit Repo
-        </h1>
+        <h1 className="text-3xl font-semibold">Operator · Registry · Edit Repo</h1>
         <p className="text-sm text-gray-400 mt-1">{repo.name}</p>
       </header>
 
@@ -174,6 +183,7 @@ export default async function EditRepoPage(props: {
               name="domainPod"
               defaultValue={repo.domainPod ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="DEV / DOCS / NEXUS / ..."
             />
           </label>
 
@@ -183,6 +193,7 @@ export default async function EditRepoPage(props: {
               name="engineGroup"
               defaultValue={repo.engineGroup ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="operator-console / tooling / docs / ..."
             />
           </label>
 
@@ -192,6 +203,7 @@ export default async function EditRepoPage(props: {
               name="language"
               defaultValue={repo.language ?? ""}
               className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
+              placeholder="ts / md / py / ..."
             />
           </label>
 

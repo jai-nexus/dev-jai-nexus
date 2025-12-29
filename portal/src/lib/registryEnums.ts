@@ -6,12 +6,12 @@ import type {
   DomainEnvValue,
 } from "@/lib/dbEnums";
 
-// Canonical values (useful for UI selects / validation)
+// Canonical values (UI selects / validation)
 export const REPO_STATUS_VALUES = Object.freeze<RepoStatusValue[]>([
-  RepoStatus.ACTIVE,
-  RepoStatus.FROZEN,
-  RepoStatus.PLANNED,
-  RepoStatus.PARKED,
+  RepoStatus.active,
+  RepoStatus.frozen,
+  RepoStatus.planned,
+  RepoStatus.parked,
 ]);
 
 export const DOMAIN_STATUS_VALUES = Object.freeze<DomainStatusValue[]>([
@@ -26,35 +26,34 @@ export const DOMAIN_ENV_VALUES = Object.freeze<DomainEnvValue[]>([
   DomainEnv.dev,
 ]);
 
-// ✅ Back-compat exports (older pages import these)
+// Back-compat exports
 export const REPO_STATUSES = REPO_STATUS_VALUES;
 export const DOMAIN_STATUSES = DOMAIN_STATUS_VALUES;
 export const DOMAIN_ENVS = DOMAIN_ENV_VALUES;
 
 // ---- RepoStatus ----
-// Accept lowercase inputs (YAML/config/query params) but return Prisma enum values.
 const REPO_STATUS_ALIASES: Record<string, RepoStatusValue> = {
-  active: RepoStatus.ACTIVE,
-  live: RepoStatus.ACTIVE,
-  enabled: RepoStatus.ACTIVE,
+  active: RepoStatus.active,
+  live: RepoStatus.active,
+  enabled: RepoStatus.active,
 
-  frozen: RepoStatus.FROZEN,
-  freeze: RepoStatus.FROZEN,
-  locked: RepoStatus.FROZEN,
+  frozen: RepoStatus.frozen,
+  freeze: RepoStatus.frozen,
+  locked: RepoStatus.frozen,
 
-  parked: RepoStatus.PARKED,
-  paused: RepoStatus.PARKED,
-  hold: RepoStatus.PARKED,
+  parked: RepoStatus.parked,
+  paused: RepoStatus.parked,
+  hold: RepoStatus.parked,
 
-  planned: RepoStatus.PLANNED,
-  plan: RepoStatus.PLANNED,
-  todo: RepoStatus.PLANNED,
-  backlog: RepoStatus.PLANNED,
+  planned: RepoStatus.planned,
+  plan: RepoStatus.planned,
+  todo: RepoStatus.planned,
+  backlog: RepoStatus.planned,
 };
 
 export function normalizeRepoStatus(v: unknown): RepoStatusValue {
   const s = String(v ?? "").trim().toLowerCase();
-  return REPO_STATUS_ALIASES[s] ?? RepoStatus.PLANNED;
+  return REPO_STATUS_ALIASES[s] ?? RepoStatus.planned;
 }
 
 // ---- DomainStatus ----

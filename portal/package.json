@@ -40,6 +40,8 @@
     "@prisma/adapter-pg": "7.0.1",
     "@prisma/client": "^7.1.0",
     "@prisma/client-runtime-utils": "^7.1.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^7.4.2",
