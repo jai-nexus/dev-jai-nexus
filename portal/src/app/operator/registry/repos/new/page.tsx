@@ -71,7 +71,7 @@ async function createRepo(formData: FormData) {
 export default async function NewRepoPage() {
   await requireAdmin();
 
-  const statusDefault: RepoStatus = RepoStatusEnum.PLANNED;
+  const statusDefault: RepoStatus = RepoStatusEnum.planned;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     const repos = await prisma.repo.findMany({
       // ✅ enum-backed (matches schema.prisma)
-      where: { status: RepoStatus.ACTIVE },
+      where: { status: RepoStatus.active },
       select: {
         id: true,
         nhId: true,

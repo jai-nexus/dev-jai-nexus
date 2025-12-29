@@ -43,7 +43,7 @@ export async function GET(req: Request) {
   const q = sanitizeQuery(firstParam(url.searchParams.getAll("q")));
   const status =
     sanitizeRepoStatus(firstParam(url.searchParams.getAll("status"))) ??
-    RepoStatus.ACTIVE;
+    RepoStatus.active;
 
   const repos = await prisma.repo.findMany({
     where: {
