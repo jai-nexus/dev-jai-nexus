@@ -20,13 +20,15 @@ function optStr(v: FormDataEntryValue | null): string | null {
 }
 
 function labelStatus(s: RepoStatus): string {
-  const lower = s.toLowerCase();
+  const lower = String(s).toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
 async function requireAdmin() {
   const session = await getServerAuthSession();
-  const isAdmin = session?.user?.email === "admin@jai.nexus";
+  if (!session?.user) redirect("/login");
+
+  const isAdmin = session.user.email === "admin@jai.nexus";
   if (!isAdmin) redirect("/operator/registry/repos");
 }
 
@@ -38,9 +40,10 @@ async function createRepo(formData: FormData) {
   const name = str(formData.get("name"));
   if (!name) redirect("/operator/registry/repos/new");
 
+  // Non-null string column: never pass null ("" is allowed)
   const nhId = str(formData.get("nhId"));
-  const owner = optStr(formData.get("owner"));
 
+  const owner = optStr(formData.get("owner"));
   const description = optStr(formData.get("description"));
   const domainPod = optStr(formData.get("domainPod"));
   const engineGroup = optStr(formData.get("engineGroup"));
@@ -82,11 +85,11 @@ export default async function NewRepoPage() {
 
       <form action={createRepo} className="max-w-2xl space-y-4">
         <label className="block">
-          <div className="text-sm text-gray-300 mb-1">Repo (name)</div>
+          <div className="text-sm text-gray-300 mb-1">Repo (org/repo)</div>
           <input
             name="name"
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder="dev-jai-nexus"
+            placeholder="jai-nexus/dev-jai-nexus"
             required
           />
         </label>
@@ -178,7 +181,7 @@ export default async function NewRepoPage() {
           <input
             name="githubUrl"
             className="w-full rounded-md border border-gray-800 bg-zinc-950 px-3 py-2 text-sm"
-            placeholder="https://github.com/org/repo"
+            placeholder="https://github.com/jai-nexus/dev-jai-nexus"
           />
         </label>
 

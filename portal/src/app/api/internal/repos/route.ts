@@ -24,7 +24,7 @@ function sanitizeRepoStatus(input?: string): RepoStatus | undefined {
   const raw = (input ?? "").trim();
   if (!raw) return undefined;
 
-  // Accept "ACTIVE" or "active" in query params, regardless of enum casing
+  // Accept "ACTIVE" or "active" (case-insensitive) in query params
   const want = raw.toUpperCase();
   const hit = (Object.values(RepoStatus) as string[]).find(
     (v) => v.toUpperCase() === want,
@@ -39,11 +39,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: "unauthorized" }, { status: 401 });
   }
 
+  const isAdmin = session.user.email === "admin@jai.nexus";
+  if (!isAdmin) {
+    return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+  }
+
   const url = new URL(req.url);
   const q = sanitizeQuery(firstParam(url.searchParams.getAll("q")));
   const status =
-    sanitizeRepoStatus(firstParam(url.searchParams.getAll("status"))) ??
-    RepoStatus.active;
+    sanitizeRepoStatus(firstParam(url.searchParams.getAll("status"))) ?? RepoStatus.active;
 
   const repos = await prisma.repo.findMany({
     where: {
