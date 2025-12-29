@@ -1,0 +1,3 @@
+[submodule "vendor/datacontracts"]
+	path = vendor/datacontracts
+	url = https://github.com/jai-nexus/datacontracts-nexus.git
