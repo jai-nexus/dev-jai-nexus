@@ -14,3 +14,4 @@ workspace/
 
 # Prisma generated client (do not commit)
 portal/prisma/generated/
+.vercel
