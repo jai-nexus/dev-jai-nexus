@@ -3,56 +3,50 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, Prisma } from "@/lib/prisma";
 import { assertInternalToken } from "@/lib/internalAuth";
 import { RepoStatus } from "@/lib/dbEnums";
-
-// ✅ Needed for DbNull / Json typing
-import { Prisma } from "../../../../../../../prisma/generated/prisma";
 
 type StatusPayload = {
   status: string;
   notes?: string | null;
 };
 
-const ALLOWED_STATUSES = Object.values(RepoStatus) as RepoStatus[];
-
-/**
- * Back-compat mapping for older internal callers.
- * These are NOT stored in DB; they map to real RepoStatus enum values.
- */
-const LEGACY_STATUS_ALIASES: Record<string, RepoStatus> = {
+// Accept legacy status labels, but WRITE ONLY RepoStatus values.
+const LEGACY_TO_REPO_STATUS: Record<string, RepoStatus> = {
   ACTIVE: RepoStatus.active,
   LIVE: RepoStatus.active,
   ENABLED: RepoStatus.active,
 
   IN_SETUP: RepoStatus.planned,
-  SETUP: RepoStatus.planned,
+  PLANNED: RepoStatus.planned,
+  TODO: RepoStatus.planned,
+  BACKLOG: RepoStatus.planned,
 
-  BLOCKED: RepoStatus.frozen,
   FROZEN: RepoStatus.frozen,
   LOCKED: RepoStatus.frozen,
+  BLOCKED: RepoStatus.frozen,
 
-  ARCHIVED: RepoStatus.parked,
   PARKED: RepoStatus.parked,
   PAUSED: RepoStatus.parked,
   HOLD: RepoStatus.parked,
+  ARCHIVED: RepoStatus.parked,
 };
 
-function normalizeIncomingStatus(input: unknown): RepoStatus | null {
-  const raw = String(input ?? "").trim();
+function normalizeRepoStatus(input: string): RepoStatus | null {
+  const raw = (input ?? "").trim();
   if (!raw) return null;
 
-  // direct enum value match (case-insensitive)
-  const wantLower = raw.toLowerCase();
-  const direct = (ALLOWED_STATUSES as string[]).find(
-    (v) => v.toLowerCase() === wantLower,
+  // allow direct match by value (case-insensitive)
+  const want = raw.toLowerCase();
+  const direct = (Object.values(RepoStatus) as string[]).find(
+    (v) => v.toLowerCase() === want,
   );
   if (direct) return direct as RepoStatus;
 
-  // legacy tokens: "IN SETUP" / "in-setup" / "IN_SETUP" -> "IN_SETUP"
-  const key = raw.toUpperCase().replace(/[\s-]+/g, "_");
-  return LEGACY_STATUS_ALIASES[key] ?? null;
+  // allow legacy keys (ACTIVE/IN_SETUP/etc.)
+  const upper = raw.toUpperCase();
+  return LEGACY_TO_REPO_STATUS[upper] ?? null;
 }
 
 export async function PATCH(
@@ -62,6 +56,7 @@ export async function PATCH(
   const check = assertInternalToken(req);
   if (!check.ok) return check.response;
 
+  // Next 16: params is a Promise
   const { nhId: rawNhId } = await context.params;
   const nhId = decodeURIComponent(rawNhId ?? "").trim();
 
@@ -79,13 +74,20 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const status = normalizeIncomingStatus(body?.status);
+  if (!body.status || typeof body.status !== "string") {
+    return NextResponse.json(
+      { error: "Missing or invalid 'status' field" },
+      { status: 400 },
+    );
+  }
+
+  const status = normalizeRepoStatus(body.status);
   if (!status) {
     return NextResponse.json(
       {
         error: "Invalid status",
-        allowed: ALLOWED_STATUSES,
-        legacyAccepted: Object.keys(LEGACY_STATUS_ALIASES),
+        allowedRepoStatus: Object.values(RepoStatus),
+        acceptedLegacyKeys: Object.keys(LEGACY_TO_REPO_STATUS),
       },
       { status: 400 },
     );
@@ -96,24 +98,21 @@ export async function PATCH(
     return NextResponse.json({ error: "Repo not found", nhId }, { status: 404 });
   }
 
-  // ✅ Type this to Prisma’s expected update input for the model
   const data: Prisma.RepoUpdateInput = { status };
 
-  // notes handling for Json field:
-  // - if notes omitted: do nothing
-  // - if notes null or "" -> clear (DB null)
-  // - if notes non-empty -> set trimmed string (valid JSON scalar)
-  if ("notes" in body) {
-    if (body.notes === null) {
-      data.notes = Prisma.DbNull;
-    } else if (typeof body.notes === "string") {
-      const trimmed = body.notes.trim();
-      data.notes = trimmed.length ? trimmed : Prisma.DbNull;
-    }
+  // notes is Json? in schema
+  // - omit => no change
+  // - empty/null => clear
+  // - non-empty string => set as JSON string
+  if (body.notes !== undefined) {
+    const trimmed = typeof body.notes === "string" ? body.notes.trim() : "";
+    data.notes = trimmed.length
+      ? (trimmed as Prisma.InputJsonValue)
+      : Prisma.DbNull;
   }
 
   const updated = await prisma.repo.update({
-    where: { id: repo.id },
+    where: { id: repo.id }, // id is unique
     data,
   });
 

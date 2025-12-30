@@ -1,7 +1,9 @@
 // portal/src/lib/prisma.ts
-import { PrismaClient } from "../../prisma/generated/prisma";
+import { PrismaClient, Prisma } from "../../prisma/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+
+export { Prisma };
 
 const { Pool } = pg;
 

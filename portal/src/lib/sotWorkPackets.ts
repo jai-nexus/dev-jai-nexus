@@ -1,5 +1,10 @@
+// portal/src/lib/sotWorkPackets.ts
 import { prisma } from "@/lib/prisma";
-import type { Prisma, WorkPacket, WorkPacketStatus } from "../../prisma/generated/prisma";
+import type {
+  Prisma,
+  WorkPacket,
+  WorkPacketStatus,
+} from "../../prisma/generated/prisma";
 import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
 
 type JsonScalar = string | number | boolean;
@@ -88,8 +93,10 @@ export type EmitWorkPacketSotEventArgs = {
 
 export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
   const db = args.db ?? prisma;
+  const ts = args.ts ?? new Date();
 
-  const payload: Prisma.InputJsonValue = {
+  // Work-packet specific payload (your internal schema)
+  const workPayload: Prisma.InputJsonValue = {
     schema: "work-packet-sot-0.1",
     mutationId: args.mutationId,
     workPacket: args.workPacket,
@@ -100,17 +107,35 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
     data: args.data ?? {},
   };
 
+  // ✅ SoT v0.1 envelope (locked contract)
+  // Store this whole object into SotEvent.payload so it’s portable/exportable.
+  const sotEvent = {
+    version: "0.1",
+    ts: ts.toISOString(),
+    source: args.source ?? "jai-work-ui",
+    kind: args.kind,
+    summary: args.summary,
+    nhId: args.nhId,
+    // keep these present but empty-safe (contract usually allows null/empty)
+    repoName: null,
+    domainName: null,
+    payload: workPayload,
+  };
+
+  // throws if it drifts
+  assertSotEventV01(sotEvent);
+
   await db.sotEvent.create({
     data: {
-      ts: args.ts ?? new Date(),
-      source: args.source ?? "jai-work-ui",
-      kind: args.kind,
-      nhId: args.nhId,
-      summary: args.summary,
-      payload,
+      ts,
+      source: sotEvent.source,
+      kind: sotEvent.kind,
+      nhId: sotEvent.nhId,
+      summary: sotEvent.summary,
+      payload: sotEvent as Prisma.InputJsonValue,
       repoId: args.repoId ?? null,
 
-      // ✅ Stable anchor for streams, independent of nhId edits
+      // stable anchor for streams
       workPacketId: args.workPacket.id,
     },
   });
