@@ -33,7 +33,8 @@
     "jai:wave:plan": "dotenv -e .env.local -- tsx scripts/jai-agent-plan-wave.ts",
     "jai:wave:apply": "dotenv -e .env.local -- tsx scripts/jai-wave-apply.ts",
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
