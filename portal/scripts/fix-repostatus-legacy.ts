@@ -1,120 +1,120 @@
 // portal/scripts/fix-repostatus-legacy.ts
 import dotenv from "dotenv";
 
-// Load ENV_FILE first (e.g. .env.vercel.production), and make it win
 const envFile = (process.env.ENV_FILE?.trim() || ".env.local").trim();
-dotenv.config({ path: envFile, override: true });
 
-// .env is fallback only (never override ENV_FILE)
+// ✅ ENV_FILE should win
+dotenv.config({ path: envFile, override: true });
+// ✅ .env is fallback only
 dotenv.config({ path: ".env", override: false });
 
-// IMPORTANT: dynamic import so env is loaded before prisma.ts executes.
+// Import Prisma AFTER env is loaded
 const { prisma } = await import("../src/lib/prisma");
+
+function safeDbInfo() {
+  const raw = process.env.DATABASE_URL || process.env.DIRECT_URL;
+  if (!raw) return { ok: false as const, msg: "DATABASE_URL/DIRECT_URL unset" };
+
+  try {
+    const u = new URL(raw);
+    return {
+      ok: true as const,
+      host: u.host,
+      db: u.pathname,
+      hasSsl: u.searchParams.has("sslmode") || u.searchParams.has("ssl"),
+    };
+  } catch {
+    return { ok: false as const, msg: "Connection string not parseable as URL" };
+  }
+}
 
 async function main() {
   console.log("ENV_FILE     =", envFile);
   console.log("DATABASE_URL =", process.env.DATABASE_URL ? "[set]" : "[unset]");
   console.log("DIRECT_URL   =", process.env.DIRECT_URL ? "[set]" : "[unset]");
 
-  // 1) Detect column type
-  const col = await prisma.$queryRaw<
-    Array<{ data_type: string; udt_name: string }>
-  >`
-    SELECT data_type, udt_name
-    FROM information_schema.columns
-    WHERE table_schema='public'
-      AND table_name='Repo'
-      AND column_name='status'
-    LIMIT 1;
-  `;
+  const info = safeDbInfo();
+  if (info.ok) console.log("DB =", { host: info.host, db: info.db, ssl: info.hasSsl });
+  else console.log("DB =", info.msg);
 
-  const udt = col[0]?.udt_name ?? "(unknown)";
-  console.log("Repo.status udt_name =", udt);
-
-  // 2) If postgres enum labels are uppercase, rename them to lowercase.
-  // Safe: only runs if those labels exist.
+  // 1) Rename enum labels if prod still uses uppercase labels
   await prisma.$executeRawUnsafe(`
 DO $$
+DECLARE type_name text;
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_type t
-    JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'RepoStatus' AND e.enumlabel = 'ACTIVE'
-  ) THEN
-    EXECUTE 'ALTER TYPE "RepoStatus" RENAME VALUE ''ACTIVE'' TO ''active''';
+  SELECT t.typname INTO type_name
+  FROM pg_type t
+  WHERE lower(t.typname) = lower('RepoStatus')
+  LIMIT 1;
+
+  IF type_name IS NULL THEN
+    RAISE NOTICE 'RepoStatus enum type not found; skipping enum label rename.';
+    RETURN;
   END IF;
 
   IF EXISTS (
     SELECT 1 FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'RepoStatus' AND e.enumlabel = 'FROZEN'
+    WHERE lower(t.typname) = lower('RepoStatus') AND e.enumlabel = 'ACTIVE'
   ) THEN
-    EXECUTE 'ALTER TYPE "RepoStatus" RENAME VALUE ''FROZEN'' TO ''frozen''';
+    EXECUTE format('ALTER TYPE %I RENAME VALUE ''ACTIVE'' TO ''active''', type_name);
   END IF;
 
   IF EXISTS (
     SELECT 1 FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'RepoStatus' AND e.enumlabel = 'PLANNED'
+    WHERE lower(t.typname) = lower('RepoStatus') AND e.enumlabel = 'FROZEN'
   ) THEN
-    EXECUTE 'ALTER TYPE "RepoStatus" RENAME VALUE ''PLANNED'' TO ''planned''';
+    EXECUTE format('ALTER TYPE %I RENAME VALUE ''FROZEN'' TO ''frozen''', type_name);
   END IF;
 
   IF EXISTS (
     SELECT 1 FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'RepoStatus' AND e.enumlabel = 'PARKED'
+    WHERE lower(t.typname) = lower('RepoStatus') AND e.enumlabel = 'PLANNED'
   ) THEN
-    EXECUTE 'ALTER TYPE "RepoStatus" RENAME VALUE ''PARKED'' TO ''parked''';
+    EXECUTE format('ALTER TYPE %I RENAME VALUE ''PLANNED'' TO ''planned''', type_name);
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_type t
+    JOIN pg_enum e ON t.oid = e.enumtypid
+    WHERE lower(t.typname) = lower('RepoStatus') AND e.enumlabel = 'PARKED'
+  ) THEN
+    EXECUTE format('ALTER TYPE %I RENAME VALUE ''PARKED'' TO ''parked''', type_name);
   END IF;
 END $$;
   `);
 
-  // 3) Normalize row values (works for enum columns or text columns)
-  if (udt === "RepoStatus") {
-    await prisma.$executeRawUnsafe(`
-      UPDATE "Repo"
-      SET status = (
-        CASE UPPER(status::text)
-          WHEN 'ACTIVE'   THEN 'active'
-          WHEN 'FROZEN'   THEN 'frozen'
-          WHEN 'PLANNED'  THEN 'planned'
-          WHEN 'PARKED'   THEN 'parked'
-          WHEN 'IN_SETUP' THEN 'planned'
-          WHEN 'ARCHIVED' THEN 'parked'
-          WHEN 'BLOCKED'  THEN 'frozen'
-          ELSE status::text
-        END
-      )::"RepoStatus"
-      WHERE status IS NOT NULL
-        AND UPPER(status::text) IN ('ACTIVE','FROZEN','PLANNED','PARKED','IN_SETUP','ARCHIVED','BLOCKED');
-    `);
-  } else {
-    await prisma.$executeRawUnsafe(`
-      UPDATE "Repo"
-      SET status = (
-        CASE UPPER(status::text)
-          WHEN 'ACTIVE'   THEN 'active'
-          WHEN 'FROZEN'   THEN 'frozen'
-          WHEN 'PLANNED'  THEN 'planned'
-          WHEN 'PARKED'   THEN 'parked'
-          WHEN 'IN_SETUP' THEN 'planned'
-          WHEN 'ARCHIVED' THEN 'parked'
-          WHEN 'BLOCKED'  THEN 'frozen'
-          ELSE status::text
-        END
-      )
-      WHERE status IS NOT NULL
-        AND UPPER(status::text) IN ('ACTIVE','FROZEN','PLANNED','PARKED','IN_SETUP','ARCHIVED','BLOCKED');
-    `);
-  }
+  // 2) Normalize legacy row values.
+  // IMPORTANT: do not use CASE-to-text then cast (that breaks on enum name drift).
+  // Do simple targeted updates instead — works for enum OR text columns.
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Repo" SET status = 'active'
+    WHERE status IS NOT NULL AND UPPER(status::text) IN ('ACTIVE','LIVE','ENABLED');
+  `);
 
-  // 4) Report final state
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Repo" SET status = 'planned'
+    WHERE status IS NOT NULL AND UPPER(status::text) IN ('IN_SETUP','PLANNED','TODO','BACKLOG');
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Repo" SET status = 'frozen'
+    WHERE status IS NOT NULL AND UPPER(status::text) IN ('FROZEN','LOCKED','BLOCKED');
+  `);
+
+  await prisma.$executeRawUnsafe(`
+    UPDATE "Repo" SET status = 'parked'
+    WHERE status IS NOT NULL AND UPPER(status::text) IN ('PARKED','PAUSED','HOLD','ARCHIVED');
+  `);
+
+  // 3) Report final state
   const labels = await prisma.$queryRaw<Array<{ enumlabel: string }>>`
     SELECT e.enumlabel::text AS enumlabel
     FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
-    WHERE t.typname = 'RepoStatus'
+    WHERE lower(t.typname) = lower('RepoStatus')
     ORDER BY e.enumsortorder;
   `;
   console.log("RepoStatus enum labels:", labels.map((r) => r.enumlabel));

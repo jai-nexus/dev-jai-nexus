@@ -34,5 +34,7 @@ if (process.env.NODE_ENV !== "production") {
   g.prisma = prisma;
 }
 
+// ✅ Export Prisma namespace (types + helpers like Prisma.DbNull)
 export { Prisma };
+
 export default prisma;

@@ -3,11 +3,9 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma, Prisma } from "@/lib/prisma";
 import { assertInternalToken } from "@/lib/internalAuth";
-
 import { RepoStatus } from "@/lib/dbEnums";
-import { Prisma } from "@/lib/dbPrisma";
 
 type StatusPayload = {
   status: string;
@@ -58,6 +56,7 @@ export async function PATCH(
   const check = assertInternalToken(req);
   if (!check.ok) return check.response;
 
+  // Next 16: params is a Promise
   const { nhId: rawNhId } = await context.params;
   const nhId = decodeURIComponent(rawNhId ?? "").trim();
 
@@ -103,17 +102,15 @@ export async function PATCH(
 
   // notes is Json? in schema
   // - omit => no change
-  // - null/empty => clear (DB NULL)
+  // - null/empty => clear (DbNull)
   // - non-empty string => set as JSON string
   if (body.notes !== undefined) {
     const trimmed = typeof body.notes === "string" ? body.notes.trim() : "";
-    data.notes = trimmed.length
-      ? (trimmed as Prisma.InputJsonValue)
-      : Prisma.DbNull;
+    data.notes = trimmed.length ? (trimmed as Prisma.InputJsonValue) : Prisma.DbNull;
   }
 
   const updated = await prisma.repo.update({
-    where: { id: repo.id },
+    where: { id: repo.id }, // ✅ id is unique
     data,
   });
 

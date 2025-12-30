@@ -1,4 +1,11 @@
 // portal/src/lib/contracts/sotEventV01.ts
+//
+// IMPORTANT:
+// This contract validator MUST NOT read JSON schema files from disk.
+// Vercel builds can fail during "collect page data" if a module tries to open
+// e.g. /vercel/path0/vendor/datacontracts/... (submodules often aren't present).
+//
+// So: runtime-only, pure TS validation. No fs/path imports. No schema loading.
 
 export type SotEventV01 = {
   version: "0.1";
@@ -32,6 +39,27 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
+function optStringOrNull(
+  v: Record<string, unknown>,
+  key: keyof SotEventV01,
+  errors: string[],
+) {
+  if (!(key in v)) return;
+  const val = v[key as string];
+  if (val === null || val === undefined) return;
+  if (typeof val !== "string") errors.push(`${String(key)} must be string | null`);
+}
+
+/**
+ * Strict validator:
+ * - requires: version, ts, source, kind
+ * - optional strings may be string | null
+ * - rejects unknown keys
+ */
 export function validateSotEventV01(v: unknown): { ok: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -39,37 +67,33 @@ export function validateSotEventV01(v: unknown): { ok: boolean; errors: string[]
     return { ok: false, errors: ["Expected object"] };
   }
 
+  // Required presence
   for (const k of REQUIRED) {
     if (!(k in v)) errors.push(`Missing required field: ${k}`);
   }
 
+  // Required types/values
   if ("version" in v && v.version !== "0.1") {
     errors.push(`version must be "0.1"`);
   }
 
-  if ("ts" in v && (typeof v.ts !== "string" || v.ts.trim().length === 0)) {
+  if ("ts" in v && !isNonEmptyString(v.ts)) {
     errors.push("ts must be a non-empty string");
   }
 
-  if ("source" in v && (typeof v.source !== "string" || v.source.trim().length === 0)) {
+  if ("source" in v && !isNonEmptyString(v.source)) {
     errors.push("source must be a non-empty string");
   }
 
-  if ("kind" in v && (typeof v.kind !== "string" || v.kind.trim().length === 0)) {
+  if ("kind" in v && !isNonEmptyString(v.kind)) {
     errors.push("kind must be a non-empty string");
   }
 
-  const optStringOrNull = (key: keyof SotEventV01) => {
-    if (!(key in v)) return;
-    const val = v[key as string];
-    if (val === null) return;
-    if (typeof val !== "string") errors.push(`${String(key)} must be string | null`);
-  };
-
-  optStringOrNull("summary");
-  optStringOrNull("nhId");
-  optStringOrNull("repoName");
-  optStringOrNull("domainName");
+  // Optional fields
+  optStringOrNull(v, "summary", errors);
+  optStringOrNull(v, "nhId", errors);
+  optStringOrNull(v, "repoName", errors);
+  optStringOrNull(v, "domainName", errors);
 
   // Strict: no extra keys
   for (const k of Object.keys(v)) {
@@ -77,6 +101,14 @@ export function validateSotEventV01(v: unknown): { ok: boolean; errors: string[]
   }
 
   return { ok: errors.length === 0, errors };
+}
+
+/**
+ * Convenient safe parser (never throws).
+ */
+export function parseSotEventV01(v: unknown): SotEventV01 | null {
+  const res = validateSotEventV01(v);
+  return res.ok ? (v as SotEventV01) : null;
 }
 
 /**
