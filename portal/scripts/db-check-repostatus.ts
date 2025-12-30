@@ -2,15 +2,13 @@
 import dotenv from "dotenv";
 
 // Allow selecting a specific env file (defaults to .env.local)
-const envFile = (process.env.ENV_FILE || ".env.local").trim();
+const envFile = process.env.ENV_FILE || ".env.local";
 
-// Force override so the selected env file wins (important for prod checks)
+// ENV_FILE must win
 dotenv.config({ path: envFile, override: true });
-
 // .env is fallback only (never override ENV_FILE)
 dotenv.config({ path: ".env", override: false });
 
-// IMPORTANT: dynamic import so env is loaded BEFORE prisma.ts evaluates
 const { prisma } = await import("../src/lib/prisma");
 
 async function main() {

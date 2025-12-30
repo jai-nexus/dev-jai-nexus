@@ -3,8 +3,6 @@ import { PrismaClient, Prisma } from "../../prisma/generated/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
-export { Prisma };
-
 const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL;
@@ -36,4 +34,5 @@ if (process.env.NODE_ENV !== "production") {
   g.prisma = prisma;
 }
 
+export { Prisma };
 export default prisma;

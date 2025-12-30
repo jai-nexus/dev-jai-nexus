@@ -8,7 +8,6 @@ dotenv.config({ path: envFile, override: true });
 // .env is fallback only (never override ENV_FILE)
 dotenv.config({ path: ".env", override: false });
 
-// IMPORTANT: dynamic import so env is loaded BEFORE prisma.ts evaluates
 const { prisma } = await import("../src/lib/prisma");
 
 async function main() {
@@ -24,13 +23,10 @@ async function main() {
     LIMIT 1;
   `;
 
-  const udt = (col[0]?.udt_name ?? "(unknown)").toString();
+  const udt = col[0]?.udt_name ?? "(unknown)";
   console.log("Repo.status udt_name =", udt);
 
-  const isRepoStatusEnum = udt.toLowerCase() === "repostatus";
-
-  // 2) Rename enum labels if the DB enum labels are still uppercase
-  // (safe: only runs when the label exists)
+  // 2) Rename enum labels if prod still uses uppercase labels
   await prisma.$executeRawUnsafe(`
 DO $$
 BEGIN
@@ -68,8 +64,8 @@ BEGIN
 END $$;
   `);
 
-  // 3) Normalize any legacy row values (works whether the column is enum or text)
-  if (isRepoStatusEnum) {
+  // 3) Normalize any legacy row values
+  if (udt === "RepoStatus") {
     await prisma.$executeRawUnsafe(`
       UPDATE "Repo"
       SET status = (
@@ -109,7 +105,7 @@ END $$;
 
   // 4) Report final state
   const labels = await prisma.$queryRaw<Array<{ enumlabel: string }>>`
-    SELECT e.enumlabel::text AS enumlabel
+    SELECT e.enumlabel
     FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
     WHERE t.typname = 'RepoStatus'

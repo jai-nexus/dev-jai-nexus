@@ -56,7 +56,6 @@ export async function PATCH(
   const check = assertInternalToken(req);
   if (!check.ok) return check.response;
 
-  // Next 16: params is a Promise
   const { nhId: rawNhId } = await context.params;
   const nhId = decodeURIComponent(rawNhId ?? "").trim();
 
@@ -106,13 +105,11 @@ export async function PATCH(
   // - non-empty string => set as JSON string
   if (body.notes !== undefined) {
     const trimmed = typeof body.notes === "string" ? body.notes.trim() : "";
-    data.notes = trimmed.length
-      ? (trimmed as Prisma.InputJsonValue)
-      : Prisma.DbNull;
+    data.notes = trimmed.length ? (trimmed as Prisma.InputJsonValue) : Prisma.DbNull;
   }
 
   const updated = await prisma.repo.update({
-    where: { id: repo.id }, // id is unique
+    where: { id: repo.id },
     data,
   });
 
