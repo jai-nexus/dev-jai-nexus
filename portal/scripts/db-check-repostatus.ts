@@ -2,13 +2,13 @@
 import dotenv from "dotenv";
 
 // Allow selecting a specific env file (defaults to .env.local)
-const envFile = process.env.ENV_FILE || ".env.local";
+const envFile = (process.env.ENV_FILE || ".env.local").trim();
 
-// ENV_FILE must win
+// Force override so the selected env file wins (important for prod checks)
 dotenv.config({ path: envFile, override: true });
-// .env is fallback only (never override ENV_FILE)
 dotenv.config({ path: ".env", override: false });
 
+// IMPORTANT: dynamic import so env is loaded before prisma.ts executes.
 const { prisma } = await import("../src/lib/prisma");
 
 async function main() {
@@ -25,7 +25,7 @@ async function main() {
   `;
   console.log("RepoStatus enum labels:", enumLabels.map((r) => r.enumlabel));
 
-  const counts = await prisma.$queryRaw<{ status: string; count: bigint }[]>`
+  const counts = await prisma.$queryRaw<{ status: string | null; count: bigint }[]>`
     SELECT status::text AS status, COUNT(*)::bigint AS count
     FROM "Repo"
     GROUP BY status

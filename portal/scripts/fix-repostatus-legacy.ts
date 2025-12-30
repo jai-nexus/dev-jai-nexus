@@ -8,25 +8,31 @@ dotenv.config({ path: envFile, override: true });
 // .env is fallback only (never override ENV_FILE)
 dotenv.config({ path: ".env", override: false });
 
+// IMPORTANT: dynamic import so env is loaded before prisma.ts executes.
 const { prisma } = await import("../src/lib/prisma");
 
 async function main() {
-  console.log("ENV_FILE =", envFile);
+  console.log("ENV_FILE     =", envFile);
   console.log("DATABASE_URL =", process.env.DATABASE_URL ? "[set]" : "[unset]");
   console.log("DIRECT_URL   =", process.env.DIRECT_URL ? "[set]" : "[unset]");
 
   // 1) Detect column type
-  const col = await prisma.$queryRaw<Array<{ data_type: string; udt_name: string }>>`
+  const col = await prisma.$queryRaw<
+    Array<{ data_type: string; udt_name: string }>
+  >`
     SELECT data_type, udt_name
     FROM information_schema.columns
-    WHERE table_schema='public' AND table_name='Repo' AND column_name='status'
+    WHERE table_schema='public'
+      AND table_name='Repo'
+      AND column_name='status'
     LIMIT 1;
   `;
 
   const udt = col[0]?.udt_name ?? "(unknown)";
   console.log("Repo.status udt_name =", udt);
 
-  // 2) Rename enum labels if prod still uses uppercase labels
+  // 2) If postgres enum labels are uppercase, rename them to lowercase.
+  // Safe: only runs if those labels exist.
   await prisma.$executeRawUnsafe(`
 DO $$
 BEGIN
@@ -64,7 +70,7 @@ BEGIN
 END $$;
   `);
 
-  // 3) Normalize any legacy row values
+  // 3) Normalize row values (works for enum columns or text columns)
   if (udt === "RepoStatus") {
     await prisma.$executeRawUnsafe(`
       UPDATE "Repo"
@@ -105,7 +111,7 @@ END $$;
 
   // 4) Report final state
   const labels = await prisma.$queryRaw<Array<{ enumlabel: string }>>`
-    SELECT e.enumlabel
+    SELECT e.enumlabel::text AS enumlabel
     FROM pg_type t
     JOIN pg_enum e ON t.oid = e.enumtypid
     WHERE t.typname = 'RepoStatus'
@@ -113,7 +119,7 @@ END $$;
   `;
   console.log("RepoStatus enum labels:", labels.map((r) => r.enumlabel));
 
-  const counts = await prisma.$queryRaw<Array<{ status: string; count: bigint }>>`
+  const counts = await prisma.$queryRaw<Array<{ status: string | null; count: bigint }>>`
     SELECT status::text AS status, COUNT(*)::bigint AS count
     FROM "Repo"
     GROUP BY status

@@ -1,88 +1,100 @@
 // portal/src/lib/contracts/sotEventV01.ts
-/**
- * IMPORTANT:
- * Vercel build executes server modules during "Collecting page data".
- * Do NOT read external files at module import time (fs.readFileSync at top-level),
- * especially from vendor/ submodules (they may not be present in CI builds).
- *
- * This module intentionally implements a lightweight runtime validator
- * with zero filesystem dependencies.
- */
 
 export type SotEventV01 = {
-  version: string | number;
-  ts: string; // ISO timestamp string
+  version: "0.1";
+  ts: string;
   source: string;
   kind: string;
 
   summary?: string | null;
   nhId?: string | null;
-
   repoName?: string | null;
   domainName?: string | null;
 
   payload?: unknown;
 };
 
+const REQUIRED = ["version", "ts", "source", "kind"] as const;
+
+const ALLOWED = new Set<string>([
+  "version",
+  "ts",
+  "source",
+  "kind",
+  "summary",
+  "nhId",
+  "repoName",
+  "domainName",
+  "payload",
+]);
+
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-function asString(v: unknown): string | null {
-  if (typeof v === "string") return v;
-  if (typeof v === "number" && Number.isFinite(v)) return String(v);
-  return null;
-}
+export function validateSotEventV01(v: unknown): { ok: boolean; errors: string[] } {
+  const errors: string[] = [];
 
-function requireString(obj: Record<string, unknown>, key: string): string {
-  const s = asString(obj[key]);
-  if (!s || !s.trim()) {
-    throw new Error(`[sotEventV01] Missing or invalid "${key}"`);
+  if (!isRecord(v)) {
+    return { ok: false, errors: ["Expected object"] };
   }
-  return s.trim();
-}
 
-function optionalString(obj: Record<string, unknown>, key: string): string | null {
-  const s = asString(obj[key]);
-  return s && s.trim() ? s.trim() : null;
+  for (const k of REQUIRED) {
+    if (!(k in v)) errors.push(`Missing required field: ${k}`);
+  }
+
+  if ("version" in v && v.version !== "0.1") {
+    errors.push(`version must be "0.1"`);
+  }
+
+  if ("ts" in v && (typeof v.ts !== "string" || v.ts.trim().length === 0)) {
+    errors.push("ts must be a non-empty string");
+  }
+
+  if ("source" in v && (typeof v.source !== "string" || v.source.trim().length === 0)) {
+    errors.push("source must be a non-empty string");
+  }
+
+  if ("kind" in v && (typeof v.kind !== "string" || v.kind.trim().length === 0)) {
+    errors.push("kind must be a non-empty string");
+  }
+
+  const optStringOrNull = (key: keyof SotEventV01) => {
+    if (!(key in v)) return;
+    const val = v[key as string];
+    if (val === null) return;
+    if (typeof val !== "string") errors.push(`${String(key)} must be string | null`);
+  };
+
+  optStringOrNull("summary");
+  optStringOrNull("nhId");
+  optStringOrNull("repoName");
+  optStringOrNull("domainName");
+
+  // Strict: no extra keys
+  for (const k of Object.keys(v)) {
+    if (!ALLOWED.has(k)) errors.push(`Unexpected field: ${k}`);
+  }
+
+  return { ok: errors.length === 0, errors };
 }
 
 /**
- * Throws if the input is not SoT Event v0.1-shaped.
- * (This is intentionally minimal; you can harden later.)
+ * Dev-hard assertion:
+ * - In dev: throw hard (so contract drift is obvious)
+ * - In prod: do NOT throw (don’t take down operator UI); log and continue
  */
-export function assertSotEventV01(input: unknown): asserts input is SotEventV01 {
-  if (!isRecord(input)) {
-    throw new Error("[sotEventV01] Event must be an object");
+export function assertSotEventV01(v: unknown): asserts v is SotEventV01 {
+  const res = validateSotEventV01(v);
+  if (res.ok) return;
+
+  const msg = `[sotEventV01] invalid SotEvent v0.1: ${res.errors.join("; ")}`;
+
+  if (process.env.NODE_ENV === "production") {
+    // eslint-disable-next-line no-console
+    console.warn(msg);
+    return;
   }
 
-  // required
-  const versionRaw = input.version;
-  const version =
-    typeof versionRaw === "string" || typeof versionRaw === "number"
-      ? versionRaw
-      : null;
-  if (version === null) {
-    throw new Error(`[sotEventV01] Missing or invalid "version"`);
-  }
-
-  const ts = requireString(input, "ts");
-  const source = requireString(input, "source");
-  const kind = requireString(input, "kind");
-
-  // optional
-  const summary = optionalString(input, "summary");
-  const nhId = optionalString(input, "nhId");
-  const repoName = optionalString(input, "repoName");
-  const domainName = optionalString(input, "domainName");
-
-  // mutate to normalized shape (safe; caller already passed object)
-  (input as SotEventV01).version = version;
-  (input as SotEventV01).ts = ts;
-  (input as SotEventV01).source = source;
-  (input as SotEventV01).kind = kind;
-  (input as SotEventV01).summary = summary;
-  (input as SotEventV01).nhId = nhId;
-  (input as SotEventV01).repoName = repoName;
-  (input as SotEventV01).domainName = domainName;
+  throw new Error(msg);
 }

@@ -3,16 +3,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, Prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { assertInternalToken } from "@/lib/internalAuth";
+
 import { RepoStatus } from "@/lib/dbEnums";
+import { Prisma } from "@/lib/dbPrisma";
 
 type StatusPayload = {
   status: string;
   notes?: string | null;
 };
 
-// Accept legacy status labels, but WRITE ONLY RepoStatus values.
+// Accept legacy labels, but WRITE ONLY RepoStatus values.
 const LEGACY_TO_REPO_STATUS: Record<string, RepoStatus> = {
   ACTIVE: RepoStatus.active,
   LIVE: RepoStatus.active,
@@ -101,11 +103,13 @@ export async function PATCH(
 
   // notes is Json? in schema
   // - omit => no change
-  // - empty/null => clear
+  // - null/empty => clear (DB NULL)
   // - non-empty string => set as JSON string
   if (body.notes !== undefined) {
     const trimmed = typeof body.notes === "string" ? body.notes.trim() : "";
-    data.notes = trimmed.length ? (trimmed as Prisma.InputJsonValue) : Prisma.DbNull;
+    data.notes = trimmed.length
+      ? (trimmed as Prisma.InputJsonValue)
+      : Prisma.DbNull;
   }
 
   const updated = await prisma.repo.update({

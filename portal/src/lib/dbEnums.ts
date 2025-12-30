@@ -1,7 +1,7 @@
 // portal/src/lib/dbEnums.ts
 // Central export for Prisma enums to avoid import-path drift.
-// IMPORTANT: Turbopack treats `export { X }` + `export type { X }` as duplicate exports.
-// So we export runtime enums, and export type aliases under different names.
+// IMPORTANT: Turbopack can be touchy with re-export patterns.
+// Keep this file enums-only.
 
 import {
   RepoStatus,
@@ -12,7 +12,14 @@ import {
   InboxItemStatus,
 } from "../../prisma/generated/prisma";
 
-export { RepoStatus, DomainStatus, DomainEnv, Role, WorkPacketStatus, InboxItemStatus };
+export {
+  RepoStatus,
+  DomainStatus,
+  DomainEnv,
+  Role,
+  WorkPacketStatus,
+  InboxItemStatus,
+};
 
 // Type aliases (different names) derived from runtime enums
 export type RepoStatusValue = (typeof RepoStatus)[keyof typeof RepoStatus];
@@ -23,3 +30,4 @@ export type WorkPacketStatusValue =
   (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus];
 export type InboxItemStatusValue =
   (typeof InboxItemStatus)[keyof typeof InboxItemStatus];
+ 
