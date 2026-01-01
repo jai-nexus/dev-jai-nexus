@@ -13,7 +13,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  guardrails:
+    name: guardrails
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,9 +28,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.merge_commit_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -63,3 +61,4 @@ jobs:
 
       - name: Build portal
         run: pnpm -C portal build
+
