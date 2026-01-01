@@ -45,15 +45,28 @@ export default async function OperatorEventsPage({
   if (sourceFilter) where.source = sourceFilter;
   if (kindFilter) where.kind = kindFilter;
 
-  const events = await prisma.sotEvent.findMany({
-    where,
-    orderBy: { ts: "desc" },
-    take: 100,
-  });
+  // Stats Query (Parallel)
+  const [events, total24h, latestEvent] = await Promise.all([
+    prisma.sotEvent.findMany({
+      where,
+      orderBy: { ts: "desc" },
+      take: 20, // Reduced from 100 as per plan
+    }),
+    prisma.sotEvent.count({
+      where: {
+        ts: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      }
+    }),
+    prisma.sotEvent.findFirst({
+      orderBy: { ts: 'desc' },
+      select: { ts: true }
+    })
+  ]);
 
   type SotEventRow = (typeof events)[number];
 
   const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
+  const lastIngest = latestEvent?.ts ? formatCentral(latestEvent.ts) : "Never";
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -63,9 +76,21 @@ export default async function OperatorEventsPage({
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
 
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
+          <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
+            <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>
+            <div className="text-2xl font-mono text-zinc-200">{total24h}</div>
+          </div>
+          <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
+            <div className="text-xs text-gray-400 uppercase tracking-tighter">Last Event</div>
+            <div className="text-lg font-mono text-zinc-200 truncate" title={lastIngest}>{lastIngest}</div>
+          </div>
+        </div>
+
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span className="text-xs text-gray-400">
-            Showing latest 100 events · America/Chicago
+            Showing latest 20 events · America/Chicago
           </span>
 
           {hasFilters && (
@@ -109,10 +134,10 @@ export default async function OperatorEventsPage({
               <thead className="bg-zinc-950 border-b border-gray-800 text-left">
                 <tr>
                   <th className="py-2 px-3 text-xs text-gray-400">Event time</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Ingested</th>
                   <th className="py-2 px-3 text-xs text-gray-400">Source</th>
                   <th className="py-2 px-3 text-xs text-gray-400">Kind</th>
                   <th className="py-2 px-3 text-xs text-gray-400">NH_ID</th>
+                  <th className="py-2 px-3 text-xs text-gray-400">Event ID</th>
                   <th className="py-2 px-3 text-xs text-gray-400">Summary</th>
                 </tr>
               </thead>
@@ -129,12 +154,6 @@ export default async function OperatorEventsPage({
                       title={formatCentralTooltip(evt.ts)}
                     >
                       {formatCentral(evt.ts)}
-                    </td>
-                    <td
-                      className="py-2 px-3 whitespace-nowrap text-xs text-gray-400"
-                      title={formatCentralTooltip(evt.createdAt)}
-                    >
-                      {formatCentral(evt.createdAt)}
                     </td>
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       <Link
@@ -169,6 +188,9 @@ export default async function OperatorEventsPage({
                       ) : (
                         "—"
                       )}
+                    </td>
+                    <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-600 font-mono">
+                      {evt.eventId?.slice(0, 8)}...
                     </td>
                     <td className="py-2 px-3 text-xs max-w-xl truncate">
                       {evt.summary ?? "—"}

@@ -190,6 +190,7 @@ model SotEvent {
   kind   String
 
   nhId    String @default("")
+  eventId String @unique // Global distinctive ID from source
   summary String?
   payload Json?
 
