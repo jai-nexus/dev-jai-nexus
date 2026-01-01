@@ -2,11 +2,7 @@ name: portal_ci_guardrails
 
 on:
   pull_request:
-    paths:
-      - "portal/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/portal-ci-guardrails.yml"
+    branches: ["main"]
   push:
     branches: ["main"]
     paths:
@@ -14,6 +10,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,8 +19,6 @@ jobs:
       contents: read
 
     env:
-      # Prisma generate runs in postinstall; CI doesn't have secrets, so provide harmless dummy URLs
-      # to allow prisma.config.ts to load.
       DATABASE_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
       DIRECT_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
       NEXT_TELEMETRY_DISABLED: "1"
