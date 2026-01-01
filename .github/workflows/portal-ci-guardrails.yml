@@ -1,0 +1,50 @@
+name: portal_ci_guardrails
+
+on:
+  pull_request:
+    paths:
+      - "portal/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/portal-ci-guardrails.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "portal/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Guardrail - forbid generated Prisma imports
+        shell: pwsh
+        run: ./scripts/check-forbidden-prisma-imports.ps1 -Root "portal/portal/src"
+
+      - name: Build portal
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          CI: "true"
+        run: pnpm -C portal/portal build
