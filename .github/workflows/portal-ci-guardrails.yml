@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - "portal/**"
-      - "scripts/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
@@ -12,7 +11,6 @@ on:
     branches: ["main"]
     paths:
       - "portal/**"
-      - "scripts/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
@@ -63,7 +61,7 @@ jobs:
 
       - name: Guardrail - forbid generated Prisma imports
         shell: pwsh
-        run: ./scripts/check-forbidden-prisma-imports.ps1 -Root "portal/portal/src"
+        run: pwsh -NoProfile -File ./portal/scripts/check-forbidden-prisma-imports.ps1 -Root "portal/src"
 
       - name: Build portal
-        run: pnpm -C portal/portal build
+        run: pnpm -C portal build
