@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "generated/prisma"
+  previewFeatures = ["driverAdapters"]
+//   output   = "generated/prisma"
 }
 
 datasource db {
@@ -190,6 +191,7 @@ model SotEvent {
   kind   String
 
   nhId    String @default("")
+  eventId String @unique // Global distinctive ID from source
   summary String?
   payload Json?
 

@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import yaml from "js-yaml";
 import "dotenv/config";
+import crypto from "node:crypto";
 import { prisma } from "../src/lib/prisma";
 
 type RepoStatus = "active" | "frozen" | "parked";
@@ -85,12 +86,13 @@ async function main() {
   // Write directly into SotEvent table (Prisma model must have these fields)
   await prisma.sotEvent.create({
     data: {
+      eventId: crypto.randomUUID(),
       ts: new Date(), // when the audit actually ran
       source: "q4-audit-script",
       kind: "AUDIT_Q4_2025_COMPLETED",
       nhId: "1.0", // root nhId for this audit; adjust if you want a more specific marker
       summary,
-      payload, // JSON column
+      payload: payload as any, // JSON column
     },
   });
 

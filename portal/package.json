@@ -23,6 +23,8 @@
     "backfill:workpacket-sot": "dotenv -e .env.local -- tsx scripts/backfill-sotevent-workpacketid.ts",
     "seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
     "db:seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
+    "db:push:local": "prisma db push",
+    "db:push:neon": "dotenv -e .env.local -- prisma db push",
     "ingest:event": "dotenv -e .env.local -- tsx scripts/ingest-sot-event.ts",
     "audit:q4-2025": "dotenv -e .env.local -- tsx scripts/run-q4-audit.ts",
     "emit:offbook-v0": "dotenv -e .env.local -- tsx scripts/emit-offbook-v0-deployed.ts",
@@ -33,7 +35,8 @@
     "jai:wave:plan": "dotenv -e .env.local -- tsx scripts/jai-agent-plan-wave.ts",
     "jai:wave:apply": "dotenv -e .env.local -- tsx scripts/jai-wave-apply.ts",
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

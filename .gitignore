@@ -1,17 +1,31 @@
-.cache/
-data/private/
-node_modules/
-.DS_Store.cache/
-data/private/
+# OS / editor
 .DS_Store
-
 .cache/
+.venv/
+
+# deps / build
+node_modules/
+portal/node_modules/
+portal/.next/
+.vercel/
+portal/.vercel/
+
+# secrets / env (never commit)
+**/.env
+**/.env.*
+!.env.example
+!.env.sample
+
+# local/private data
 data/private/
-.env
-Makefile.tmp
-.venv
+portal/data/runs/
+portal/dev.db
+portal/*.db
+*.db
+
+# local clones / workspace
 workspace/
 
 # Prisma generated client (do not commit)
 portal/prisma/generated/
-.vercel
+portal/generated/prisma/

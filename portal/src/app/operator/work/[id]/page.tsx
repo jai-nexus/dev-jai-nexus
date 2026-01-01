@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
-import { WorkPacketStatus, type Prisma } from "../../../../../prisma/generated/prisma";
+import { WorkPacketStatus, type Prisma } from "@prisma/client";
 
 type Props = {
   // Next.js 16 sync-dynamic APIs: params is a Promise in server components
@@ -94,8 +94,8 @@ async function updatePacket(id: number, formData: FormData) {
 
     const summary = statusChanged
       ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(
-          statusChanged.to,
-        )}`
+        statusChanged.to,
+      )}`
       : `WorkPacket updated: ${after.nhId} · ${after.title}`;
 
     const data: Prisma.InputJsonValue = {

@@ -12,7 +12,7 @@ import {
   InboxItemStatus,
   WorkPacketStatus,
   type Prisma,
-} from "../../../../../prisma/generated/prisma";
+} from "@prisma/client";
 
 type SearchParamValue = string | string[] | undefined;
 
