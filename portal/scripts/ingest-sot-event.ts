@@ -2,7 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { prisma } from '@/lib/prisma';
-import type { Prisma } from '../generated/prisma/client';
+import { Prisma } from '@prisma/client';
+import crypto from 'node:crypto';
 import { parseSotTimestamp } from '@/lib/time';
 
 type RawEvent = {
@@ -184,7 +185,7 @@ async function main() {
     if (event.version && !acceptedVersions.has(event.version)) {
       console.warn(
         `Warning: unexpected sot-event version "${event.version}". ` +
-          'Expected "sot-event-0.1" (or "0.1"). Ingesting anyway.',
+        'Expected "sot-event-0.1" (or "0.1"). Ingesting anyway.',
       );
     }
 
@@ -193,14 +194,15 @@ async function main() {
 
     const created = await prisma.sotEvent.create({
       data: {
+        eventId: crypto.randomUUID(),
         ts,
         source: event.source,
         kind: event.kind,
         nhId: event.nhId ?? '',
         summary: event.summary,
-        payload: event.payload,
-        repoId,
-        domainId,
+        payload: event.payload ?? Prisma.DbNull,
+        repoId: repoId ?? null,
+        domainId: domainId ?? null,
       },
     });
 

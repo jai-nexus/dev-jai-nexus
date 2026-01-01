@@ -10,7 +10,7 @@ import {
   Role,
   WorkPacketStatus,
   InboxItemStatus,
-} from "../../prisma/generated/prisma";
+} from "@prisma/client";
 
 export {
   RepoStatus,
@@ -30,4 +30,3 @@ export type WorkPacketStatusValue =
   (typeof WorkPacketStatus)[keyof typeof WorkPacketStatus];
 export type InboxItemStatusValue =
   (typeof InboxItemStatus)[keyof typeof InboxItemStatus];
- 

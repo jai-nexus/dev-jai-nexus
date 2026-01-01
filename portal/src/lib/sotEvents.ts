@@ -1,6 +1,6 @@
 // portal/src/lib/sotEvents.ts
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "../../prisma/generated/prisma";
+import { Prisma } from "@prisma/client";
 import { parseSotTimestamp } from "@/lib/time";
 
 export type SotEventEnvelopeV01 = {
@@ -55,14 +55,15 @@ export async function recordSotEvent(input: SotEventEnvelopeV01) {
 
   return prisma.sotEvent.create({
     data: {
+      eventId: crypto.randomUUID(),
       ts,
       source: input.source,
       kind: input.kind,
       nhId: input.nhId ?? "",
       summary: input.summary,
-      payload: input.payload,
-      repoId,
-      domainId,
+      payload: input.payload ?? Prisma.DbNull,
+      repoId: repoId ?? null,
+      domainId: domainId ?? null,
     },
   });
 }

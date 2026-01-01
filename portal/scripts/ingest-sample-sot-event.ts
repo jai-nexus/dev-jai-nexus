@@ -4,6 +4,8 @@
 import 'dotenv/config';
 
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
+import crypto from 'node:crypto';
 import sampleEvent from './sample-sot-event.json';
 
 // Infer the shape of the JSON to keep TS happy
@@ -23,12 +25,13 @@ async function main() {
 
   const created = await prisma.sotEvent.create({
     data: {
+      eventId: crypto.randomUUID(),
       ts: new Date(e.ts),
       source: e.source,
       kind: e.kind,
       nhId: e.nhId ?? '',
       summary: e.summary ?? null,
-      payload: e.payload ?? {},
+      payload: (e.payload as any) ?? Prisma.DbNull,
       repoId: e.repoId ?? null,
       domainId: e.domainId ?? null,
     },

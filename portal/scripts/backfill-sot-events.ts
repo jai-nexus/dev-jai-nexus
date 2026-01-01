@@ -1,17 +1,10 @@
-
 import { prisma } from '@/lib/prisma';
-import { v4 as uuidv4 } from 'uuid'; // need to check if uuid is installed, if not use crypto
-
-// Check package.json for uuid?
-// user package.json has "bcryptjs", "openai", etc. but doesn't explicitly list "uuid".
-// I'll use crypto.randomUUID() which is node standard.
-
 import { randomUUID } from 'node:crypto';
 
 async function main() {
     console.log('Backfilling SotEvents...');
     const events = await prisma.sotEvent.findMany({
-        where: { eventId: null }
+        where: { eventId: null } as any
     });
 
     console.log(`Found ${events.length} events to backfill.`);

@@ -1,7 +1,7 @@
 // portal/src/app/api/sot-events/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "../../../../prisma/generated/prisma";
+import { Prisma } from "@prisma/client";
 import { parseSotTimestamp } from "@/lib/time";
 import { getToken } from "next-auth/jwt";
 import { assertInternalToken } from "@/lib/internalAuth";
@@ -101,14 +101,15 @@ export async function POST(req: NextRequest) {
 
     const created = await prisma.sotEvent.create({
       data: {
+        eventId: crypto.randomUUID(), // API ingest usually gets a fresh ID if not from a specific pipeline mutation
         ts,
         source: body.source,
         kind: body.kind,
         nhId: body.nhId ?? "",
         summary: body.summary,
-        payload: body.payload,
-        repoId,
-        domainId,
+        payload: body.payload ?? Prisma.DbNull,
+        repoId: repoId ?? null,
+        domainId: domainId ?? null,
       },
     });
 

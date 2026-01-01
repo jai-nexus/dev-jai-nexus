@@ -1,19 +1,16 @@
 
-import { PrismaClient } from '../prisma/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DIRECT_URL,
-        },
-    },
-});
+if (process.env.DIRECT_URL) {
+    process.env.DATABASE_URL = process.env.DIRECT_URL;
+}
+const prisma = new PrismaClient();
 
 async function main() {
     console.log('Backfilling SotEvents (Raw Client)...');
     const events = await prisma.sotEvent.findMany({
-        where: { eventId: null }
+        where: { eventId: null } as any // Cast to any to bypass strict null check if needed, or handle correctly
     });
 
     console.log(`Found ${events.length} events to backfill.`);

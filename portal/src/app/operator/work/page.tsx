@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { getAgencyConfig, type AgencyAgent } from "@/lib/agencyConfig";
-import { WorkPacketStatus } from "../../../../prisma/generated/prisma";
+import { WorkPacketStatus } from "@prisma/client";
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -74,12 +74,12 @@ function Chip({
     tone === "emerald"
       ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
       : tone === "sky"
-      ? "bg-sky-900/50 text-sky-200 border-sky-800"
-      : tone === "amber"
-      ? "bg-amber-900/40 text-amber-200 border-amber-800"
-      : tone === "purple"
-      ? "bg-purple-900/50 text-purple-200 border-purple-800"
-      : "bg-zinc-900 text-gray-200 border-gray-800";
+        ? "bg-sky-900/50 text-sky-200 border-sky-800"
+        : tone === "amber"
+          ? "bg-amber-900/40 text-amber-200 border-amber-800"
+          : tone === "purple"
+            ? "bg-purple-900/50 text-purple-200 border-purple-800"
+            : "bg-zinc-900 text-gray-200 border-gray-800";
 
   return (
     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${cls}`}>
@@ -161,16 +161,16 @@ export default async function WorkPage({ searchParams }: Props) {
 
   const inboxItems = ids.length
     ? await prisma.agentInboxItem.findMany({
-        where: { workPacketId: { in: ids } },
-        orderBy: { id: "desc" }, // newest first
-        select: {
-          id: true,
-          workPacketId: true,
-          status: true,
-          priority: true,
-          tags: true,
-        },
-      })
+      where: { workPacketId: { in: ids } },
+      orderBy: { id: "desc" }, // newest first
+      select: {
+        id: true,
+        workPacketId: true,
+        status: true,
+        priority: true,
+        tags: true,
+      },
+    })
     : [];
 
   // pick latest inbox row per packet

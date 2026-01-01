@@ -4,7 +4,7 @@ import type {
   Prisma,
   WorkPacket,
   WorkPacketStatus,
-} from "../../prisma/generated/prisma";
+} from "@prisma/client";
 import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
 
 type JsonScalar = string | number | boolean;
@@ -127,6 +127,7 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
 
   await db.sotEvent.create({
     data: {
+      eventId: args.mutationId, // Use mutationId as distinctive eventId
       ts,
       source: sotEvent.source,
       kind: sotEvent.kind,

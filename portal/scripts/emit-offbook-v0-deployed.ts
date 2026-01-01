@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
 import "dotenv/config";
+import crypto from "node:crypto";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
@@ -7,6 +8,7 @@ async function main() {
 
   const event = await prisma.sotEvent.create({
     data: {
+      eventId: crypto.randomUUID(),
       ts: new Date(ts),
       source: "offbook-deploy-script",
       kind: "OFFBOOK_V0_DEPLOYED",

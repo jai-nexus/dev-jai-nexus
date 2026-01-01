@@ -1,6 +1,7 @@
 // portal/scripts/emit-autopilot-v0-init.ts
 
 import 'dotenv/config';
+import crypto from 'node:crypto';
 import { prisma } from '../src/lib/prisma';
 
 async function main() {
@@ -8,6 +9,7 @@ async function main() {
 
   await prisma.sotEvent.create({
     data: {
+      eventId: crypto.randomUUID(),
       ts: now,
       source: 'bootstrap-script',
       kind: 'AUTOPILOT_PROJECT_REGISTERED',

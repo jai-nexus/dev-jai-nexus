@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const dtsPath = path.resolve('prisma/generated/prisma/index.d.ts');
+const dtsPath = path.resolve('node_modules/@prisma/client/index.d.ts');
 if (fs.existsSync(dtsPath)) {
     const content = fs.readFileSync(dtsPath, 'utf8');
     const clientClass = content.match(/export class PrismaClient<[^>]*> {[\s\S]*?constructor\(([^)]*)\)/);
