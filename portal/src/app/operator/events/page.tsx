@@ -17,6 +17,7 @@ type SearchParamsObj = {
   nh?: SearchParamValue;
   source?: SearchParamValue;
   kind?: SearchParamValue;
+  limit?: SearchParamValue;
 };
 
 interface OperatorEventsPageProps {
@@ -34,6 +35,15 @@ export default async function OperatorEventsPage({
   const sourceFilter = firstParam(sp.source);
   const kindFilter = firstParam(sp.kind);
 
+  // Parse limit: default 100, max 500, min 1
+  let limit = 100;
+  if (sp.limit) {
+    const parsed = parseInt(firstParam(sp.limit) || "0", 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      limit = Math.min(parsed, 500);
+    }
+  }
+
   // Simple typed where clause
   const where: {
     nhId?: string;
@@ -46,11 +56,14 @@ export default async function OperatorEventsPage({
   if (kindFilter) where.kind = kindFilter;
 
   // Stats Query (Parallel)
-  const [events, total24h, latestEvent] = await Promise.all([
+  const [events, total24h, latestEvent, kindsBreakdown] = await Promise.all([
     prisma.sotEvent.findMany({
       where,
-      orderBy: { ts: "desc" },
-      take: 20, // Reduced from 100 as per plan
+      orderBy: [
+        { ts: "desc" },
+        { eventId: "desc" } // Deterministic tie-breaker
+      ],
+      take: limit,
     }),
     prisma.sotEvent.count({
       where: {
@@ -60,13 +73,29 @@ export default async function OperatorEventsPage({
     prisma.sotEvent.findFirst({
       orderBy: { ts: 'desc' },
       select: { ts: true }
-    })
+    }),
+    // Breakdown of Kinds for current filter context
+    prisma.sotEvent.groupBy({
+      by: ['kind'],
+      where,
+      _count: { kind: true },
+      orderBy: {
+        _count: {
+          kind: 'desc'
+        }
+      },
+      take: 6 // Top 5 + 1 to see if there's "Other"
+    }).catch(() => []) // Fallback if groupBy not supported by adapter (though Postgres supports it)
   ]);
 
   type SotEventRow = (typeof events)[number];
 
   const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
   const lastIngest = latestEvent?.ts ? formatCentral(latestEvent.ts) : "Never";
+
+  // Process breakdown
+  const topKinds = kindsBreakdown.slice(0, 5);
+  const hasMoreKinds = kindsBreakdown.length > 5;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -76,8 +105,9 @@ export default async function OperatorEventsPage({
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
+          {/* Global Stats */}
           <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>
             <div className="text-2xl font-mono text-zinc-200">{total24h}</div>
@@ -86,11 +116,35 @@ export default async function OperatorEventsPage({
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Last Event</div>
             <div className="text-lg font-mono text-zinc-200 truncate" title={lastIngest}>{lastIngest}</div>
           </div>
+
+          {/* Kinds Breakdown Panel */}
+          <div className="col-span-1 md:col-span-2 bg-zinc-900/50 border border-zinc-800 p-3 rounded overflow-hidden">
+            <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">Top Kinds {hasFilters ? '(Filtered)' : '(Global)'}</div>
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {topKinds.length === 0 ? (
+                <span className="text-xs text-zinc-500 italic">No events found</span>
+              ) : (
+                topKinds.map((k) => (
+                  <div key={k.kind} className="text-xs flex items-center gap-2">
+                    <Link
+                      href={`/operator/events?kind=${encodeURIComponent(k.kind)}`}
+                      className="font-mono text-sky-400 hover:text-sky-300 truncate max-w-[200px]"
+                      title={k.kind}
+                    >
+                      {k.kind}
+                    </Link>
+                    <span className="text-zinc-500">×{k._count.kind}</span>
+                  </div>
+                ))
+              )}
+              {hasMoreKinds && <span className="text-xs text-zinc-500 italic">+ others</span>}
+            </div>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <span className="text-xs text-gray-400">
-            Showing latest 20 events · America/Chicago
+            Showing latest {limit} events · America/Chicago
           </span>
 
           {hasFilters && (

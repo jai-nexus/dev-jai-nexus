@@ -27,15 +27,18 @@ type RawEvent = {
 
 // Reusing auth logic for now, though we might want a specific SOT_INGEST_TOKEN separate logic
 // The plan called for SOT_INGEST_TOKEN.
+// Auth: Session OR SOT_INGEST_TOKEN (via x-sot-ingest-token or Bearer)
 function hasIngestToken(req: NextRequest) {
     const expected = process.env.SOT_INGEST_TOKEN;
     if (!expected) return false; // Fail safe if not set
 
     const auth = req.headers.get("authorization") ?? "";
     const bearer = auth.replace(/^Bearer\s+/i, "").trim();
+    const ingestTokenHeader = (req.headers.get("x-sot-ingest-token") ?? "").trim();
     const legacy = (req.headers.get("x-jai-internal-token") ?? "").trim();
 
     if (bearer === expected) return true;
+    if (ingestTokenHeader === expected) return true;
     if (legacy === expected) return true; // Optional: allow x-header too
     return false;
 }
@@ -70,6 +73,7 @@ async function resolveRepoDomainIds(event: RawEvent) {
 }
 
 export async function POST(req: NextRequest) {
+    console.log("[API] POST /api/sot-events/ingest hit");
     // 1. Auth: Ingest Token OR Session OR Internal Token (fallback)
     const isIngest = hasIngestToken(req);
     const isInternal = assertInternalToken(req).ok;
@@ -178,19 +182,22 @@ export async function POST(req: NextRequest) {
                 }
 
                 results.push({ id: result.eventId, status: "ok", dbId: result.id });
-            } catch (err) {
-                console.error("Upsert failed for", evt.eventId, err);
+            } catch (err: any) {
+                // Simplified log (no secrets, just code)
+                console.error(`Ingest Error [${evt.eventId}]: ${err.code} - ${err.message?.split('\n')[0]}`);
                 errors++;
-                results.push({ id: evt.eventId, status: "error", msg: "DB error" });
+                results.push({ id: evt.eventId, status: "error", code: err.code, msg: err.message?.substring(0, 100) });
             }
         }
+
+        const sampleErrors = results.filter(r => r.status === "error").slice(0, 3);
 
         return NextResponse.json({
             received,
             inserted,
             updated,
             errors,
-            // results // optional: could be too verbose
+            sampleErrors: sampleErrors.length > 0 ? sampleErrors : undefined
         });
 
     } catch (err) {

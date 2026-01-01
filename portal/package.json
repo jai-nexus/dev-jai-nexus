@@ -23,6 +23,8 @@
     "backfill:workpacket-sot": "dotenv -e .env.local -- tsx scripts/backfill-sotevent-workpacketid.ts",
     "seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
     "db:seed": "dotenv -e .env.local -- tsx prisma/seed.ts",
+    "db:push:local": "prisma db push",
+    "db:push:neon": "dotenv -e .env.local -- prisma db push",
     "ingest:event": "dotenv -e .env.local -- tsx scripts/ingest-sot-event.ts",
     "audit:q4-2025": "dotenv -e .env.local -- tsx scripts/run-q4-audit.ts",
     "emit:offbook-v0": "dotenv -e .env.local -- tsx scripts/emit-offbook-v0-deployed.ts",
