@@ -1,12 +1,15 @@
 name: portal_ci_guardrails
 
 on:
+  workflow_dispatch:
+
   pull_request:
     paths:
       - "portal/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
+
   push:
     branches: ["main"]
     paths:
@@ -15,38 +18,65 @@ on:
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: dev-jai-nexus-portal-guardrails-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  guardrails:
+    name: guardrails
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: prisma
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U prisma -d prisma"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     env:
-      # Prisma generate runs in postinstall; CI doesn't have secrets, so provide harmless dummy URLs
-      # to allow prisma.config.ts to load.
-      DATABASE_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
-      DIRECT_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
+      # Keep CI deterministic + avoid Next telemetry
       NEXT_TELEMETRY_DISABLED: "1"
       CI: "true"
+
+      # Provide a local DB URL so Prisma config can load + any accidental connections have a target.
+      DATABASE_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
+      DIRECT_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node (22)
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Enable pnpm (Corepack)
+        shell: bash
         run: |
+          set -euo pipefail
           corepack enable
           corepack prepare pnpm@10.26.0 --activate
           pnpm -v
 
       - name: Get pnpm store path
         shell: bash
-        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        run: |
+          set -euo pipefail
+          echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
 
       - name: Cache pnpm store
         uses: actions/cache@v4
@@ -57,11 +87,30 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm install --frozen-lockfile
 
       - name: Guardrail - forbid generated Prisma imports
         shell: pwsh
-        run: pwsh -NoProfile -File ./portal/scripts/check-forbidden-prisma-imports.ps1 -Root "portal/src"
+        run: |
+          pwsh -NoProfile -File ./portal/scripts/check-forbidden-prisma-imports.ps1 -Root "portal/src"
+
+      - name: Guardrail - Prisma validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm -C portal prisma validate
+
+      - name: Guardrail - Type check
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm -C portal exec tsc --noEmit
 
       - name: Build portal
-        run: pnpm -C portal build
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm -C portal build
