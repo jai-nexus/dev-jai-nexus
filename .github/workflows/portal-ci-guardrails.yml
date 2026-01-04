@@ -9,7 +9,6 @@ on:
       - "pnpm-lock.yaml"
       - ".github/workflows/portal-ci-guardrails.yml"
   push:
-    branches: ["main"]
     paths:
       - "portal/**"
       - "package.json"
