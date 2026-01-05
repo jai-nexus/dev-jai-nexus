@@ -14,7 +14,7 @@
     "lint:enum-drift": "git grep -n 'status:\\s*\"(active|planned|frozen|parked)\"' -- portal && exit 1 || exit 0",
     "prisma:format": "prisma format",
     "prisma:format:local": "dotenv -e .env.local -- prisma format",
-    "prisma:generate": "dotenv -e .env.local -- prisma generate",
+    "prisma:generate": "dotenv -e .env.local -- prisma generate --schema prisma/schema.prisma",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:local": "dotenv -e .env.local -- prisma migrate dev",
     "prisma:status:local": "dotenv -e .env.local -- prisma migrate status",
@@ -34,6 +34,7 @@
     "jai:agent:repos": "dotenv -e .env.local -- tsx scripts/jai-agent-repo-status.ts",
     "jai:wave:plan": "dotenv -e .env.local -- tsx scripts/jai-agent-plan-wave.ts",
     "jai:wave:apply": "dotenv -e .env.local -- tsx scripts/jai-wave-apply.ts",
+    "jai:wave:report": "dotenv -e .env.local -- tsx scripts/sql-wave-run-4.ts -- --waveRunId 4 --pretty",
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts"
@@ -56,7 +57,8 @@
     "pg": "^8.16.3",
     "react": "^19",
     "react-dom": "^19",
-    "yaml": "^2.8.2"
+    "yaml": "^2.8.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.17",

@@ -1,0 +1,31 @@
+meta:
+  version: "v0.1"
+  locked: true
+
+workflows:
+  - id: "wave_run"
+    states:
+      - "READY"
+      - "PLANNING"
+      - "EXECUTING"
+      - "VERIFYING"
+      - "RELEASING"
+      - "ARCHIVING"
+      - "COMPLETE"
+
+    agent_by_state:
+      READY: "jai_operator"
+      PLANNING: "jai_architect"
+      EXECUTING: "jai_builder"
+      VERIFYING: "jai_verifier"
+      RELEASING: "jai_operator"
+      ARCHIVING: "jai_librarian"
+      COMPLETE: "jai_operator"
+
+    gates_by_transition:
+      READY->PLANNING: ["registry_hash_matches"]
+      PLANNING->EXECUTING: ["work_packets_present"]
+      EXECUTING->VERIFYING: ["repo_health", "ci_guardrails"]
+      VERIFYING->RELEASING: ["all_required_gates_green"]
+      RELEASING->ARCHIVING: ["release_notes_present"]
+      ARCHIVING->COMPLETE: ["archive_artifacts_present"]
