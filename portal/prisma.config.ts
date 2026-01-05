@@ -18,9 +18,6 @@ export default defineConfig({
     // Prisma 7 config expects you to define the datasource URL here.
     datasource: { url },
 
-    // (Optional but often useful with Prisma 7 changes)
-    engine: { type: "classic" },
-
     migrations: {
         seed: "tsx prisma/seed.ts",
     },
