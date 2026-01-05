@@ -21,6 +21,7 @@ type YamlRepoRow = {
   status?: string;
   owner_agent_nh_id?: string;
   notes?: string;
+  wave?: number | null;
 };
 
 function readReposYaml(): YamlRepoRow[] {
@@ -67,10 +68,11 @@ function inferGithubUrl(repo: string): string {
   return `https://github.com/${repo}`;
 }
 
-function notesJson(notes?: string) {
+function notesJson(notes?: string, wave?: number | null) {
   const t = (notes ?? "").trim();
-  // IMPORTANT: return undefined (omit) instead of null
-  return t ? ({ text: t } as const) : undefined;
+  const waveNote = wave !== undefined && wave !== null ? `Wave: ${wave}` : "";
+  const combined = [t, waveNote].filter(Boolean).join(" | ");
+  return combined ? { text: combined, wave } : undefined;
 }
 
 async function seedReposFromYaml() {
@@ -91,7 +93,7 @@ async function seedReposFromYaml() {
       owner: r.owner_agent_nh_id ? `agent:${r.owner_agent_nh_id}` : null,
       githubUrl: inferGithubUrl(r.repo),
       defaultBranch: "main",
-      notes: notesJson(r.notes),
+      notes: notesJson(r.notes, r.wave),
     };
 
     await prisma.repo.upsert({

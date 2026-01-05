@@ -3,20 +3,15 @@ name: portal_ci_guardrails
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - "portal/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/portal-ci-guardrails.yml"
   push:
-    paths:
-      - "portal/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/portal-ci-guardrails.yml"
+    branches: ["main"]
 
+# IMPORTANT:
+# - contents: read is enough for checkout
+# - statuses: write is required to publish the missing "Expected" status context
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: dev-jai-nexus-portal-guardrails-${{ github.ref }}
@@ -28,7 +23,6 @@ jobs:
     timeout-minutes: 15
 
     env:
-      # Prisma generate runs in postinstall; CI doesn't have secrets, so provide harmless dummy URLs.
       DATABASE_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
       DIRECT_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
       NEXT_TELEMETRY_DISABLED: "1"
@@ -38,12 +32,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Paths filter (should we run?)
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            portal:
+              - "portal/**"
+              - "package.json"
+              - "pnpm-lock.yaml"
+              - ".github/workflows/portal-ci-guardrails.yml"
+
+      - name: Short-circuit (no relevant changes)
+        if: steps.changes.outputs.portal != 'true'
+        run: |
+          echo "No portal-related changes. Skipping heavy steps."
+          # Keep job green so the Actions check-run is successful.
+
       - name: Setup Node
+        if: steps.changes.outputs.portal == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Enable pnpm (Corepack)
+        if: steps.changes.outputs.portal == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -52,26 +65,25 @@ jobs:
           pnpm -v
 
       - name: Install deps (workspace)
+        if: steps.changes.outputs.portal == 'true'
         shell: bash
         run: |
           set -euo pipefail
           pnpm install --frozen-lockfile
 
       - name: Resolve portal directory
+        if: steps.changes.outputs.portal == 'true'
         id: portal_dir
         shell: bash
         run: |
           set -euo pipefail
-
           if [ -f "portal/package.json" ]; then
             DIR="portal"
           elif [ -f "portal/portal/package.json" ]; then
             DIR="portal/portal"
           else
             echo "::error::Could not find portal/package.json or portal/portal/package.json"
-            echo "Repo root listing:"
             ls -la
-            echo "portal listing:"
             ls -la portal || true
             exit 1
           fi
@@ -81,12 +93,14 @@ jobs:
           echo "Using PORTAL_DIR=$DIR"
 
       - name: Guardrail - forbid generated Prisma imports
+        if: steps.changes.outputs.portal == 'true'
         shell: pwsh
         run: |
           pwsh -NoProfile -File "./${{ env.PORTAL_DIR }}/scripts/check-forbidden-prisma-imports.ps1" `
             -Root "./${{ env.PORTAL_DIR }}/src"
 
       - name: Guardrail - Prisma validate
+        if: steps.changes.outputs.portal == 'true'
         working-directory: ${{ env.PORTAL_DIR }}
         shell: bash
         run: |
@@ -94,6 +108,7 @@ jobs:
           pnpm exec prisma validate
 
       - name: Guardrail - Type check
+        if: steps.changes.outputs.portal == 'true'
         working-directory: ${{ env.PORTAL_DIR }}
         shell: bash
         run: |
@@ -101,8 +116,42 @@ jobs:
           pnpm exec tsc --noEmit
 
       - name: Build portal
+        if: steps.changes.outputs.portal == 'true'
         working-directory: ${{ env.PORTAL_DIR }}
         shell: bash
         run: |
           set -euo pipefail
           pnpm build
+
+  # This job exists ONLY to satisfy Rulesets that require a *commit status context*
+  # that GitHub sometimes treats separately from the Actions "check-run".
+  report_required_status:
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs: [guardrails]
+
+    permissions:
+      statuses: write
+      contents: read
+
+    steps:
+      - name: Publish required status context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = '${{ needs.guardrails.result }}'; // success|failure|cancelled|skipped
+            const map = { success: 'success', failure: 'failure', cancelled: 'error', skipped: 'success' };
+            const state = map[result] || 'error';
+
+            // Must match the Ruleset-required context EXACTLY.
+            const contextName = 'portal_ci_guardrails / guardrails (pull_request)';
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.payload.pull_request.head.sha,
+              state,
+              context: contextName,
+              description: `guardrails: ${result}`,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });

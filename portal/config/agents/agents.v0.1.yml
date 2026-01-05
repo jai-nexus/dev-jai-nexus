@@ -1,0 +1,49 @@
+meta:
+  version: "v0.1"
+  locked: true
+
+agents:
+  - id: "jai_operator"
+    role: "Operator"
+    allowed_actions:
+      - "start_wave_run"
+      - "advance_wave_state"
+      - "trigger_gate"
+      - "approve_merge"
+      - "publish_release"
+    write_scopes:
+      db_tables: ["WaveRun", "GateRun", "WorkPacket", "AgentRun", "Artifact"]
+      repo_paths: ["portal/src/app/operator/**", "portal/config/**"]
+    required_outputs: ["run_plan", "action_log", "evidence_pack", "result"]
+
+  - id: "jai_architect"
+    role: "Architect"
+    allowed_actions: ["plan_wave", "draft_work_packets"]
+    write_scopes:
+      db_tables: ["WorkPacket", "AgentRun", "Artifact"]
+      repo_paths: ["portal/config/agents/**"] # config-only
+    required_outputs: ["run_plan", "action_log", "evidence_pack", "result"]
+
+  - id: "jai_builder"
+    role: "Builder"
+    allowed_actions: ["apply_patch", "open_pr"]
+    write_scopes:
+      db_tables: ["AgentRun", "Artifact"]
+      repo_paths: ["workspace/**", "portal/**"] # code paths, but NO registry lock files
+    required_outputs: ["run_plan", "action_log", "evidence_pack", "result"]
+
+  - id: "jai_verifier"
+    role: "Verifier"
+    allowed_actions: ["run_gates", "verify_acceptance_criteria"]
+    write_scopes:
+      db_tables: ["GateRun", "AgentRun", "Artifact"]
+      repo_paths: [] # zero code writes
+    required_outputs: ["run_plan", "action_log", "evidence_pack", "result"]
+
+  - id: "jai_librarian"
+    role: "Librarian"
+    allowed_actions: ["archive_run", "update_docs_index"]
+    write_scopes:
+      db_tables: ["Artifact", "AgentRun"]
+      repo_paths: ["portal/docs/**", "portal/config/registry/**"]
+    required_outputs: ["run_plan", "action_log", "evidence_pack", "result"]
