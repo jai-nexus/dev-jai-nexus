@@ -35,5 +35,7 @@ portal/generated/prisma/
 event.json
 event.jsonl
 
-# turbo output
+# build / tool artifacts
 .turbo/
+**/.turbo/
+portal/data/runs/
