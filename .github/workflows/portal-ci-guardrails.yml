@@ -63,6 +63,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "pnpm"
 
       - name: Enable pnpm (Corepack)
         shell: bash
@@ -71,20 +72,6 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.26.0 --activate
           pnpm -v
-
-      - name: Get pnpm store path
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PNPM_STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         shell: bash
@@ -101,7 +88,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pnpm -C portal prisma validate
+          pnpm -C portal exec prisma validate --schema prisma/schema.prisma
 
       - name: Guardrail - Type check
         shell: bash
