@@ -3,12 +3,11 @@ name: portal_ci_guardrails
 on:
   workflow_dispatch:
 
-  # IMPORTANT:
-  # Do NOT path-filter PRs if this workflow is a required status check.
-  # Otherwise GitHub will block merges with "Expected — Waiting for status to be reported"
-  # when a PR commit doesn't touch the filtered paths.
-  pull_request: {}
+  # REQUIRED CHECKS CANNOT BE PATH-BASED.
+  # So run on every PR to avoid "Expected — Waiting..." blocks.
+  pull_request:
 
+  # Keep push scoped if you want (optional)
   push:
     branches: ["main"]
     paths:
@@ -25,8 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  guardrails:
-    name: guardrails
+  portal_guardrails:
+    name: portal_guardrails
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
