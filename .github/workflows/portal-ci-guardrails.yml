@@ -56,7 +56,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # IMPORTANT: do NOT set `cache: pnpm` here (it can try to run `pnpm` before pnpm exists)
       - name: Setup Node (22)
         uses: actions/setup-node@v4
         with:
@@ -97,18 +96,21 @@ jobs:
 
       - name: Guardrail - Prisma validate
         shell: bash
+        working-directory: portal
         run: |
           set -euo pipefail
-          pnpm -C portal prisma validate
+          pnpm exec prisma validate
 
       - name: Guardrail - Type check
         shell: bash
+        working-directory: portal
         run: |
           set -euo pipefail
-          pnpm -C portal exec tsc --noEmit
+          pnpm exec tsc --noEmit
 
       - name: Build portal
         shell: bash
+        working-directory: portal
         run: |
           set -euo pipefail
-          pnpm -C portal build
+          pnpm build
