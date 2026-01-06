@@ -47,11 +47,8 @@ jobs:
           --health-retries=10
 
     env:
-      # Keep CI deterministic + avoid Next telemetry
       NEXT_TELEMETRY_DISABLED: "1"
       CI: "true"
-
-      # Provide a local DB URL so Prisma config can load + any accidental connections have a target.
       DATABASE_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
       DIRECT_URL: postgresql://prisma:prisma@localhost:5432/prisma?schema=public
 
@@ -59,11 +56,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # IMPORTANT: do NOT set `cache: pnpm` here (it can try to run `pnpm` before pnpm exists)
       - name: Setup Node (22)
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
 
       - name: Enable pnpm (Corepack)
         shell: bash
@@ -72,6 +69,20 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.26.0 --activate
           pnpm -v
+
+      - name: Get pnpm store path
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install deps
         shell: bash
@@ -88,7 +99,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          pnpm -C portal exec prisma validate --schema prisma/schema.prisma
+          pnpm -C portal prisma validate
 
       - name: Guardrail - Type check
         shell: bash
