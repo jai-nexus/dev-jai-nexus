@@ -3,12 +3,11 @@ name: portal_ci_guardrails
 on:
   workflow_dispatch:
 
-  pull_request:
-    paths:
-      - "portal/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/portal-ci-guardrails.yml"
+  # IMPORTANT:
+  # Do NOT path-filter PRs if this workflow is a required status check.
+  # Otherwise GitHub will block merges with "Expected — Waiting for status to be reported"
+  # when a PR commit doesn't touch the filtered paths.
+  pull_request: {}
 
   push:
     branches: ["main"]
