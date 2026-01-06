@@ -36,6 +36,7 @@ async function updateDomain(formData: FormData) {
   const domainKey = String(formData.get("domainKey") ?? "").trim();
   const engineType = String(formData.get("engineType") ?? "").trim();
 
+  // ✅ keep enum-typed normalizers (fixes TS2322)
   const status = normalizeDomainStatus(formData.get("status"));
   const env = normalizeDomainEnv(formData.get("env"));
 
@@ -53,7 +54,7 @@ async function updateDomain(formData: FormData) {
       nhId,
       domainKey: domainKey || null,
       engineType: engineType || null,
-      status,
+      status, // DomainStatus | null
       env, // DomainEnv | null
       expiresAt,
       repo: repoId ? { connect: { id: repoId } } : { disconnect: true },
@@ -80,13 +81,15 @@ async function deleteDomain(formData: FormData) {
 export default async function EditDomainPage({
   params,
 }: {
-  params: { id: string };
+  // ✅ Next.js 16: params may be a Promise in server components
+  params: { id: string } | Promise<{ id: string }>;
 }) {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
   if (!isAdmin) redirect("/domains");
 
-  const id = Number(params.id);
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (!Number.isFinite(id)) redirect("/operator/registry/domains");
 
   const domainRow = await prisma.domain.findUnique({

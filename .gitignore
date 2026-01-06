@@ -29,3 +29,11 @@ workspace/
 # Prisma generated client (do not commit)
 portal/prisma/generated/
 portal/generated/prisma/
+
+# local scratch
+.tmp/
+event.json
+event.jsonl
+
+# turbo output
+.turbo/
