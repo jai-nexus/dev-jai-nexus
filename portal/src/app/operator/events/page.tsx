@@ -21,14 +21,16 @@ type SearchParamsObj = {
 };
 
 interface OperatorEventsPageProps {
-  // Next.js 16 can provide this as a Promise in some cases (sync dynamic APIs)
+  // Next.js 16 can provide this as a Promise in some cases
   searchParams?: SearchParamsObj | Promise<SearchParamsObj>;
 }
 
-export default async function OperatorEventsPage({
-  searchParams,
-}: OperatorEventsPageProps) {
-  // ✅ Unwrap whether it's an object or Promise (avoids "searchParams is a Promise" crash)
+type KindBreakdownRow = {
+  kind: string;
+  _count: { kind: number };
+};
+
+export default async function OperatorEventsPage({ searchParams }: OperatorEventsPageProps) {
   const sp = await Promise.resolve(searchParams ?? {});
 
   const nhFilter = firstParam(sp.nh);
@@ -39,53 +41,42 @@ export default async function OperatorEventsPage({
   let limit = 100;
   if (sp.limit) {
     const parsed = parseInt(firstParam(sp.limit) || "0", 10);
-    if (!isNaN(parsed) && parsed > 0) {
+    if (!Number.isNaN(parsed) && parsed > 0) {
       limit = Math.min(parsed, 500);
     }
   }
 
-  // Simple typed where clause
-  const where: {
-    nhId?: string;
-    source?: string;
-    kind?: string;
-  } = {};
-
+  const where: { nhId?: string; source?: string; kind?: string } = {};
   if (nhFilter) where.nhId = nhFilter;
   if (sourceFilter) where.source = sourceFilter;
   if (kindFilter) where.kind = kindFilter;
 
-  // Stats Query (Parallel)
+  // ✅ React purity: avoid Date.now() in render path
+  const cutoff = new Date();
+  cutoff.setTime(cutoff.getTime() - 24 * 60 * 60 * 1000);
+
   const [events, total24h, latestEvent, kindsBreakdown] = await Promise.all([
     prisma.sotEvent.findMany({
       where,
-      orderBy: [
-        { ts: "desc" },
-        { eventId: "desc" } // Deterministic tie-breaker
-      ],
+      orderBy: [{ ts: "desc" }, { eventId: "desc" }],
       take: limit,
     }),
     prisma.sotEvent.count({
-      where: {
-        ts: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-      }
+      where: { ts: { gt: cutoff } },
     }),
     prisma.sotEvent.findFirst({
-      orderBy: { ts: 'desc' },
-      select: { ts: true }
+      orderBy: { ts: "desc" },
+      select: { ts: true },
     }),
-    // Breakdown of Kinds for current filter context
-    prisma.sotEvent.groupBy({
-      by: ['kind'],
-      where,
-      _count: { kind: true },
-      orderBy: {
-        _count: {
-          kind: 'desc'
-        }
-      },
-      take: 6 // Top 5 + 1 to see if there's "Other"
-    }).catch(() => []) // Fallback if groupBy not supported by adapter (though Postgres supports it)
+    prisma.sotEvent
+      .groupBy({
+        by: ["kind"],
+        where,
+        _count: { kind: true },
+        orderBy: { _count: { kind: "desc" } },
+        take: 6,
+      })
+      .catch((): KindBreakdownRow[] => []),
   ]);
 
   type SotEventRow = (typeof events)[number];
@@ -93,7 +84,6 @@ export default async function OperatorEventsPage({
   const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
   const lastIngest = latestEvent?.ts ? formatCentral(latestEvent.ts) : "Never";
 
-  // Process breakdown
   const topKinds = kindsBreakdown.slice(0, 5);
   const hasMoreKinds = kindsBreakdown.length > 5;
 
@@ -107,19 +97,23 @@ export default async function OperatorEventsPage({
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
-          {/* Global Stats */}
           <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>
             <div className="text-2xl font-mono text-zinc-200">{total24h}</div>
           </div>
+
           <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Last Event</div>
-            <div className="text-lg font-mono text-zinc-200 truncate" title={lastIngest}>{lastIngest}</div>
+            <div className="text-lg font-mono text-zinc-200 truncate" title={lastIngest}>
+              {lastIngest}
+            </div>
           </div>
 
-          {/* Kinds Breakdown Panel */}
           <div className="col-span-1 md:col-span-2 bg-zinc-900/50 border border-zinc-800 p-3 rounded overflow-hidden">
-            <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">Top Kinds {hasFilters ? '(Filtered)' : '(Global)'}</div>
+            <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">
+              Top Kinds {hasFilters ? "(Filtered)" : "(Global)"}
+            </div>
+
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {topKinds.length === 0 ? (
                 <span className="text-xs text-zinc-500 italic">No events found</span>
@@ -137,15 +131,14 @@ export default async function OperatorEventsPage({
                   </div>
                 ))
               )}
+
               {hasMoreKinds && <span className="text-xs text-zinc-500 italic">+ others</span>}
             </div>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-400">
-            Showing latest {limit} events · America/Chicago
-          </span>
+          <span className="text-xs text-gray-400">Showing latest {limit} events · America/Chicago</span>
 
           {hasFilters && (
             <div className="flex flex-wrap gap-2 items-center">
@@ -156,8 +149,7 @@ export default async function OperatorEventsPage({
               )}
               {sourceFilter && (
                 <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  Source:{" "}
-                  <span className="ml-1 font-mono">{sourceFilter}</span>
+                  Source: <span className="ml-1 font-mono">{sourceFilter}</span>
                 </span>
               )}
               {kindFilter && (
@@ -166,10 +158,7 @@ export default async function OperatorEventsPage({
                 </span>
               )}
 
-              <Link
-                href="/operator/events"
-                className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1"
-              >
+              <Link href="/operator/events" className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1">
                 Clear filters
               </Link>
             </div>
@@ -178,9 +167,7 @@ export default async function OperatorEventsPage({
       </header>
 
       {events.length === 0 ? (
-        <p className="text-sm text-gray-400">
-          No events found for the current filter.
-        </p>
+        <p className="text-sm text-gray-400">No events found for the current filter.</p>
       ) : (
         <section>
           <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
@@ -196,45 +183,35 @@ export default async function OperatorEventsPage({
                 </tr>
               </thead>
 
-              {/* DB-backed, time-sensitive data – avoid noisy hydration warnings */}
               <tbody suppressHydrationWarning>
                 {events.map((evt: SotEventRow) => (
-                  <tr
-                    key={evt.id}
-                    className="border-b border-gray-900 hover:bg-zinc-900/60"
-                  >
-                    <td
-                      className="py-2 px-3 whitespace-nowrap text-xs"
-                      title={formatCentralTooltip(evt.ts)}
-                    >
+                  <tr key={evt.id} className="border-b border-gray-900 hover:bg-zinc-900/60">
+                    <td className="py-2 px-3 whitespace-nowrap text-xs" title={formatCentralTooltip(evt.ts)}>
                       {formatCentral(evt.ts)}
                     </td>
+
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       <Link
-                        href={`/operator/events?source=${encodeURIComponent(
-                          evt.source,
-                        )}`}
+                        href={`/operator/events?source=${encodeURIComponent(evt.source)}`}
                         className="text-[11px] text-sky-300 hover:text-sky-200 underline"
                       >
                         {evt.source}
                       </Link>
                     </td>
+
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       <Link
-                        href={`/operator/events?kind=${encodeURIComponent(
-                          evt.kind,
-                        )}`}
+                        href={`/operator/events?kind=${encodeURIComponent(evt.kind)}`}
                         className="text-[11px] text-sky-300 hover:text-sky-200 underline"
                       >
                         {evt.kind}
                       </Link>
                     </td>
+
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       {evt.nhId ? (
                         <Link
-                          href={`/operator/events?nh=${encodeURIComponent(
-                            evt.nhId,
-                          )}`}
+                          href={`/operator/events?nh=${encodeURIComponent(evt.nhId)}`}
                           className="text-[11px] text-sky-300 hover:text-sky-200 underline"
                         >
                           {evt.nhId}
@@ -243,12 +220,12 @@ export default async function OperatorEventsPage({
                         "—"
                       )}
                     </td>
+
                     <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-600 font-mono">
                       {evt.eventId?.slice(0, 8)}...
                     </td>
-                    <td className="py-2 px-3 text-xs max-w-xl truncate">
-                      {evt.summary ?? "—"}
-                    </td>
+
+                    <td className="py-2 px-3 text-xs max-w-xl truncate">{evt.summary ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
