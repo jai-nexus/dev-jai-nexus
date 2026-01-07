@@ -11,6 +11,7 @@
     "build:local": "dotenv -e .env.local -- prisma generate --schema prisma/schema.prisma && dotenv -e .env.local -- next build",
     "start:local": "dotenv -e .env.local -- next start",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint:enum-drift": "git grep -n 'status:\\s*\"(active|planned|frozen|parked)\"' -- portal && exit 1 || exit 0",
     "prisma:format": "prisma format",
     "prisma:format:local": "dotenv -e .env.local -- prisma format",

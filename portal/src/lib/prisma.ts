@@ -1,4 +1,3 @@
-// portal/src/lib/prisma.ts
 import { PrismaClient, Prisma } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
@@ -9,9 +8,8 @@ const QUIET = process.env.JAI_QUIET === "1";
 const DEBUG = process.env.JAI_DEBUG_PRISMA === "1";
 const isProd = process.env.NODE_ENV === "production";
 
-function log(...args: any[]) {
+function log(...args: unknown[]) {
   if (QUIET) return;
-  // Keep default noise low; allow opt-in debug
   if (DEBUG || !isProd) console.log(...args);
 }
 
@@ -23,7 +21,6 @@ if (!connectionString) {
   throw new Error("[lib/prisma] DIRECT_URL or DATABASE_URL must be set");
 }
 
-// Avoid printing host in normal mode (privacy/safety); print only in debug mode
 if (!QUIET && DEBUG) {
   try {
     const host = connectionString.split("@")[1]?.split("/")[0] || "unknown";
