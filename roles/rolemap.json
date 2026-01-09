@@ -1,0 +1,128 @@
+{
+    "repo": "dev-jai-nexus",
+    "rolePrefix": "JAI::DEV::",
+    "blockedPrefixes": [
+        ".tmp/",
+        ".vercel/",
+        ".vscode/",
+        "node_modules/",
+        "portal/node_modules/",
+        "portal/.next/",
+        "portal/.vercel/",
+        "portal/out/",
+        "portal/generated/",
+        "vault/"
+    ],
+    "blockedExact": [
+        ".env",
+        ".env.local",
+        "portal/.env",
+        "portal/.env.local",
+        "portal/.env.vercel.local",
+        "portal/.env.vercel.production",
+        "portal/dev.db",
+        "tmp.sql",
+        "Makefile.tmp",
+        "portal/tsconfig.tsbuildinfo"
+    ],
+    "rules": [
+        {
+            "id": "github-workflows",
+            "pathsPrefix": [
+                ".github/workflows/"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "portal-prisma",
+            "pathsPrefix": [
+                "portal/prisma/",
+                "portal/prisma.config.ts",
+                "portal/src/lib/dbPrisma.ts",
+                "portal/src/lib/prisma.ts"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::ARCHITECT",
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "portal-api",
+            "pathsPrefix": [
+                "portal/src/app/api/"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "contracts-and-specs",
+            "pathsPrefix": [
+                "portal/src/lib/contracts/",
+                "portal/docs/jai-context-api-openapi-v0.1.yaml",
+                "portal/docs/sot-event-v0.1.md"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::ARCHITECT",
+                "JAI::DEV::LIBRARIAN",
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": false
+        },
+        {
+            "id": "portal-docs",
+            "pathsPrefix": [
+                "portal/docs/",
+                "README.md",
+                "0.0 dev-jai-nexus (2025-09-12).md"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::LIBRARIAN",
+                "JAI::DEV::ARCHITECT"
+            ],
+            "evidenceRequired": false
+        },
+        {
+            "id": "portal-ui-and-lib",
+            "pathsPrefix": [
+                "portal/src/app/",
+                "portal/src/components/",
+                "portal/src/lib/"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "scripts-and-workspace",
+            "pathsPrefix": [
+                "scripts/",
+                "portal/scripts/",
+                "Makefile",
+                "package.json",
+                "pnpm-lock.yaml",
+                "pnpm-workspace.yaml",
+                "portal/package.json",
+                "portal/pnpm-lock.yaml"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        }
+    ],
+    "defaultAllowedRoles": [
+        "JAI::DEV::BUILDER"
+    ],
+    "evidenceSectionTitle": "Evidence"
+}
