@@ -27,6 +27,34 @@
     ],
     "rules": [
         {
+            "id": "role-system",
+            "pathsPrefix": [
+                "roles/"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::OPERATOR",
+                "JAI::DEV::ARCHITECT",
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER",
+                "JAI::DEV::LIBRARIAN"
+            ],
+            "evidenceRequired": false
+        },
+        {
+            "id": "pr-template",
+            "pathsPrefix": [
+                ".github/PULL_REQUEST_TEMPLATE.md"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::OPERATOR",
+                "JAI::DEV::ARCHITECT",
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER",
+                "JAI::DEV::LIBRARIAN"
+            ],
+            "evidenceRequired": false
+        },
+        {
             "id": "github-workflows",
             "pathsPrefix": [
                 ".github/workflows/"
