@@ -349,6 +349,9 @@ model VerificationToken {
 
 model WorkPacket {
   id     Int              @id @default(autoincrement())
+
+  externalId String? @unique
+  
   nhId   String
   title  String
   status WorkPacketStatus @default(DRAFT)
