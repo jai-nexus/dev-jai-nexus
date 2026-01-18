@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma, Prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import { Prisma, InboxItemStatus, WorkPacketStatus } from "@prisma/client";
 import { parseSotTimestamp } from "@/lib/time";
-import { getToken } from "next-auth/jwt";
-import { assertInternalToken } from "@/lib/internalAuth";
+import { isSotIngestAuthorized } from "@/lib/sotIngestAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ type RawEvent = {
     ts: string;
     source: string;
     kind: string;
-    eventId: string; // Required now
+    eventId: string; // Required
     nhId?: string;
     summary?: string;
     payload?: Prisma.InputJsonValue;
@@ -28,6 +28,48 @@ type RawEvent = {
 type IngestOk = { id: string; status: "ok"; dbId: number };
 type IngestErr = { id: string; status: "error"; msg: string; code?: string };
 type IngestResult = IngestOk | IngestErr;
+
+/**
+ * Option B projection: vscode.work_packet.* SotEvents materialize WorkPacket + AgentInboxItem
+ * so /operator/work has real rows (not just events).
+ */
+type WorkPacketPayload = {
+    workPacketId?: string;
+    goal?: string;
+    title?: string;
+    nhId?: string;
+};
+
+function isWorkPacketKind(kind: string): boolean {
+    return kind.startsWith("vscode.work_packet.");
+}
+
+function getWorkPacketExternalId(evt: RawEvent): string | null {
+    const p = evt.payload as unknown as WorkPacketPayload | null;
+    const id = p?.workPacketId;
+    if (!id) return null;
+    const s = String(id).trim();
+    return s.length ? s : null;
+}
+
+function workPacketTitle(evt: RawEvent): string {
+    const p = evt.payload as unknown as WorkPacketPayload | null;
+
+    const fromPayload =
+        (p?.title ? String(p.title).trim() : "") ||
+        (p?.goal ? String(p.goal).trim() : "");
+
+    if (fromPayload) return fromPayload.slice(0, 180);
+    if (evt.summary?.trim()) return evt.summary.trim().slice(0, 180);
+    return `Work Packet (${evt.kind})`;
+}
+
+function statusForWorkPacketKind(kind: string): WorkPacketStatus | null {
+    if (kind === "vscode.work_packet.completed") return WorkPacketStatus.DONE;
+    if (kind === "vscode.work_packet.requested") return WorkPacketStatus.DRAFT;
+    // "updated" should not force a transition
+    return null;
+}
 
 function coerceErrorMessage(e: unknown): string {
     if (e instanceof Error) return e.message;
@@ -42,54 +84,101 @@ function coerceErrorCode(e: unknown): string | undefined {
     return undefined;
 }
 
-// Auth: Session OR SOT_INGEST_TOKEN (via x-sot-ingest-token or Bearer) OR internal token fallback
-function hasIngestToken(req: NextRequest): boolean {
-    const expected = process.env.SOT_INGEST_TOKEN;
-    if (!expected) return false; // Fail safe if not set
-
-    const auth = req.headers.get("authorization") ?? "";
-    const bearer = auth.replace(/^Bearer\s+/i, "").trim();
-    const ingestTokenHeader = (req.headers.get("x-sot-ingest-token") ?? "").trim();
-    const legacy = (req.headers.get("x-jai-internal-token") ?? "").trim();
-
-    if (bearer === expected) return true;
-    if (ingestTokenHeader === expected) return true;
-    if (legacy === expected) return true;
-    return false;
-}
-
-async function hasSession(req: NextRequest): Promise<boolean> {
-    const secret = process.env.NEXTAUTH_SECRET;
-    if (!secret) return false;
-    const token = await getToken({ req, secret });
-    return !!token;
-}
-
-async function resolveRepoDomainIds(event: RawEvent): Promise<{ repoId?: number; domainId?: number }> {
+async function resolveRepoDomainIds(
+    db: Prisma.TransactionClient,
+    event: RawEvent,
+): Promise<{ repoId?: number; domainId?: number }> {
     let repoId = event.repoId;
     let domainId = event.domainId;
 
     if (!repoId && event.repoName) {
-        const repo = await prisma.repo.findUnique({ where: { name: event.repoName } });
+        const repo = await db.repo.findUnique({ where: { name: event.repoName } });
         if (repo) repoId = repo.id;
     }
 
     if (!domainId && event.domainName) {
-        const domain = await prisma.domain.findUnique({ where: { domain: event.domainName } });
+        const domain = await db.domain.findUnique({ where: { domain: event.domainName } });
         if (domain) domainId = domain.id;
     }
 
     return { repoId, domainId };
 }
 
-function parseBodyToEvents(text: string): { ok: true; events: RawEvent[] } | { ok: false; error: string } {
+async function projectWorkPacketFromEvent(args: {
+    tx: Prisma.TransactionClient;
+    evt: RawEvent;
+    repoId?: number;
+}): Promise<number | null> {
+    const { tx, evt, repoId } = args;
+
+    if (!isWorkPacketKind(evt.kind)) return null;
+
+    const externalId = getWorkPacketExternalId(evt);
+    if (!externalId) return null;
+
+    const title = workPacketTitle(evt);
+    const desiredStatus = statusForWorkPacketKind(evt.kind);
+
+    const p = evt.payload as unknown as WorkPacketPayload | null;
+    const nhFromPayload = p?.nhId ? String(p.nhId).trim() : "";
+    const nh = (evt.nhId?.trim() || nhFromPayload || "").trim();
+
+    // Requires WorkPacket.externalId String? @unique in schema
+    const wp = await tx.workPacket.upsert({
+        where: { externalId },
+        update: {
+            title,
+            ...(desiredStatus ? { status: desiredStatus } : {}),
+            ...(repoId ? { repoId } : {}),
+            ...(nh ? { nhId: nh } : {}),
+        },
+        create: {
+            externalId,
+            nhId: nh,
+            title,
+            status: desiredStatus ?? WorkPacketStatus.DRAFT,
+            ...(repoId ? { repoId } : {}),
+        },
+    });
+
+    // Ensure inbox item exists. Mark DONE on completion.
+    if (evt.kind === "vscode.work_packet.completed") {
+        await tx.agentInboxItem.upsert({
+            where: { workPacketId: wp.id },
+            update: {
+                status: InboxItemStatus.DONE,
+                completedAt: new Date(),
+            },
+            create: {
+                workPacketId: wp.id,
+                status: InboxItemStatus.DONE,
+                priority: 50,
+                completedAt: new Date(),
+            },
+        });
+    } else {
+        await tx.agentInboxItem.upsert({
+            where: { workPacketId: wp.id },
+            update: {},
+            create: {
+                workPacketId: wp.id,
+                status: InboxItemStatus.QUEUED,
+                priority: 50,
+            },
+        });
+    }
+
+    return wp.id;
+}
+
+function parseBodyToEvents(
+    text: string,
+): { ok: true; events: RawEvent[] } | { ok: false; error: string } {
     const trimmed = text.trim();
     if (!trimmed) return { ok: false, error: "Empty body" };
 
-    const firstChar = trimmed[0];
-
     // JSON array
-    if (firstChar === "[") {
+    if (trimmed[0] === "[") {
         try {
             const parsed: unknown = JSON.parse(trimmed);
             if (!Array.isArray(parsed)) return { ok: false, error: "Invalid JSON array" };
@@ -117,11 +206,7 @@ function parseBodyToEvents(text: string): { ok: true; events: RawEvent[] } | { o
 
 export async function POST(req: NextRequest) {
     // 1) Auth
-    const isIngest = hasIngestToken(req);
-    const isInternal = assertInternalToken(req).ok;
-    const isSession = await hasSession(req);
-
-    if (!isIngest && !isInternal && !isSession) {
+    if (!(await isSotIngestAuthorized(req))) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -171,39 +256,49 @@ export async function POST(req: NextRequest) {
                 continue;
             }
 
-            const { repoId, domainId } = await resolveRepoDomainIds(evt);
-
             try {
-                const result = await prisma.sotEvent.upsert({
-                    where: { eventId },
-                    update: {
-                        ts,
-                        source: evt.source,
-                        kind: evt.kind,
-                        nhId: evt.nhId ?? "",
-                        summary: evt.summary ?? null,
-                        payload: evt.payload ?? Prisma.DbNull,
-                        repoId,
-                        domainId,
-                    },
-                    create: {
-                        eventId,
-                        ts,
-                        source: evt.source,
-                        kind: evt.kind,
-                        nhId: evt.nhId ?? "",
-                        summary: evt.summary ?? null,
-                        payload: evt.payload ?? Prisma.DbNull,
-                        repoId,
-                        domainId,
-                    },
+                const { sot, insertedOrUpdated } = await prisma.$transaction(async (tx) => {
+                    const { repoId, domainId } = await resolveRepoDomainIds(tx, evt);
+
+                    const wpDbId = await projectWorkPacketFromEvent({ tx, evt, repoId });
+
+                    const sot = await tx.sotEvent.upsert({
+                        where: { eventId },
+                        update: {
+                            ts,
+                            source: evt.source,
+                            kind: evt.kind,
+                            nhId: evt.nhId ?? "",
+                            summary: evt.summary ?? null,
+                            payload: evt.payload ?? Prisma.DbNull,
+                            repoId,
+                            domainId,
+                            ...(wpDbId ? { workPacketId: wpDbId } : {}),
+                        },
+                        create: {
+                            eventId,
+                            ts,
+                            source: evt.source,
+                            kind: evt.kind,
+                            nhId: evt.nhId ?? "",
+                            summary: evt.summary ?? null,
+                            payload: evt.payload ?? Prisma.DbNull,
+                            repoId,
+                            domainId,
+                            ...(wpDbId ? { workPacketId: wpDbId } : {}),
+                        },
+                    });
+
+                    const insertedOrUpdated =
+                        sot.createdAt.getTime() === sot.updatedAt.getTime() ? "inserted" : "updated";
+
+                    return { sot, insertedOrUpdated };
                 });
 
-                // Heuristic: compare createdAt/updatedAt to count inserts vs updates
-                if (result.createdAt.getTime() === result.updatedAt.getTime()) inserted++;
+                if (insertedOrUpdated === "inserted") inserted++;
                 else updated++;
 
-                results.push({ id: result.eventId, status: "ok", dbId: result.id });
+                results.push({ id: sot.eventId, status: "ok", dbId: sot.id });
             } catch (e: unknown) {
                 const code = coerceErrorCode(e);
                 const msg = coerceErrorMessage(e).split("\n")[0] ?? "Unknown error";
@@ -218,7 +313,9 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const sampleErrors = results.filter((r): r is IngestErr => r.status === "error").slice(0, 3);
+        const sampleErrors = results
+            .filter((r): r is IngestErr => r.status === "error")
+            .slice(0, 3);
 
         return NextResponse.json({
             received,
@@ -229,7 +326,6 @@ export async function POST(req: NextRequest) {
         });
     } catch (err: unknown) {
         console.error("Ingest fatal error", err);
-        // Keep message generic; never leak runtime internals
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
