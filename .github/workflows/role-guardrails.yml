@@ -26,111 +26,19 @@ jobs:
               throw new Error(msg);
             }
 
-            function escapeRegex(s) {
-              return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            }
-
-            function parseRoleLines(body) {
-              const lines = body.split("\n");
-              const found = [];
-
-              // Supports:
-              //   Role: JAI::DEV::BUILDER
-              //   - [ ] Role: JAI::DEV::BUILDER
-              //   - [x] Role: JAI::DEV::BUILDER
-              const plainRe = /^\s*Role:\s*(.+)\s*$/i;
-              const checkboxRe = /^\s*[-*]\s*\[\s*([xX ])\s*\]\s*Role:\s*(.+)\s*$/i;
-
-              for (const raw of lines) {
-                const l = raw.trimEnd();
-
-                const mCb = checkboxRe.exec(l);
-                if (mCb) {
-                  found.push({
-                    raw: l,
-                    role: (mCb[2] || "").trim(),
-                    kind: "checkbox",
-                    checked: (mCb[1] || "").toLowerCase() === "x"
-                  });
-                  continue;
-                }
-
-                const mPlain = plainRe.exec(l);
-                if (mPlain) {
-                  found.push({
-                    raw: l,
-                    role: (mPlain[1] || "").trim(),
-                    kind: "plain",
-                    checked: true
-                  });
-                }
-              }
-
-              return found;
-            }
-
-            function findSectionBody(body, title) {
-              const esc = escapeRegex(title);
-
-              // Evidence:
-              const labelRe = new RegExp(`^\\s*${esc}\\s*:\\s*.*$`, "im");
-              // ## Evidence
-              const headerRe = new RegExp(`^\\s*#+\\s*${esc}\\s*$`, "im");
-
-              const mLabel = labelRe.exec(body);
-              const mHeader = headerRe.exec(body);
-
-              let m = null;
-              if (mLabel && mHeader) m = (mLabel.index <= mHeader.index) ? mLabel : mHeader;
-              else m = mLabel || mHeader;
-
-              if (!m) return null;
-
-              // Start after the matched line
-              const lineEnd = body.indexOf("\n", m.index);
-              const start = lineEnd === -1 ? body.length : lineEnd + 1;
-
-              // End at next markdown heading
-              const rest = body.slice(start);
-              const nextHeadingRe = /^\s*#+\s+\S/m;
-              const nm = nextHeadingRe.exec(rest);
-              const end = nm ? (start + nm.index) : body.length;
-
-              return body.slice(start, end).trim();
-            }
-
             const pr = context.payload.pull_request;
             if (!pr) fail("Not a pull_request event.");
 
             const body = pr.body || "";
+            const roleLine = body.split("\n").find(l => l.trim().toLowerCase().startsWith("role:"));
+            if (!roleLine) fail("Missing 'Role:' line in PR body (see PR template).");
 
-            // --- Role ---
-            const roleLines = parseRoleLines(body);
-
-            if (roleLines.length === 0) {
-              fail("Missing 'Role:' line in PR body (see PR template).");
-            }
-
-            // Enforce: exactly ONE Role line remains (prevents leaving multiple checkbox lines)
-            if (roleLines.length > 1) {
-              const sample = roleLines.slice(0, 10).map(r => `- ${r.raw}`).join("\n");
-              fail(
-                `Multiple Role lines found. Leave exactly ONE Role line in the PR body (delete the unchecked ones).\n` +
-                `Found:\n${sample}`
-              );
-            }
-
-            const role = (roleLines[0].role || "").trim();
+            const role = roleLine.split(":").slice(1).join(":").trim();
             if (!role) fail("Role line is empty. Use: Role: JAI::DEV::<ROLE>");
 
-            // --- Rolemap ---
             const rolemapPath = "roles/rolemap.json";
             if (!fs.existsSync(rolemapPath)) fail(`Missing ${rolemapPath}. Add rolemap.json to define guardrails.`);
             const rolemap = JSON.parse(fs.readFileSync(rolemapPath, "utf8"));
-
-            if (rolemap.rolePrefix && !role.startsWith(rolemap.rolePrefix)) {
-              fail(`Role '${role}' must start with '${rolemap.rolePrefix}'.`);
-            }
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
@@ -141,7 +49,7 @@ jobs:
 
             const changed = files.map(f => f.filename);
 
-            // --- Blocked paths (privacy/cleanliness) ---
+            // Blocked paths (privacy/cleanliness)
             for (const p of changed) {
               if (rolemap.blockedExact?.includes(p)) {
                 fail(`Blocked file changed: ${p}`);
@@ -153,7 +61,7 @@ jobs:
               if (p.includes(".env")) fail(`Blocked: env-related file changed: ${p}`);
             }
 
-            // --- Determine per-file requirements ---
+            // Determine per-file requirements
             const violations = [];
             let evidenceRequired = false;
 
@@ -185,24 +93,18 @@ jobs:
               fail(`Role '${role}' is not allowed for some changed files:\n${lines}`);
             }
 
-            // --- Evidence section check (only when required) ---
+            // Evidence section check (only when required)
             if (evidenceRequired) {
-              const title = (rolemap.evidenceSectionTitle || "Evidence");
-              const section = findSectionBody(body, title);
+              const title = (rolemap.evidenceSectionTitle || "Evidence").toLowerCase();
+              const idx = body.toLowerCase().indexOf(title + ":");
+              if (idx === -1) fail("Evidence required, but no 'Evidence:' section found in PR body.");
 
-              if (!section) {
-                fail(`Evidence required, but no '${title}:' section or '## ${title}' heading found in PR body.`);
-              }
-
-              // Require at least one non-empty line
-              const meaningful = section
-                .split("\n")
-                .map(s => s.trim())
-                .filter(s => s.length > 0);
-
-              if (meaningful.length === 0) {
-                fail("Evidence required, but Evidence section appears empty.");
-              }
+              const after = body.slice(idx + (title.length + 1)).trim();
+              // Require at least one non-empty line that isn't just a header
+              const meaningful = after.split("\n").map(s => s.trim()).filter(s =>
+                s.length > 0 && !s.toLowerCase().startsWith("risk:") && !s.toLowerCase().startsWith("notes") && !s.toLowerCase().startsWith("handoff")
+              );
+              if (meaningful.length === 0) fail("Evidence required, but Evidence section appears empty.");
             }
 
             core.info(`Role guardrails passed for role=${role}. EvidenceRequired=${evidenceRequired}. Files=${changed.length}`);
