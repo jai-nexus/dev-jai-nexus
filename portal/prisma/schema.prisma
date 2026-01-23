@@ -576,3 +576,28 @@ model Artifact {
   @@index([agentRunId])
   @@index([workPacketId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SOURCES RELEVANCE LOOP (Phase 3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SourceSignal {
+  id              String   @id @default(cuid())
+  version         String
+  ts              DateTime
+  date            String   // YYYY-MM-DD
+  quarter         String   // YYYY-Qn
+  vendor          String
+  title           String
+  url             String
+  published_at    String?
+  tier            String?
+  artifact_path   String
+  artifact_sha256 String   @unique
+  summary         String?
+  createdAt       DateTime @default(now())
+
+  @@index([vendor, date])
+  @@index([ts])
+}
+

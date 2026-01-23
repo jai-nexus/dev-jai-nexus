@@ -1,5 +1,6 @@
 // portal/src/app/operator/work/page.tsx
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import Link from "next/link";
@@ -104,9 +105,12 @@ function hrefWith(
     view: current.view ?? undefined,
     status: current.status ?? undefined,
     q: current.q ?? undefined,
-    ...Object.fromEntries(
-      Object.entries(patch).map(([k, v]) => [k, v === null ? undefined : v]),
-    ),
+    ...Object.fromEntries(Object.entries(patch).map(([k, v]) => [k, v === null ? undefined : v])),
+  } as {
+    assignee?: string;
+    view?: string;
+    status?: string;
+    q?: string;
   };
 
   if (next.assignee) sp.set("assignee", next.assignee);
@@ -127,11 +131,9 @@ export default async function WorkPage({ searchParams }: Props) {
   if (!session?.user) redirect("/login?next=/operator/work");
 
   const agency = getAgencyConfig();
-  const agents: AgencyAgent[] = [...agency.agents].sort((a, b) =>
-    a.nh_id.localeCompare(b.nh_id),
-  );
+  const agents: AgencyAgent[] = [...agency.agents].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
 
-  // ✅ Next 16.1: searchParams may be a Promise
+  // ✅ Next 16: searchParams may be a Promise
   const sp = (await Promise.resolve(searchParams)) ?? ({} as SearchParams);
 
   const assignee = sanitizeNhLike(firstParam(sp.assignee));
@@ -357,7 +359,11 @@ export default async function WorkPage({ searchParams }: Props) {
                 <td className="py-2 px-3 text-xs">{p.status}</td>
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
-                  {assigneeNh ? <Chip tone="purple">{assigneeNh}</Chip> : <span className="text-gray-500">—</span>}
+                  {assigneeNh ? (
+                    <Chip tone="purple">{assigneeNh}</Chip>
+                  ) : (
+                    <span className="text-gray-500">—</span>
+                  )}
                 </td>
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
@@ -375,17 +381,32 @@ export default async function WorkPage({ searchParams }: Props) {
 
                 <td className="py-2 px-3 text-xs space-x-2 whitespace-nowrap">
                   {p.githubIssueUrl ? (
-                    <a className="text-sky-400 underline" href={p.githubIssueUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-sky-400 underline"
+                      href={p.githubIssueUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       issue
                     </a>
                   ) : null}
                   {p.githubPrUrl ? (
-                    <a className="text-sky-400 underline" href={p.githubPrUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-sky-400 underline"
+                      href={p.githubPrUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       pr
                     </a>
                   ) : null}
                   {p.verificationUrl ? (
-                    <a className="text-sky-400 underline" href={p.verificationUrl} target="_blank" rel="noreferrer">
+                    <a
+                      className="text-sky-400 underline"
+                      href={p.verificationUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       verify
                     </a>
                   ) : null}
