@@ -1,0 +1,93 @@
+{
+    "metadata": {
+        "generated_at": "2026-01-27",
+        "constitution_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+        "repos_scanned": [
+            "dev-jai-nexus",
+            "docs-nexus"
+        ]
+    },
+    "agents": [
+        {
+            "agent_id": "JAI::DEV::ARCHITECT",
+            "source_repo": "dev-jai-nexus",
+            "role_type": "Dev",
+            "description": "Convert intent into an executable plan: specs, contracts, design notes, acceptance criteria.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "dev-jai-nexus/roles/JAI_DEV_ARCHITECT.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DEV::BUILDER",
+            "source_repo": "dev-jai-nexus",
+            "role_type": "Dev",
+            "description": "Implement approved plans as code diffs with minimal interpretation.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "dev-jai-nexus/roles/JAI_DEV_BUILDER.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DEV::LIBRARIAN",
+            "source_repo": "dev-jai-nexus",
+            "role_type": "Dev",
+            "description": "Turn work into durable knowledge: docs, runbooks, changelogs, onboarding clarity.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "dev-jai-nexus/roles/JAI_DEV_LIBRARIAN.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DEV::OPERATOR",
+            "source_repo": "dev-jai-nexus",
+            "role_type": "Dev",
+            "description": "Keep the repo moving: triage, queue work, create handoff packets, and enforce “right role for the job.”",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "dev-jai-nexus/roles/JAI_DEV_OPERATOR.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DEV::VERIFIER",
+            "source_repo": "dev-jai-nexus",
+            "role_type": "Dev",
+            "description": "Prevent garbage from landing. Verify changes with reproducible evidence and block unsafe diffs.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "dev-jai-nexus/roles/JAI_DEV_VERIFIER.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DOCS::PLANNER",
+            "source_repo": "docs-nexus",
+            "role_type": "Docs",
+            "description": "Define and govern documentation scope, sequencing, and quarterly priorities.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "docs-nexus/roles/JAI_DOCS_PLANNER.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DOCS::SCHEMA_STEWARD",
+            "source_repo": "docs-nexus",
+            "role_type": "Docs",
+            "description": "Protect the structure: schemas, manifests, validation tooling, and CI that guarantees docs integrity.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "docs-nexus/roles/JAI_DOCS_SCHEMA_STEWARD.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DOCS::SITE_BUILDER",
+            "source_repo": "docs-nexus",
+            "role_type": "Docs",
+            "description": "Own the docs site runtime: build, UI, components, and delivery behavior under `site/**`",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "docs-nexus/roles/JAI_DOCS_SITE_BUILDER.md",
+            "last_updated": "2026-01-27"
+        },
+        {
+            "agent_id": "JAI::DOCS::WIKI_SYNTHESIZER",
+            "source_repo": "docs-nexus",
+            "role_type": "Docs",
+            "description": "Synthesize scattered info into clear wiki/docs pages that remain consistent with the repo’s surfaced structure.",
+            "ratification_version": "JAI NEXUS Constitution v1.0 (2026-01-27)",
+            "path": "docs-nexus/roles/JAI_DOCS_WIKI_SYNTHESIZER.md",
+            "last_updated": "2026-01-27"
+        }
+    ]
+}
