@@ -1,0 +1,41 @@
+
+name: verify_constitution_integrity
+
+on:
+  pull_request:
+    paths:
+      - 'JAI_NEXUS_CONSTITUTION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Authority
+        run: |
+          echo "Checking change authority for JAI_NEXUS_CONSTITUTION.md..."
+          
+          # Implementation note: In a real JAI environment, this would verify a cryptographic signature 
+          # or a specific allowed GitHub handle ($GITHUB_ACTOR).
+          # For v1, we explicitly fail and require a 'Constitutional Amendment Proposal' (CAP) verification.
+          
+          ACTOR="${{ github.actor }}"
+          
+          # Allowlist of human operators who can bypass (Update this list as needed)
+          ADMINS="JerryIngram"
+          
+          if [[ ! " $ADMINS " =~ " $ACTOR " ]]; then
+            echo "::error::UNAUTHORIZED CHANGE DETECTED. Only Human Operators (Admins) can modify the Constitution directly."
+            echo "Actor: $ACTOR"
+            echo "Please submit a Constitutional Amendment Proposal (CAP) for review."
+            exit 1
+          fi
+          
+          echo "Authority verified for actor: $ACTOR"
