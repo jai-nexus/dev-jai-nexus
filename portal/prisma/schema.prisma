@@ -261,7 +261,7 @@ model SotEvent {
   kind   String
 
   nhId    String @default("")
-  eventId String @unique // Global distinctive ID from source
+  eventId String @unique
   summary String?
   payload Json?
 
@@ -273,6 +273,9 @@ model SotEvent {
 
   workPacketId Int?
   workPacket   WorkPacket? @relation(fields: [workPacketId], references: [id], onDelete: SetNull)
+
+  chatId Int?
+  chat   Chat? @relation(fields: [chatId], references: [id], onDelete: SetNull)
 
   @@index([ts])
   @@index([kind])
@@ -601,3 +604,59 @@ model SourceSignal {
   @@index([ts])
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CHAT MEMORY SYSTEM (Q1 2026 - Personal Knowledge Continuity)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Chat {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  chatId      String   @unique
+  title       String
+  source      String
+  chatDate    DateTime
+  
+  filepath    String?
+  contentHash String?
+  fullText    String   @db.Text
+  
+  model       String?
+  nhId        String   @default("")
+  tags        String[] @default([])
+  notes       Json?
+  
+  decisions   Decision[]
+  sotEvents   SotEvent[]
+  
+  @@index([chatDate])
+  @@index([source])
+  @@index([nhId])
+  @@index([chatId])
+}
+
+model Decision {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  text        String   @db.Text
+  context     String?  @db.Text
+  
+  chatId      Int
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  lineNumber  Int?
+  decisionDate DateTime?
+  category    String?
+  status      String    @default("active")
+  
+  nhId        String    @default("")
+  supersededById Int?
+  
+  @@index([chatId])
+  @@index([status])
+  @@index([category])
+  @@index([decisionDate])
+}

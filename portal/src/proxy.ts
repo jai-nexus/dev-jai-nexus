@@ -36,6 +36,9 @@ function isTokenAuthApi(pathname: string) {
   if (pathname === "/api/repos" || pathname.startsWith("/api/repos/")) return true;
   if (pathname === "/api/agents/commit") return true;
 
+  // Chat ingest endpoint (auth handled in-route; localhost allowed)
+  if (pathname === "/api/ingest/chat") return true;
+
   // Only keep this if /api/sot-events is ALSO protected in-route
   if (pathname === "/api/sot-events" || pathname.startsWith("/api/sot-events/")) return true;
 

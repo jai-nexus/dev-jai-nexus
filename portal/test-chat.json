@@ -1,0 +1,6 @@
+﻿{
+  "content": "You said:\nHello, testing JAI NEXUS chat ingest.\n\nChatGPT said:\nGreat! The system is working.",
+  "title": "Test Chat - System Check",
+  "source": "manual",
+  "tags": ["test"]
+}
