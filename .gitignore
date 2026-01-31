@@ -40,3 +40,4 @@ event.jsonl
 **/.turbo/
 .turboDistOut
 portal/data/runs/
+portal/test-chat.json

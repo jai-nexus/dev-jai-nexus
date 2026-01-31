@@ -30,15 +30,109 @@ jobs:
             if (!pr) fail("Not a pull_request event.");
 
             const body = pr.body || "";
-            const roleLine = body.split("\n").find(l => l.trim().toLowerCase().startsWith("role:"));
-            if (!roleLine) fail("Missing 'Role:' line in PR body (see PR template).");
 
-            const role = roleLine.split(":").slice(1).join(":").trim();
-            if (!role) fail("Role line is empty. Use: Role: JAI::DEV::<ROLE>");
+            // --- Helpers ------------------------------------------------------
+
+            function normalizeRole(raw) {
+              if (!raw) return "";
+              let s = raw.trim();
+
+              // Allow user mistakes like "JAI:DEV::VERIFIER" (single colon after JAI)
+              // Canonicalize by splitting on ":" and re-joining.
+              // Example: "JAI:DEV::VERIFIER" -> ["JAI","DEV","VERIFIER"] -> "JAI::DEV::VERIFIER"
+              if (s.includes(":")) {
+                const parts = s.split(":").map(p => p.trim()).filter(Boolean);
+                if (parts.length >= 3 && parts[0].toUpperCase() === "JAI" && parts[1].toUpperCase() === "DEV") {
+                  const tail = parts.slice(2).join("::").toUpperCase();
+                  s = `JAI::DEV::${tail}`;
+                }
+              }
+
+              return s;
+            }
+
+            function readRoleFromBody(bodyText) {
+              // Accept:
+              // - "Role: JAI::DEV::BUILDER"
+              // - "Role: JAI:DEV::VERIFIER" (typo, we'll normalize)
+              // - Anywhere in the body (not just the top)
+              const m = bodyText.match(/^\s*Role\s*:\s*(.+)\s*$/im);
+              return m ? m[1].trim() : "";
+            }
+
+            function extractSectionMarkdown(bodyText, title) {
+              // Supports markdown heading style:
+              // ## Evidence
+              // <content>
+              // ## Risk
+              const re = new RegExp(`^##\\s*${title}\\b[\\t \\r]*\\n([\\s\\S]*?)(?=^##\\s|\\Z)`, "im");
+              const m = bodyText.match(re);
+              if (m) return (m[1] || "").trim();
+
+              // Also support "Evidence:" style
+              const re2 = new RegExp(`^${title}\\s*:\\s*([\\s\\S]*?)(?=^\\S|\\Z)`, "im");
+              const m2 = bodyText.match(re2);
+              if (m2) return (m2[1] || "").trim();
+
+              return "";
+            }
+
+            function hasMeaningfulEvidence(evidenceText) {
+              if (!evidenceText) return false;
+              const lines = evidenceText
+                .split("\n")
+                .map(s => s.trim())
+                .filter(Boolean);
+
+              // Consider these meaningful (so "N/A — policy-only change" passes):
+              // - any non-empty bullet/line that isn't just another section header
+              const filtered = lines.filter(l => {
+                const low = l.toLowerCase();
+                if (low.startsWith("##")) return false;
+                if (low.startsWith("risk")) return false;
+                if (low.startsWith("notes")) return false;
+                if (low.startsWith("handoff")) return false;
+                return true;
+              });
+
+              return filtered.length > 0;
+            }
+
+            // --- Role + rolemap ------------------------------------------------
+
+            const rawRole = readRoleFromBody(body);
+            if (!rawRole) {
+              fail("Missing 'Role:' line in PR body. Add: Role: JAI::DEV::<OPERATOR|ARCHITECT|BUILDER|VERIFIER|LIBRARIAN>");
+            }
+
+            const role = normalizeRole(rawRole);
+            if (!role) {
+              fail("Role line is empty. Use: Role: JAI::DEV::<ROLE>");
+            }
 
             const rolemapPath = "roles/rolemap.json";
-            if (!fs.existsSync(rolemapPath)) fail(`Missing ${rolemapPath}. Add rolemap.json to define guardrails.`);
-            const rolemap = JSON.parse(fs.readFileSync(rolemapPath, "utf8"));
+            if (!fs.existsSync(rolemapPath)) {
+              fail(`Missing ${rolemapPath}. Add rolemap.json to define guardrails.`);
+            }
+
+            let rolemap;
+            try {
+              rolemap = JSON.parse(fs.readFileSync(rolemapPath, "utf8"));
+            } catch (e) {
+              fail(`Failed to parse ${rolemapPath} as JSON: ${e.message}`);
+            }
+
+            const prefix = rolemap.rolePrefix || "JAI::DEV::";
+            if (!role.startsWith(prefix)) {
+              fail(`Invalid Role '${role}'. Must start with '${prefix}'. Example: Role: JAI::DEV::BUILDER`);
+            }
+
+            // Optional "ship faster" behavior:
+            // Let VERIFIER touch any non-blocked path without tripping "allowedRoles".
+            const verifierBypass = rolemap.verifierBypassAllowedRoles ?? true;
+            const isVerifier = role === `${prefix}VERIFIER`;
+
+            // --- PR changed files ---------------------------------------------
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
@@ -81,8 +175,11 @@ jobs:
 
               if (needsEvidence) evidenceRequired = true;
 
-              if (!allowed.includes(role)) {
-                violations.push({ file: p, rule: rule ? rule.id : "default", allowed });
+              // If verifier bypass enabled, skip allowedRoles checks entirely.
+              if (!(isVerifier && verifierBypass)) {
+                if (!allowed.includes(role)) {
+                  violations.push({ file: p, rule: rule ? rule.id : "default", allowed });
+                }
               }
             }
 
@@ -95,16 +192,16 @@ jobs:
 
             // Evidence section check (only when required)
             if (evidenceRequired) {
-              const title = (rolemap.evidenceSectionTitle || "Evidence").toLowerCase();
-              const idx = body.toLowerCase().indexOf(title + ":");
-              if (idx === -1) fail("Evidence required, but no 'Evidence:' section found in PR body.");
+              const sectionTitle = (rolemap.evidenceSectionTitle || "Evidence").trim();
+              const evidenceText = extractSectionMarkdown(body, sectionTitle);
 
-              const after = body.slice(idx + (title.length + 1)).trim();
-              // Require at least one non-empty line that isn't just a header
-              const meaningful = after.split("\n").map(s => s.trim()).filter(s =>
-                s.length > 0 && !s.toLowerCase().startsWith("risk:") && !s.toLowerCase().startsWith("notes") && !s.toLowerCase().startsWith("handoff")
-              );
-              if (meaningful.length === 0) fail("Evidence required, but Evidence section appears empty.");
+              if (!evidenceText) {
+                fail(`Evidence required, but no '${sectionTitle}' section found in PR body. Add:\n\n## ${sectionTitle}\n- N/A — <why>\n`);
+              }
+
+              if (!hasMeaningfulEvidence(evidenceText)) {
+                fail(`Evidence required, but '${sectionTitle}' section appears empty. Put at least one line (e.g. "- pnpm -C portal build: PASS" or "- N/A — policy-only change").`);
+              }
             }
 
-            core.info(`Role guardrails passed for role=${role}. EvidenceRequired=${evidenceRequired}. Files=${changed.length}`);
+            core.info(`Role guardrails passed. role=${role}. verifierBypass=${verifierBypass}. evidenceRequired=${evidenceRequired}. files=${changed.length}`);

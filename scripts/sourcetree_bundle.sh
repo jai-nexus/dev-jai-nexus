@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eu
 mkdir -p .cache/sourcetree data
 roots=( "../jai-nexus" "../public-nexus" "../wiki-nexus" )
 for r in "${roots[@]}"; do
@@ -19,12 +19,12 @@ def listdir_sorted(p):
     files= sorted([x for x in paths if x.is_file()], key=lambda z:z.name.casefold())
     return dirs+files
 
-def sha12(p):
+def sha256(p):
     if p.is_dir(): return ""
-    h=hashlib.sha1()
+    h=hashlib.sha256()
     with open(p,'rb') as f:
         for b in iter(lambda:f.read(8192), b''): h.update(b)
-    return h.hexdigest()[:12]
+    return h.hexdigest()
 
 items=[]
 def walk(p, idx=()):
@@ -35,7 +35,7 @@ def walk(p, idx=()):
             "nh":".".join(map(str,nh)),
             "path": ch.relative_to(root).as_posix()+("/" if ch.is_dir() else ""),
             "type": "dir" if ch.is_dir() else "file",
-            "sha12": "" if ch.is_dir() else sha12(ch)
+            "sha256": "" if ch.is_dir() else sha256(ch)
         })
         if ch.is_dir(): walk(ch, nh)
 
