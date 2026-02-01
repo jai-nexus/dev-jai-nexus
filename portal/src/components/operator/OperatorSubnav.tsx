@@ -9,6 +9,9 @@ const links = [
   { href: "/operator/agents", label: "Agents" },
   { href: "/operator/projects", label: "Projects" },
   { href: "/operator/work", label: "Work" },
+  { href: "/operator/waves", label: "Waves" },
+  { href: "/operator/chats", label: "Chats" },
+  { href: "/operator/decisions", label: "Decisions" },
 ];
 
 export function OperatorSubnav() {
@@ -35,9 +38,8 @@ export function OperatorSubnav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`${baseClasses} ${
-                  active ? activeClasses : inactiveClasses
-                }`}
+                className={`${baseClasses} ${active ? activeClasses : inactiveClasses
+                  }`}
               >
                 {link.label}
               </Link>

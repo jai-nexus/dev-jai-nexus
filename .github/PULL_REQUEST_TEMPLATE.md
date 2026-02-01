@@ -1,48 +1,54 @@
-> NOTE: If this PR touches `.github/workflows/**`, Role must be `JAI::DEV::VERIFIER` (Builder not allowed).
+> NOTE: If this PR touches `.github/workflows/**`, Role must be `JAI::DEV::VERIFIER`.
 
-## Role (pick one)
-- [ ] Role: JAI::DEV::OPERATOR
-- [ ] Role: JAI::DEV::ARCHITECT
-- [ ] Role: JAI::DEV::BUILDER
-- [ ] Role: JAI::DEV::VERIFIER
-- [ ] Role: JAI::DEV::LIBRARIAN
-
-> After selecting, delete the unchecked lines so only **one** Role remains.
-
----
+## Role
+Role: JAI::DEV::<OPERATOR|ARCHITECT|BUILDER|VERIFIER|LIBRARIAN>
 
 ## Goal
-- <1–3 bullets. What is this PR changing and why?>
+- What is this PR changing and why? (1–3 bullets)
+- 
 
 ## Scope
-- <UI | API | Prisma | CI | Docs | Scripts>
-- Touched paths (high level): <e.g. portal/src/app/api, portal/prisma, scripts>
+- Areas: <UI | API | Prisma | CI | Docs | Scripts>
+- Touched paths (high level):
+  - 
 
 ## Outputs
-- <List key files / routes / scripts changed>
-- <If API: list routes + request/response notes>
-- <If Prisma: list schema + migration file name(s)>
+- Key changes:
+  - 
+
+### API (if any)
+- Routes:
+  - 
+- Request/Response notes:
+  - 
+
+### Prisma (if any)
+- schema.prisma:
+  - 
+- Migration(s):
+  - 
 
 ## Evidence
-Evidence is required if touching any of:
+Evidence: <Required | N/A — explain why>
+
+If **Required**, paste commands + result (fill what applies):
+- `pnpm -w -r build`: PASS/FAIL (or N/A — why)
+- `pnpm lint`: PASS/FAIL (or N/A — why)
+- Other:
+  - `<cmd>`: PASS/FAIL (or N/A — why)
+
+Evidence is **Required** if touching any of:
 - `.github/workflows/**`
 - `portal/src/app/api/**`
 - `portal/prisma/**`, `portal/prisma.config.ts`, `portal/src/lib/{prisma,dbPrisma}.ts`
 - `portal/src/app/**`, `portal/src/components/**`, `portal/src/lib/**`
 - `scripts/**`, `portal/scripts/**`, package/pnpm files, `Makefile`
 
-Paste commands + result:
-- `pnpm -w -r build`: PASS/FAIL
-- `pnpm lint`: PASS/FAIL
-- `<any relevant script/test>`: PASS/FAIL
-
-If CI-only / policy-only change: state why evidence is N/A.
-
 ## Risk
-- [ ] Low
-- [ ] Medium
-- [ ] High
-- <1 line: what could break + mitigation>
+Risk: <Low | Medium | High>
+- What could break:
+- Mitigation:
 
 ## Notes / Handoff
-- <Next Role + next action. Example: "JAI::DEV::VERIFIER — review CI + approve merge.">
+- Next role + next action:
+  - 

@@ -113,7 +113,9 @@
             ],
             "allowedRoles": [
                 "JAI::DEV::LIBRARIAN",
-                "JAI::DEV::ARCHITECT"
+                "JAI::DEV::ARCHITECT",
+                "JAI::DEV::BUILDER",
+                "JAI::DEV::VERIFIER"
             ],
             "evidenceRequired": false
         },
@@ -150,7 +152,8 @@
         }
     ],
     "defaultAllowedRoles": [
-        "JAI::DEV::BUILDER"
+        "JAI::DEV::BUILDER",
+        "JAI::DEV::VERIFIER"
     ],
     "evidenceSectionTitle": "Evidence"
 }

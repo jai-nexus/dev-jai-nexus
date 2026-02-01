@@ -38,7 +38,8 @@
     "jai:wave:report": "dotenv -e .env.local -- tsx scripts/sql-wave-run-4.ts -- --waveRunId 4 --pretty",
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts"
+    "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts",
+    "extract:decisions": "dotenv -e .env.local -- tsx scripts/extract-decisions.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
