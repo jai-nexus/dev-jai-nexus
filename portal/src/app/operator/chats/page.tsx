@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
+import type { Prisma } from "@prisma/client";
 
 type SearchParams = {
     source?: string | string[];
@@ -20,6 +21,11 @@ function firstParam(value: string | string[] | undefined): string | undefined {
     return Array.isArray(value) ? value[0] : value;
 }
 
+type SourceGroupRow = {
+    source: string;
+    _count: { source: number };
+};
+
 export default async function ChatsPage({ searchParams }: ChatsPageProps) {
     const sp = await Promise.resolve(searchParams ?? {});
 
@@ -27,9 +33,10 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
     const searchQuery = firstParam(sp.q);
     const limitParam = firstParam(sp.limit);
 
-    const limit = limitParam ? Math.min(parseInt(limitParam, 10) || 100, 500) : 100;
+    const parsedLimit = limitParam ? parseInt(limitParam, 10) : NaN;
+    const limit = Number.isFinite(parsedLimit) ? Math.min(Math.max(parsedLimit, 1), 500) : 100;
 
-    const where: any = {};
+    const where: Prisma.ChatWhereInput = {};
 
     if (sourceFilter) {
         where.source = sourceFilter;
@@ -60,10 +67,16 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
                 by: ["source"],
                 _count: { source: true },
             })
-            .catch(() => []),
+            .then((rows) =>
+                // groupBy can include nulls depending on your schema; normalize away anything unusable
+                rows
+                    .filter((r): r is { source: string; _count: { source: number } } => typeof r.source === "string")
+                    .map((r) => ({ source: r.source, _count: { source: r._count.source } }))
+            )
+            .catch((): SourceGroupRow[] => []),
     ]);
 
-    const hasFilters = !!(sourceFilter || searchQuery);
+    const hasFilters = Boolean(sourceFilter || searchQuery);
 
     return (
         <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -145,9 +158,7 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
             {chats.length === 0 ? (
                 <p className="text-sm text-gray-400">
                     No chats found.{" "}
-                    {hasFilters
-                        ? "Try clearing filters."
-                        : "Drop a .txt export into ~/jai-inbox to ingest."}
+                    {hasFilters ? "Try clearing filters." : "Drop a .txt export into ~/jai-inbox to ingest."}
                 </p>
             ) : (
                 <div className="space-y-3">
@@ -188,8 +199,7 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
                                         )}
                                         {chat._count.decisions > 0 && (
                                             <span className="text-emerald-400">
-                                                {chat._count.decisions} decision
-                                                {chat._count.decisions !== 1 ? "s" : ""}
+                                                {chat._count.decisions} decision{chat._count.decisions !== 1 ? "s" : ""}
                                             </span>
                                         )}
                                     </div>

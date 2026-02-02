@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
+import type { Prisma } from "@prisma/client";
 
 type SearchParams = {
     category?: string | string[];
@@ -21,6 +22,16 @@ function firstParam(value: string | string[] | undefined): string | undefined {
     return Array.isArray(value) ? value[0] : value;
 }
 
+type CategoryGroupRow = {
+    category: string | null;
+    _count: { category: number };
+};
+
+type StatusGroupRow = {
+    status: string;
+    _count: { status: number };
+};
+
 export default async function DecisionsPage({ searchParams }: DecisionsPageProps) {
     const sp = await Promise.resolve(searchParams ?? {});
 
@@ -29,11 +40,19 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
     const searchQuery = firstParam(sp.q);
     const chatIdFilter = firstParam(sp.chatId);
 
-    const where: any = {};
+    const where: Prisma.DecisionWhereInput = {};
 
     if (categoryFilter) where.category = categoryFilter;
     if (statusFilter) where.status = statusFilter;
-    if (chatIdFilter) where.chatId = parseInt(chatIdFilter, 10);
+
+    if (chatIdFilter) {
+        const n = parseInt(chatIdFilter, 10);
+        if (Number.isFinite(n)) {
+            // If your Decision.chatId is Int, this is correct.
+            // If it's String in your schema, change this to: where.chatId = chatIdFilter;
+            where.chatId = n;
+        }
+    }
 
     if (searchQuery) {
         where.OR = [
@@ -60,16 +79,23 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                 by: ["category"],
                 _count: { category: true },
             })
-            .catch(() => []),
+            .catch((): CategoryGroupRow[] => []),
         prisma.decision
             .groupBy({
                 by: ["status"],
                 _count: { status: true },
             })
-            .catch(() => []),
+            .then((rows) =>
+                // normalize away null/empty status if your schema ever allows it
+                rows.filter(
+                    (r): r is { status: string; _count: { status: number } } =>
+                        typeof r.status === "string" && r.status.length > 0
+                )
+            )
+            .catch((): StatusGroupRow[] => []),
     ]);
 
-    const hasFilters = !!(categoryFilter || statusFilter || searchQuery || chatIdFilter);
+    const hasFilters = Boolean(categoryFilter || statusFilter || searchQuery || chatIdFilter);
 
     const categoryColors: Record<string, string> = {
         deprecated: "border-red-800 bg-red-950/30 text-red-300",
@@ -107,17 +133,23 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                             By Category
                         </div>
                         <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {categories.map((c) => (
-                                <div key={c.category} className="text-xs flex items-center gap-1">
-                                    <Link
-                                        href={`/operator/decisions?category=${encodeURIComponent(c.category ?? "")}`}
-                                        className="font-mono text-sky-400 hover:text-sky-300"
-                                    >
-                                        {c.category || "uncategorized"}
-                                    </Link>
-                                    <span className="text-zinc-500">×{c._count.category}</span>
-                                </div>
-                            ))}
+                            {categories.map((c) => {
+                                const label = c.category ?? "uncategorized";
+                                const href = c.category
+                                    ? `/operator/decisions?category=${encodeURIComponent(c.category)}`
+                                    : `/operator/decisions?category=${encodeURIComponent("uncategorized")}`;
+                                return (
+                                    <div key={label} className="text-xs flex items-center gap-1">
+                                        <Link
+                                            href={href}
+                                            className="font-mono text-sky-400 hover:text-sky-300"
+                                        >
+                                            {label}
+                                        </Link>
+                                        <span className="text-zinc-500">×{c._count.category}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -193,53 +225,54 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                 </p>
             ) : (
                 <div className="space-y-3">
-                    {decisions.map((d) => (
-                        <div
-                            key={d.id}
-                            className={`rounded-lg border p-4 ${categoryColors[d.category ?? "decision"] ?? categoryColors.decision}`}
-                        >
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                    <p className="text-sm text-gray-100 leading-relaxed">{d.text}</p>
+                    {decisions.map((d) => {
+                        const catKey = d.category ?? "decision";
+                        const catClass = categoryColors[catKey] ?? categoryColors.decision;
+                        const statusClass = statusColors[d.status] ?? statusColors.active;
 
-                                    {d.context && (
-                                        <p className="text-xs text-gray-500 mt-2 italic">
-                                            Context: {d.context}
-                                        </p>
-                                    )}
-                                </div>
+                        return (
+                            <div key={d.id} className={`rounded-lg border p-4 ${catClass}`}>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="flex-1">
+                                        <p className="text-sm text-gray-100 leading-relaxed">{d.text}</p>
 
-                                <div className="flex flex-col items-end gap-1 shrink-0">
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono ${statusColors[d.status] ?? statusColors.active}`}
-                                    >
-                                        {d.status}
-                                    </span>
-                                    {d.category && (
-                                        <span className="text-[10px] text-gray-500 font-mono">
-                                            {d.category}
+                                        {d.context && (
+                                            <p className="text-xs text-gray-500 mt-2 italic">
+                                                Context: {d.context}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono ${statusClass}`}
+                                        >
+                                            {d.status}
                                         </span>
-                                    )}
+                                        {d.category && (
+                                            <span className="text-[10px] text-gray-500 font-mono">
+                                                {d.category}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Source chat link */}
+                                <div className="mt-3 pt-2 border-t border-current/20 flex items-center justify-between">
+                                    <Link
+                                        href={`/operator/chats/${d.chat.id}`}
+                                        className="text-xs text-sky-400 hover:text-sky-300"
+                                    >
+                                        ← from: {d.chat.title}
+                                    </Link>
+                                    <span className="text-xs text-gray-600">
+                                        {formatCentral(d.chat.chatDate)}
+                                        {d.lineNumber && <span className="ml-2 font-mono">L{d.lineNumber}</span>}
+                                    </span>
                                 </div>
                             </div>
-
-                            {/* Source chat link */}
-                            <div className="mt-3 pt-2 border-t border-current/20 flex items-center justify-between">
-                                <Link
-                                    href={`/operator/chats/${d.chat.id}`}
-                                    className="text-xs text-sky-400 hover:text-sky-300"
-                                >
-                                    ← from: {d.chat.title}
-                                </Link>
-                                <span className="text-xs text-gray-600">
-                                    {formatCentral(d.chat.chatDate)}
-                                    {d.lineNumber && (
-                                        <span className="ml-2 font-mono">L{d.lineNumber}</span>
-                                    )}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </main>
