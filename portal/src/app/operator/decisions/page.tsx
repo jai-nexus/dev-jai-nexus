@@ -42,15 +42,20 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
 
     const where: Prisma.DecisionWhereInput = {};
 
-    if (categoryFilter) where.category = categoryFilter;
-    if (statusFilter) where.status = statusFilter;
+    if (categoryFilter) {
+        // Note: category is nullable in schema; this filters only explicit string categories.
+        // If you ever want "uncategorized" filter behavior, add a special-case here.
+        where.category = categoryFilter;
+    }
+
+    if (statusFilter) {
+        where.status = statusFilter;
+    }
 
     if (chatIdFilter) {
         const n = parseInt(chatIdFilter, 10);
         if (Number.isFinite(n)) {
-            // If your Decision.chatId is Int, this is correct.
-            // If it's String in your schema, change this to: where.chatId = chatIdFilter;
-            where.chatId = n;
+            where.chatId = n; // Decision.chatId is Int in schema
         }
     }
 
@@ -85,13 +90,6 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                 by: ["status"],
                 _count: { status: true },
             })
-            .then((rows) =>
-                // normalize away null/empty status if your schema ever allows it
-                rows.filter(
-                    (r): r is { status: string; _count: { status: number } } =>
-                        typeof r.status === "string" && r.status.length > 0
-                )
-            )
             .catch((): StatusGroupRow[] => []),
     ]);
 
@@ -135,9 +133,10 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                         <div className="flex flex-wrap gap-x-3 gap-y-1">
                             {categories.map((c) => {
                                 const label = c.category ?? "uncategorized";
+                                // We don't actually support filtering for null category here; this is just a label.
                                 const href = c.category
                                     ? `/operator/decisions?category=${encodeURIComponent(c.category)}`
-                                    : `/operator/decisions?category=${encodeURIComponent("uncategorized")}`;
+                                    : `/operator/decisions`;
                                 return (
                                     <div key={label} className="text-xs flex items-center gap-1">
                                         <Link
@@ -186,6 +185,11 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                                 Status: <span className="ml-1 font-mono">{statusFilter}</span>
                             </span>
                         )}
+                        {chatIdFilter && (
+                            <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
+                                Chat ID: <span className="ml-1 font-mono">{chatIdFilter}</span>
+                            </span>
+                        )}
                         {searchQuery && (
                             <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
                                 Search: <span className="ml-1 font-mono">{searchQuery}</span>
@@ -226,15 +230,23 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
             ) : (
                 <div className="space-y-3">
                     {decisions.map((d) => {
-                        const catKey = d.category ?? "decision";
-                        const catClass = categoryColors[catKey] ?? categoryColors.decision;
-                        const statusClass = statusColors[d.status] ?? statusColors.active;
+                        const categoryKey = d.category ?? "decision";
+                        const categoryClass =
+                            categoryColors[categoryKey] ?? categoryColors.decision;
+
+                        const statusClass =
+                            statusColors[d.status] ?? statusColors.active;
 
                         return (
-                            <div key={d.id} className={`rounded-lg border p-4 ${catClass}`}>
+                            <div
+                                key={d.id}
+                                className={`rounded-lg border p-4 ${categoryClass}`}
+                            >
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
-                                        <p className="text-sm text-gray-100 leading-relaxed">{d.text}</p>
+                                        <p className="text-sm text-gray-100 leading-relaxed">
+                                            {d.text}
+                                        </p>
 
                                         {d.context && (
                                             <p className="text-xs text-gray-500 mt-2 italic">
@@ -267,7 +279,9 @@ export default async function DecisionsPage({ searchParams }: DecisionsPageProps
                                     </Link>
                                     <span className="text-xs text-gray-600">
                                         {formatCentral(d.chat.chatDate)}
-                                        {d.lineNumber && <span className="ml-2 font-mono">L{d.lineNumber}</span>}
+                                        {d.lineNumber && (
+                                            <span className="ml-2 font-mono">L{d.lineNumber}</span>
+                                        )}
                                     </span>
                                 </div>
                             </div>
