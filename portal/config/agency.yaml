@@ -1,4 +1,10 @@
-# agents/agency.yaml
+# config/agency.yaml
+# JAI NEXUS Agent Map — v0.1 (expanded)
+# Updated: 2026-02-02
+#
+# Delegation flows down the NH tree. Cross-branch communication
+# goes through 1.0 (Operator) to keep accountability clear.
+
 schema_version: 0.1
 
 owner:
@@ -7,17 +13,21 @@ owner:
   nh_root: "1.0"
 
 agents:
-  # Root operator – you / your proxy
+  # ═══════════════════════════════════════════════════════════════════════════
+  # TIER 0 — ROOT OPERATOR
+  # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.0"
     id: "jai-operator"
+    agent_key: "JAI::OPERATOR"
     label: "JAI Operator"
     parent_nh_id: null
     tier: 0
     role: "Owner proxy and top-level coordinator"
     scope:
       - "jai-core"
-      - "dev-portal"
-      - "offbook"
+      - "dev-jai-nexus"
+      - "docs-nexus"
+      - "offbook-ai"
     responsibilities:
       - "Maintain the NH map and agency spec"
       - "Guard focus: Tier-0 and Tier-1 only"
@@ -25,19 +35,23 @@ agents:
     delegates_to:
       - "1.1"
       - "1.2"
+      - "1.3"
       - "2.1"
     github_labels:
       - "agent:operator"
 
-  # This repo – the core engine
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.1 — JAI CORE ENGINE (orchestration primitives)
+  # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.1"
     id: "jai-core"
+    agent_key: "JAI::CORE"
     label: "JAI Core Engine"
     parent_nh_id: "1.0"
     tier: 0
     role: "Core orchestration engine and recursive tools"
     scope:
-      - "jai"        # this repo
+      - "jai-core"
     responsibilities:
       - "Operate canvas, recursion, and lineage logic"
       - "Expose APIs for other agents and tools"
@@ -45,12 +59,68 @@ agents:
     delegates_to:
       - "1.1.1"
       - "1.1.2"
+      - "1.1.3"
     github_labels:
       - "agent:jai-core"
 
-  # dev-jai-nexus – operator console + infra
+  - nh_id: "1.1.1"
+    id: "core-event-engine"
+    agent_key: "JAI::CORE::EVENT_ENGINE"
+    label: "Event Engine"
+    parent_nh_id: "1.1"
+    tier: 0
+    role: "Emit, validate, and route SoT events across the nexus"
+    scope:
+      - "jai-core"
+      - "audit-nexus"
+    responsibilities:
+      - "Produce typed SoT events for all significant mutations"
+      - "Validate event schema conformance before emission"
+      - "Route events to appropriate sinks (audit log, portal)"
+    delegates_to: []
+    github_labels:
+      - "agent:event-engine"
+
+  - nh_id: "1.1.2"
+    id: "core-policy-enforcer"
+    agent_key: "JAI::CORE::POLICY_ENFORCER"
+    label: "Policy Enforcer"
+    parent_nh_id: "1.1"
+    tier: 0
+    role: "Evaluate and enforce governance policies at runtime"
+    scope:
+      - "jai-core"
+    responsibilities:
+      - "Block scope violations before mutations occur"
+      - "Evaluate delegation permissions"
+      - "Log policy decisions as SoT events"
+    delegates_to: []
+    github_labels:
+      - "agent:policy-enforcer"
+
+  - nh_id: "1.1.3"
+    id: "core-state-registry"
+    agent_key: "JAI::CORE::STATE_REGISTRY"
+    label: "State Registry"
+    parent_nh_id: "1.1"
+    tier: 0
+    role: "Maintain authoritative agent and resource state"
+    scope:
+      - "jai-core"
+    responsibilities:
+      - "Track agent liveness and current assignments"
+      - "Provide state lookup API for orchestration"
+      - "Persist state checkpoints for recovery"
+    delegates_to: []
+    github_labels:
+      - "agent:state-registry"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.2 — DEV PORTAL & INFRA (control-plane orchestrators)
+  # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.2"
     id: "dev-portal"
+    agent_key: "JAI::DEV"
     label: "Dev Portal & Infra"
     parent_nh_id: "1.0"
     tier: 0
@@ -60,13 +130,199 @@ agents:
     responsibilities:
       - "Maintain portal, DB schema, and pipelines"
       - "Surface registry and SoT events to the owner"
-    delegates_to: []
+    delegates_to:
+      - "1.2.1"
+      - "1.2.2"
+      - "1.2.3"
+      - "1.2.4"
+      - "1.2.5"
     github_labels:
       - "agent:dev-portal"
 
-  # External anchor product – OffBook
+  - nh_id: "1.2.1"
+    id: "dev-architect"
+    agent_key: "JAI::DEV::ARCHITECT"
+    label: "Architect"
+    parent_nh_id: "1.2"
+    tier: 0
+    role: "Plan waves and draft work packets for development"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Decompose objectives into work packets"
+      - "Define acceptance criteria and dependencies"
+      - "Produce run plans for builder consumption"
+    delegates_to: []
+    github_labels:
+      - "agent:architect"
+
+  - nh_id: "1.2.2"
+    id: "dev-builder"
+    agent_key: "JAI::DEV::BUILDER"
+    label: "Builder"
+    parent_nh_id: "1.2"
+    tier: 0
+    role: "Apply patches and open pull requests"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Execute code changes per work packet spec"
+      - "Open PRs with evidence packs"
+      - "Coordinate with verifier for gate passage"
+    delegates_to: []
+    github_labels:
+      - "agent:builder"
+
+  - nh_id: "1.2.3"
+    id: "dev-verifier"
+    agent_key: "JAI::DEV::VERIFIER"
+    label: "Verifier"
+    parent_nh_id: "1.2"
+    tier: 0
+    role: "Run gates and verify acceptance criteria"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Execute test suites and lint checks"
+      - "Validate acceptance criteria met"
+      - "Produce gate run evidence"
+    delegates_to: []
+    github_labels:
+      - "agent:verifier"
+
+  - nh_id: "1.2.4"
+    id: "dev-operator"
+    agent_key: "JAI::DEV::OPERATOR"
+    label: "Dev Operator"
+    parent_nh_id: "1.2"
+    tier: 0
+    role: "Execute wave runs and advance pipeline state"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Start and monitor wave runs"
+      - "Advance wave state based on gate results"
+      - "Approve merges and publish releases"
+    delegates_to: []
+    github_labels:
+      - "agent:dev-operator"
+
+  - nh_id: "1.2.5"
+    id: "dev-librarian"
+    agent_key: "JAI::DEV::LIBRARIAN"
+    label: "Librarian"
+    parent_nh_id: "1.2"
+    tier: 0
+    role: "Archive runs and maintain documentation index"
+    scope:
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Archive completed wave runs"
+      - "Update docs index and registry"
+      - "Manage artifact retention policies"
+    delegates_to: []
+    github_labels:
+      - "agent:librarian"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.3 — JAI DOCS DOMAIN (documentation orchestrators)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.3"
+    id: "docs-domain"
+    agent_key: "JAI::DOCS"
+    label: "JAI Docs Domain"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Documentation quality and knowledge graph steward"
+    scope:
+      - "docs-nexus"
+    responsibilities:
+      - "Maintain docs-nexus surfaces and schemas"
+      - "Coordinate documentation agents"
+      - "Ensure knowledge coherence across repos"
+    delegates_to:
+      - "1.3.1"
+      - "1.3.2"
+      - "1.3.3"
+      - "1.3.4"
+    github_labels:
+      - "agent:docs-domain"
+
+  - nh_id: "1.3.1"
+    id: "docs-schema-steward"
+    agent_key: "JAI::DOCS::SCHEMA_STEWARD"
+    label: "Schema Steward"
+    parent_nh_id: "1.3"
+    tier: 0
+    role: "Guard and evolve documentation schemas"
+    scope:
+      - "docs-nexus"
+      - "datacontracts-nexus"
+    responsibilities:
+      - "Validate surface frontmatter against schemas"
+      - "Propose schema migrations with backward compatibility"
+      - "Maintain schema fingerprint integrity"
+    delegates_to: []
+    github_labels:
+      - "agent:schema-steward"
+
+  - nh_id: "1.3.2"
+    id: "docs-planner"
+    agent_key: "JAI::DOCS::PLANNER"
+    label: "Docs Planner"
+    parent_nh_id: "1.3"
+    tier: 0
+    role: "Plan documentation work and prioritize gaps"
+    scope:
+      - "docs-nexus"
+    responsibilities:
+      - "Identify documentation coverage gaps"
+      - "Draft documentation work packets"
+      - "Prioritize based on user needs and repo activity"
+    delegates_to: []
+    github_labels:
+      - "agent:docs-planner"
+
+  - nh_id: "1.3.3"
+    id: "docs-wiki-synthesizer"
+    agent_key: "JAI::DOCS::WIKI_SYNTHESIZER"
+    label: "Wiki Synthesizer"
+    parent_nh_id: "1.3"
+    tier: 0
+    role: "Synthesize knowledge into wiki surfaces"
+    scope:
+      - "docs-nexus"
+    responsibilities:
+      - "Transform chat logs and decisions into surfaces"
+      - "Maintain cross-references between related docs"
+      - "Generate rollups and summaries"
+    delegates_to: []
+    github_labels:
+      - "agent:wiki-synthesizer"
+
+  - nh_id: "1.3.4"
+    id: "docs-site-builder"
+    agent_key: "JAI::DOCS::SITE_BUILDER"
+    label: "Site Builder"
+    parent_nh_id: "1.3"
+    tier: 0
+    role: "Build and deploy documentation sites"
+    scope:
+      - "docs-nexus"
+    responsibilities:
+      - "Generate static site from surfaces"
+      - "Deploy to hosting infrastructure"
+      - "Validate site integrity and links"
+    delegates_to: []
+    github_labels:
+      - "agent:site-builder"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 2.1 — OFFBOOK BRANCH (product domain)
+  # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "2.1"
     id: "offbook-owner"
+    agent_key: "OFFBOOK::OWNER"
     label: "OffBook.ai Owner"
     parent_nh_id: "1.0"
     tier: 1
@@ -80,6 +336,23 @@ agents:
       - "2.1.1"
     github_labels:
       - "agent:offbook"
+
+  - nh_id: "2.1.1"
+    id: "offbook-exec"
+    agent_key: "OFFBOOK::EXEC"
+    label: "OffBook Executor"
+    parent_nh_id: "2.1"
+    tier: 1
+    role: "Execute implementation tasks for OffBook product"
+    scope:
+      - "offbook-ai"
+    responsibilities:
+      - "Implement features per product owner direction"
+      - "Maintain codebase quality and tests"
+      - "Produce evidence packs for completed work"
+    delegates_to: []
+    github_labels:
+      - "agent:offbook-exec"
 
 delegation_rules:
   - id: "default"

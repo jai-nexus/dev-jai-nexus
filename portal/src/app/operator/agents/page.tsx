@@ -36,12 +36,12 @@ function Chip({
     tone === "emerald"
       ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
       : tone === "sky"
-      ? "bg-sky-900/50 text-sky-200 border-sky-800"
-      : tone === "amber"
-      ? "bg-amber-900/40 text-amber-200 border-amber-800"
-      : tone === "purple"
-      ? "bg-purple-900/50 text-purple-200 border-purple-800"
-      : "bg-zinc-900 text-gray-200 border-gray-800";
+        ? "bg-sky-900/50 text-sky-200 border-sky-800"
+        : tone === "amber"
+          ? "bg-amber-900/40 text-amber-200 border-amber-800"
+          : tone === "purple"
+            ? "bg-purple-900/50 text-purple-200 border-purple-800"
+            : "bg-zinc-900 text-gray-200 border-gray-800";
 
   return (
     <span
@@ -188,13 +188,12 @@ export default function AgentsPage() {
 
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
-                          agent.tier === 0
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${agent.tier === 0
                             ? "bg-emerald-900/60 text-emerald-200"
                             : agent.tier === 1
-                            ? "bg-sky-900/60 text-sky-200"
-                            : "bg-purple-900/60 text-purple-200"
-                        }`}
+                              ? "bg-sky-900/60 text-sky-200"
+                              : "bg-purple-900/60 text-purple-200"
+                          }`}
                       >
                         Tier {agent.tier}
                       </span>
@@ -244,7 +243,7 @@ export default function AgentsPage() {
                     </td>
 
                     <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {agent.github_labels.join(", ")}
+                      {(agent.github_labels ?? []).join(", ")}
                     </td>
 
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
