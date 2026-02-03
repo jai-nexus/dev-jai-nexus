@@ -14,6 +14,7 @@ export interface AgencyOwner {
 export interface AgencyAgent {
   nh_id: string
   id: string
+  agent_key: string
   label: string
   parent_nh_id: string | null
   tier: number
@@ -46,4 +47,9 @@ export function getAgencyConfig(): AgencyConfig {
   const parsed = yaml.load(raw) as AgencyConfig
   cachedAgency = parsed
   return parsed
+}
+
+export function getAgentByNhId(nhId: string): AgencyAgent | null {
+  const agency = getAgencyConfig()
+  return agency.agents.find((a) => a.nh_id === nhId) ?? null
 }

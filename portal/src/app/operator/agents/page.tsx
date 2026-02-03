@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 import Link from "next/link";
+import React from "react";
 import {
   getAgencyConfig,
   type AgencyAgent,
@@ -145,7 +146,9 @@ export default function AgentsPage() {
                 <th className="py-2 px-3 text-xs text-gray-400">Tier</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Type</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Role</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Capabilities</th>
+                <th className="py-2 px-3 text-xs text-gray-400">
+                  Capabilities
+                </th>
                 <th className="py-2 px-3 text-xs text-gray-400">Constraints</th>
                 <th className="py-2 px-3 text-xs text-gray-400">Scope</th>
                 <th className="py-2 px-3 text-xs text-gray-400">
@@ -162,8 +165,23 @@ export default function AgentsPage() {
               {agents.map((agent: AgencyAgent) => {
                 const v2 = asV2(agent);
                 const t = v2.type?.toUpperCase() ?? "—";
-                const caps = Array.isArray(v2.capabilities) ? v2.capabilities : [];
+                const caps = Array.isArray(v2.capabilities)
+                  ? v2.capabilities
+                  : [];
                 const constraints = formatConstraints(v2);
+
+                const scopeList = agent.scope ?? [];
+                const delegates = agent.delegates_to ?? [];
+                const labels = agent.github_labels ?? [];
+
+                const qs = new URLSearchParams({
+                  assigneeNhId: agent.nh_id,
+                  agentKey: agent.agent_key ?? "",
+                  scope: scopeList.join(","),
+                  githubLabels: labels.join(","),
+                });
+
+                const href = `/operator/work/new?${qs.toString()}`;
 
                 return (
                   <tr
@@ -233,24 +251,20 @@ export default function AgentsPage() {
                     </td>
 
                     <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {agent.scope.join(", ")}
+                      {scopeList.length ? scopeList.join(", ") : "—"}
                     </td>
 
                     <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {agent.delegates_to.length > 0
-                        ? agent.delegates_to.join(", ")
-                        : "—"}
+                      {delegates.length ? delegates.join(", ") : "—"}
                     </td>
 
                     <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {(agent.github_labels ?? []).join(", ")}
+                      {labels.length ? labels.join(", ") : "—"}
                     </td>
 
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
                       <Link
-                        href={`/operator/work/new?assignee=${encodeURIComponent(
-                          agent.nh_id,
-                        )}`}
+                        href={href}
                         className="inline-flex items-center rounded-md border border-gray-700 bg-zinc-950 px-2 py-1 text-xs text-gray-200 hover:bg-zinc-900"
                       >
                         Delegate → Work

@@ -1,12 +1,9 @@
 // portal/src/lib/sotWorkPackets.ts
 import { prisma } from "@/lib/prisma";
-import type {
-  Prisma,
-  WorkPacket,
-  WorkPacketStatus,
-} from "@prisma/client";
+import type { Prisma, WorkPacket, WorkPacketStatus } from "@prisma/client";
 import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
 
+// Allow sentinel strings from scalar()
 type JsonScalar = string | number | boolean;
 type JsonChange = { from: JsonScalar; to: JsonScalar };
 
@@ -33,14 +30,21 @@ function scalar(v: unknown): JsonScalar {
   if (typeof v === "string") return v;
   if (typeof v === "number") return Number.isFinite(v) ? v : "(nan)";
   if (typeof v === "boolean") return v;
-  return String(v);
+
+  // Try to keep it stable-ish for objects without exploding payload size.
+  // (We don't want deep JSON stringify in a diff helper.)
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
 }
 
 function pushChange(
   changes: Record<string, JsonChange>,
   key: string,
   from: unknown,
-  to: unknown,
+  to: unknown
 ) {
   const a = scalar(from);
   const b = scalar(to);
@@ -73,12 +77,18 @@ export function diffWorkPacket(before: WorkPacket, after: WorkPacket): WorkPacke
   return { changes, nonStatusChanges, statusChanged };
 }
 
+export type WorkPacketSotKind =
+  | "WORK_PACKET_CREATED"
+  | "WORK_PACKET_UPDATED"
+  | "WORK_PACKET_STATUS_CHANGED"
+  | "WORK_DELEGATED";
+
 export type EmitWorkPacketSotEventArgs = {
   db?: DbLike; // prisma or tx
   ts?: Date;
 
   source?: string;
-  kind: "WORK_PACKET_CREATED" | "WORK_PACKET_UPDATED" | "WORK_PACKET_STATUS_CHANGED";
+  kind: WorkPacketSotKind;
   summary: string;
 
   nhId: string;
@@ -108,31 +118,30 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
   };
 
   // ✅ SoT v0.1 envelope (locked contract)
-  // Store this whole object into SotEvent.payload so it’s portable/exportable.
   const sotEvent = {
-    version: "0.1",
+    version: "0.1" as const,
     ts: ts.toISOString(),
-    source: args.source ?? "jai-work-ui",
+    source: (args.source ?? "jai-work-ui").trim() || "jai-work-ui",
     kind: args.kind,
     summary: args.summary,
     nhId: args.nhId,
-    // keep these present but empty-safe (contract usually allows null/empty)
     repoName: null,
     domainName: null,
     payload: workPayload,
   };
 
-  // throws if it drifts
+  // throws in dev, warns in prod (per your validator)
   assertSotEventV01(sotEvent);
 
   await db.sotEvent.create({
     data: {
-      eventId: args.mutationId, // Use mutationId as distinctive eventId
+      // stable distinct event id
+      eventId: args.mutationId,
       ts,
       source: sotEvent.source,
       kind: sotEvent.kind,
-      nhId: sotEvent.nhId,
-      summary: sotEvent.summary,
+      nhId: sotEvent.nhId ?? null,
+      summary: sotEvent.summary ?? null,
       payload: sotEvent as Prisma.InputJsonValue,
       repoId: args.repoId ?? null,
 

@@ -1,11 +1,30 @@
 # config/agency.yaml
-# JAI NEXUS Agent Map — v0.1 (expanded)
+# JAI NEXUS Agent Map — v0.2
 # Updated: 2026-02-02
 #
-# Delegation flows down the NH tree. Cross-branch communication
-# goes through 1.0 (Operator) to keep accountability clear.
+# ── NH Synchronisation Rules ──────────────────────────────────────────────
+# Agent NHIDs are DERIVED from repo NHIDs.  The repo NHID is the prefix;
+# agents under that repo get sequential suffixes (.1, .2, …).
+#
+#   Repo NHID   Repo Key               Agents under it
+#   ───────────────────────────────────────────────────
+#   1.1         nexus-core             1.1.1 … 1.1.3
+#   1.2         dev-jai-nexus          1.2.1 … 1.2.5
+#   1.3         docs-nexus             1.3.1 … 1.3.4
+#   1.4         audit-nexus            1.4.1 … 1.4.3
+#   1.5         datacontracts-nexus    (shared scope with 1.4 agents)
+#   1.6         actions-nexus          1.6.1 … 1.6.3
+#   1.7         .github                (shared scope with 1.6 agents)
+#   1.8         vscode-nexus           1.8.1
+#   1.9         jai (CLI)              1.9.1
+#   1.10        integrations-nexus     1.10.1 … 1.10.2
+#   1.11        (meta — virtual)       1.11.1 … 1.11.2
+#
+# scope entries use BARE repo names (no org prefix).
+# The scopeValidator normalises "org/repo" → "repo" at check time.
+# ──────────────────────────────────────────────────────────────────────────
 
-schema_version: 0.1
+schema_version: 0.2
 
 owner:
   name: "Jerry Ingram"
@@ -24,9 +43,15 @@ agents:
     tier: 0
     role: "Owner proxy and top-level coordinator"
     scope:
-      - "jai-core"
+      - "nexus-core"
       - "dev-jai-nexus"
       - "docs-nexus"
+      - "audit-nexus"
+      - "datacontracts-nexus"
+      - "actions-nexus"
+      - "vscode-nexus"
+      - "jai"
+      - "integrations-nexus"
       - "offbook-ai"
     responsibilities:
       - "Maintain the NH map and agency spec"
@@ -36,12 +61,18 @@ agents:
       - "1.1"
       - "1.2"
       - "1.3"
+      - "1.4"
+      - "1.6"
+      - "1.8"
+      - "1.9"
+      - "1.10"
+      - "1.11"
       - "2.1"
     github_labels:
       - "agent:operator"
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 1.1 — JAI CORE ENGINE (orchestration primitives)
+  # 1.1 — CORE ORCHESTRATION LAYER  (nexus-core)
   # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.1"
     id: "jai-core"
@@ -51,7 +82,7 @@ agents:
     tier: 0
     role: "Core orchestration engine and recursive tools"
     scope:
-      - "jai-core"
+      - "nexus-core"
     responsibilities:
       - "Operate canvas, recursion, and lineage logic"
       - "Expose APIs for other agents and tools"
@@ -71,7 +102,7 @@ agents:
     tier: 0
     role: "Emit, validate, and route SoT events across the nexus"
     scope:
-      - "jai-core"
+      - "nexus-core"
       - "audit-nexus"
     responsibilities:
       - "Produce typed SoT events for all significant mutations"
@@ -89,7 +120,7 @@ agents:
     tier: 0
     role: "Evaluate and enforce governance policies at runtime"
     scope:
-      - "jai-core"
+      - "nexus-core"
     responsibilities:
       - "Block scope violations before mutations occur"
       - "Evaluate delegation permissions"
@@ -106,7 +137,7 @@ agents:
     tier: 0
     role: "Maintain authoritative agent and resource state"
     scope:
-      - "jai-core"
+      - "nexus-core"
     responsibilities:
       - "Track agent liveness and current assignments"
       - "Provide state lookup API for orchestration"
@@ -116,7 +147,7 @@ agents:
       - "agent:state-registry"
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 1.2 — DEV PORTAL & INFRA (control-plane orchestrators)
+  # 1.2 — DEV DOMAIN  (dev-jai-nexus)   — control-plane orchestrators
   # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.2"
     id: "dev-portal"
@@ -225,7 +256,7 @@ agents:
       - "agent:librarian"
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 1.3 — JAI DOCS DOMAIN (documentation orchestrators)
+  # 1.3 — DOCS DOMAIN  (docs-nexus)
   # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "1.3"
     id: "docs-domain"
@@ -318,7 +349,349 @@ agents:
       - "agent:site-builder"
 
   # ═══════════════════════════════════════════════════════════════════════════
-  # 2.1 — OFFBOOK BRANCH (product domain)
+  # 1.4 — AUDIT & GOVERNANCE  (audit-nexus + datacontracts-nexus)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.4"
+    id: "audit-domain"
+    agent_key: "JAI::AUDIT"
+    label: "Audit & Governance"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Code and data governance across the polyrepo"
+    scope:
+      - "audit-nexus"
+      - "datacontracts-nexus"
+    responsibilities:
+      - "Enforce data contracts and audit trails"
+      - "Coordinate governance agents"
+      - "Escalate policy violations to Operator"
+    delegates_to:
+      - "1.4.1"
+      - "1.4.2"
+      - "1.4.3"
+    github_labels:
+      - "agent:audit-domain"
+
+  - nh_id: "1.4.1"
+    id: "audit-code-auditor"
+    agent_key: "JAI::AUDIT::CODE_AUDITOR"
+    label: "Code Auditor"
+    parent_nh_id: "1.4"
+    tier: 0
+    role: "Static-analyse PRs for policy and quality compliance"
+    scope:
+      - "audit-nexus"
+    responsibilities:
+      - "Scan PRs for security and style violations"
+      - "Flag deviations from coding standards"
+      - "Produce audit evidence packs"
+    delegates_to: []
+    github_labels:
+      - "agent:code-auditor"
+
+  - nh_id: "1.4.2"
+    id: "audit-data-guardian"
+    agent_key: "JAI::AUDIT::DATA_GUARDIAN"
+    label: "Data Guardian"
+    parent_nh_id: "1.4"
+    tier: 0
+    role: "Protect data lineage and access boundaries"
+    scope:
+      - "audit-nexus"
+      - "datacontracts-nexus"
+    responsibilities:
+      - "Validate data flows against declared contracts"
+      - "Alert on lineage breaks or unauthorised access"
+      - "Maintain data classification registry"
+    delegates_to: []
+    github_labels:
+      - "agent:data-guardian"
+
+  - nh_id: "1.4.3"
+    id: "audit-contract-verifier"
+    agent_key: "JAI::AUDIT::CONTRACT_VERIFIER"
+    label: "Contract Verifier"
+    parent_nh_id: "1.4"
+    tier: 0
+    role: "Validate schema and API contracts at merge time"
+    scope:
+      - "datacontracts-nexus"
+      - "audit-nexus"
+    responsibilities:
+      - "Run contract-test suites against declared schemas"
+      - "Block merges that break inter-repo contracts"
+      - "Emit contract.verified / contract.broken SoT events"
+    delegates_to: []
+    github_labels:
+      - "agent:contract-verifier"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.6 — ACTIONS & CI/CD  (actions-nexus + .github)
+  # Note: 1.5 is reserved for datacontracts-nexus as a standalone domain later.
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.6"
+    id: "actions-domain"
+    agent_key: "JAI::ACTIONS"
+    label: "Actions & CI/CD"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Orchestrate and monitor CI/CD across the polyrepo"
+    scope:
+      - "actions-nexus"
+      - ".github"
+    responsibilities:
+      - "Maintain reusable GitHub Actions workflows"
+      - "Monitor run health and surface failures"
+      - "Coordinate release pipelines"
+    delegates_to:
+      - "1.6.1"
+      - "1.6.2"
+      - "1.6.3"
+    github_labels:
+      - "agent:actions-domain"
+
+  - nh_id: "1.6.1"
+    id: "actions-workflow-orchestrator"
+    agent_key: "JAI::ACTIONS::WORKFLOW_ORCHESTRATOR"
+    label: "Workflow Orchestrator"
+    parent_nh_id: "1.6"
+    tier: 0
+    role: "Compose and trigger multi-step CI workflows"
+    scope:
+      - "actions-nexus"
+      - ".github"
+    responsibilities:
+      - "Assemble workflow DAGs from work-packet specs"
+      - "Trigger and sequence GitHub Actions runs"
+      - "Emit workflow.started / workflow.completed SoT events"
+    delegates_to: []
+    github_labels:
+      - "agent:workflow-orchestrator"
+
+  - nh_id: "1.6.2"
+    id: "actions-run-monitor"
+    agent_key: "JAI::ACTIONS::RUN_MONITOR"
+    label: "Run Monitor"
+    parent_nh_id: "1.6"
+    tier: 0
+    role: "Watch live CI runs and surface blockers"
+    scope:
+      - "actions-nexus"
+    responsibilities:
+      - "Poll GitHub Actions run status"
+      - "Escalate stuck or failed runs to Dev Operator"
+      - "Feed run metrics into the operator dashboard"
+    delegates_to: []
+    github_labels:
+      - "agent:run-monitor"
+
+  - nh_id: "1.6.3"
+    id: "actions-pr-analyzer"
+    agent_key: "JAI::ACTIONS::PR_ANALYZER"
+    label: "PR Analyzer"
+    parent_nh_id: "1.6"
+    tier: 0
+    role: "Pre-flight analysis of pull requests before CI"
+    scope:
+      - "actions-nexus"
+      - ".github"
+    responsibilities:
+      - "Validate PR body format (Role: line, AC ref)"
+      - "Estimate blast radius and flag risky diffs"
+      - "Auto-assign reviewers by agent role"
+    delegates_to: []
+    github_labels:
+      - "agent:pr-analyzer"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.8 — TOOLING: VS CODE  (vscode-nexus)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.8"
+    id: "vscode-domain"
+    agent_key: "JAI::VSCODE"
+    label: "VS Code Extension"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "IDE integration layer for JAI NEXUS"
+    scope:
+      - "vscode-nexus"
+    responsibilities:
+      - "Surface agent context and work packets inside the editor"
+      - "Dispatch work to the control plane"
+    delegates_to:
+      - "1.8.1"
+    github_labels:
+      - "agent:vscode-domain"
+
+  - nh_id: "1.8.1"
+    id: "vscode-agent-dispatcher"
+    agent_key: "JAI::VSCODE::AGENT_DISPATCHER"
+    label: "Agent Dispatcher"
+    parent_nh_id: "1.8"
+    tier: 0
+    role: "Route IDE commands to the correct orchestration agent"
+    scope:
+      - "vscode-nexus"
+    responsibilities:
+      - "Translate editor actions into work-packet operations"
+      - "Show live agent status in the status bar"
+      - "Push SoT events for IDE-originated actions"
+    delegates_to: []
+    github_labels:
+      - "agent:agent-dispatcher"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.9 — TOOLING: CLI  (jai)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.9"
+    id: "cli-domain"
+    agent_key: "JAI::CLI"
+    label: "JAI CLI"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Command-line interface for JAI NEXUS workflows"
+    scope:
+      - "jai"
+    responsibilities:
+      - "Expose jai init / work create / status / events --tail"
+      - "Authenticate and route commands to the portal API"
+    delegates_to:
+      - "1.9.1"
+    github_labels:
+      - "agent:cli-domain"
+
+  - nh_id: "1.9.1"
+    id: "cli-command-router"
+    agent_key: "JAI::CLI::COMMAND_ROUTER"
+    label: "Command Router"
+    parent_nh_id: "1.9"
+    tier: 0
+    role: "Parse CLI input and dispatch to the right API endpoint"
+    scope:
+      - "jai"
+    responsibilities:
+      - "Validate CLI arguments against agency rules"
+      - "Translate subcommands into portal REST calls"
+      - "Stream SoT events to the terminal on --tail"
+    delegates_to: []
+    github_labels:
+      - "agent:command-router"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.10 — INTEGRATIONS  (integrations-nexus)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.10"
+    id: "integrations-domain"
+    agent_key: "JAI::INTEGRATIONS"
+    label: "Integrations"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Bridge JAI NEXUS to external systems"
+    scope:
+      - "integrations-nexus"
+    responsibilities:
+      - "Own all external connector logic"
+      - "Coordinate sync agents with the core event bus"
+    delegates_to:
+      - "1.10.1"
+      - "1.10.2"
+    github_labels:
+      - "agent:integrations-domain"
+
+  - nh_id: "1.10.1"
+    id: "integrations-protocol-adapter"
+    agent_key: "JAI::INTEGRATIONS::PROTOCOL_ADAPTER"
+    label: "Protocol Adapter"
+    parent_nh_id: "1.10"
+    tier: 0
+    role: "Translate between JAI event schemas and external API formats"
+    scope:
+      - "integrations-nexus"
+    responsibilities:
+      - "Implement webhook ingest and outbound formatters"
+      - "Version-gate incoming payloads"
+      - "Emit integration.received SoT events"
+    delegates_to: []
+    github_labels:
+      - "agent:protocol-adapter"
+
+  - nh_id: "1.10.2"
+    id: "integrations-sync-agent"
+    agent_key: "JAI::INTEGRATIONS::SYNC_AGENT"
+    label: "Sync Agent"
+    parent_nh_id: "1.10"
+    tier: 0
+    role: "Keep external systems in sync with JAI state"
+    scope:
+      - "integrations-nexus"
+    responsibilities:
+      - "Bidirectional sync with GitHub (issues ↔ work packets)"
+      - "Retry failed outbound pushes with backoff"
+      - "Emit sync.completed / sync.failed SoT events"
+    delegates_to: []
+    github_labels:
+      - "agent:sync-agent"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1.11 — META / EVOLUTION  (virtual domain — no single repo)
+  # ═══════════════════════════════════════════════════════════════════════════
+  - nh_id: "1.11"
+    id: "meta-domain"
+    agent_key: "JAI::META"
+    label: "Meta & Evolution"
+    parent_nh_id: "1.0"
+    tier: 0
+    role: "Self-improvement and system health oversight"
+    scope:
+      - "nexus-core"
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Analyse system performance and flag bottlenecks"
+      - "Propose and execute safe refactors"
+    delegates_to:
+      - "1.11.1"
+      - "1.11.2"
+    github_labels:
+      - "agent:meta-domain"
+
+  - nh_id: "1.11.1"
+    id: "meta-performance-analyst"
+    agent_key: "JAI::META::PERFORMANCE_ANALYST"
+    label: "Performance Analyst"
+    parent_nh_id: "1.11"
+    tier: 0
+    role: "Measure and report on system throughput and health"
+    scope:
+      - "nexus-core"
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Aggregate SoT event metrics into dashboards"
+      - "Flag anomalies (stuck queues, dead-lettered work)"
+      - "Produce weekly health summaries for the Operator"
+    delegates_to: []
+    github_labels:
+      - "agent:performance-analyst"
+
+  - nh_id: "1.11.2"
+    id: "meta-system-refactorer"
+    agent_key: "JAI::META::SYSTEM_REFACTORER"
+    label: "System Refactorer"
+    parent_nh_id: "1.11"
+    tier: 0
+    role: "Identify and execute safe structural improvements"
+    scope:
+      - "nexus-core"
+      - "dev-jai-nexus"
+    responsibilities:
+      - "Detect schema drift and dead code across repos"
+      - "Draft refactor work packets with risk assessments"
+      - "Never merge without Operator sign-off"
+    delegates_to: []
+    github_labels:
+      - "agent:system-refactorer"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 2.1 — OFFBOOK BRANCH  (product domain)
   # ═══════════════════════════════════════════════════════════════════════════
   - nh_id: "2.1"
     id: "offbook-owner"
@@ -354,6 +727,9 @@ agents:
     github_labels:
       - "agent:offbook-exec"
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# DELEGATION RULES
+# ═══════════════════════════════════════════════════════════════════════════════
 delegation_rules:
   - id: "default"
     description: >
@@ -362,3 +738,4 @@ delegation_rules:
     constraints:
       - "No agent may create active work in a repo outside its scope."
       - "Every significant delegation is a GitHub issue + SoT event."
+      - "Scope comparison is bare-repo-name: 'org/repo' and 'repo' are equivalent."
