@@ -1,0 +1,223 @@
+[
+    {
+        "eventId": "evt-dct-001",
+        "ts": "2026-02-10T10:00:00Z",
+        "source": "chatgpt",
+        "kind": "dct.idea.create",
+        "summary": "Create idea: Prisma is the ORM for all portal DB access",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-prisma-orm",
+            "text": "Prisma is the sole ORM for all portal database access. No raw SQL in application code.",
+            "ideaType": "decision",
+            "status": "active",
+            "confidence": 0.95,
+            "anchor": {
+                "type": "chat",
+                "chatId": 42,
+                "lineNumber": 117
+            },
+            "tags": [
+                "architecture",
+                "database"
+            ],
+            "nhId": "1.1.9"
+        }
+    },
+    {
+        "eventId": "evt-dct-002",
+        "ts": "2026-02-10T10:05:00Z",
+        "source": "chatgpt",
+        "kind": "dct.idea.create",
+        "summary": "Create idea: SoT events use v0.1 contract",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-sot-contract",
+            "text": "All SoT events must conform to the sot-event-v0.1 contract schema. Validator is in sotEventV01.ts.",
+            "ideaType": "rule",
+            "status": "active",
+            "confidence": 0.9,
+            "anchor": {
+                "type": "file",
+                "filePath": "portal/src/lib/contracts/sotEventV01.ts",
+                "fileLineRange": {
+                    "start": 10,
+                    "end": 22
+                }
+            },
+            "tags": [
+                "contracts",
+                "sot"
+            ],
+            "nhId": ""
+        }
+    },
+    {
+        "eventId": "evt-dct-003",
+        "ts": "2026-02-10T11:00:00Z",
+        "source": "chatgpt",
+        "kind": "dct.idea.create",
+        "summary": "Create idea: Definition of Done for Wave 1",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-wave1-dod",
+            "text": "Wave 1 is done when: CLI jai sot emit works on Windows PowerShell, events conform to SoT v0.1, and jai --help + jai sot tail remain stable.",
+            "ideaType": "definition",
+            "status": "active",
+            "confidence": 0.85,
+            "anchor": {
+                "type": "chat",
+                "chatId": 55,
+                "lineNumber": 44
+            },
+            "tags": [
+                "wave-1",
+                "milestone"
+            ],
+            "nhId": "1.1.9"
+        }
+    },
+    {
+        "_comment": "Edge with legacy anchor provenance (missing line range for file is not strict in new schema)",
+        "eventId": "evt-dct-004",
+        "ts": "2026-02-10T11:15:00Z",
+        "source": "chatgpt",
+        "kind": "dct.idea.edge",
+        "summary": "Edge: wave1-dod DEPENDS_ON sot-contract",
+        "payload": {
+            "type": "dct.idea.edge",
+            "from": "idea-wave1-dod",
+            "to": "idea-sot-contract",
+            "relation": "DEPENDS_ON",
+            "confidence": 0.9,
+            "anchor": {
+                "type": "chat",
+                "chatId": 55,
+                "lineNumber": 46
+            }
+        }
+    },
+    {
+        "_comment": "Slot bind with anchor provenance",
+        "eventId": "evt-dct-005",
+        "ts": "2026-02-10T12:00:00Z",
+        "source": "operator",
+        "kind": "dct.slot.bind",
+        "summary": "Bind slot: definition.done -> wave1-dod",
+        "payload": {
+            "type": "dct.slot.bind",
+            "slot": "definition.done",
+            "ideaId": "idea-wave1-dod",
+            "anchor": {
+                "type": "chat",
+                "chatId": 60,
+                "lineNumber": 12
+            }
+        }
+    },
+    {
+        "eventId": "evt-dct-006",
+        "ts": "2026-02-10T12:05:00Z",
+        "source": "operator",
+        "kind": "dct.slot.bind",
+        "summary": "Bind slot: rule.orm -> prisma-orm",
+        "payload": {
+            "type": "dct.slot.bind",
+            "slot": "rule.orm",
+            "ideaId": "idea-prisma-orm"
+        }
+    },
+    {
+        "_comment": "Status change WITH anchor provenance",
+        "eventId": "evt-dct-007",
+        "ts": "2026-02-10T13:00:00Z",
+        "source": "operator",
+        "kind": "dct.idea.status",
+        "summary": "Promote wave1-dod to promoted status",
+        "payload": {
+            "type": "dct.idea.status",
+            "ideaId": "idea-wave1-dod",
+            "status": "promoted",
+            "anchor": {
+                "type": "url",
+                "url": "https://github.com/org/repo/pull/42"
+            }
+        }
+    },
+    {
+        "_comment": "ADVERSARIAL: invalid ts (should sort to epoch 0 and still project)",
+        "eventId": "evt-dct-008",
+        "ts": "not-a-date",
+        "source": "test",
+        "kind": "dct.idea.create",
+        "summary": "Create idea with bad timestamp",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-bad-ts",
+            "text": "This idea has an unparseable timestamp.",
+            "ideaType": "observation",
+            "status": "draft",
+            "confidence": 0.5,
+            "tags": [
+                "adversarial"
+            ]
+        }
+    },
+    {
+        "_comment": "ADVERSARIAL: kind/payload mismatch (kind=slot.bind but payload.type=idea.create)",
+        "eventId": "evt-dct-009",
+        "ts": "2026-02-10T14:00:00Z",
+        "source": "test",
+        "kind": "dct.slot.bind",
+        "summary": "Mismatched kind vs payload.type — should be skipped",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-mismatch",
+            "text": "This payload type does not match the event kind.",
+            "ideaType": "observation",
+            "status": "draft",
+            "confidence": 0.5,
+            "tags": []
+        }
+    },
+    {
+        "_comment": "Non-DCT event — should be filtered out entirely",
+        "eventId": "evt-non-dct-010",
+        "ts": "2026-02-10T15:00:00Z",
+        "source": "github",
+        "kind": "conversation",
+        "summary": "Non-DCT event that should be filtered out by applyDct"
+    },
+    {
+        "_comment": "ADVERSARIAL: status change for unknown idea — should be skipped",
+        "eventId": "evt-dct-011",
+        "ts": "2026-02-10T16:00:00Z",
+        "source": "test",
+        "kind": "dct.idea.status",
+        "summary": "Status change for non-existent idea",
+        "payload": {
+            "type": "dct.idea.status",
+            "ideaId": "idea-does-not-exist",
+            "status": "deprecated"
+        }
+    },
+    {
+        "_comment": "LEGACY ANCHOR: file anchor without line range (should be accepted but counted as legacy)",
+        "eventId": "evt-dct-012",
+        "ts": "2026-02-10T17:00:00Z",
+        "source": "test",
+        "kind": "dct.idea.create",
+        "summary": "Idea with loose anchor",
+        "payload": {
+            "type": "dct.idea.create",
+            "ideaId": "idea-legacy-anchor",
+            "text": "This idea has a legacy anchor.",
+            "ideaType": "observation",
+            "status": "active",
+            "anchor": {
+                "type": "file",
+                "filePath": "just/a/file/no/range.ts"
+            }
+        }
+    }
+]
