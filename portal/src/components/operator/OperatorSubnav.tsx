@@ -12,6 +12,7 @@ const links = [
   { href: "/operator/waves", label: "Waves" },
   { href: "/operator/chats", label: "Chats" },
   { href: "/operator/decisions", label: "Decisions" },
+  { href: "/operator/dct", label: "DCT" },
 ];
 
 export function OperatorSubnav() {

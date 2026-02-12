@@ -11,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -95,11 +95,11 @@ enum AgentRunStatus {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Repo {
-  id            Int        @id @default(autoincrement())
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @default(now()) @updatedAt
-  nhId          String     @default("")
-  name          String     @unique
+  id            Int         @id @default(autoincrement())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
+  nhId          String      @default("")
+  name          String      @unique
   description   String?
   domainPod     String?
   engineGroup   String?
@@ -110,7 +110,7 @@ model Repo {
   githubUrl     String?
   notes         Json?
 
-  wave         Int?     // 0..3 or null (unassigned)
+  wave         Int? // 0..3 or null (unassigned)
   isDeprecated Boolean @default(false)
 
   domains     Domain[]
@@ -127,11 +127,11 @@ model Repo {
 }
 
 model Domain {
-  id         Int          @id @default(autoincrement())
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now()) @updatedAt
-  nhId       String       @default("")
-  domain     String       @unique
+  id         Int           @id @default(autoincrement())
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @default(now()) @updatedAt
+  nhId       String        @default("")
+  domain     String        @unique
   status     DomainStatus?
   domainKey  String?
   engineType String?
@@ -260,8 +260,8 @@ model SotEvent {
   source String
   kind   String
 
-  nhId    String @default("")
-  eventId String @unique
+  nhId    String  @default("")
+  eventId String  @unique
   summary String?
   payload Json?
 
@@ -307,7 +307,7 @@ model User {
 
   // Q1 deterministic agent runs (optional link)
   agentRuns AgentRun[]
-  waveRuns  WaveRun[] @relation("WaveRunCreatedBy")
+  waveRuns  WaveRun[]  @relation("WaveRunCreatedBy")
 }
 
 model Account {
@@ -351,10 +351,10 @@ model VerificationToken {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model WorkPacket {
-  id     Int              @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   externalId String? @unique
-  
+
   nhId   String
   title  String
   status WorkPacketStatus @default(DRAFT)
@@ -376,6 +376,9 @@ model WorkPacket {
   sotEvents  SotEvent[]
   inboxItems AgentInboxItem[]
 
+  // ✅ Agent delegation queue (1:1 optional backref)
+  agentQueueItem AgentQueueItem? @relation("AgentQueueItemToWorkPacket")
+
   // optional linkage to agent runs/artifacts
   agentRuns AgentRun[]
   artifacts Artifact[]
@@ -389,9 +392,9 @@ model WorkPacket {
 }
 
 model AgentInboxItem {
-  id        Int             @id @default(autoincrement())
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   status   InboxItemStatus @default(QUEUED)
   priority Int             @default(50)
@@ -402,7 +405,7 @@ model AgentInboxItem {
   completedAt DateTime?
 
   agentUserId String?
-  agent       User? @relation(fields: [agentUserId], references: [id], onDelete: SetNull)
+  agent       User?   @relation(fields: [agentUserId], references: [id], onDelete: SetNull)
 
   workPacketId Int        @unique
   workPacket   WorkPacket @relation(fields: [workPacketId], references: [id], onDelete: Cascade)
@@ -419,16 +422,16 @@ model AgentInboxItem {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model RegistrySnapshot {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  quarter     String   // e.g. "2026-Q1"
-  version     String   // e.g. "v0.1"
-  locked      Boolean  @default(false)
+  quarter     String // e.g. "2026-Q1"
+  version     String // e.g. "v0.1"
+  locked      Boolean   @default(false)
   lockedAt    DateTime?
-  contentHash String   // sha256 of canonical normalized repos.yaml payload
-  sourcePath  String   // e.g. "portal/config/repos.yaml"
+  contentHash String // sha256 of canonical normalized repos.yaml payload
+  sourcePath  String // e.g. "portal/config/repos.yaml"
   notes       Json?
 
   repos    RegistryRepo[]
@@ -440,12 +443,12 @@ model RegistrySnapshot {
 }
 
 model RegistryRepo {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  snapshotId  Int
-  snapshot    RegistrySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  snapshotId Int
+  snapshot   RegistrySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
 
   nhId         String
   repo         String
@@ -454,7 +457,7 @@ model RegistryRepo {
   role         String?
   status       RepoStatus?
   wave         Int?
-  isDeprecated Boolean @default(false)
+  isDeprecated Boolean     @default(false)
   notes        Json?
 
   @@unique([snapshotId, nhId])
@@ -468,24 +471,24 @@ model RegistryRepo {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model WaveRun {
-  id          Int          @id @default(autoincrement())
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  quarter     String       // e.g. "2026-Q1" (denormalized for quick filtering)
-  wave        Int          // 0..3
-  state       WaveRunState @default(READY)
+  quarter String // e.g. "2026-Q1" (denormalized for quick filtering)
+  wave    Int // 0..3
+  state   WaveRunState @default(READY)
 
-  startedAt   DateTime?
-  finishedAt  DateTime?
-  summary     String?
-  notes       Json?
+  startedAt  DateTime?
+  finishedAt DateTime?
+  summary    String?
+  notes      Json?
 
-  snapshotId  Int
-  snapshot    RegistrySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+  snapshotId Int
+  snapshot   RegistrySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
 
   createdByUserId String?
-  createdBy       User? @relation("WaveRunCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdBy       User?   @relation("WaveRunCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
 
   workPackets WorkPacket[]
   gateRuns    GateRun[]
@@ -498,15 +501,15 @@ model WaveRun {
 }
 
 model GateRun {
-  id         Int          @id @default(autoincrement())
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  waveRunId  Int
-  waveRun    WaveRun      @relation(fields: [waveRunId], references: [id], onDelete: Cascade)
+  waveRunId Int
+  waveRun   WaveRun @relation(fields: [waveRunId], references: [id], onDelete: Cascade)
 
-  gateId     String       // e.g. "registry_hash_matches"
-  status     GateRunStatus @default(PENDING)
+  gateId String // e.g. "registry_hash_matches"
+  status GateRunStatus @default(PENDING)
 
   startedAt  DateTime?
   finishedAt DateTime?
@@ -519,13 +522,13 @@ model GateRun {
 }
 
 model AgentRun {
-  id         Int          @id @default(autoincrement())
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @default(now()) @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
-  agentId    String       // e.g. "jai_architect"
-  action     String       // e.g. "plan_wave", "import_registry", "run_gates"
-  status     AgentRunStatus @default(QUEUED)
+  agentId String // e.g. "jai_architect"
+  action  String // e.g. "plan_wave", "import_registry", "run_gates"
+  status  AgentRunStatus @default(QUEUED)
 
   startedAt  DateTime?
   finishedAt DateTime?
@@ -535,11 +538,11 @@ model AgentRun {
   errors     Json?
 
   // optional links
-  userId     String?
-  user       User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  waveRunId  Int?
-  waveRun    WaveRun?     @relation(fields: [waveRunId], references: [id], onDelete: SetNull)
+  waveRunId Int?
+  waveRun   WaveRun? @relation(fields: [waveRunId], references: [id], onDelete: SetNull)
 
   workPacketId Int?
   workPacket   WorkPacket? @relation(fields: [workPacketId], references: [id], onDelete: SetNull)
@@ -557,18 +560,18 @@ model Artifact {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
 
-  type      String   // "run_plan" | "action_log" | "evidence_pack" | "result" | "registry_snapshot" etc
-  label     String?
-  uri       String?
-  sha256    String?
-  content   Json?
-  meta      Json?
+  type    String // "run_plan" | "action_log" | "evidence_pack" | "result" | "registry_snapshot" etc
+  label   String?
+  uri     String?
+  sha256  String?
+  content Json?
+  meta    Json?
 
-  waveRunId   Int?
-  waveRun     WaveRun?     @relation(fields: [waveRunId], references: [id], onDelete: SetNull)
+  waveRunId Int?
+  waveRun   WaveRun? @relation(fields: [waveRunId], references: [id], onDelete: SetNull)
 
-  agentRunId  Int?
-  agentRun    AgentRun?    @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  agentRunId Int?
+  agentRun   AgentRun? @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
 
   workPacketId Int?
   workPacket   WorkPacket? @relation(fields: [workPacketId], references: [id], onDelete: SetNull)
@@ -588,8 +591,8 @@ model SourceSignal {
   id              String   @id @default(cuid())
   version         String
   ts              DateTime
-  date            String   // YYYY-MM-DD
-  quarter         String   // YYYY-Qn
+  date            String // YYYY-MM-DD
+  quarter         String // YYYY-Qn
   vendor          String
   title           String
   url             String
@@ -609,27 +612,27 @@ model SourceSignal {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Chat {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  
-  chatId      String   @unique
-  title       String
-  source      String
-  chatDate    DateTime
-  
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  chatId   String   @unique
+  title    String
+  source   String
+  chatDate DateTime
+
   filepath    String?
   contentHash String?
-  fullText    String   @db.Text
-  
-  model       String?
-  nhId        String   @default("")
-  tags        String[] @default([])
-  notes       Json?
-  
-  decisions   Decision[]
-  sotEvents   SotEvent[]
-  
+  fullText    String  @db.Text
+
+  model String?
+  nhId  String   @default("")
+  tags  String[] @default([])
+  notes Json?
+
+  decisions Decision[]
+  sotEvents SotEvent[]
+
   @@index([chatDate])
   @@index([source])
   @@index([nhId])
@@ -637,26 +640,50 @@ model Chat {
 }
 
 model Decision {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
-  
-  text        String   @db.Text
-  context     String?  @db.Text
-  
-  chatId      Int
-  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  
-  lineNumber  Int?
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  text    String  @db.Text
+  context String? @db.Text
+
+  chatId Int
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  lineNumber   Int?
   decisionDate DateTime?
-  category    String?
-  status      String    @default("active")
-  
-  nhId        String    @default("")
+  category     String?
+  status       String    @default("active")
+
+  nhId           String @default("")
   supersededById Int?
-  
+
   @@index([chatId])
   @@index([status])
   @@index([category])
   @@index([decisionDate])
+}
+
+enum AgentQueueStatus {
+  PENDING
+  CLAIMED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+model AgentQueueItem {
+  id           String   @id @default(uuid())
+  workPacketId Int      @unique
+  agentNhId    String
+  repoScope    String[] @default([])
+
+  status      AgentQueueStatus @default(PENDING)
+  claimedAt   DateTime?
+  leaseExpiry DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workPacket WorkPacket @relation("AgentQueueItemToWorkPacket", fields: [workPacketId], references: [id])
 }

@@ -39,7 +39,10 @@
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts",
-    "extract:decisions": "dotenv -e .env.local -- tsx scripts/extract-decisions.ts"
+    "extract:decisions": "dotenv -e .env.local -- tsx scripts/extract-decisions.ts",
+    "validate:agency": "node scripts/validate-agency.mjs",
+    "dct:extract": "dotenv -e .env.local -- tsx scripts/dct-extract.ts",
+    "dct:replay-check": "dotenv -e .env.local -- tsx scripts/dct-replay-check.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -59,7 +62,6 @@
     "pg": "^8.16.3",
     "react": "^19",
     "react-dom": "^19",
-    "yaml": "^2.8.2",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -77,6 +79,7 @@
     "prisma": "^7.1.0",
     "tailwindcss": "^3.4.18",
     "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "yaml": "^2.8.2"
   }
 }

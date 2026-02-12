@@ -5,6 +5,7 @@
 // e.g. /vercel/path0/vendor/datacontracts/... (submodules often aren't present).
 //
 // So: runtime-only, pure TS validation. No fs/path imports. No schema loading.
+//
 
 export type SotEventV01 = {
   version: "0.1";
@@ -42,11 +43,21 @@ function isNonEmptyString(v: unknown): v is string {
   return typeof v === "string" && v.trim().length > 0;
 }
 
-function optStringOrNull(v: Record<string, unknown>, key: keyof SotEventV01, errors: string[]) {
-  if (!(key in v)) return;
-  const val = v[key as string];
+function isParseableTimestamp(v: unknown): v is string {
+  if (!isNonEmptyString(v)) return false;
+  // Date.parse accepts ISO strings; we just want “parseable”, not perfect RFC.
+  return Number.isFinite(Date.parse(v));
+}
+
+function optStringOrNull(
+  obj: Record<string, unknown>,
+  key: "summary" | "nhId" | "repoName" | "domainName",
+  errors: string[]
+) {
+  if (!(key in obj)) return;
+  const val = obj[key];
   if (val === null || val === undefined) return;
-  if (typeof val !== "string") errors.push(`${String(key)} must be string | null`);
+  if (typeof val !== "string") errors.push(`${key} must be string | null`);
 }
 
 /**
@@ -66,9 +77,17 @@ export function validateSotEventV01(v: unknown): { ok: boolean; errors: string[]
 
   if ("version" in v && v.version !== "0.1") errors.push(`version must be "0.1"`);
 
-  if ("ts" in v && !isNonEmptyString(v.ts)) errors.push("ts must be a non-empty string");
-  if ("source" in v && !isNonEmptyString(v.source)) errors.push("source must be a non-empty string");
-  if ("kind" in v && !isNonEmptyString(v.kind)) errors.push("kind must be a non-empty string");
+  if ("ts" in v) {
+    if (!isParseableTimestamp(v.ts)) errors.push("ts must be a parseable timestamp string");
+  }
+
+  if ("source" in v && !isNonEmptyString(v.source)) {
+    errors.push("source must be a non-empty string");
+  }
+
+  if ("kind" in v && !isNonEmptyString(v.kind)) {
+    errors.push("kind must be a non-empty string");
+  }
 
   optStringOrNull(v, "summary", errors);
   optStringOrNull(v, "nhId", errors);
@@ -102,7 +121,6 @@ export function assertSotEventV01(v: unknown): asserts v is SotEventV01 {
   const msg = `[sotEventV01] invalid SotEvent v0.1: ${res.errors.join("; ")}`;
 
   if (process.env.NODE_ENV === "production") {
-    // No eslint-disable needed (your config already treats it as unused)
     console.warn(msg);
     return;
   }
