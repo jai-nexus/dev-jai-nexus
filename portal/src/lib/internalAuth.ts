@@ -23,11 +23,17 @@ function readBearer(req: NextRequest) {
  * Accepts either:
  *  - Authorization: Bearer <token>        (preferred)
  *  - x-jai-internal-token: <token>        (legacy/back-compat)
+ *
+ * Notes:
+ * - Uses timing-safe compare to avoid token leak via timing.
+ * - In dev, you can optionally enable minimal diagnostics by setting:
+ *     JAI_INTERNAL_AUTH_DEBUG=1
+ *   This logs only lengths + short prefixes (never full tokens).
  */
 export function assertInternalToken(
   req: NextRequest,
 ): { ok: true } | { ok: false; response: NextResponse } {
-  const expected = process.env[VAR_NAME];
+  const expected = (process.env[VAR_NAME] ?? "").trim();
 
   if (!expected) {
     return {
@@ -44,7 +50,22 @@ export function assertInternalToken(
 
   const bearer = readBearer(req);
   const legacy = (req.headers.get("x-jai-internal-token") ?? "").trim();
-  const presented = bearer || legacy;
+  const presented = (bearer || legacy).trim();
+
+  // Optional debug (safe: no full secrets)
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.JAI_INTERNAL_AUTH_DEBUG === "1"
+  ) {
+    console.log("[internalAuth]", {
+      expectedLen: expected.length,
+      bearerLen: bearer.length,
+      legacyLen: legacy.length,
+      presentedLen: presented.length,
+      bearerPrefix: bearer ? bearer.slice(0, 10) : "",
+      legacyPrefix: legacy ? legacy.slice(0, 10) : "",
+    });
+  }
 
   if (!presented || !timingSafeEqualString(presented, expected)) {
     return {
