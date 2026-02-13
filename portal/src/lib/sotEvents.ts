@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { parseSotTimestamp } from "@/lib/time";
+import crypto from "node:crypto";
 
 export type SotEventEnvelopeV01 = {
   version?: "sot-event-0.1";
