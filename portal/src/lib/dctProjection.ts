@@ -62,6 +62,67 @@ function deterministicSort(events: DctEventInput[]): DctEventInput[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function uniqStrings(arr: string[]): string[] {
+    return Array.from(new Set(arr));
+}
+
+function removeTag(tags: string[], tag: string): string[] {
+    return tags.filter((t) => t !== tag);
+}
+
+function rangeKey(r?: { start: number; end: number }): string {
+    return r ? `${r.start}-${r.end}` : "";
+}
+
+function anchorKey(a: DctAnchor): string {
+    // Stable key, no JSON.stringify ordering dependence
+    return [
+        a.type,
+        a.chatId ?? "",
+        a.chatExternalId ?? "",
+        a.lineNumber ?? "",
+        rangeKey(a.lineRange),
+        a.filePath ?? "",
+        rangeKey(a.fileLineRange),
+        a.url ?? "",
+        a.urlHash ?? "",
+        a._legacy ? "legacy" : "",
+    ].join("|");
+}
+
+function dedupeAnchors(anchors: DctAnchor[]): DctAnchor[] {
+    const seen = new Set<string>();
+    const out: DctAnchor[] = [];
+    for (const a of anchors) {
+        const k = anchorKey(a);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(a);
+    }
+    return out;
+}
+
+function edgeKey(e: {
+    from: string;
+    to: string;
+    relation: string;
+    confidence: number;
+    anchor?: DctAnchor;
+}): string {
+    // Dedupe based on the assertion itself (including anchor); ts/eventId are evidence metadata.
+    return [
+        e.from,
+        e.to,
+        e.relation,
+        e.confidence,
+        e.anchor ? anchorKey(e.anchor) : "",
+    ].join("|");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Core projection
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -80,6 +141,9 @@ export function applyDct(events: DctEventInput[]): DctProjection {
         { ideaId: string; anchor?: DctAnchor; ts: string; eventId: string }
     >();
 
+    // Edge dedupe (optional but useful for UI)
+    const seenEdges = new Set<string>();
+
     // Quality counters
     let eventsProcessed = 0;
     let eventsSkippedInvalidPayload = 0;
@@ -96,6 +160,12 @@ export function applyDct(events: DctEventInput[]): DctProjection {
             return { ...anchor, _legacy: true };
         }
         return anchor;
+    }
+
+    // Canonical rule: if we have at least one anchor, we should not keep "needs-provenance"
+    function normalizeNeedsProvenanceTags(tags: string[], anchors: DctAnchor[]): string[] {
+        if (anchors.length > 0) return removeTag(tags, "needs-provenance");
+        return tags;
     }
 
     for (const event of sorted) {
@@ -146,14 +216,17 @@ export function applyDct(events: DctEventInput[]): DctProjection {
         switch (payload.type) {
             case "dct.idea.create": {
                 const anchor = processAnchorHelper(payload.anchor);
+                const anchors = dedupeAnchors(anchor ? [anchor] : []);
+                const tags = normalizeNeedsProvenanceTags(payload.tags ?? [], anchors);
+
                 ideas.set(payload.ideaId, {
                     id: payload.ideaId,
                     text: payload.text,
                     type: payload.ideaType,
                     status: payload.status,
                     confidence: payload.confidence,
-                    anchors: anchor ? [anchor] : [],
-                    tags: payload.tags,
+                    anchors,
+                    tags,
                     nhId: payload.nhId,
                     createdAt: tsStr,
                     updatedAt: tsStr,
@@ -167,16 +240,30 @@ export function applyDct(events: DctEventInput[]): DctProjection {
                     eventsSkippedUnknownIdea++;
                     break;
                 }
+
                 const anchor = processAnchorHelper(payload.anchor);
+
+                // Tags behavior:
+                // - if payload.tags provided: union with existing (ergonomic for "add tag")
+                // - else: keep existing
+                const mergedTags =
+                    payload.tags !== undefined
+                        ? uniqStrings([...(existing.tags ?? []), ...payload.tags])
+                        : existing.tags ?? [];
+
+                const nextAnchors = anchor
+                    ? dedupeAnchors([...existing.anchors, anchor])
+                    : existing.anchors;
+
+                const normalizedTags = normalizeNeedsProvenanceTags(mergedTags, nextAnchors);
+
                 ideas.set(payload.ideaId, {
                     ...existing,
                     text: payload.text ?? existing.text,
                     type: payload.ideaType ?? existing.type,
                     confidence: payload.confidence ?? existing.confidence,
-                    tags: payload.tags ?? existing.tags,
-                    anchors: anchor
-                        ? [...existing.anchors, anchor]
-                        : existing.anchors,
+                    tags: normalizedTags,
+                    anchors: nextAnchors,
                     updatedAt: tsStr,
                 });
                 break;
@@ -188,13 +275,19 @@ export function applyDct(events: DctEventInput[]): DctProjection {
                     eventsSkippedUnknownIdea++;
                     break;
                 }
+
                 const anchor = processAnchorHelper(payload.anchor);
+                const nextAnchors = anchor
+                    ? dedupeAnchors([...existing.anchors, anchor])
+                    : existing.anchors;
+
+                const normalizedTags = normalizeNeedsProvenanceTags(existing.tags ?? [], nextAnchors);
+
                 ideas.set(payload.ideaId, {
                     ...existing,
                     status: payload.status,
-                    anchors: anchor
-                        ? [...existing.anchors, anchor]
-                        : existing.anchors,
+                    tags: normalizedTags,
+                    anchors: nextAnchors,
                     updatedAt: tsStr,
                 });
                 break;
@@ -202,15 +295,24 @@ export function applyDct(events: DctEventInput[]): DctProjection {
 
             case "dct.idea.edge": {
                 const anchor = processAnchorHelper(payload.anchor);
-                edges.push({
+
+                const candidate = {
                     from: payload.from,
                     to: payload.to,
                     relation: payload.relation,
                     confidence: payload.confidence,
                     anchor,
-                    ts: tsStr,
-                    eventId: event.eventId,
-                });
+                };
+
+                const k = edgeKey(candidate);
+                if (!seenEdges.has(k)) {
+                    seenEdges.add(k);
+                    edges.push({
+                        ...candidate,
+                        ts: tsStr,
+                        eventId: event.eventId,
+                    });
+                }
                 break;
             }
 
@@ -259,7 +361,7 @@ export function applyDct(events: DctEventInput[]): DctProjection {
 
     return {
         ideas: ideasObj,
-        edges, // already in event-order (deterministic)
+        edges, // deterministic: sorted events + stable dedupe
         slots: slotsObj,
         operatingSet,
         activeIdeas,

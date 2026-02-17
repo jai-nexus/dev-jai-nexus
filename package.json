@@ -7,13 +7,15 @@
     "build": "pnpm -C portal build",
     "start": "pnpm -C portal start",
     "lint": "pnpm -C portal lint",
-
     "seed": "pnpm -C portal db:seed",
     "db:seed": "pnpm -C portal db:seed",
-
     "prisma:generate": "pnpm -C portal prisma:generate",
     "prisma:migrate:local": "pnpm -C portal prisma:migrate:local",
-    "prisma:studio:local": "pnpm -C portal prisma:studio:local"
+    "prisma:studio:local": "pnpm -C portal prisma:studio:local",
+    "typecheck": "pnpm -C portal typecheck",
+    "dct:replay-check": "pnpm -C portal dct:replay-check",
+    "dct:verify": "pnpm typecheck && pnpm dct:replay-check",
+    "dct:extract": "pnpm -C portal dct:extract"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
