@@ -41,6 +41,24 @@ const ideaTypeColors: Record<string, string> = {
     observation: "bg-zinc-900/40 text-zinc-300 border-zinc-800",
 };
 
+
+function getStringProp(v: unknown, key: string): string | undefined {
+    if (!v || typeof v !== "object") return undefined;
+    const val = (v as Record<string, unknown>)[key];
+    return typeof val === "string" ? val : undefined;
+}
+
+function getNumberProp(v: unknown, key: string): number | undefined {
+    if (!v || typeof v !== "object") return undefined;
+    const val = (v as Record<string, unknown>)[key];
+    return typeof val === "number" ? val : undefined;
+}
+
+function hasLegacy(v: unknown): boolean {
+    if (!v || typeof v !== "object") return false;
+    return !!(v as Record<string, unknown>)._legacy;
+}
+
 type SlotBinding = { ideaId: string; anchor?: DctAnchor; ts: string; eventId: string };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,31 +68,21 @@ type SlotBinding = { ideaId: string; anchor?: DctAnchor; ts: string; eventId: st
 type DctQualitySeverity = "pass" | "warn" | "fail";
 
 type DctQualityAction =
-    | { type: "revise_add_anchor"; ideaId: string; hint: string }
-    | { type: "investigate_missing_idea"; slot: string; ideaId: string; hint: string }
-    | { type: "dedupe_anchors"; ideaId: string; hint: string };
+    | { type: "revise_add_anchor"; ideaId: string; hint: string; curl: string }
+    | { type: "investigate_missing_idea"; slot: string; ideaId: string; hint: string; curl: string }
+    | { type: "dedupe_anchors"; ideaId: string; hint: string; curl: string };
 
 function stableStringify(value: unknown): string {
     if (value === null || typeof value !== "object") return JSON.stringify(value);
     if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
     const obj = value as Record<string, unknown>;
     const keys = Object.keys(obj).sort();
-    return `{${keys
-        .map((k) => JSON.stringify(k) + ":" + stableStringify(obj[k]))
-        .join(",")}}`;
+    return `{${keys.map((k) => JSON.stringify(k) + ":" + stableStringify(obj[k])).join(",")}}`;
 }
 
-function computeDctQuality(
-    projection: ReturnType<typeof applyDct>,
-    maxActions = 3,
-) {
+function computeDctQuality(projection: ReturnType<typeof applyDct>, maxActions = 3) {
     // 1) slot-bound ideas with anchors=0
-    const slotBoundNeedsProvenance: Array<{
-        slot: string;
-        ideaId: string;
-        boundAt: string;
-        eventId: string;
-    }> = [];
+    const slotBoundNeedsProvenance: Array<{ slot: string; ideaId: string; boundAt: string; eventId: string }> = [];
 
     for (const [slot, binding] of Object.entries(projection.slots)) {
         const idea = projection.ideas[binding.ideaId];
@@ -90,12 +98,7 @@ function computeDctQuality(
     }
 
     // 2) slots referencing missing ideas
-    const missingIdeasReferencedBySlots: Array<{
-        slot: string;
-        ideaId: string;
-        boundAt: string;
-        eventId: string;
-    }> = [];
+    const missingIdeasReferencedBySlots: Array<{ slot: string; ideaId: string; boundAt: string; eventId: string }> = [];
 
     for (const [slot, binding] of Object.entries(projection.slots)) {
         if (!projection.ideas[binding.ideaId]) {
@@ -109,11 +112,7 @@ function computeDctQuality(
     }
 
     // 3) duplicate anchors per idea (stable match)
-    const duplicateAnchors: Array<{
-        ideaId: string;
-        duplicates: number;
-        totalAnchors: number;
-    }> = [];
+    const duplicateAnchors: Array<{ ideaId: string; duplicates: number; totalAnchors: number }> = [];
 
     for (const [ideaId, idea] of Object.entries(projection.ideas)) {
         const anchors = idea.anchors ?? [];
@@ -126,13 +125,18 @@ function computeDctQuality(
             if (seen.has(key)) dups++;
             else seen.add(key);
         }
-
         if (dups > 0) duplicateAnchors.push({ ideaId, duplicates: dups, totalAnchors: anchors.length });
     }
 
     duplicateAnchors.sort(
         (a, b) => b.duplicates - a.duplicates || b.totalAnchors - a.totalAnchors || a.ideaId.localeCompare(b.ideaId),
     );
+
+    // 4) operating set ideas w/ anchors=0 (truthier than “slot-bound only”)
+    const operatingNeedsProvenance = projection.operatingSet
+        .filter((i) => (i.anchors?.length ?? 0) === 0)
+        .map((i) => i.id)
+        .sort((a, b) => a.localeCompare(b));
 
     const skipped = {
         invalidPayload: projection.metrics.eventsSkippedInvalidPayload,
@@ -141,6 +145,9 @@ function computeDctQuality(
         legacyAnchors: projection.metrics.eventsWithLegacyAnchors,
     };
 
+    // Severity logic:
+    // - FAIL: corrupted stream / hard blockers
+    // - WARN: governance gaps / cleanup
     const fail =
         slotBoundNeedsProvenance.length > 0 ||
         missingIdeasReferencedBySlots.length > 0 ||
@@ -151,34 +158,45 @@ function computeDctQuality(
         !fail &&
         (skipped.unknownIdea > 0 ||
             skipped.legacyAnchors > 0 ||
-            duplicateAnchors.length > 0);
+            duplicateAnchors.length > 0 ||
+            operatingNeedsProvenance.length > 0);
 
     const severity: DctQualitySeverity = fail ? "fail" : warn ? "warn" : "pass";
 
+    // Deterministic top actions (order matters)
     const actions: DctQualityAction[] = [];
 
-    for (const row of slotBoundNeedsProvenance) {
-        actions.push({
-            type: "revise_add_anchor",
-            ideaId: row.ideaId,
-            hint: `Add provenance anchor (slot "${row.slot}")`,
-        });
-    }
-
-    for (const row of missingIdeasReferencedBySlots) {
+    // Prefer fixing missing refs first (hard corruption)
+    for (const row of missingIdeasReferencedBySlots.sort((a, b) => a.slot.localeCompare(b.slot))) {
         actions.push({
             type: "investigate_missing_idea",
             slot: row.slot,
             ideaId: row.ideaId,
-            hint: `Slot "${row.slot}" points to missing idea`,
+            hint: `Slot "${row.slot}" points to missing idea "${row.ideaId}"`,
+            curl: `curl -sS -X GET "http://localhost:3000/api/dct/slots" -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN"`,
         });
     }
 
+    // Then provenance gaps
+    for (const row of slotBoundNeedsProvenance.sort((a, b) => a.slot.localeCompare(b.slot))) {
+        actions.push({
+            type: "revise_add_anchor",
+            ideaId: row.ideaId,
+            hint: `Add provenance anchor (slot "${row.slot}")`,
+            curl: `curl -sS -X POST "http://localhost:3000/api/dct/idea-provenance" \\
+  -H "Authorization: Bearer $JAI_INTERNAL_API_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"ideaId":"${row.ideaId}","anchor":{"type":"chat","chatExternalId":"TODO","lineNumber":1}}'`,
+        });
+    }
+
+    // Then cleanup (duplicate anchors)
     for (const row of duplicateAnchors) {
         actions.push({
             type: "dedupe_anchors",
             ideaId: row.ideaId,
             hint: `Deduplicate anchors (${row.duplicates} duplicates)`,
+            curl: `# no repair endpoint yet\n# projection-side dedupe recommended\n# ideaId: ${row.ideaId}`,
         });
     }
 
@@ -186,6 +204,7 @@ function computeDctQuality(
         pass: !fail,
         severity,
         counts: {
+            operatingNeedsProvenance: operatingNeedsProvenance.length,
             slotBoundNeedsProvenance: slotBoundNeedsProvenance.length,
             missingIdeasReferencedBySlots: missingIdeasReferencedBySlots.length,
             duplicateAnchors: duplicateAnchors.length,
@@ -203,14 +222,24 @@ function computeDctQuality(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default async function DctPage() {
-    // Load DCT events from SotEvent table (server-side)
-    const rawEvents = await prisma.sotEvent.findMany({
+    // IMPORTANT:
+    // Projection should be built from chronological order. Timeline can be reversed separately.
+    const rawEventsAsc = await prisma.sotEvent.findMany({
         where: { kind: { startsWith: "dct." } },
-        orderBy: [{ ts: "desc" }, { eventId: "desc" }],
-        take: 800,
+        orderBy: [{ ts: "asc" }, { eventId: "asc" }],
+        take: 5000,
+        select: {
+            eventId: true,
+            ts: true,
+            kind: true,
+            source: true,
+            summary: true,
+            payload: true,
+            nhId: true,
+        },
     });
 
-    const events: DctEventInput[] = rawEvents.map((e) => ({
+    const eventsAsc: DctEventInput[] = rawEventsAsc.map((e) => ({
         eventId: e.eventId,
         ts: e.ts,
         kind: e.kind,
@@ -220,7 +249,10 @@ export default async function DctPage() {
         nhId: e.nhId,
     }));
 
-    const projection = applyDct(events);
+    const projection = applyDct(eventsAsc);
+
+    // Timeline view (reverse chronological) — keep separate from projection input
+    const eventsDesc = [...eventsAsc].reverse();
 
     const operatingSet = projection.operatingSet;
     const activeIdeas = projection.activeIdeas;
@@ -228,11 +260,7 @@ export default async function DctPage() {
     const m = projection.metrics;
 
     const slotEntries = Object.entries(projection.slots).sort(([a], [b]) => a.localeCompare(b));
-    const totalSkipped =
-        m.eventsSkippedInvalidPayload +
-        m.eventsSkippedKindPayloadMismatch +
-        m.eventsSkippedUnknownIdea;
-
+    const totalSkipped = m.eventsSkippedInvalidPayload + m.eventsSkippedKindPayloadMismatch + m.eventsSkippedUnknownIdea;
     const hasLegacy = m.eventsWithLegacyAnchors > 0;
 
     // Precompute helpers for UI: slot refs + edge refs per idea
@@ -255,22 +283,20 @@ export default async function DctPage() {
     }
 
     // URL + filters
-    const url = getServerUrlFromHeaders();
+    const url = await getServerUrlFromHeaders();
     const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
     const status = (url.searchParams.get("status") ?? "any").trim().toLowerCase();
-    const scope = (url.searchParams.get("scope") ?? "operating").trim().toLowerCase(); // default: operating
+    const scope = (url.searchParams.get("scope") ?? "operating").trim().toLowerCase();
     const needsProv = (url.searchParams.get("needsProv") ?? "").toLowerCase() === "true";
 
-    const baseIdeas =
-        scope === "all" ? Object.values(projection.ideas) : scope === "active" ? activeIdeas : operatingSet;
+    const baseIdeas = scope === "all" ? Object.values(projection.ideas) : scope === "active" ? activeIdeas : operatingSet;
 
     const filteredIdeas = baseIdeas.filter((idea) => {
         if (status !== "any" && idea.status !== status) return false;
         if (needsProv && idea.anchors.length > 0) return false;
 
         if (q.length > 0) {
-            const hay =
-                `${idea.id} ${idea.type} ${idea.status} ${idea.text} ${(idea.tags ?? []).join(" ")}`.toLowerCase();
+            const hay = `${idea.id} ${idea.type} ${idea.status} ${idea.text} ${(idea.tags ?? []).join(" ")}`.toLowerCase();
             if (!hay.includes(q)) return false;
         }
         return true;
@@ -309,10 +335,10 @@ export default async function DctPage() {
                 {/* Quality Panel */}
                 <div
                     className={`rounded-lg border p-4 mb-4 ${quality.severity === "fail"
-                            ? "border-red-900/50 bg-red-950/20"
-                            : quality.severity === "warn"
-                                ? "border-amber-900/50 bg-amber-950/20"
-                                : "border-emerald-900/50 bg-emerald-950/10"
+                        ? "border-red-900/50 bg-red-950/20"
+                        : quality.severity === "warn"
+                            ? "border-amber-900/50 bg-amber-950/20"
+                            : "border-emerald-900/50 bg-emerald-950/10"
                         }`}
                 >
                     <div className="flex items-start justify-between gap-4">
@@ -320,25 +346,25 @@ export default async function DctPage() {
                             <div className="flex items-center gap-2">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono border ${quality.severity === "fail"
-                                            ? "border-red-900/60 bg-red-950/30 text-red-300"
-                                            : quality.severity === "warn"
-                                                ? "border-amber-900/60 bg-amber-950/30 text-amber-300"
-                                                : "border-emerald-900/60 bg-emerald-950/20 text-emerald-300"
+                                        ? "border-red-900/60 bg-red-950/30 text-red-300"
+                                        : quality.severity === "warn"
+                                            ? "border-amber-900/60 bg-amber-950/30 text-amber-300"
+                                            : "border-emerald-900/60 bg-emerald-950/20 text-emerald-300"
                                         }`}
                                 >
                                     QUALITY:{quality.severity.toUpperCase()}
                                 </span>
 
                                 <span className="text-xs text-zinc-500 font-mono">
-                                    slots(no anchors): {quality.counts.slotBoundNeedsProvenance} · missing refs:{" "}
-                                    {quality.counts.missingIdeasReferencedBySlots} · dup anchors:{" "}
+                                    operating(no anchors): {quality.counts.operatingNeedsProvenance} · slots(no anchors):{" "}
+                                    {quality.counts.slotBoundNeedsProvenance} · missing refs: {quality.counts.missingIdeasReferencedBySlots} · dup anchors:{" "}
                                     {quality.counts.duplicateAnchors}
                                 </span>
                             </div>
 
                             <div className="text-xs text-zinc-500 mt-1 font-mono">
-                                skipped invalid:{quality.counts.skippedInvalidPayload} · kind mismatch:{quality.counts.skippedKindMismatch}
-                                · unknown idea:{quality.counts.skippedUnknownIdea} · legacy anchors:{quality.counts.eventsWithLegacyAnchors}
+                                skipped invalid:{quality.counts.skippedInvalidPayload} · kind mismatch:{quality.counts.skippedKindMismatch} · unknown idea:
+                                {quality.counts.skippedUnknownIdea} · legacy anchors:{quality.counts.eventsWithLegacyAnchors}
                             </div>
                         </div>
 
@@ -353,25 +379,24 @@ export default async function DctPage() {
                     {quality.topActions.length > 0 && (
                         <div className="mt-3">
                             <div className="text-[10px] text-zinc-500 font-mono mb-2">Top actions</div>
-                            <div className="space-y-1">
+                            <div className="space-y-2">
                                 {quality.topActions.map((a, idx) => {
                                     const ideaId = "ideaId" in a ? a.ideaId : "";
                                     return (
-                                        <div
-                                            key={`${a.type}-${idx}`}
-                                            className="flex items-center justify-between gap-2 text-xs font-mono border border-zinc-800 bg-zinc-950/40 rounded px-2 py-1"
-                                        >
-                                            <span className="text-zinc-300">{a.hint}</span>
-                                            {ideaId ? (
-                                                <Link
-                                                    href={withQuery(url, { ideaId })}
-                                                    className="text-sky-300 hover:text-sky-200 underline"
-                                                >
-                                                    inspect
-                                                </Link>
-                                            ) : (
-                                                <span className="text-zinc-600">—</span>
-                                            )}
+                                        <div key={`${a.type}-${idx}`} className="border border-zinc-800 bg-zinc-950/40 rounded px-3 py-2">
+                                            <div className="flex items-center justify-between gap-2 text-xs font-mono">
+                                                <span className="text-zinc-300">{a.hint}</span>
+                                                {ideaId ? (
+                                                    <Link href={withQuery(url, { ideaId })} className="text-sky-300 hover:text-sky-200 underline">
+                                                        inspect
+                                                    </Link>
+                                                ) : (
+                                                    <span className="text-zinc-600">—</span>
+                                                )}
+                                            </div>
+                                            <pre className="mt-2 text-[11px] leading-relaxed font-mono text-zinc-400 whitespace-pre-wrap bg-black/30 border border-zinc-900 rounded p-2">
+                                                {a.curl}
+                                            </pre>
                                         </div>
                                     );
                                 })}
@@ -391,7 +416,7 @@ export default async function DctPage() {
                     </div>
                 )}
 
-                {/* Filters (FIXED: real GET form, works in server components) */}
+                {/* Filters (real GET form, works in server components) */}
                 <form method="GET" className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
                     <div className="flex flex-col lg:flex-row gap-2 lg:items-center lg:justify-between">
                         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -503,6 +528,8 @@ export default async function DctPage() {
                                 Select an idea from the list to inspect it.
                             </div>
                         ) : (
+                            // keep your inspector contents exactly as you have them below
+                            // (unchanged to avoid introducing UI regressions)
                             <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 space-y-4">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
@@ -577,9 +604,7 @@ export default async function DctPage() {
                                 <div>
                                     <div className="text-[10px] font-mono text-zinc-500">Anchors</div>
                                     {selectedIdea.anchors.length === 0 ? (
-                                        <div className="text-xs text-amber-300 mt-1">
-                                            none — add an anchor via revise/status/edge/bind to lock provenance
-                                        </div>
+                                        <div className="text-xs text-amber-300 mt-1">none — add an anchor via revise/status/edge/bind to lock provenance</div>
                                     ) : (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {selectedIdea.anchors.map((a, i) => (
@@ -706,7 +731,9 @@ export default async function DctPage() {
                                             </span>
                                         </td>
                                         <td className="py-2 px-3 whitespace-nowrap text-xs font-mono text-zinc-400">{edge.to}</td>
-                                        <td className="py-2 px-3 whitespace-nowrap text-xs font-mono text-zinc-500">{(edge.confidence * 100).toFixed(0)}%</td>
+                                        <td className="py-2 px-3 whitespace-nowrap text-xs font-mono text-zinc-500">
+                                            {(edge.confidence * 100).toFixed(0)}%
+                                        </td>
                                         <td className="py-2 px-3 text-xs font-mono text-zinc-500">
                                             {edge.anchor ? <AnchorBadge anchor={edge.anchor} /> : <span className="text-zinc-700">—</span>}
                                         </td>
@@ -726,7 +753,7 @@ export default async function DctPage() {
                 <h2 className="text-xl font-semibold mb-3 text-gray-200">Event Timeline</h2>
                 <p className="text-xs text-gray-500 mb-4">All DCT events in reverse chronological order.</p>
 
-                {events.length === 0 ? (
+                {eventsDesc.length === 0 ? (
                     <EmptyState message="No DCT events found. Run dct:extract to populate." />
                 ) : (
                     <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
@@ -741,7 +768,7 @@ export default async function DctPage() {
                                 </tr>
                             </thead>
                             <tbody suppressHydrationWarning>
-                                {events.slice(0, 250).map((evt) => {
+                                {eventsDesc.slice(0, 250).map((evt) => {
                                     const label = kindLabels[evt.kind] ?? evt.kind;
                                     const color = kindColors[evt.kind] ?? "bg-zinc-800/40 text-zinc-400";
                                     return (
@@ -762,7 +789,9 @@ export default async function DctPage() {
                                                     {evt.source}
                                                 </Link>
                                             </td>
-                                            <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-600 font-mono">{evt.eventId.slice(0, 12)}…</td>
+                                            <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-600 font-mono">
+                                                {evt.eventId.slice(0, 12)}…
+                                            </td>
                                             <td className="py-2 px-3 text-xs max-w-xl truncate">{evt.summary ?? "—"}</td>
                                         </tr>
                                     );
@@ -780,15 +809,17 @@ export default async function DctPage() {
 // UI helpers (server-friendly)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getServerUrlFromHeaders(): URL {
+import { headers } from "next/headers";
+
+async function getServerUrlFromHeaders(): Promise<URL> {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { headers } = require("next/headers");
-        const h = headers();
+        // Next 15+: headers() can be async. Promise.resolve keeps it compatible either way.
+        const h = await Promise.resolve(headers());
 
         const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
         const proto = h.get("x-forwarded-proto") ?? "http";
         const path = h.get("x-invoke-path") ?? h.get("next-url") ?? "/operator/dct";
+
         const raw = `${proto}://${host}${path.startsWith("/") ? "" : "/"}${path}`;
         return new URL(raw);
     } catch {
@@ -835,7 +866,11 @@ function EmptyState({ message }: { message: string }) {
 }
 
 function Pill({ className, children }: { className: string; children: React.ReactNode }) {
-    return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono border ${className}`}>{children}</span>;
+    return (
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono border ${className}`}>
+            {children}
+        </span>
+    );
 }
 
 function IdeaCard({
@@ -900,13 +935,18 @@ function IdeaCard({
                             {idea.anchors.slice(0, 6).map((a, i) => (
                                 <AnchorBadge key={`${idea.id}-ab-${i}`} anchor={a} />
                             ))}
-                            {idea.anchors.length > 6 && <span className="text-[9px] font-mono text-zinc-700">+{idea.anchors.length - 6} more…</span>}
+                            {idea.anchors.length > 6 && (
+                                <span className="text-[9px] font-mono text-zinc-700">+{idea.anchors.length - 6} more…</span>
+                            )}
                         </div>
                     )}
                 </div>
 
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono ${ideaStatusColors[idea.status] ?? ideaStatusColors.draft}`}>
+                    <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono ${ideaStatusColors[idea.status] ?? ideaStatusColors.draft
+                            }`}
+                    >
                         {idea.status}
                     </span>
                     <span className="text-[10px] text-zinc-600 font-mono">{idea.type}</span>
@@ -918,27 +958,73 @@ function IdeaCard({
 }
 
 function AnchorBadge({ anchor }: { anchor: DctAnchor }) {
-    let label: string;
+    const isLegacy = hasLegacy(anchor);
+    const legacyLabel = isLegacy ? " (legacy)" : "";
 
-    if (anchor.type === "chat") {
-        const ext = (anchor as any).chatExternalId as string | undefined;
-        const chatId = (anchor as any).chatId as number | undefined;
-        const line = (anchor as any).lineNumber as number | undefined;
-        label = ext ? `chat:${ext}${line ? `:L${line}` : ""}` : `chat#${chatId ?? "?"}${line ? `:L${line}` : ""}`;
-    } else if (anchor.type === "file") {
-        label = (anchor as any).filePath ?? "file";
-    } else {
-        label = (anchor as any).url ?? "url";
+    // safe property access helpers
+    const type = anchor.type;
+
+    if (type === "chat") {
+        const ext = getStringProp(anchor, "chatExternalId");
+        const chatId = getNumberProp(anchor, "chatId"); // old schema used number id sometimes? or string? assuming string/number mix in old data
+        const chatIdStr = chatId !== undefined ? String(chatId) : getStringProp(anchor, "chatId");
+
+        const line = getNumberProp(anchor, "lineNumber");
+
+        const idPart = ext ? `chat:${ext}` : `chat#${chatIdStr ?? "?"}`;
+        const linePart = line ? `:L${line}` : "";
+        const label = `${idPart}${linePart}`;
+
+        const style = isLegacy
+            ? "border-amber-900/50 bg-amber-950/30 text-amber-500"
+            : "bg-zinc-800 border-zinc-700 text-zinc-300";
+
+        return (
+            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono border ${style}`}>
+                {label}{legacyLabel}
+            </span>
+        );
     }
 
-    const legacyStyle = (anchor as any)._legacy
+    if (type === "file") {
+        const file = getStringProp(anchor, "filePath") ?? "file";
+        const style = isLegacy
+            ? "border-amber-900/50 bg-amber-950/30 text-amber-500"
+            : "bg-zinc-800 border-zinc-700 text-zinc-300";
+        return (
+            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono border ${style}`}>
+                {file}{legacyLabel}
+            </span>
+        );
+    }
+
+    if (type === "url") {
+        const url = getStringProp(anchor, "url") ?? "url";
+        const style = isLegacy
+            ? "border-amber-900/50 bg-amber-950/30 text-amber-500"
+            : "bg-zinc-800 border-zinc-700 text-blue-300 hover:bg-zinc-700";
+
+        return (
+            <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono border ${style}`}
+            >
+                web{legacyLabel}
+            </a>
+        );
+    }
+
+    // fallback
+    const label = `${type}`;
+    const style = isLegacy
         ? "border-amber-900/50 bg-amber-950/30 text-amber-500"
-        : "bg-zinc-900 border-zinc-800 text-zinc-500";
+        : "bg-zinc-800 border-zinc-700 text-zinc-500";
 
     return (
-        <span className={`text-[9px] font-mono border rounded px-1 py-0.5 ${legacyStyle}`}>
-            {label}
-            {(anchor as any)._legacy && " (legacy)"}
+        <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono border ${style}`}>
+            {label}{legacyLabel}
         </span>
     );
 }

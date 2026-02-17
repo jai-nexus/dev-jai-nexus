@@ -1,6 +1,7 @@
 // portal/src/app/api/dct/slot-bind/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { recordSotEvent } from "@/lib/sotEvents";
+import { Prisma } from "@prisma/client";
 import { assertInternalToken } from "@/lib/internalAuth";
 import {
     DCT_KINDS,
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
         nhId,
         repoName,
         domainName,
-        payload: parsedPayload.data as any,
+        payload: parsedPayload.data as unknown as Prisma.InputJsonValue,
     });
 
     return NextResponse.json({

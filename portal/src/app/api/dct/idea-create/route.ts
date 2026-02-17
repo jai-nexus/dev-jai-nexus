@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertInternalToken } from "@/lib/internalAuth";
 import { recordSotEvent } from "@/lib/sotEvents";
+import { Prisma } from "@prisma/client";
 import { DCT_KINDS, IdeaCreatePayloadSchema, DctAnchorSchema } from "@/lib/contracts/dctV01";
 
 const ROUTE_VERSION = "dct-idea-create:v1";
@@ -81,7 +82,7 @@ export async function POST(req: NextRequest) {
         nhId: parsed.data.nhId ?? "",
         repoName,
         domainName,
-        payload: parsed.data as any,
+        payload: parsed.data as unknown as Prisma.InputJsonValue,
     });
 
     return NextResponse.json({

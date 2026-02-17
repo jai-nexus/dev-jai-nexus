@@ -25,18 +25,18 @@ type DbLike = {
 type DbLikeTx = {
     $queryRaw<T = unknown>(query: unknown): Promise<T>;
     agentQueueItem: {
-        update(args: any): Promise<any>;
-        updateMany(args: any): Promise<any>;
-        findMany(args: any): Promise<any>;
+        update(args: unknown): Promise<unknown>;
+        updateMany(args: unknown): Promise<unknown>;
+        findMany(args: unknown): Promise<unknown>;
     };
     workPacket: {
-        findUnique(args: any): Promise<any>;
+        findUnique(args: unknown): Promise<unknown>;
     };
     repo: {
-        findUnique(args: any): Promise<any>;
+        findUnique(args: unknown): Promise<unknown>;
     };
     sotEvent: {
-        create(args: any): Promise<any>;
+        create(args: unknown): Promise<unknown>;
     };
 };
 
@@ -175,10 +175,10 @@ export class BaseAgentRuntime {
                 let reposToCheck: string[] = repoScope;
 
                 if (reposToCheck.length === 0) {
-                    const wp = await tx.workPacket.findUnique({
+                    const wp = (await tx.workPacket.findUnique({
                         where: { id: candidate.workPacketId },
                         select: { id: true, nhId: true, repo: { select: { name: true } } },
-                    });
+                    })) as { id: number; nhId: string | null; repo: { name: string } | null } | null;
 
                     reposToCheck = wp?.repo?.name ? [wp.repo.name] : [];
                 }
@@ -194,7 +194,7 @@ export class BaseAgentRuntime {
                     continue;
                 }
 
-                const updated = await tx.agentQueueItem.update({
+                const updated = (await tx.agentQueueItem.update({
                     where: { id: candidate.id },
                     data: { status: "CLAIMED", claimedAt: now, leaseExpiry },
                     select: {
@@ -206,12 +206,12 @@ export class BaseAgentRuntime {
                         leaseExpiry: true,
                         repoScope: true,
                     },
-                });
+                })) as AgentQueueItem;
 
-                const wp = await tx.workPacket.findUnique({
+                const wp = (await tx.workPacket.findUnique({
                     where: { id: updated.workPacketId },
                     select: { id: true, nhId: true, repoId: true },
-                });
+                })) as { id: number; nhId: string | null; repoId: number | null } | null;
 
                 const workNh = wp?.nhId ?? null;
 
@@ -246,7 +246,6 @@ export class BaseAgentRuntime {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async execute(item: AgentQueueItem): Promise<void> {
         await this.complete(item, { note: "BaseAgentRuntime default complete" });
     }
@@ -255,16 +254,16 @@ export class BaseAgentRuntime {
         const db = prisma as unknown as DbLike;
 
         await db.$transaction(async (tx) => {
-            const updated = await tx.agentQueueItem.update({
+            const updated = (await tx.agentQueueItem.update({
                 where: { id: item.id },
                 data: { status: "PENDING", claimedAt: null, leaseExpiry: null },
                 select: { id: true, workPacketId: true },
-            });
+            })) as { id: string; workPacketId: number };
 
-            const wp = await tx.workPacket.findUnique({
+            const wp = (await tx.workPacket.findUnique({
                 where: { id: updated.workPacketId },
                 select: { id: true, nhId: true, repoId: true },
-            });
+            })) as { id: number; nhId: string | null; repoId: number | null } | null;
 
             await this.emitRuntimeSotEvent(tx, {
                 kind: "WORK_REQUEUED",
@@ -287,16 +286,16 @@ export class BaseAgentRuntime {
         const db = prisma as unknown as DbLike;
 
         await db.$transaction(async (tx) => {
-            const updated = await tx.agentQueueItem.update({
+            const updated = (await tx.agentQueueItem.update({
                 where: { id: item.id },
                 data: { status: "COMPLETED", leaseExpiry: null },
                 select: { id: true, workPacketId: true },
-            });
+            })) as { id: string; workPacketId: number };
 
-            const wp = await tx.workPacket.findUnique({
+            const wp = (await tx.workPacket.findUnique({
                 where: { id: updated.workPacketId },
                 select: { id: true, nhId: true, repoId: true },
-            });
+            })) as { id: number; nhId: string | null; repoId: number | null } | null;
 
             await this.emitRuntimeSotEvent(tx, {
                 kind: "WORK_COMPLETED",
@@ -332,16 +331,16 @@ export class BaseAgentRuntime {
                     })();
 
         await db.$transaction(async (tx) => {
-            const updated = await tx.agentQueueItem.update({
+            const updated = (await tx.agentQueueItem.update({
                 where: { id: item.id },
                 data: { status: "FAILED", leaseExpiry: null },
                 select: { id: true, workPacketId: true },
-            });
+            })) as { id: string; workPacketId: number };
 
-            const wp = await tx.workPacket.findUnique({
+            const wp = (await tx.workPacket.findUnique({
                 where: { id: updated.workPacketId },
                 select: { id: true, nhId: true, repoId: true },
-            });
+            })) as { id: number; nhId: string | null; repoId: number | null } | null;
 
             await this.emitRuntimeSotEvent(tx, {
                 kind: "WORK_FAILED",
@@ -365,24 +364,24 @@ export class BaseAgentRuntime {
         const now = new Date();
 
         await db.$transaction(async (tx) => {
-            const expired = await tx.agentQueueItem.findMany({
+            const expired = (await tx.agentQueueItem.findMany({
                 where: { agentNhId: this.nhId, status: "CLAIMED", leaseExpiry: { lt: now } },
                 select: { id: true, workPacketId: true, leaseExpiry: true },
                 take: 50,
-            });
+            })) as Array<{ id: string; workPacketId: number; leaseExpiry: Date | null }>;
 
             if (!expired.length) return;
 
             await tx.agentQueueItem.updateMany({
-                where: { id: { in: expired.map((e: any) => e.id) } },
+                where: { id: { in: expired.map((e) => e.id) } },
                 data: { status: "PENDING", claimedAt: null, leaseExpiry: null },
             });
 
             for (const e of expired) {
-                const wp = await tx.workPacket.findUnique({
+                const wp = (await tx.workPacket.findUnique({
                     where: { id: e.workPacketId },
                     select: { id: true, nhId: true, repoId: true },
-                });
+                })) as { id: number; nhId: string | null; repoId: number | null } | null;
 
                 await this.emitRuntimeSotEvent(tx, {
                     kind: "WORK_FAILED",

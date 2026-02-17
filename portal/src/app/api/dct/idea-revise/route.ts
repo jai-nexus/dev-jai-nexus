@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
     let rawText = "";
     try {
         rawText = await req.text();
-    } catch (err: any) {
+    } catch (err: unknown) {
         return json400(route, t0, "Could not read request body", {
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
             contentType: req.headers.get("content-type"),
         });
     }
@@ -77,12 +77,12 @@ export async function POST(req: NextRequest) {
     let raw: unknown;
     try {
         raw = JSON.parse(rawText);
-    } catch (err: any) {
+    } catch (err: unknown) {
         return json400(route, t0, "Invalid JSON body", {
             contentType: req.headers.get("content-type"),
             bodyLen: rawText.length,
             bodyPreview: rawText.slice(0, 200),
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
         });
     }
 
@@ -117,9 +117,9 @@ export async function POST(req: NextRequest) {
             take: TAKE,
             select: { payload: true, eventId: true },
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
         return json500(route, t0, "Failed to load create events", {
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
         });
     }
 
@@ -128,8 +128,8 @@ export async function POST(req: NextRequest) {
         if (!isObject(p)) return false;
 
         // Be tolerant: some older create payloads might not include `type`
-        const ideaId = p.ideaId;
-        const type = p.type;
+        const ideaId = p.ideaId as string | undefined;
+        const type = p.type as string | undefined;
 
         return ideaId === payload.ideaId && (type === undefined || type === DCT_KINDS.IDEA_CREATE);
     });
@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    let evt: any;
+    let evt: Awaited<ReturnType<typeof recordSotEvent>>;
     try {
         evt = await recordSotEvent({
             ts: new Date().toISOString(),
@@ -150,9 +150,9 @@ export async function POST(req: NextRequest) {
             summary: `DCT revise ${payload.ideaId}`,
             payload,
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
         return json500(route, t0, "Failed to record SoT event", {
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
         });
     }
 

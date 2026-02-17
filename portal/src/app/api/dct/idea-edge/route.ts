@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
     let rawText = "";
     try {
         rawText = await req.text();
-    } catch (err: any) {
+    } catch (err: unknown) {
         return badRequest("Could not read request body", {
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
             contentType: req.headers.get("content-type"),
         });
     }
@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
     let raw: unknown;
     try {
         raw = JSON.parse(rawText);
-    } catch (err: any) {
+    } catch (err: unknown) {
         return badRequest("Invalid JSON body", {
             contentType: req.headers.get("content-type"),
             bodyLen: rawText.length,
             bodyPreview: rawText.slice(0, 200),
-            message: err?.message ?? String(err),
+            message: err instanceof Error ? err.message : String(err),
             ms: Date.now() - t0,
         });
     }
@@ -89,8 +89,8 @@ export async function POST(req: NextRequest) {
         createEvents.some((e) => {
             const p = e.payload as unknown;
             if (!isObject(p)) return false;
-            const id = p.ideaId;
-            const type = p.type;
+            const id = p.ideaId as string | undefined;
+            const type = p.type as string | undefined;
             return id === ideaId && (type === undefined || type === DCT_KINDS.IDEA_CREATE);
         });
 

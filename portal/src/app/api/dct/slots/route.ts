@@ -6,9 +6,7 @@ import { applyDct, type DctEventInput } from "@/lib/dctProjection";
 
 const ROUTE_VERSION = "dct-slots:v1";
 
-function badRequest(message: string, details?: unknown) {
-    return NextResponse.json({ ok: false, error: message, details }, { status: 400 });
-}
+
 
 /**
  * GET /api/dct/slots
