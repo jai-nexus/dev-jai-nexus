@@ -1,7 +1,14 @@
+// portal/src/gatekeeper.ts
+//
+// Edge-safe gatekeeper middleware logic for dev.jai.nexus.
+// NOTE: Middleware runs in the Edge runtime. Avoid Node-only modules (e.g. node:crypto).
+//
+// This file is meant to be re-exported from portal/middleware.ts like:
+//   export { proxy as middleware, config } from "./src/gatekeeper";
+
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import crypto from "node:crypto";
 
 /**
  * Proxy / gatekeeper for dev.jai.nexus.
@@ -48,6 +55,9 @@ function isTokenAuthApi(pathname: string) {
   if (pathname === "/api/repos" || pathname.startsWith("/api/repos/")) return true;
   if (pathname === "/api/agents/commit") return true;
 
+  // Operator proxy routes (auth handled in-route)
+  if (pathname === "/api/operator" || pathname.startsWith("/api/operator/")) return true;
+
   // Chat ingest endpoint (auth handled in-route; localhost allowed)
   if (pathname === "/api/ingest/chat") return true;
 
@@ -71,11 +81,17 @@ function unauthorizedJson() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
+/**
+ * Edge-safe constant-time-ish string comparison.
+ * Avoids Node's crypto.timingSafeEqual (not available in Edge runtime).
+ */
 function timingSafeEqualString(a: string, b: string) {
-  const aa = Buffer.from(a, "utf8");
-  const bb = Buffer.from(b, "utf8");
-  if (aa.length !== bb.length) return false;
-  return crypto.timingSafeEqual(aa, bb);
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) {
+    out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return out === 0;
 }
 
 function readBearer(req: NextRequest) {
@@ -95,7 +111,7 @@ function requireMachineToken(req: NextRequest) {
   if (!expected) {
     return NextResponse.json(
       { error: "Internal API token not configured", detail: `Missing ${INTERNAL_TOKEN_ENV}` },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
@@ -116,14 +132,11 @@ export async function proxy(req: NextRequest) {
   }
 
   // 2) Allow "in-route auth" endpoints to run (they handle their own auth)
-  //    This is critical for APIs like DCT where middleware would otherwise block
-  //    GET/POST before the route handler can run.
   if (isTokenAuthApi(pathname)) {
     return NextResponse.next();
   }
 
   // 3) Internal API lane: machine token auth (never redirects)
-  //    Keep this strict: internal endpoints should be callable by tools/automation without session cookies.
   if (isInternalApi(pathname)) {
     const deny = requireMachineToken(req);
     if (deny) return deny;
@@ -131,8 +144,6 @@ export async function proxy(req: NextRequest) {
   }
 
   // 4) Everything else: session auth (NextAuth JWT)
-  //    - APIs return JSON 401 (no redirect)
-  //    - Pages redirect to /login
   const token = await getToken({
     req,
     secret: process.env.NEXTAUTH_SECRET,
@@ -149,7 +160,3 @@ export async function proxy(req: NextRequest) {
 
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
