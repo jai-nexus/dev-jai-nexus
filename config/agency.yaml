@@ -1,0 +1,113 @@
+schema_version: 0.1
+
+owner:
+  name: "Jerry Ingram"
+  handle: "jerry"
+  nh_root: "6.0"
+
+agency:
+  council_dir: ".nexus"
+  motion_dir: ".nexus/motions"
+
+agents:
+  - agent_key: "dev.council"
+    id: "JAI::DEV::COUNCIL"
+    nh_id: "6.0"
+    parent_nh_id: null
+    label: "DEV Council Root"
+    tier: 2
+    role: "council"
+    function: "council"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:.nexus/**"
+      - "paths:portal/scripts/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:govern"
+    delegates_to: []
+    github_labels: ["council", "root"]
+
+  - agent_key: "dev.proposer"
+    id: "JAI::DEV::PROPOSER"
+    nh_id: "6.0.1"
+    parent_nh_id: "6.0"
+    label: "DEV Proposer"
+    tier: 2
+    role: "proposer"
+    function: "proposer"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:.nexus/**"
+      - "paths:portal/scripts/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:propose"
+    delegates_to: []
+    github_labels: ["council", "proposer"]
+
+  - agent_key: "dev.executor"
+    id: "JAI::DEV::EXECUTOR"
+    nh_id: "6.0.2"
+    parent_nh_id: "6.0"
+    label: "DEV Executor"
+    tier: 2
+    role: "executor"
+    function: "executor"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:.nexus/**"
+      - "paths:portal/scripts/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:stage_diff"
+    delegates_to: []
+    github_labels: ["council", "executor"]
+
+  - agent_key: "dev.challenger"
+    id: "JAI::DEV::CHALLENGER"
+    nh_id: "6.0.3"
+    parent_nh_id: "6.0"
+    label: "DEV Challenger"
+    tier: 2
+    role: "challenger"
+    function: "challenger"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:.nexus/**"
+      - "paths:portal/scripts/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:critique"
+      - "actions:verify"
+    delegates_to: []
+    github_labels: ["council", "challenger"]
+
+  - agent_key: "dev.arbiter"
+    id: "JAI::DEV::ARBITER"
+    nh_id: "6.0.4"
+    parent_nh_id: "6.0"
+    label: "DEV Arbiter"
+    tier: 2
+    role: "arbiter"
+    function: "arbiter"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:.nexus/**"
+      - "paths:portal/scripts/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:ratify"
+      - "actions:escalate"
+      - "actions:ledger_write"
+    delegates_to: []
+    github_labels: ["council", "arbiter"]

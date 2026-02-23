@@ -15,7 +15,8 @@
     "typecheck": "pnpm -C portal typecheck",
     "dct:replay-check": "pnpm -C portal dct:replay-check",
     "dct:verify": "pnpm typecheck && pnpm dct:replay-check",
-    "dct:extract": "pnpm -C portal dct:extract"
+    "dct:extract": "pnpm -C portal dct:extract",
+    "council:run": "node portal/scripts/council-run.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

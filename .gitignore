@@ -41,3 +41,18 @@ event.jsonl
 .turboDistOut
 portal/data/runs/
 portal/test-chat.json
+
+.nexus/motions/**/trace.json
+.nexus/motions/**/transcript.jsonl
+
+# logs
+*.log
+
+# direct-run / snapshots (if you use them anywhere)
+.direct-run/
+**/.direct-run/
+dr-snapshot/
+**/dr-snapshot/
+**/*.jsonl
+**/*.csv
+**/*.zip
