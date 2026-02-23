@@ -1,0 +1,6 @@
+motion_id: motion-0003
+status: DRAFT
+ratified_by: null
+required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
+last_updated: "2026-02-23T11:37:47.531Z"
+notes: "Outcome determined by council-run.mjs v0.2"

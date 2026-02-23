@@ -1,0 +1,10 @@
+title: "Scaling Council to v0.2 (Tiered Chat + Scoreboard)"
+auto_ratify:
+  enabled: true
+max_risk_score: 0.2
+checks_required:
+  - validate_agency
+  - dct_replay_check
+  - execution_patch_exists
+  - patch_apply_check
+  - typecheck

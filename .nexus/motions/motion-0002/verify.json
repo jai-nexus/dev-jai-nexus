@@ -1,136 +1,28 @@
 {
-  "version": "0.1",
-  "motion_id": "motion-0002",
-  "gates": [
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-22T19:19:35.157Z",
-      "finished": "2026-02-22T19:19:35.176Z",
-      "command": "pnpm -C portal tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "ok": false
+    "version": "0.2",
+    "motion_id": "motion-0002",
+    "latest": {
+        "validate_agency": {
+            "gate": "validate_agency",
+            "ok": true,
+            "status": 0,
+            "ts": "2026-02-23T10:55:56.540Z",
+            "command": "node portal\\scripts\\validate-agency.mjs",
+            "cwd": ".",
+            "required": true
+        },
+        "dct_replay_check": {
+            "gate": "dct_replay_check",
+            "ok": true,
+            "status": 0,
+            "ts": "2026-02-23T10:55:58.605Z",
+            "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
+            "cwd": "portal",
+            "required": true
+        }
     },
-    {
-      "gate": "validate_agency",
-      "started": "2026-02-23T08:58:14.128Z",
-      "finished": "2026-02-23T08:58:14.504Z",
-      "ok": true,
-      "command": "node C:\\Users\\Jerry Admin\\Desktop\\WorkDesktop\\JerryIngram\\dev-jai-nexus\\portal\\scripts\\validate-agency.mjs",
-      "cwd": "."
-    },
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T08:58:14.509Z",
-      "finished": "2026-02-23T08:58:14.520Z",
-      "ok": false,
-      "command": "pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "cwd": "portal",
-      "required": true
-    },
-    {
-      "gate": "validate_agency",
-      "started": "2026-02-23T09:08:04.752Z",
-      "finished": "2026-02-23T09:08:05.038Z",
-      "ok": true,
-      "status": 0,
-      "command": "node C:\\Users\\Jerry Admin\\Desktop\\WorkDesktop\\JerryIngram\\dev-jai-nexus\\portal\\scripts\\validate-agency.mjs",
-      "cwd": ".",
-      "required": true
-    },
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T09:08:05.042Z",
-      "finished": "2026-02-23T09:08:05.044Z",
-      "ok": false,
-      "status": null,
-      "command": "pnpm.cmd tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "cwd": "portal",
-      "required": true
-    },
-    {
-      "gate": "validate_agency",
-      "started": "2026-02-23T09:18:53.408Z",
-      "finished": "2026-02-23T09:18:53.691Z",
-      "ok": true,
-      "status": 0,
-      "command": "node portal\\scripts\\validate-agency.mjs",
-      "cwd": ".",
-      "required": true
-    },
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T09:18:53.694Z",
-      "finished": "2026-02-23T09:18:53.761Z",
-      "ok": false,
-      "status": 1,
-      "command": "cmd.exe /c (pushd portal && pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json)",
-      "cwd": "portal",
-      "required": true
-    },
-    {
-      "gate": "validate_agency",
-      "started": "2026-02-23T09:26:56.760Z",
-      "finished": "2026-02-23T09:26:57.056Z",
-      "ok": true,
-      "status": 0,
-      "command": "node portal\\scripts\\validate-agency.mjs",
-      "cwd": ".",
-      "required": true
-    },
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T09:26:57.060Z",
-      "finished": "2026-02-23T09:26:58.609Z",
-      "ok": true,
-      "status": 0,
-      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "cwd": "portal",
-      "required": true
-    },
-    {
-      "gate": "validate_agency",
-      "started": "2026-02-23T10:41:02.138Z",
-      "finished": "2026-02-23T10:41:02.447Z",
-      "ok": true,
-      "status": 0,
-      "command": "node portal\\scripts\\validate-agency.mjs",
-      "cwd": ".",
-      "required": true
-    },
-    {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T10:41:02.453Z",
-      "finished": "2026-02-23T10:41:03.906Z",
-      "ok": true,
-      "status": 0,
-      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "cwd": "portal",
-      "required": true
+    "summary": {
+        "required_ok": true,
+        "last_updated": "2026-02-23T10:55:58.606Z"
     }
-  ],
-  "latest": {
-    "validate_agency": {
-      "gate": "validate_agency",
-      "started": "2026-02-23T10:41:02.138Z",
-      "finished": "2026-02-23T10:41:02.447Z",
-      "ok": true,
-      "status": 0,
-      "command": "node portal\\scripts\\validate-agency.mjs",
-      "cwd": ".",
-      "required": true
-    },
-    "dct_replay_check": {
-      "gate": "dct_replay_check",
-      "started": "2026-02-23T10:41:02.453Z",
-      "finished": "2026-02-23T10:41:03.906Z",
-      "ok": true,
-      "status": 0,
-      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
-      "cwd": "portal",
-      "required": true
-    }
-  },
-  "summary": {
-    "required_ok": true,
-    "last_updated": "2026-02-23T10:41:03.907Z"
-  }
 }
