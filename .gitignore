@@ -1,58 +1,78 @@
+# -------------------------
 # OS / editor
+# -------------------------
 .DS_Store
 .cache/
 .venv/
 
+# -------------------------
 # deps / build
+# -------------------------
 node_modules/
 portal/node_modules/
 portal/.next/
 .vercel/
 portal/.vercel/
+.turbo/
+**/.turbo/
+.turboDistOut
 
+# -------------------------
 # secrets / env (never commit)
+# -------------------------
 **/.env
 **/.env.*
 !.env.example
 !.env.sample
 
+# -------------------------
 # local/private data
+# -------------------------
 data/private/
-portal/data/runs/
+workspace/
+
+# local databases
 portal/dev.db
 portal/*.db
 *.db
 
-# local clones / workspace
-workspace/
-
-# Prisma generated client (do not commit)
-portal/prisma/generated/
-portal/generated/prisma/
-
-# local scratch
+# local runs / scratch
+portal/data/runs/
 .tmp/
 event.json
 event.jsonl
-
-# build / tool artifacts
-.turbo/
-**/.turbo/
-.turboDistOut
-portal/data/runs/
 portal/test-chat.json
 
+# -------------------------
+# Prisma generated client (do not commit)
+# -------------------------
+portal/prisma/generated/
+portal/generated/prisma/
+
+# -------------------------
+# Council traces (gitignored)
+# -------------------------
+# repo-root trace output (current v0.2 runner writes here)
+trace/
+
+# motion-local traces (if runner is moved to per-motion trace later)
+.nexus/motions/**/trace/
+
+# legacy motion trace files
 .nexus/motions/**/trace.json
 .nexus/motions/**/transcript.jsonl
 
+# -------------------------
 # logs
+# -------------------------
 *.log
 
-# direct-run / snapshots (if you use them anywhere)
+# -------------------------
+# direct-run / snapshots
+# -------------------------
 .direct-run/
 **/.direct-run/
 dr-snapshot/
 **/dr-snapshot/
-**/*.jsonl
 **/*.csv
 **/*.zip
