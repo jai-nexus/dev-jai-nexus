@@ -1,0 +1,11 @@
+version: 0.1
+motion_id: motion-0002
+title: Enforce DCT replay determinism gate and record verify.json
+checks_required:
+  - validate_agency
+  - dct_replay_check
+risk:
+  class: low
+  auto_ratify:
+    enabled: true
+    max_risk_score: 0.20

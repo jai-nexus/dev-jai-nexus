@@ -1,0 +1,17 @@
+version: 0.1
+routes:
+  proposer:
+    provider: openai
+    model: gpt-5
+  challenger:
+    provider: openai
+    model: gpt-5
+  executor:
+    provider: openai
+    model: gpt-5
+  arbiter:
+    provider: openai
+    model: gpt-5
+fallback:
+  provider: openai
+  model: gpt-5

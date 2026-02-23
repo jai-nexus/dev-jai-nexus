@@ -1,0 +1,8 @@
+version: 0.1
+motion_id: motion-0001
+title: "Adopt Council Protocol v0.1 (dev-jai-nexus pilot)"
+ts: "2026-02-22T00:00:00.000Z"
+risk_score: 0.00
+outcome: ratified_human
+notes:
+  - "Manual ratification for pilot."
