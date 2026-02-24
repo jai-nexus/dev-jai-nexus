@@ -1,31 +1,14 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.2 (file-based)
+ * Council Runner v0.3 (One Constitution Upgrade)
  * Executes a motion using file-based artifacts plus a tiered governance loop.
+ * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
  *
- * Responsibilities:
- * - Validates config/agency.yaml via portal/scripts/validate-agency.mjs
- * - Executes gates declared in .nexus/motions/<motionId>/motion.yaml
- * - Writes .nexus/motions/<motionId>/verify.json as a scoreboard (latest per gate + summary)
- *   - resilient to empty/corrupt JSON (quarantines bad files)
- *   - uses atomic writes
- *   - SHOULD NOT churn on identical reruns (avoid updating timestamps unless results change)
- * - Writes append-only audit traces (gitignored):
- *   - trace/chat.jsonl (tiered “group chat” events)
- *   - trace/verify.history.jsonl (full gate execution history w/ stdout/stderr tails)
- *
- * Artifacts (per motion):
- * - motion.yaml      : gate requirements + policy (auto-ratify, max_risk_score, checks_required)
- * - proposal.md      : proposal thread
- * - challenge.md     : objections + risk_score
- * - execution.md     : execution plan (human-readable)
- * - execution.patch  : optional patch payload (used by execution_patch_exists / patch_apply_check gates)
- * - decision.yaml    : current status (DRAFT/PROPOSED/RATIFIED...) and ratification metadata
- * - verify.json      : scoreboard-only (committed)
- *
- * Windows notes:
- * - Prefer cmd.exe with an explicit cwd (e.g., portal/) for pnpm/tsx invocations.
- * - Use relative paths and avoid assumptions about PowerShell quoting/escaping.
+ * v0.3 Changes:
+ * - Explicit Policy stage: Generates policy.yaml (risk vs gates)
+ * - Explicit Vote stage: Supports manual or auto vote.json
+ * - Protocol Enforcement: Ratification requires PASS vote and ELIGIBLE policy.
+ * - Idempotency: Avoids updating timestamps if content is unchanged.
  */
 
 import fs from "node:fs";
@@ -56,6 +39,30 @@ function writeTextIfMissing(p, contents) {
 
 function nowIso() {
     return new Date().toISOString();
+}
+
+/** Idempotent writers */
+function writeTextIfChanged(p, text) {
+    if (exists(p)) {
+        const old = readText(p);
+        if (old === text) return false;
+    }
+    fs.writeFileSync(p, text, "utf8");
+    return true;
+}
+
+function writeJsonIfChanged(p, obj) {
+    const text = JSON.stringify(obj, null, 2);
+    return writeTextIfChanged(p, text);
+}
+
+function atomicWriteJsonIfChanged(p, obj) {
+    const text = JSON.stringify(obj, null, 2);
+    if (exists(p) && readText(p) === text) return false;
+    const tmp = `${p}.tmp`;
+    fs.writeFileSync(tmp, text, "utf8");
+    fs.renameSync(tmp, p);
+    return true;
 }
 
 function getYamlScalar(yamlText, key) {
@@ -148,7 +155,7 @@ const motionsDir = path.join(nexusDir, "motions");
 const motionDir = path.join(motionsDir, motionId);
 const motionSpecPath = path.join(motionDir, "motion.yaml");
 
-// v0.2 traces live at repo-root trace/ (gitignored)
+// traces live at repo-root trace/ (gitignored)
 const traceDir = path.join(repoRoot, "trace");
 ensureDir(traceDir);
 
@@ -211,6 +218,8 @@ const title = getYamlScalar(motionYaml, "title") ?? motionId;
 const proposalPath = path.join(motionDir, "proposal.md");
 const challengePath = path.join(motionDir, "challenge.md");
 const executionPath = path.join(motionDir, "execution.md");
+const policyPath = path.join(motionDir, "policy.yaml");
+const votePath = path.join(motionDir, "vote.json");
 const decisionPath = path.join(motionDir, "decision.yaml");
 const verifyPath = path.join(motionDir, "verify.json");
 
@@ -218,7 +227,7 @@ const verifyPath = path.join(motionDir, "verify.json");
 // We instead write a run-scoped trace bundle under repo-root trace/ (gitignored).
 const runTracePath = path.join(traceDir, `motion.${motionId}.run.${runId}.json`);
 
-appendChat("RUNNER_START", `Council runner v0.2 started for motion ${motionId}`, 0);
+appendChat("RUNNER_START", `Council runner v0.3 started for motion ${motionId}`, 0);
 
 // Seed empty artifacts if missing
 writeTextIfMissing(
@@ -303,7 +312,7 @@ function writeVerify(update) {
 
     if (changed) {
         base.summary.last_updated = nowIso();
-        atomicWriteJson(verifyPath, base);
+        atomicWriteJsonIfChanged(verifyPath, base);
     }
 
     // Always record history to gitignored trace
@@ -466,16 +475,6 @@ if (requiresTypecheck) {
     if (!r.ok) console.error("[COUNCIL-RUN] typecheck FAILED.");
 }
 
-// -----------------------------
-// Risk + Decision
-// -----------------------------
-const challengeText = readText(challengePath);
-const riskScore = parseRiskScore(challengeText);
-
-const autoRatifyEnabled = /auto_ratify:\s*\n\s*enabled:\s*true/i.test(motionYaml);
-const maxRiskMatch = motionYaml.match(/max_risk_score:\s*([0-9.]+)/i);
-const maxRiskScore = maxRiskMatch ? Number(maxRiskMatch[1]) : 0.2;
-
 function requiredGateList() {
     const gates = ["validate_agency"];
     if (requiresReplay) gates.push("dct_replay_check");
@@ -485,53 +484,144 @@ function requiredGateList() {
     return gates;
 }
 
-const decisionTemplate = (status, ratifiedBy) => `motion_id: ${motionId}
-status: ${status}
-ratified_by: ${ratifiedBy ?? "null"}
-required_gates: [${requiredGateList().join(", ")}]
-last_updated: "${nowIso()}"
-notes: "Outcome determined by council-run.mjs v0.2"
+// -----------------------------
+// Stage 5: Policy Calculation
+// -----------------------------
+console.log("[COUNCIL-RUN] Calculating policy…");
+const challengeText = exists(challengePath) ? readText(challengePath) : "";
+const riskScore = parseRiskScore(challengeText);
+
+const autoRatifyEnabled = /auto_ratify:\s*\n\s*enabled:\s*true/i.test(motionYaml);
+const maxRiskMatch = motionYaml.match(/max_risk_score:\s*([0-9.]+)/i);
+const maxRiskScore = maxRiskMatch ? Number(maxRiskMatch[1]) : 0.2;
+
+const scoreboard = safeReadJsonFile(verifyPath, { latest: {} });
+const gates = scoreboard.latest || {};
+const required_gates = requiredGateList();
+const failed_required_gates = required_gates.filter(g => !gates[g] || gates[g].ok === false).sort();
+const required_ok = failed_required_gates.length === 0;
+
+const eligible_to_vote = required_ok;
+const low_risk = riskScore <= maxRiskScore;
+const recommended_vote = (eligible_to_vote && low_risk) ? "yes" : "no";
+
+const blocking_reasons = [];
+if (!required_ok) blocking_reasons.push(`Missing/Failed required gates: ${failed_required_gates.join(", ")}`);
+if (!low_risk) blocking_reasons.push(`Risk score ${riskScore.toFixed(2)} exceeds threshold ${maxRiskScore.toFixed(2)}`);
+
+const policyTemplate = `motion_id: ${motionId}
+evaluated_at: "${nowIso()}"
+risk_score: ${riskScore.toFixed(2)}
+max_risk_score: ${maxRiskScore.toFixed(2)}
+required_gates: [${required_gates.join(", ")}]
+failed_required_gates: [${failed_required_gates.join(", ")}]
+required_ok: ${required_ok}
+eligible_to_vote: ${eligible_to_vote}
+recommended_vote: "${recommended_vote}"
+blocking_reasons: [${blocking_reasons.map(r => `"${r}"`).join(", ")}]
 `;
 
-function writeDecision(status, ratifiedBy) {
-    fs.writeFileSync(decisionPath, decisionTemplate(status, ratifiedBy), "utf8");
+// Idempotent policy write (regex-based check to avoid timestamp churn)
+function writePolicyIfChanged(text) {
+    if (exists(policyPath)) {
+        const old = readText(policyPath);
+        // Compare everything except evaluated_at line
+        const oldNoTs = old.replace(/^evaluated_at:.*$\n/m, "");
+        const newNoTs = text.replace(/^evaluated_at:.*$\n/m, "");
+        if (oldNoTs === newNoTs) return;
+    }
+    fs.writeFileSync(policyPath, text, "utf8");
+}
+writePolicyIfChanged(policyTemplate);
+appendChat("POLICY_EVAL", `Policy evaluation: eligible=${eligible_to_vote}, recommended="${recommended_vote}", blockers=[${blocking_reasons.join("; ")}]`, 1);
+
+// -----------------------------
+// Stage 6: Voting
+// -----------------------------
+console.log("[COUNCIL-RUN] Checking votes…");
+let voteData = safeReadJsonFile(votePath, null);
+
+if (!voteData && autoRatifyEnabled && recommended_vote === "yes" && eligible_to_vote) {
+    console.log("[COUNCIL-RUN] Auto-generating vote.json...");
+    voteData = {
+        motion_id: motionId,
+        votes: [
+            {
+                voter_id: "auto",
+                tier: 0,
+                vote: "yes",
+                rationale: "Auto-ratify threshold met",
+                ts: nowIso()
+            }
+        ],
+        outcome: {
+            yes: 1,
+            no: 0,
+            abstain: 0,
+            result: "PASS"
+        },
+        last_updated: nowIso()
+    };
+    atomicWriteJsonIfChanged(votePath, voteData);
 }
 
-if (!exists(decisionPath)) {
-    console.log("[COUNCIL-RUN] Decision file missing. Creating initial DRAFT...");
-    const scoreboard = safeReadJsonFile(verifyPath, {});
-    const gatesOk = scoreboard.summary?.required_ok ?? false;
-    const initialStatus = gatesOk && autoRatifyEnabled && riskScore <= maxRiskScore ? "RATIFIED" : "DRAFT";
-    writeDecision(initialStatus, initialStatus === "RATIFIED" ? "auto" : null);
-}
+const voteResult = voteData?.outcome?.result || "PENDING";
+console.log(`[COUNCIL-RUN] Vote result: ${voteResult}`);
+appendChat("VOTE_CHECK", `Vote check result: ${voteResult}`, 1);
 
+// -----------------------------
+// Stage 7: Ratification
+// -----------------------------
 const decisionYaml = exists(decisionPath) ? readText(decisionPath) : "";
-let status = getYamlScalar(decisionYaml, "status") || "DRAFT";
-console.log(`[COUNCIL-RUN] Current status from file: ${status}`);
+let currentStatus = getYamlScalar(decisionYaml, "status") || "DRAFT";
 
-if (status === "DRAFT" || status === "PROPOSED") {
-    const scoreboard = safeReadJsonFile(verifyPath, {});
-    const gatesOk = scoreboard.summary?.required_ok ?? false;
+const decisionTemplate = (st, ratBy, notes) => `motion_id: ${motionId}
+status: ${st}
+ratified_by: ${ratBy ?? "null"}
+required_gates: [${required_gates.join(", ")}]
+last_updated: "${nowIso()}"
+notes: "${notes ?? `Outcome determined by council-run.mjs v0.3`}"
+`;
 
-    if (gatesOk && autoRatifyEnabled && riskScore <= maxRiskScore) {
-        status = "RATIFIED";
-        writeDecision(status, "auto");
+function writeDecisionIfChanged(st, ratBy, notes) {
+    const text = decisionTemplate(st, ratBy, notes);
+    if (exists(decisionPath)) {
+        const old = readText(decisionPath);
+        const oldNoTs = old.replace(/^last_updated:.*$\n/m, "");
+        const newNoTs = text.replace(/^last_updated:.*$\n/m, "");
+        if (oldNoTs === newNoTs) return;
+    }
+    fs.writeFileSync(decisionPath, text, "utf8");
+}
+
+let nextStatus = currentStatus;
+let ratifiedBy = getYamlScalar(decisionYaml, "ratified_by");
+if (ratifiedBy === "null") ratifiedBy = null;
+let notes = getYamlScalar(decisionYaml, "notes");
+
+if (currentStatus === "DRAFT" || currentStatus === "PROPOSED") {
+    if (voteResult === "PASS" && eligible_to_vote) {
+        nextStatus = "RATIFIED";
+        ratifiedBy = voteData.votes.find(v => v.vote === "yes")?.voter_id || "voter";
+        notes = "Ratified via protocol v0.3 (policy PASS + vote PASS)";
+    } else if (blocking_reasons.length > 0) {
+        notes = `BLOCKED: ${blocking_reasons.join("; ")}`;
     }
 }
 
-console.log(`\n[COUNCIL-RUN] Decision status: ${status}`);
-appendChat("DECISION", `Motion ${motionId} status is ${status}`, 0);
+writeDecisionIfChanged(nextStatus, ratifiedBy, notes);
+console.log(`[COUNCIL-RUN] Decision status: ${nextStatus}`);
 
-if (status === "DRAFT" || status === "PROPOSED") {
-    console.log(`[COUNCIL-RUN] Risk score = ${riskScore.toFixed(2)} (auto threshold = ${maxRiskScore.toFixed(2)})`);
-    console.log("[COUNCIL-RUN] Edit decision file and set status: RATIFIED, then rerun.\n");
+appendChat("DECISION", `Motion ${motionId} status is ${nextStatus}`, 0);
+if (nextStatus === "RATIFIED") {
+    appendChat("VOTE_RESULT", `Vote PASSED for motion ${motionId}`, 0);
 }
 
 // -----------------------------
 // Run trace bundle (gitignored)
 // -----------------------------
 const runTrace = {
-    version: "0.2",
+    version: "0.3",
     motion_id: motionId,
     title,
     run_id: runId,
@@ -541,11 +631,19 @@ const runTrace = {
         proposal: path.relative(repoRoot, proposalPath),
         challenge: path.relative(repoRoot, challengePath),
         execution: path.relative(repoRoot, executionPath),
+        policy: path.relative(repoRoot, policyPath),
+        vote: path.relative(repoRoot, votePath),
         decision: path.relative(repoRoot, decisionPath),
         verify: path.relative(repoRoot, verifyPath),
     },
     risk_score: riskScore,
-    decision_status: status,
+    decision_status: nextStatus,
+    policy: {
+        eligible_to_vote,
+        recommended_vote,
+        blocking_reasons
+    },
+    vote: voteData?.outcome,
     excerpts: {
         proposal: summarizeFile(proposalPath),
         challenge: summarizeFile(challengePath),
@@ -555,8 +653,7 @@ const runTrace = {
 };
 
 fs.writeFileSync(runTracePath, JSON.stringify(runTrace, null, 2), "utf8");
-
-appendChat("RUNNER_DONE", `Council runner v0.2 finished for motion ${motionId}`, 0);
+appendChat("RUNNER_DONE", `Council runner v0.3 finished for motion ${motionId}`, 0);
 
 console.log(`[COUNCIL-RUN] Wrote run trace: ${path.relative(repoRoot, runTracePath)}`);
 console.log("[COUNCIL-RUN] Done.\n");
