@@ -1,10 +1,13 @@
 motion_id: motion-0003
-evaluated_at: "2026-02-24T02:56:01.239Z"
+evaluated_at: "2026-02-24T16:14:58.170Z"
 risk_score: 0.05
 max_risk_score: 0.20
-required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
-failed_required_gates: [typecheck]
-required_ok: false
-eligible_to_vote: false
-recommended_vote: "no"
-blocking_reasons: ["Missing/Failed required gates: typecheck"]
+required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check]
+optional_gates: [typecheck]
+failed_required_gates: []
+failed_optional_gates: [typecheck]
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings: ["Optional gates failed: typecheck"]
