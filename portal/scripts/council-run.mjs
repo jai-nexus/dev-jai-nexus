@@ -9,6 +9,11 @@
  * - Explicit Vote stage: Supports manual or auto vote.json
  * - Protocol Enforcement: Ratification requires PASS vote and ELIGIBLE policy.
  * - Idempotency: Avoids updating timestamps if content is unchanged.
+ *
+ * v0.3.1 (Optional Gates):
+ * - Supports checks_optional in motion.yaml
+ * - Optional gates run + are logged, but do NOT block eligibility/ratification
+ * - Policy emits warnings for optional failures
  */
 
 import fs from "node:fs";
@@ -49,11 +54,6 @@ function writeTextIfChanged(p, text) {
     }
     fs.writeFileSync(p, text, "utf8");
     return true;
-}
-
-function writeJsonIfChanged(p, obj) {
-    const text = JSON.stringify(obj, null, 2);
-    return writeTextIfChanged(p, text);
 }
 
 function atomicWriteJsonIfChanged(p, obj) {
@@ -98,16 +98,6 @@ function safeReadJsonFile(p, fallback) {
     }
 }
 
-function atomicWriteJson(p, obj) {
-    const tmp = `${p}.tmp`;
-    fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), "utf8");
-    fs.renameSync(tmp, p);
-}
-
-/**
- * Run a command and return { ok, status, meta }.
- * - Captures stdout/stderr for trace and echoes to console.
- */
 function run(cmd, args, { cwd, label, required, prettyCommand } = {}) {
     const started = nowIso();
     const res = spawnSync(cmd, args, { stdio: "pipe", shell: false, cwd });
@@ -223,8 +213,6 @@ const votePath = path.join(motionDir, "vote.json");
 const decisionPath = path.join(motionDir, "decision.yaml");
 const verifyPath = path.join(motionDir, "verify.json");
 
-// NOTE: legacy trace.json is no longer written into the motion folder (causes churn).
-// We instead write a run-scoped trace bundle under repo-root trace/ (gitignored).
 const runTracePath = path.join(traceDir, `motion.${motionId}.run.${runId}.json`);
 
 appendChat("RUNNER_START", `Council runner v0.3 started for motion ${motionId}`, 0);
@@ -247,18 +235,51 @@ console.log(`\n[COUNCIL-RUN] Motion: ${motionId}`);
 console.log(`[COUNCIL-RUN] Title: ${title}`);
 console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}\n`);
 
-function motionRequires(gateId) {
-    // simple regex scan for now (swap for YAML parser later)
-    return (
-        new RegExp(`checks_required:\\s*[\\s\\S]*\\b${gateId}\\b`, "i").test(motionYaml) ||
-        new RegExp(`-\\s*${gateId}\\b`, "i").test(motionYaml)
-    );
+function listHasGate(listKey, gateId) {
+    const lines = motionYaml.split(/\r?\n/);
+    let inList = false;
+    for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (new RegExp(`^${listKey}:`, "i").test(trimmed)) {
+            inList = true;
+            continue;
+        }
+        if (inList) {
+            if (trimmed.startsWith("-")) {
+                if (new RegExp(`^-\\s*${gateId}\\s*$`).test(trimmed)) return true;
+            } else if (/\w+:/.test(trimmed)) {
+                inList = false;
+            }
+        }
+    }
+    return false;
 }
 
+function motionRequires(gateId) {
+    return listHasGate("checks_required", gateId);
+}
+
+function motionOptional(gateId) {
+    return listHasGate("checks_optional", gateId);
+}
+
+// Required/Optional membership
 const requiresReplay = motionRequires("dct_replay_check");
 const requiresPatch = motionRequires("execution_patch_exists");
 const requiresApply = motionRequires("patch_apply_check");
 const requiresTypecheck = motionRequires("typecheck");
+
+const optionalReplay = motionOptional("dct_replay_check");
+const optionalPatch = motionOptional("execution_patch_exists");
+const optionalApply = motionOptional("patch_apply_check");
+const optionalTypecheck = motionOptional("typecheck");
+
+// Run flags (required OR optional)
+const runReplay = requiresReplay || optionalReplay;
+const runPatch = requiresPatch || optionalPatch;
+const runApply = requiresApply || optionalApply;
+const runTypecheck = requiresTypecheck || optionalTypecheck;
 
 // -----------------------------
 // verify.json writer (scoreboard-only, no-churn)
@@ -278,8 +299,7 @@ function writeVerify(update) {
         gate: update.gate,
         ok: update.ok,
         status: update.status,
-        // ts only updates when entry changes
-        ts: update.finished,
+        ts: update.finished, // only meaningful when entry changes
         command: update.command,
         cwd: update.cwd,
         required: !!update.required,
@@ -315,13 +335,12 @@ function writeVerify(update) {
         atomicWriteJsonIfChanged(verifyPath, base);
     }
 
-    // Always record history to gitignored trace
     appendVerifyHistory(update);
     appendChat("GATE_RESULT", `Gate ${update.gate} finished: ${update.ok ? "PASS" : "FAIL"}`, 2);
 }
 
 // -----------------------------
-// Gate 1: validate_agency
+// Gate 1: validate_agency (always required)
 // -----------------------------
 const validateAgency = path.join(portalDir, "scripts", "validate-agency.mjs");
 if (exists(validateAgency)) {
@@ -340,62 +359,64 @@ if (exists(validateAgency)) {
 }
 
 // -----------------------------
-// Gate 2: dct_replay_check
+// Gate 2: dct_replay_check (required or optional)
 // -----------------------------
 const dctReplay = path.join(portalDir, "scripts", "dct-replay-check.ts");
 
-if (exists(dctReplay)) {
-    console.log("[COUNCIL-RUN] Running dct-replay-check.ts (via portal tsx) …");
-    appendChat("GATE_START", "Starting dct_replay_check gate", 2);
+if (runReplay) {
+    if (exists(dctReplay)) {
+        console.log("[COUNCIL-RUN] Running dct-replay-check.ts (via portal tsx) …");
+        appendChat("GATE_START", "Starting dct_replay_check gate", 2);
 
-    let r;
-    if (process.platform === "win32") {
-        const cmdLine = `pnpm tsx scripts\\dct-replay-check.ts --file scripts\\fixtures\\dct-test-fixture.json`;
-        r = run("cmd.exe", ["/d", "/s", "/c", cmdLine], {
-            cwd: portalDir,
-            label: "dct_replay_check",
-            required: requiresReplay,
-            prettyCommand: `cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json`,
-        });
+        let r;
+        if (process.platform === "win32") {
+            const cmdLine = `pnpm tsx scripts\\dct-replay-check.ts --file scripts\\fixtures\\dct-test-fixture.json`;
+            r = run("cmd.exe", ["/d", "/s", "/c", cmdLine], {
+                cwd: portalDir,
+                label: "dct_replay_check",
+                required: requiresReplay,
+                prettyCommand: `cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json`,
+            });
+        } else {
+            r = run("pnpm", ["tsx", "scripts/dct-replay-check.ts", "--file", "scripts/fixtures/dct-test-fixture.json"], {
+                cwd: portalDir,
+                label: "dct_replay_check",
+                required: requiresReplay,
+                prettyCommand: `pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json`,
+            });
+        }
+
+        writeVerify(r.meta);
+
+        if (!r.ok && requiresReplay) console.error("[COUNCIL-RUN] dct_replay_check FAILED and is required.");
+        else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: dct_replay_check failed but is optional for this motion.");
     } else {
-        r = run("pnpm", ["tsx", "scripts/dct-replay-check.ts", "--file", "scripts/fixtures/dct-test-fixture.json"], {
-            cwd: portalDir,
-            label: "dct_replay_check",
+        appendChat("GATE_SKIP", "dct_replay_check script missing", 2);
+        const gateResult = {
+            gate: "dct_replay_check",
+            started: nowIso(),
+            finished: nowIso(),
+            ok: false,
+            status: 1,
+            command: "missing: portal/scripts/dct-replay-check.ts",
+            cwd: "portal",
             required: requiresReplay,
-            prettyCommand: `pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json`,
-        });
+            stdout_tail: "",
+            stderr_tail: "script_missing",
+        };
+        writeVerify(gateResult);
+        if (requiresReplay) console.error("[COUNCIL-RUN] dct_replay_check is required but script is missing.");
+        console.warn("[COUNCIL-RUN] WARN: portal/scripts/dct-replay-check.ts not found — skipping.");
     }
-
-    writeVerify(r.meta);
-
-    if (!r.ok && requiresReplay) console.error("[COUNCIL-RUN] dct_replay_check FAILED and is required.");
-    else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: dct_replay_check failed but is not required by this motion.");
-} else {
-    appendChat("GATE_SKIP", "dct_replay_check script missing", 2);
-    const gateResult = {
-        gate: "dct_replay_check",
-        started: nowIso(),
-        finished: nowIso(),
-        ok: false,
-        status: 1,
-        command: "missing: portal/scripts/dct-replay-check.ts",
-        cwd: "portal",
-        required: requiresReplay,
-        stdout_tail: "",
-        stderr_tail: "script_missing",
-    };
-    writeVerify(gateResult);
-    if (requiresReplay) console.error("[COUNCIL-RUN] dct_replay_check is required but script is missing.");
-    console.warn("[COUNCIL-RUN] WARN: portal/scripts/dct-replay-check.ts not found — skipping.");
 }
 
 // -----------------------------
-// Gate 3: execution_patch_exists
+// Gate 3: execution_patch_exists (required or optional)
 // -----------------------------
 const executionPatchPath = path.join(motionDir, "execution.patch");
 const hasPatch = exists(executionPatchPath) && readText(executionPatchPath).trim().length > 0;
 
-if (requiresPatch) {
+if (runPatch) {
     console.log("[COUNCIL-RUN] Running execution_patch_exists …");
     appendChat("GATE_START", "Checking if execution.patch exists and is non-empty", 2);
 
@@ -407,19 +428,20 @@ if (requiresPatch) {
         status: hasPatch ? 0 : 1,
         command: `check-file ${path.relative(repoRoot, executionPatchPath)}`,
         cwd: ".",
-        required: true,
+        required: requiresPatch,
         stdout_tail: "",
         stderr_tail: hasPatch ? "" : "missing_or_empty_execution.patch",
     };
     writeVerify(gateResult);
 
-    if (!hasPatch) console.error("[COUNCIL-RUN] execution.patch is missing or empty.");
+    if (!hasPatch && requiresPatch) console.error("[COUNCIL-RUN] execution.patch is missing or empty (required).");
+    else if (!hasPatch) console.warn("[COUNCIL-RUN] NOTE: execution.patch missing/empty but gate is optional.");
 }
 
 // -----------------------------
-// Gate 4: patch_apply_check
+// Gate 4: patch_apply_check (required or optional)
 // -----------------------------
-if (requiresApply) {
+if (runApply) {
     console.log("[COUNCIL-RUN] Running patch_apply_check (git apply --check) …");
     appendChat("GATE_START", "Running git apply --check execution.patch", 2);
 
@@ -432,27 +454,30 @@ if (requiresApply) {
             status: 1,
             command: `git apply --check ${path.relative(repoRoot, executionPatchPath)}`,
             cwd: ".",
-            required: true,
+            required: requiresApply,
             stdout_tail: "",
             stderr_tail: "no_execution.patch_present",
         };
         writeVerify(gateResult);
-        console.error("[COUNCIL-RUN] patch_apply_check required but execution.patch missing/empty.");
+
+        if (requiresApply) console.error("[COUNCIL-RUN] patch_apply_check required but execution.patch missing/empty.");
+        else console.warn("[COUNCIL-RUN] NOTE: patch_apply_check failed due to missing patch but gate is optional.");
     } else {
         const r = run("git", ["apply", "--check", path.relative(repoRoot, executionPatchPath)], {
             label: "patch_apply_check",
-            required: true,
+            required: requiresApply,
             prettyCommand: `git apply --check ${path.relative(repoRoot, executionPatchPath)}`,
         });
         writeVerify(r.meta);
-        if (!r.ok) console.error("[COUNCIL-RUN] patch_apply_check failed (patch does not apply cleanly).");
+        if (!r.ok && requiresApply) console.error("[COUNCIL-RUN] patch_apply_check failed (required).");
+        else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: patch_apply_check failed but gate is optional.");
     }
 }
 
 // -----------------------------
-// Gate 5: typecheck
+// Gate 5: typecheck (required or optional)
 // -----------------------------
-if (requiresTypecheck) {
+if (runTypecheck) {
     console.log("[COUNCIL-RUN] Running typecheck (pnpm -C portal typecheck) …");
     appendChat("GATE_START", "Running pnpm typecheck", 2);
 
@@ -460,27 +485,40 @@ if (requiresTypecheck) {
     if (process.platform === "win32") {
         r = run("cmd.exe", ["/d", "/s", "/c", "pnpm -C portal typecheck"], {
             label: "typecheck",
-            required: true,
+            required: requiresTypecheck,
             prettyCommand: "pnpm -C portal typecheck",
         });
     } else {
         r = run("pnpm", ["-C", "portal", "typecheck"], {
             label: "typecheck",
-            required: true,
+            required: requiresTypecheck,
             prettyCommand: "pnpm -C portal typecheck",
         });
     }
 
     writeVerify(r.meta);
-    if (!r.ok) console.error("[COUNCIL-RUN] typecheck FAILED.");
+    if (!r.ok && requiresTypecheck) console.error("[COUNCIL-RUN] typecheck FAILED (required).");
+    else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: typecheck failed but gate is optional.");
 }
 
+// -----------------------------
+// Gate lists for policy
+// -----------------------------
 function requiredGateList() {
-    const gates = ["validate_agency"];
+    const gates = ["validate_agency"]; // always required
     if (requiresReplay) gates.push("dct_replay_check");
     if (requiresPatch) gates.push("execution_patch_exists");
     if (requiresApply) gates.push("patch_apply_check");
     if (requiresTypecheck) gates.push("typecheck");
+    return gates;
+}
+
+function optionalGateList() {
+    const gates = [];
+    if (!requiresReplay && optionalReplay) gates.push("dct_replay_check");
+    if (!requiresPatch && optionalPatch) gates.push("execution_patch_exists");
+    if (!requiresApply && optionalApply) gates.push("patch_apply_check");
+    if (!requiresTypecheck && optionalTypecheck) gates.push("typecheck");
     return gates;
 }
 
@@ -497,43 +535,60 @@ const maxRiskScore = maxRiskMatch ? Number(maxRiskMatch[1]) : 0.2;
 
 const scoreboard = safeReadJsonFile(verifyPath, { latest: {} });
 const gates = scoreboard.latest || {};
-const required_gates = requiredGateList();
-const failed_required_gates = required_gates.filter(g => !gates[g] || gates[g].ok === false).sort();
-const required_ok = failed_required_gates.length === 0;
 
+const required_gates = requiredGateList();
+const optional_gates = optionalGateList();
+
+const failed_required_gates = required_gates.filter((g) => !gates[g] || gates[g].ok === false).sort();
+const failed_optional_gates = optional_gates.filter((g) => !gates[g] || gates[g].ok === false).sort();
+
+const required_ok = failed_required_gates.length === 0;
 const eligible_to_vote = required_ok;
+
 const low_risk = riskScore <= maxRiskScore;
-const recommended_vote = (eligible_to_vote && low_risk) ? "yes" : "no";
+const recommended_vote = eligible_to_vote && low_risk ? "yes" : "no";
 
 const blocking_reasons = [];
 if (!required_ok) blocking_reasons.push(`Missing/Failed required gates: ${failed_required_gates.join(", ")}`);
 if (!low_risk) blocking_reasons.push(`Risk score ${riskScore.toFixed(2)} exceeds threshold ${maxRiskScore.toFixed(2)}`);
+
+const warnings = [];
+if (failed_optional_gates.length > 0) warnings.push(`Optional gates failed: ${failed_optional_gates.join(", ")}`);
 
 const policyTemplate = `motion_id: ${motionId}
 evaluated_at: "${nowIso()}"
 risk_score: ${riskScore.toFixed(2)}
 max_risk_score: ${maxRiskScore.toFixed(2)}
 required_gates: [${required_gates.join(", ")}]
+optional_gates: [${optional_gates.join(", ")}]
 failed_required_gates: [${failed_required_gates.join(", ")}]
+failed_optional_gates: [${failed_optional_gates.join(", ")}]
 required_ok: ${required_ok}
 eligible_to_vote: ${eligible_to_vote}
 recommended_vote: "${recommended_vote}"
-blocking_reasons: [${blocking_reasons.map(r => `"${r}"`).join(", ")}]
+blocking_reasons: [${blocking_reasons.map((r) => `"${r}"`).join(", ")}]
+warnings: [${warnings.map((w) => `"${w}"`).join(", ")}]
 `;
 
-// Idempotent policy write (regex-based check to avoid timestamp churn)
 function writePolicyIfChanged(text) {
     if (exists(policyPath)) {
         const old = readText(policyPath);
-        // Compare everything except evaluated_at line
         const oldNoTs = old.replace(/^evaluated_at:.*$\n/m, "");
         const newNoTs = text.replace(/^evaluated_at:.*$\n/m, "");
         if (oldNoTs === newNoTs) return;
     }
     fs.writeFileSync(policyPath, text, "utf8");
 }
+
 writePolicyIfChanged(policyTemplate);
-appendChat("POLICY_EVAL", `Policy evaluation: eligible=${eligible_to_vote}, recommended="${recommended_vote}", blockers=[${blocking_reasons.join("; ")}]`, 1);
+
+appendChat(
+    "POLICY_EVAL",
+    `Policy evaluation: eligible=${eligible_to_vote}, recommended="${recommended_vote}", blockers=[${blocking_reasons.join(
+        "; "
+    )}], warnings=[${warnings.join("; ")}]`,
+    1
+);
 
 // -----------------------------
 // Stage 6: Voting
@@ -551,16 +606,16 @@ if (!voteData && autoRatifyEnabled && recommended_vote === "yes" && eligible_to_
                 tier: 0,
                 vote: "yes",
                 rationale: "Auto-ratify threshold met",
-                ts: nowIso()
-            }
+                ts: nowIso(),
+            },
         ],
         outcome: {
             yes: 1,
             no: 0,
             abstain: 0,
-            result: "PASS"
+            result: "PASS",
         },
-        last_updated: nowIso()
+        last_updated: nowIso(),
     };
     atomicWriteJsonIfChanged(votePath, voteData);
 }
@@ -580,7 +635,7 @@ status: ${st}
 ratified_by: ${ratBy ?? "null"}
 required_gates: [${required_gates.join(", ")}]
 last_updated: "${nowIso()}"
-notes: "${notes ?? `Outcome determined by council-run.mjs v0.3`}"
+notes: "${notes ?? "Outcome determined by council-run.mjs v0.3"}"
 `;
 
 function writeDecisionIfChanged(st, ratBy, notes) {
@@ -602,8 +657,10 @@ let notes = getYamlScalar(decisionYaml, "notes");
 if (currentStatus === "DRAFT" || currentStatus === "PROPOSED") {
     if (voteResult === "PASS" && eligible_to_vote) {
         nextStatus = "RATIFIED";
-        ratifiedBy = voteData.votes.find(v => v.vote === "yes")?.voter_id || "voter";
-        notes = "Ratified via protocol v0.3 (policy PASS + vote PASS)";
+        ratifiedBy = voteData?.votes?.find((v) => v.vote === "yes")?.voter_id || "voter";
+
+        if (warnings.length > 0) notes = `RATIFIED: ${warnings.join("; ")}`;
+        else notes = "RATIFIED: policy PASS + vote PASS";
     } else if (blocking_reasons.length > 0) {
         notes = `BLOCKED: ${blocking_reasons.join("; ")}`;
     }
@@ -613,9 +670,7 @@ writeDecisionIfChanged(nextStatus, ratifiedBy, notes);
 console.log(`[COUNCIL-RUN] Decision status: ${nextStatus}`);
 
 appendChat("DECISION", `Motion ${motionId} status is ${nextStatus}`, 0);
-if (nextStatus === "RATIFIED") {
-    appendChat("VOTE_RESULT", `Vote PASSED for motion ${motionId}`, 0);
-}
+if (nextStatus === "RATIFIED") appendChat("VOTE_RESULT", `Vote PASSED for motion ${motionId}`, 0);
 
 // -----------------------------
 // Run trace bundle (gitignored)
@@ -641,7 +696,8 @@ const runTrace = {
     policy: {
         eligible_to_vote,
         recommended_vote,
-        blocking_reasons
+        blocking_reasons,
+        warnings,
     },
     vote: voteData?.outcome,
     excerpts: {
