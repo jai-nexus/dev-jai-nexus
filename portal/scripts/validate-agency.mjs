@@ -2,17 +2,24 @@
 //
 // Registry-backed agency validator (Council Pivot).
 //
-// Validates that nexus-core registry indexes define required Council seats:
-// - Tier 0: global seats (steward/challenger/arbiter/meta_analyst/librarian)
-// - Tier 1: domain seats for dev.jai.nexus (proposer/executor/challenger/arbiter)
-// - Tier 2: repo seats for dev-jai-nexus (proposer/executor/challenger/arbiter)
+// What this validates:
 //
-// Optional: validates local agency config (NOT agent identities), e.g. council_dir/motion_dir.
+// 1) agents.index.json structural integrity:
+//    - version, generated_at, global, by_domain, by_repo
+//    - Tier 0 seats present: steward/challenger/arbiter/meta_analyst/librarian
+//    - Tier 1 domain seats present for --domain (default dev.jai.nexus)
+//    - Tier 2 repo seats present for --repo (default dev-jai-nexus)
+//
+// 2) Seat IDs resolve to real agents in agents.generated.yaml (optional but enabled by default):
+//    - Loads registry/agents.generated.yaml adjacent to agents.index.json
+//    - Confirms every seat agent_id exists in that YAML
 //
 // Usage:
 //   node portal/scripts/validate-agency.mjs
-//   node portal/scripts/validate-agency.mjs --index ../../workspace/jai-nexus/nexus-core/registry/agents.index.json
+//   node portal/scripts/validate-agency.mjs --verbose
+//   node portal/scripts/validate-agency.mjs --index workspace/jai-nexus/nexus-core/registry/agents.index.json
 //   node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus
+//   node portal/scripts/validate-agency.mjs --no-yaml   (skip agents.generated.yaml cross-check)
 //
 // Exit codes:
 //   0 = OK
@@ -22,6 +29,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const yaml = require("yaml");
 
 // ---- args -----------------------------------------------------------------
 
@@ -31,6 +42,7 @@ function parseArgs(argv) {
         domain: "dev.jai.nexus",
         repo: "dev-jai-nexus",
         verbose: false,
+        yamlCheck: true, // cross-check seat IDs exist in agents.generated.yaml
     };
 
     for (let i = 2; i < argv.length; i++) {
@@ -49,6 +61,10 @@ function parseArgs(argv) {
         }
         if (a === "--verbose") {
             args.verbose = true;
+            continue;
+        }
+        if (a === "--no-yaml") {
+            args.yamlCheck = false;
             continue;
         }
     }
@@ -84,6 +100,15 @@ function readJson(filePath) {
     }
 }
 
+function readYaml(filePath) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    try {
+        return yaml.parse(raw);
+    } catch (e) {
+        throw new Error(`Failed to parse YAML at ${filePath}: ${e?.message || e}`);
+    }
+}
+
 function fileExists(p) {
     try {
         fs.accessSync(p, fs.constants.R_OK);
@@ -94,13 +119,11 @@ function fileExists(p) {
 }
 
 // Try a handful of likely locations for nexus-core registry indexes.
-// We deliberately keep this simple and deterministic.
+// Kept deterministic to avoid "magic" scanning.
 function findAgentsIndex(explicitPath) {
     if (explicitPath) {
         const abs = path.resolve(process.cwd(), explicitPath);
-        if (!fileExists(abs)) {
-            die(`Missing agents.index.json at --index path: ${abs}`);
-        }
+        if (!fileExists(abs)) die(`Missing agents.index.json at --index path: ${abs}`);
         return abs;
     }
 
@@ -111,7 +134,7 @@ function findAgentsIndex(explicitPath) {
         path.resolve(process.cwd(), "../workspace/jai-nexus/nexus-core/registry/agents.index.json"),
         // when run from portal/scripts directly
         path.resolve(process.cwd(), "../../workspace/jai-nexus/nexus-core/registry/agents.index.json"),
-        // in case you mirror nexus-core differently
+        // alternate mirror patterns
         path.resolve(process.cwd(), "workspace/nexus-core/registry/agents.index.json"),
         path.resolve(process.cwd(), "../workspace/nexus-core/registry/agents.index.json"),
     ];
@@ -133,14 +156,75 @@ function assertHas(obj, key, where) {
 }
 
 function assertSeat(seatsObj, seat, where) {
-    if (!seatsObj || typeof seatsObj !== "object") {
-        die(`${where} is missing or not an object.`);
-    }
+    if (!seatsObj || typeof seatsObj !== "object") die(`${where} is missing or not an object.`);
     const v = seatsObj[seat];
-    if (!isNonEmptyString(v)) {
-        die(`${where} missing seat '${seat}' or value is not a string.`);
-    }
+    if (!isNonEmptyString(v)) die(`${where} missing seat '${seat}' or value is not a string.`);
     return v;
+}
+
+function collectSeatIds(idx, domainKey, repoKey) {
+    const seatIds = [];
+
+    // Tier 0
+    const globalSeats = idx.global;
+    const globalRequired = ["steward", "challenger", "arbiter", "meta_analyst", "librarian"];
+    for (const s of globalRequired) seatIds.push(assertSeat(globalSeats, s, "agents.index.json.global"));
+
+    // Tier 1
+    const dom = idx.by_domain?.[domainKey];
+    if (!dom) die(`agents.index.json.by_domain missing domain '${domainKey}'.`);
+    if (!isNonEmptyString(dom.engine)) die(`by_domain['${domainKey}'].engine missing or invalid.`);
+    if (typeof dom.auto_ratify !== "boolean") die(`by_domain['${domainKey}'].auto_ratify missing or not boolean.`);
+
+    const tierSeats = ["proposer", "executor", "challenger", "arbiter"];
+    for (const s of tierSeats) seatIds.push(assertSeat(dom, s, `agents.index.json.by_domain['${domainKey}']`));
+
+    // Tier 2
+    const repo = idx.by_repo?.[repoKey];
+    if (!repo) die(`agents.index.json.by_repo missing repo '${repoKey}'.`);
+    if (!isNonEmptyString(repo.primary_domain)) die(`by_repo['${repoKey}'].primary_domain missing or invalid.`);
+    if (!Array.isArray(repo.secondary_domains)) die(`by_repo['${repoKey}'].secondary_domains missing or not array.`);
+    if (!isNonEmptyString(repo.engine)) die(`by_repo['${repoKey}'].engine missing or invalid.`);
+    if (typeof repo.external !== "boolean") die(`by_repo['${repoKey}'].external missing or not boolean.`);
+    if (typeof repo.apply !== "boolean") die(`by_repo['${repoKey}'].apply missing or not boolean.`);
+
+    for (const s of tierSeats) seatIds.push(assertSeat(repo, s, `agents.index.json.by_repo['${repoKey}']`));
+
+    // Consistency warning only
+    if (repo.primary_domain !== domainKey) {
+        warn(
+            `Repo '${repoKey}' primary_domain is '${repo.primary_domain}' but validator domain is '${domainKey}'. ` +
+            "This may be intentional; if not, fix repos.yaml in nexus-core."
+        );
+    }
+
+    return { seatIds, dom, repo };
+}
+
+function loadAgentsGeneratedIdSet(indexPath) {
+    // Expect agents.generated.yaml adjacent to agents.index.json
+    const registryDir = path.dirname(indexPath);
+    const yamlPath = path.join(registryDir, "agents.generated.yaml");
+    if (!fileExists(yamlPath)) {
+        die(
+            `Missing agents.generated.yaml next to agents.index.json.\n` +
+            `Expected: ${yamlPath}\n` +
+            `If you intentionally don't want this check, run with --no-yaml.`
+        );
+    }
+
+    const doc = readYaml(yamlPath);
+    if (!doc || typeof doc !== "object") die(`agents.generated.yaml root must be an object: ${yamlPath}`);
+    if (!Array.isArray(doc.agents)) die(`agents.generated.yaml must contain 'agents' array: ${yamlPath}`);
+
+    const set = new Set();
+    for (const a of doc.agents) {
+        const id = a?.agent_id;
+        if (isNonEmptyString(id)) set.add(id);
+    }
+
+    if (set.size === 0) die(`agents.generated.yaml produced 0 agent IDs: ${yamlPath}`);
+    return { yamlPath, idSet: set, count: doc.agents.length };
 }
 
 // ---- main -----------------------------------------------------------------
@@ -159,61 +243,24 @@ function assertSeat(seatsObj, seat, where) {
         assertHas(idx, "by_domain", "agents.index.json");
         assertHas(idx, "by_repo", "agents.index.json");
 
-        // Tier 0 (global seats)
-        const globalSeats = idx.global;
-        const globalRequired = ["steward", "challenger", "arbiter", "meta_analyst", "librarian"];
-        for (const s of globalRequired) {
-            assertSeat(globalSeats, s, "agents.index.json.global");
-        }
+        const { seatIds, dom, repo } = collectSeatIds(idx, args.domain, args.repo);
 
-        // Tier 1 (domain seats)
-        const dom = idx.by_domain?.[args.domain];
-        if (!dom) {
-            die(`agents.index.json.by_domain missing domain '${args.domain}'.`);
-        }
-        // optional metadata checks
-        if (!isNonEmptyString(dom.engine)) {
-            die(`by_domain['${args.domain}'].engine missing or invalid.`);
-        }
-        if (typeof dom.auto_ratify !== "boolean") {
-            die(`by_domain['${args.domain}'].auto_ratify missing or not boolean.`);
-        }
-        const domainRequired = ["proposer", "executor", "challenger", "arbiter"];
-        for (const s of domainRequired) {
-            assertSeat(dom, s, `agents.index.json.by_domain['${args.domain}']`);
-        }
+        // Cross-check seat IDs exist in agents.generated.yaml
+        let yamlInfo = null;
+        if (args.yamlCheck) {
+            const { yamlPath, idSet, count } = loadAgentsGeneratedIdSet(indexPath);
 
-        // Tier 2 (repo seats)
-        const repo = idx.by_repo?.[args.repo];
-        if (!repo) {
-            die(`agents.index.json.by_repo missing repo '${args.repo}'.`);
-        }
-        if (!isNonEmptyString(repo.primary_domain)) {
-            die(`by_repo['${args.repo}'].primary_domain missing or invalid.`);
-        }
-        if (!Array.isArray(repo.secondary_domains)) {
-            die(`by_repo['${args.repo}'].secondary_domains missing or not array.`);
-        }
-        if (!isNonEmptyString(repo.engine)) {
-            die(`by_repo['${args.repo}'].engine missing or invalid.`);
-        }
-        if (typeof repo.external !== "boolean") {
-            die(`by_repo['${args.repo}'].external missing or not boolean.`);
-        }
-        if (typeof repo.apply !== "boolean") {
-            die(`by_repo['${args.repo}'].apply missing or not boolean.`);
-        }
+            const missing = seatIds.filter((id) => !idSet.has(id));
+            if (missing.length) {
+                die(
+                    `Seat IDs present in agents.index.json but missing from agents.generated.yaml (${path.relative(
+                        process.cwd(),
+                        yamlPath
+                    )}):\n - ${missing.join("\n - ")}`
+                );
+            }
 
-        for (const s of domainRequired) {
-            assertSeat(repo, s, `agents.index.json.by_repo['${args.repo}']`);
-        }
-
-        // Consistency: repo.primary_domain should match requested domain (strong signal)
-        if (repo.primary_domain !== args.domain) {
-            warn(
-                `Repo '${args.repo}' primary_domain is '${repo.primary_domain}' but validator domain is '${args.domain}'. ` +
-                "This may be intentional; if not, fix repos.yaml in nexus-core."
-            );
+            yamlInfo = { yamlPath, count };
         }
 
         // Summary
@@ -224,6 +271,12 @@ function assertSeat(seatsObj, seat, where) {
         console.log("   Tier 0 (global): OK");
         console.log("   Tier 1 (domain): OK");
         console.log("   Tier 2 (repo): OK");
+
+        if (yamlInfo) {
+            console.log(`   agents.generated.yaml: OK (${path.relative(process.cwd(), yamlInfo.yamlPath)}; ${yamlInfo.count} agents)`);
+        } else {
+            console.log("   agents.generated.yaml: SKIPPED (--no-yaml)");
+        }
 
         if (args.verbose) {
             console.log("");
