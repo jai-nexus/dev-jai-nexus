@@ -1,6 +1,7 @@
+protocol_version: "0.3.3"
 motion_id: motion-0003
 status: RATIFIED
 ratified_by: auto
 required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
-last_updated: "2026-02-27T17:58:53.104Z"
-notes: "RATIFIED: Optional gates failed: typecheck"
+last_updated: "2026-02-27T20:13:58.308Z"
+notes: "RATIFIED: policy PASS + vote PASS"

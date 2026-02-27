@@ -1,19 +1,32 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.3 (One Constitution Upgrade)
- * Executes a motion using file-based artifacts plus a tiered governance loop.
+ * Council Runner v0.3.3 (Tiered Council + Scoreboard + Stable Artifacts)
+ *
+ * Executes a motion using file-based artifacts plus a governance loop.
  * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
  *
- * v0.3 Changes:
+ * v0.3:
  * - Explicit Policy stage: Generates policy.yaml (risk vs gates)
  * - Explicit Vote stage: Supports manual or auto vote.json
- * - Protocol Enforcement: Ratification requires PASS vote and ELIGIBLE policy.
- * - Idempotency: Avoids updating timestamps if content is unchanged.
+ * - Protocol enforcement: ratification requires PASS vote and eligible policy
+ * - Idempotency: avoids updating timestamps if content is unchanged
  *
- * v0.3.1 (Optional Gates):
+ * v0.3.1:
  * - Supports checks_optional in motion.yaml
  * - Optional gates run + are logged, but do NOT block eligibility/ratification
  * - Policy emits warnings for optional failures
+ *
+ * v0.3.2:
+ * - Stronger parsing for checks_required/checks_optional (no greedy regex)
+ * - validate_agency ALWAYS required and always included in required_gates
+ * - Adds protocol_version to policy.yaml + decision.yaml (idempotent comparisons ignore timestamps)
+ * - Cleaner verify.json merging: equality ignores ts; ts only updates when entry changes
+ *
+ * v0.3.3:
+ * - Decision refresh: even if status already RATIFIED/BLOCKED, update notes/ratified_by when computed outcome changes
+ * - More robust auto_ratify + max_risk_score parsing
+ * - Policy/Decision idempotency ignores evaluated_at/last_updated so repeated runs don’t churn
+ * - Gate list parsing supports inline lists and YAML-ish booleans for auto_ratify.enabled
  */
 
 import fs from "node:fs";
@@ -21,69 +34,30 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
+const PROTOCOL_VERSION = "0.3.3";
+
+// -----------------------------
+// tiny utils
+// -----------------------------
 function die(msg) {
     console.error(`\n[COUNCIL-RUN] ERROR: ${msg}\n`);
     process.exit(1);
 }
-
 function exists(p) {
     return fs.existsSync(p);
 }
-
 function ensureDir(p) {
     fs.mkdirSync(p, { recursive: true });
 }
-
 function readText(p) {
     return fs.readFileSync(p, "utf8");
 }
-
 function writeTextIfMissing(p, contents) {
     if (!exists(p)) fs.writeFileSync(p, contents, "utf8");
 }
-
 function nowIso() {
     return new Date().toISOString();
 }
-
-/** Idempotent writers */
-function writeTextIfChanged(p, text) {
-    if (exists(p)) {
-        const old = readText(p);
-        if (old === text) return false;
-    }
-    fs.writeFileSync(p, text, "utf8");
-    return true;
-}
-
-function atomicWriteJsonIfChanged(p, obj) {
-    const text = JSON.stringify(obj, null, 2);
-    if (exists(p) && readText(p) === text) return false;
-    const tmp = `${p}.tmp`;
-    fs.writeFileSync(tmp, text, "utf8");
-    fs.renameSync(tmp, p);
-    return true;
-}
-
-function getYamlScalar(yamlText, key) {
-    const re = new RegExp(`^\\s*${key}:\\s*(.+)\\s*$`, "m");
-    const m = yamlText.match(re);
-    return m ? m[1].trim().replace(/^"|"$/g, "") : null;
-}
-
-function summarizeFile(p, maxChars = 1200) {
-    if (!exists(p)) return null;
-    const t = readText(p);
-    return t.length > maxChars ? t.slice(0, maxChars) + "\n…(truncated)…" : t;
-}
-
-function parseRiskScore(challengeText) {
-    const m = challengeText.match(/risk_score:\s*([0-9.]+)/i);
-    if (!m) return 0.0;
-    const n = Number(m[1]);
-    return Number.isFinite(n) ? n : 0.0;
-}
-
 function safeReadJsonFile(p, fallback) {
     if (!exists(p)) return fallback;
     try {
@@ -97,7 +71,66 @@ function safeReadJsonFile(p, fallback) {
         return fallback;
     }
 }
+function atomicWriteJsonIfChanged(p, obj) {
+    const text = JSON.stringify(obj, null, 2);
+    if (exists(p) && readText(p) === text) return false;
+    const tmp = `${p}.tmp`;
+    fs.writeFileSync(tmp, text, "utf8");
+    fs.renameSync(tmp, p);
+    return true;
+}
+function getYamlScalar(yamlText, key) {
+    const re = new RegExp(`^\\s*${key}:\\s*(.+)\\s*$`, "m");
+    const m = yamlText.match(re);
+    return m ? m[1].trim().replace(/^"|"$/g, "") : null;
+}
+function summarizeFile(p, maxChars = 1200) {
+    if (!exists(p)) return null;
+    const t = readText(p);
+    return t.length > maxChars ? t.slice(0, maxChars) + "\n…(truncated)…" : t;
+}
+function parseRiskScore(challengeText) {
+    const m = challengeText.match(/risk_score:\s*([0-9.]+)/i);
+    if (!m) return 0.0;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : 0.0;
+}
 
+function normalizeTextForCompare(t) {
+    // normalize CRLF, trim trailing whitespace per-line, and trim trailing newlines
+    return t
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map((l) => l.replace(/[ \t]+$/g, ""))
+        .join("\n")
+        .trimEnd();
+}
+
+// Normalize for idempotent compares
+function stripYamlLine(yamlText, key) {
+    const re = new RegExp(`^\\s*${key}:.*\\n`, "m");
+    return yamlText.replace(re, "");
+}
+function stripYamlLines(yamlText, keys) {
+    let out = yamlText;
+    for (const k of keys) out = stripYamlLine(out, k);
+    return out;
+}
+function writeYamlIfChangedIgnoringKeys(filePath, nextText, ignoreKeys) {
+    const next = normalizeTextForCompare(nextText) + "\n"; // ensure final newline is stable
+    if (exists(filePath)) {
+        const old = normalizeTextForCompare(readText(filePath));
+        const oldNorm = normalizeTextForCompare(stripYamlLines(old, ignoreKeys));
+        const nextNorm = normalizeTextForCompare(stripYamlLines(next, ignoreKeys));
+        if (oldNorm === nextNorm) return false;
+    }
+    fs.writeFileSync(filePath, next, "utf8");
+    return true;
+}
+
+// -----------------------------
+// run gate helper
+// -----------------------------
 function run(cmd, args, { cwd, label, required, prettyCommand } = {}) {
     const started = nowIso();
     const res = spawnSync(cmd, args, { stdio: "pipe", shell: false, cwd });
@@ -132,7 +165,7 @@ function run(cmd, args, { cwd, label, required, prettyCommand } = {}) {
 }
 
 // -----------------------------
-// Main
+// main
 // -----------------------------
 const motionId = process.argv[2];
 if (!motionId) die("Missing motion id. Example: pnpm council:run motion-0001");
@@ -154,7 +187,6 @@ const runId = Date.now().toString(36);
 function appendJsonl(p, obj) {
     fs.appendFileSync(p, JSON.stringify(obj) + "\n", "utf8");
 }
-
 function appendChat(kind, body, tier = 2, agentId = "council-runner") {
     const event = {
         ts: nowIso(),
@@ -167,7 +199,6 @@ function appendChat(kind, body, tier = 2, agentId = "council-runner") {
     };
     appendJsonl(path.join(traceDir, "chat.jsonl"), event);
 }
-
 function appendVerifyHistory(gateMeta) {
     const duration_ms =
         gateMeta.finished && gateMeta.started
@@ -215,7 +246,7 @@ const verifyPath = path.join(motionDir, "verify.json");
 
 const runTracePath = path.join(traceDir, `motion.${motionId}.run.${runId}.json`);
 
-appendChat("RUNNER_START", `Council runner v0.3 started for motion ${motionId}`, 0);
+appendChat("RUNNER_START", `Council runner v${PROTOCOL_VERSION} started for motion ${motionId}`, 0);
 
 // Seed empty artifacts if missing
 writeTextIfMissing(
@@ -235,33 +266,83 @@ console.log(`\n[COUNCIL-RUN] Motion: ${motionId}`);
 console.log(`[COUNCIL-RUN] Title: ${title}`);
 console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}\n`);
 
-function listHasGate(listKey, gateId) {
-    const lines = motionYaml.split(/\r?\n/);
+// -----------------------------
+// Robust parsing of motion.yaml controls
+// -----------------------------
+function parseYamlListKeys(yamlText, listKey) {
+    const lines = yamlText.split(/\r?\n/);
+    const out = [];
+
+    // supports:
+    // checks_required:
+    //   - a
+    //   - b
+    // and also:
+    // checks_required: [a, b]
+    const inline = yamlText.match(new RegExp(`^\\s*${listKey}:\\s*\\[(.*)\\]\\s*$`, "m"));
+    if (inline && inline[1] != null) {
+        return inline[1]
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
+    }
+
     let inList = false;
-    for (const line of lines) {
+    for (const raw of lines) {
+        const line = raw.replace(/\t/g, "  ");
         const trimmed = line.trim();
         if (!trimmed) continue;
-        if (new RegExp(`^${listKey}:`, "i").test(trimmed)) {
+
+        if (new RegExp(`^${listKey}:\\s*$`, "i").test(trimmed)) {
             inList = true;
             continue;
         }
-        if (inList) {
-            if (trimmed.startsWith("-")) {
-                if (new RegExp(`^-\\s*${gateId}\\s*$`).test(trimmed)) return true;
-            } else if (/\w+:/.test(trimmed)) {
-                inList = false;
-            }
+
+        if (inList && /^[A-Za-z0-9_-]+:\s*/.test(trimmed) && !trimmed.startsWith("-")) {
+            inList = false;
+        }
+
+        if (!inList) continue;
+
+        if (trimmed.startsWith("-")) {
+            const v = trimmed.replace(/^-+\s*/, "").trim();
+            if (v) out.push(v);
         }
     }
-    return false;
+
+    return out;
+}
+
+function parseAutoRatifyEnabled(yamlText) {
+    const m = yamlText.match(/auto_ratify:\s*[\s\S]*?\benabled:\s*(true|false|1|0|"true"|"false")/i);
+    if (!m) return false;
+    const v = String(m[1]).replace(/"/g, "").toLowerCase();
+    return v === "true" || v === "1";
+}
+
+function parseMaxRiskScore(yamlText, fallback = 0.2) {
+    const m = yamlText.match(/max_risk_score:\s*([0-9.]+)/i);
+    if (!m) return fallback;
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : fallback;
+}
+
+const checksRequired = new Set(parseYamlListKeys(motionYaml, "checks_required"));
+const checksOptional = new Set(parseYamlListKeys(motionYaml, "checks_optional"));
+
+// validate_agency is ALWAYS required (even if absent)
+checksRequired.add("validate_agency");
+
+// If a gate exists in both, treat as required
+for (const g of checksOptional) {
+    if (checksRequired.has(g)) checksOptional.delete(g);
 }
 
 function motionRequires(gateId) {
-    return listHasGate("checks_required", gateId);
+    return checksRequired.has(gateId);
 }
-
 function motionOptional(gateId) {
-    return listHasGate("checks_optional", gateId);
+    return checksOptional.has(gateId);
 }
 
 // Required/Optional membership
@@ -293,7 +374,9 @@ function writeVerify(update) {
     });
 
     if (!base.latest || typeof base.latest !== "object") base.latest = {};
-    if (!base.summary || typeof base.summary !== "object") base.summary = { required_ok: true, last_updated: nowIso() };
+    if (!base.summary || typeof base.summary !== "object") {
+        base.summary = { required_ok: true, last_updated: nowIso() };
+    }
 
     const nextEntry = {
         gate: update.gate,
@@ -307,6 +390,7 @@ function writeVerify(update) {
 
     const prev = base.latest[update.gate];
 
+    // equality intentionally ignores ts
     const same =
         prev &&
         prev.ok === nextEntry.ok &&
@@ -354,8 +438,20 @@ if (exists(validateAgency)) {
     writeVerify(r.meta);
     if (!r.ok) console.error("[COUNCIL-RUN] validate_agency FAILED.");
 } else {
-    console.warn("[COUNCIL-RUN] WARN: portal/scripts/validate-agency.mjs not found — skipping.");
     appendChat("GATE_SKIP", "validate_agency script missing", 2);
+    writeVerify({
+        gate: "validate_agency",
+        started: nowIso(),
+        finished: nowIso(),
+        ok: false,
+        status: 1,
+        command: "missing: portal/scripts/validate-agency.mjs",
+        cwd: ".",
+        required: true,
+        stdout_tail: "",
+        stderr_tail: "script_missing",
+    });
+    die("portal/scripts/validate-agency.mjs not found (validate_agency is required).");
 }
 
 // -----------------------------
@@ -498,7 +594,7 @@ if (runTypecheck) {
 
     writeVerify(r.meta);
     if (!r.ok && requiresTypecheck) console.error("[COUNCIL-RUN] typecheck FAILED (required).");
-    else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: typecheck failed but gate is optional.");
+    else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: typecheck failed but is optional.");
 }
 
 // -----------------------------
@@ -512,7 +608,6 @@ function requiredGateList() {
     if (requiresTypecheck) gates.push("typecheck");
     return gates;
 }
-
 function optionalGateList() {
     const gates = [];
     if (!requiresReplay && optionalReplay) gates.push("dct_replay_check");
@@ -526,12 +621,12 @@ function optionalGateList() {
 // Stage 5: Policy Calculation
 // -----------------------------
 console.log("[COUNCIL-RUN] Calculating policy…");
+
 const challengeText = exists(challengePath) ? readText(challengePath) : "";
 const riskScore = parseRiskScore(challengeText);
 
-const autoRatifyEnabled = /auto_ratify:\s*\n\s*enabled:\s*true/i.test(motionYaml);
-const maxRiskMatch = motionYaml.match(/max_risk_score:\s*([0-9.]+)/i);
-const maxRiskScore = maxRiskMatch ? Number(maxRiskMatch[1]) : 0.2;
+const autoRatifyEnabled = parseAutoRatifyEnabled(motionYaml);
+const maxRiskScore = parseMaxRiskScore(motionYaml, 0.2);
 
 const scoreboard = safeReadJsonFile(verifyPath, { latest: {} });
 const gates = scoreboard.latest || {};
@@ -555,7 +650,8 @@ if (!low_risk) blocking_reasons.push(`Risk score ${riskScore.toFixed(2)} exceeds
 const warnings = [];
 if (failed_optional_gates.length > 0) warnings.push(`Optional gates failed: ${failed_optional_gates.join(", ")}`);
 
-const policyTemplate = `motion_id: ${motionId}
+const policyTemplate = `protocol_version: "${PROTOCOL_VERSION}"
+motion_id: ${motionId}
 evaluated_at: "${nowIso()}"
 risk_score: ${riskScore.toFixed(2)}
 max_risk_score: ${maxRiskScore.toFixed(2)}
@@ -566,21 +662,11 @@ failed_optional_gates: [${failed_optional_gates.join(", ")}]
 required_ok: ${required_ok}
 eligible_to_vote: ${eligible_to_vote}
 recommended_vote: "${recommended_vote}"
-blocking_reasons: [${blocking_reasons.map((r) => `"${r}"`).join(", ")}]
-warnings: [${warnings.map((w) => `"${w}"`).join(", ")}]
+blocking_reasons: [${blocking_reasons.map((r) => `"${r.replace(/"/g, '\\"')}"`).join(", ")}]
+warnings: [${warnings.map((w) => `"${w.replace(/"/g, '\\"')}"`).join(", ")}]
 `;
 
-function writePolicyIfChanged(text) {
-    if (exists(policyPath)) {
-        const old = readText(policyPath);
-        const oldNoTs = old.replace(/^evaluated_at:.*$\n/m, "");
-        const newNoTs = text.replace(/^evaluated_at:.*$\n/m, "");
-        if (oldNoTs === newNoTs) return;
-    }
-    fs.writeFileSync(policyPath, text, "utf8");
-}
-
-writePolicyIfChanged(policyTemplate);
+writeYamlIfChangedIgnoringKeys(policyPath, policyTemplate, ["evaluated_at"]);
 
 appendChat(
     "POLICY_EVAL",
@@ -625,48 +711,55 @@ console.log(`[COUNCIL-RUN] Vote result: ${voteResult}`);
 appendChat("VOTE_CHECK", `Vote check result: ${voteResult}`, 1);
 
 // -----------------------------
-// Stage 7: Ratification
+// Stage 7: Ratification (decision refresh)
 // -----------------------------
 const decisionYaml = exists(decisionPath) ? readText(decisionPath) : "";
 let currentStatus = getYamlScalar(decisionYaml, "status") || "DRAFT";
+let currentNotes = getYamlScalar(decisionYaml, "notes");
+let currentRatifiedBy = getYamlScalar(decisionYaml, "ratified_by");
+if (currentRatifiedBy === "null") currentRatifiedBy = null;
 
-const decisionTemplate = (st, ratBy, notes) => `motion_id: ${motionId}
+function computeDecisionOutcome() {
+    let nextStatus = currentStatus;
+
+    if (voteResult === "PASS" && eligible_to_vote) nextStatus = "RATIFIED";
+    else if (blocking_reasons.length > 0) nextStatus = "BLOCKED";
+    else if (currentStatus === "RATIFIED" || currentStatus === "BLOCKED") nextStatus = "PROPOSED";
+
+    let nextNotes;
+    if (nextStatus === "RATIFIED") {
+        nextNotes = warnings.length > 0 ? `RATIFIED: ${warnings.join("; ")}` : "RATIFIED: policy PASS + vote PASS";
+    } else if (nextStatus === "BLOCKED") {
+        nextNotes = blocking_reasons.length > 0 ? `BLOCKED: ${blocking_reasons.join("; ")}` : "BLOCKED";
+    } else if (voteResult === "PENDING") {
+        nextNotes = "PENDING: awaiting vote";
+    } else {
+        nextNotes = currentNotes ?? `Outcome determined by council-run.mjs v${PROTOCOL_VERSION}`;
+    }
+
+    let nextRatifiedBy = currentRatifiedBy;
+    if (nextStatus === "RATIFIED") {
+        nextRatifiedBy = voteData?.votes?.find((v) => v.vote === "yes")?.voter_id || nextRatifiedBy || "voter";
+    } else {
+        nextRatifiedBy = nextRatifiedBy ?? null;
+    }
+
+    return { nextStatus, nextRatifiedBy, nextNotes };
+}
+
+const { nextStatus, nextRatifiedBy, nextNotes } = computeDecisionOutcome();
+
+const decisionTemplate = (st, ratBy, note) => `protocol_version: "${PROTOCOL_VERSION}"
+motion_id: ${motionId}
 status: ${st}
 ratified_by: ${ratBy ?? "null"}
 required_gates: [${required_gates.join(", ")}]
 last_updated: "${nowIso()}"
-notes: "${notes ?? "Outcome determined by council-run.mjs v0.3"}"
+notes: "${String(note ?? `Outcome determined by council-run.mjs v${PROTOCOL_VERSION}`).replace(/"/g, '\\"')}"
 `;
 
-function writeDecisionIfChanged(st, ratBy, notes) {
-    const text = decisionTemplate(st, ratBy, notes);
-    if (exists(decisionPath)) {
-        const old = readText(decisionPath);
-        const oldNoTs = old.replace(/^last_updated:.*$\n/m, "");
-        const newNoTs = text.replace(/^last_updated:.*$\n/m, "");
-        if (oldNoTs === newNoTs) return;
-    }
-    fs.writeFileSync(decisionPath, text, "utf8");
-}
+writeYamlIfChangedIgnoringKeys(decisionPath, decisionTemplate(nextStatus, nextRatifiedBy, nextNotes), ["last_updated"]);
 
-let nextStatus = currentStatus;
-let ratifiedBy = getYamlScalar(decisionYaml, "ratified_by");
-if (ratifiedBy === "null") ratifiedBy = null;
-let notes = getYamlScalar(decisionYaml, "notes");
-
-if (currentStatus === "DRAFT" || currentStatus === "PROPOSED") {
-    if (voteResult === "PASS" && eligible_to_vote) {
-        nextStatus = "RATIFIED";
-        ratifiedBy = voteData?.votes?.find((v) => v.vote === "yes")?.voter_id || "voter";
-
-        if (warnings.length > 0) notes = `RATIFIED: ${warnings.join("; ")}`;
-        else notes = "RATIFIED: policy PASS + vote PASS";
-    } else if (blocking_reasons.length > 0) {
-        notes = `BLOCKED: ${blocking_reasons.join("; ")}`;
-    }
-}
-
-writeDecisionIfChanged(nextStatus, ratifiedBy, notes);
 console.log(`[COUNCIL-RUN] Decision status: ${nextStatus}`);
 
 appendChat("DECISION", `Motion ${motionId} status is ${nextStatus}`, 0);
@@ -676,7 +769,7 @@ if (nextStatus === "RATIFIED") appendChat("VOTE_RESULT", `Vote PASSED for motion
 // Run trace bundle (gitignored)
 // -----------------------------
 const runTrace = {
-    version: "0.3",
+    version: PROTOCOL_VERSION,
     motion_id: motionId,
     title,
     run_id: runId,
@@ -709,7 +802,7 @@ const runTrace = {
 };
 
 fs.writeFileSync(runTracePath, JSON.stringify(runTrace, null, 2), "utf8");
-appendChat("RUNNER_DONE", `Council runner v0.3 finished for motion ${motionId}`, 0);
+appendChat("RUNNER_DONE", `Council runner v${PROTOCOL_VERSION} finished for motion ${motionId}`, 0);
 
 console.log(`[COUNCIL-RUN] Wrote run trace: ${path.relative(repoRoot, runTracePath)}`);
 console.log("[COUNCIL-RUN] Done.\n");
