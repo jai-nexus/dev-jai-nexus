@@ -8,6 +8,4 @@ checks_required:
   - dct_replay_check
   - execution_patch_exists
   - patch_apply_check
-
-checks_optional:
   - typecheck

@@ -42,14 +42,14 @@
       "gate": "typecheck",
       "ok": true,
       "status": 0,
-      "ts": "2026-02-27T17:55:37.131Z",
+      "ts": "2026-02-27T17:58:53.089Z",
       "command": "pnpm -C portal typecheck",
       "cwd": ".",
-      "required": false
+      "required": true
     }
   },
   "summary": {
     "required_ok": true,
-    "last_updated": "2026-02-27T17:55:37.132Z"
+    "last_updated": "2026-02-27T17:58:53.090Z"
   }
 }
