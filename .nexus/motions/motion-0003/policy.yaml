@@ -1,0 +1,14 @@
+protocol_version: "0.3.3"
+motion_id: motion-0003
+evaluated_at: "2026-02-27T20:13:58.303Z"
+risk_score: 0.05
+max_risk_score: 0.20
+required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings: []

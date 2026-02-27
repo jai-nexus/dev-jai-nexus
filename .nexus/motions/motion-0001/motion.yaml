@@ -1,0 +1,35 @@
+version: 0.1
+motion_id: motion-0001
+title: Adopt Council Protocol v0.1 (dev-jai-nexus pilot)
+scope:
+  repo: dev-jai-nexus
+  paths_allow:
+    - ".nexus/**"
+    - "portal/scripts/council-run.mjs"
+  paths_deny:
+    - "portal/.env*"
+    - "**/*.env*"
+    - "**/secrets/**"
+
+roles_required:
+  - proposer
+  - challenger
+  - executor
+  - arbiter
+
+risk:
+  class: low
+  auto_ratify:
+    enabled: true
+    max_risk_score: 0.20
+
+checks_required:
+  - validate_agency
+  - dct_replay_check
+
+artifacts:
+  proposal: ".nexus/motions/motion-0001/proposal.md"
+  challenge: ".nexus/motions/motion-0001/challenge.md"
+  execution: ".nexus/motions/motion-0001/execution.md"
+  decision: ".nexus/motions/motion-0001/decision.yaml"
+  trace: ".nexus/motions/motion-0001/trace.json"

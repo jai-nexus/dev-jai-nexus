@@ -1,0 +1,13 @@
+title: "Enforce DCT replay determinism gate + verify scoreboard"
+
+# runner-consumed keys
+auto_ratify:
+  enabled: true
+max_risk_score: 0.2
+checks_required:
+  - validate_agency
+  - dct_replay_check
+
+# extra metadata (ignored by runner for now)
+risk:
+  class: low

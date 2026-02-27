@@ -1,0 +1,10 @@
+motion_id: motion-0002
+evaluated_at: "2026-02-24T02:55:39.866Z"
+risk_score: 0.00
+max_risk_score: 0.20
+required_gates: [validate_agency, dct_replay_check]
+failed_required_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []

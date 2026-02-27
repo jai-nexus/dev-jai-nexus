@@ -1,0 +1,52 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0001",
+  "gates": [
+    {
+      "gate": "validate_agency",
+      "started": "2026-02-23T10:40:55.032Z",
+      "finished": "2026-02-23T10:40:55.418Z",
+      "ok": true,
+      "status": 0,
+      "command": "node portal\\scripts\\validate-agency.mjs",
+      "cwd": ".",
+      "required": true
+    },
+    {
+      "gate": "dct_replay_check",
+      "started": "2026-02-23T10:40:55.422Z",
+      "finished": "2026-02-23T10:40:57.160Z",
+      "ok": true,
+      "status": 0,
+      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
+      "cwd": "portal",
+      "required": true
+    }
+  ],
+  "latest": {
+    "validate_agency": {
+      "gate": "validate_agency",
+      "started": "2026-02-23T10:40:55.032Z",
+      "finished": "2026-02-23T10:40:55.418Z",
+      "ok": true,
+      "status": 0,
+      "command": "node portal\\scripts\\validate-agency.mjs",
+      "cwd": ".",
+      "required": true
+    },
+    "dct_replay_check": {
+      "gate": "dct_replay_check",
+      "started": "2026-02-23T10:40:55.422Z",
+      "finished": "2026-02-23T10:40:57.160Z",
+      "ok": true,
+      "status": 0,
+      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
+      "cwd": "portal",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-02-23T10:40:57.161Z"
+  }
+}

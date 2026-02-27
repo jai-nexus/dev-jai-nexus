@@ -13,6 +13,7 @@ const links = [
   { href: "/operator/chats", label: "Chats" },
   { href: "/operator/decisions", label: "Decisions" },
   { href: "/operator/dct", label: "DCT" },
+  { href: "/operator/registry/coverage", label: "Registry" },
 ];
 
 export function OperatorSubnav() {

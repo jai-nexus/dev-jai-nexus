@@ -1,0 +1,6 @@
+motion_id: motion-0002
+status: RATIFIED
+ratified_by: auto
+required_gates: [validate_agency, dct_replay_check]
+last_updated: "2026-02-23T12:54:16.332Z"
+notes: "Outcome determined by council-run.mjs v0.2"
