@@ -40,9 +40,9 @@
     },
     "typecheck": {
       "gate": "typecheck",
-      "ok": false,
-      "status": 1,
-      "ts": "2026-02-24T16:13:45.845Z",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-02-27T17:55:37.131Z",
       "command": "pnpm -C portal typecheck",
       "cwd": ".",
       "required": false
@@ -50,6 +50,6 @@
   },
   "summary": {
     "required_ok": true,
-    "last_updated": "2026-02-24T16:13:45.846Z"
+    "last_updated": "2026-02-27T17:55:37.132Z"
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const DEV_BYPASS_HEADER = "x-operator-dev-bypass";
 const DEV_BYPASS_ENV = "OPERATOR_DEV_BYPASS_TOKEN";
@@ -10,11 +10,11 @@ function mustGetInternalToken() {
     return t;
 }
 
-function getOrigin(req: Request) {
+function getOrigin(req: NextRequest) {
     return new URL(req.url).origin;
 }
 
-function requireDevAccess(req: Request) {
+function requireDevAccess(req: NextRequest) {
     if (process.env.NODE_ENV === "production") {
         return NextResponse.json(
             { ok: false, error: "Operator API disabled in production" },
@@ -33,12 +33,15 @@ function requireDevAccess(req: Request) {
     return null;
 }
 
-export async function POST(req: Request, ctx: { params: { syncRunId: string } }) {
+export async function POST(
+    req: NextRequest,
+    context: { params: Promise<{ syncRunId: string }> }
+) {
     try {
         const deny = requireDevAccess(req);
         if (deny) return deny;
 
-        const { syncRunId } = ctx.params;
+        const { syncRunId } = await context.params;
 
         const id = Number(syncRunId);
         if (!Number.isFinite(id) || id <= 0) {
