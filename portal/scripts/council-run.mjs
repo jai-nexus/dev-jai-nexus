@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.3.4 (Tiered Council + Scoreboard + Stable Artifacts + Motion Targets)
+ * Council Runner v0.3.5 (Tiered Council + Scoreboard + Stable Artifacts + Motion Targets)
  *
  * Executes a motion using file-based artifacts plus a governance loop.
  * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
@@ -41,6 +41,11 @@
  *       repo: ...
  *     and inline:
  *       target: { domain: ..., repo: ... }
+ *
+ * v0.3.5:
+ * - Adds validate_motion gate (always required) before validate_agency
+ *   - Runs portal/scripts/validate-motion.mjs --motion <motion.yaml>
+ *   - Included in required_gates + policy/decision gating
  */
 
 import fs from "node:fs";
@@ -48,7 +53,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
-const PROTOCOL_VERSION = "0.3.4";
+const PROTOCOL_VERSION = "0.3.5";
 
 // -----------------------------
 // tiny utils
@@ -426,7 +431,8 @@ function parseMaxRiskScore(yamlText, fallback = 0.2) {
 const checksRequired = new Set(parseYamlListKeys(motionYaml, "checks_required"));
 const checksOptional = new Set(parseYamlListKeys(motionYaml, "checks_optional"));
 
-// validate_agency is ALWAYS required (even if absent)
+// validate_motion + validate_agency are ALWAYS required (even if absent)
+checksRequired.add("validate_motion");
 checksRequired.add("validate_agency");
 
 // If a gate exists in both, treat as required
@@ -520,6 +526,43 @@ function writeVerify(update) {
 }
 
 // -----------------------------
+// Gate 0: validate_motion (always required)
+// -----------------------------
+const validateMotion = path.join(portalDir, "scripts", "validate-motion.mjs");
+if (exists(validateMotion)) {
+    console.log("[COUNCIL-RUN] Running validate-motion.mjs …");
+    appendChat("GATE_START", "Starting validate_motion gate", 2);
+
+    const motionRel = path.relative(repoRoot, motionSpecPath);
+    const r = run("node", [validateMotion, "--motion", motionRel], {
+        label: "validate_motion",
+        required: true,
+        prettyCommand: `node ${path.relative(repoRoot, validateMotion)} --motion ${motionRel}`,
+    });
+
+    writeVerify(r.meta);
+    if (!r.ok) {
+        console.error("[COUNCIL-RUN] validate_motion FAILED.");
+        die("motion.yaml failed schema validation (validate_motion is required).");
+    }
+} else {
+    appendChat("GATE_SKIP", "validate_motion script missing", 2);
+    writeVerify({
+        gate: "validate_motion",
+        started: nowIso(),
+        finished: nowIso(),
+        ok: false,
+        status: 1,
+        command: "missing: portal/scripts/validate-motion.mjs",
+        cwd: ".",
+        required: true,
+        stdout_tail: "",
+        stderr_tail: "script_missing",
+    });
+    die("portal/scripts/validate-motion.mjs not found (validate_motion is required).");
+}
+
+// -----------------------------
 // Gate 1: validate_agency (always required)
 // -----------------------------
 const validateAgency = path.join(portalDir, "scripts", "validate-agency.mjs");
@@ -547,7 +590,10 @@ if (exists(validateAgency)) {
     });
 
     writeVerify(r.meta);
-    if (!r.ok) console.error("[COUNCIL-RUN] validate_agency FAILED.");
+    if (!r.ok) {
+        console.error("[COUNCIL-RUN] validate_agency FAILED.");
+        die("validate_agency failed (required).");
+    }
 } else {
     appendChat("GATE_SKIP", "validate_agency script missing", 2);
     writeVerify({
@@ -712,7 +758,7 @@ if (runTypecheck) {
 // Gate lists for policy
 // -----------------------------
 function requiredGateList() {
-    const gates = ["validate_agency"]; // always required
+    const gates = ["validate_motion", "validate_agency"]; // always required
     if (requiresReplay) gates.push("dct_replay_check");
     if (requiresPatch) gates.push("execution_patch_exists");
     if (requiresApply) gates.push("patch_apply_check");

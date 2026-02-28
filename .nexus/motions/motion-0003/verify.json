@@ -46,10 +46,19 @@
       "command": "pnpm -C portal typecheck",
       "cwd": ".",
       "required": true
+    },
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-02-28T16:51:38.769Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0003\\motion.yaml",
+      "cwd": ".",
+      "required": true
     }
   },
   "summary": {
     "required_ok": true,
-    "last_updated": "2026-02-28T06:48:58.962Z"
+    "last_updated": "2026-02-28T16:51:38.771Z"
   }
 }

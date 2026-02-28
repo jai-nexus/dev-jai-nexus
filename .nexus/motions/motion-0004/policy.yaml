@@ -1,9 +1,9 @@
-protocol_version: "0.3.4"
+protocol_version: "0.3.5"
 motion_id: motion-0004
-evaluated_at: "2026-02-28T06:50:07.517Z"
+evaluated_at: "2026-02-28T16:51:51.607Z"
 risk_score: 0.00
 max_risk_score: 0.20
-required_gates: [validate_agency]
+required_gates: [validate_motion, validate_agency]
 optional_gates: []
 failed_required_gates: []
 failed_optional_gates: []
