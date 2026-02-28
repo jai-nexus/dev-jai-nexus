@@ -1,0 +1,5 @@
+version: "0.1"
+description: "Council runner dependency hints (optional; runner currently only checks existence)"
+registry:
+  # informational only for now
+  default_index_hint: "workspace/jai-nexus/nexus-core/registry/agents.index.json"

@@ -1,0 +1,4 @@
+version: "0.1"
+description: "Local manifest for council runner in dev-jai-nexus"
+notes:
+  - "Currently used as an existence marker; content will be wired later."
