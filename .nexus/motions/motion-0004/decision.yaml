@@ -1,0 +1,9 @@
+protocol_version: "0.3.7"
+motion_id: motion-0004
+status: RATIFIED
+ratified_by: auto
+target_domain: null
+target_repo: null
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-02-28T19:35:58.116Z"
+notes: "RATIFIED: policy PASS + vote PASS"

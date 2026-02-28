@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.3.3 (Tiered Council + Scoreboard + Stable Artifacts)
+ * Council Runner v0.3.7 (Tiered Council + Scoreboard + Stable Artifacts + Shared Motion Parser)
  *
  * Executes a motion using file-based artifacts plus a governance loop.
  * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
@@ -27,6 +27,24 @@
  * - More robust auto_ratify + max_risk_score parsing
  * - Policy/Decision idempotency ignores evaluated_at/last_updated so repeated runs don’t churn
  * - Gate list parsing supports inline lists and YAML-ish booleans for auto_ratify.enabled
+ *
+ * v0.3.4:
+ * - Motion targets: pass motion target domain/repo to validate-agency.mjs
+ *   - If target.domain absent => pass --no-domain (Tier 0 only)
+ *   - If target.repo absent => pass --no-repo   (Tier 0/1 only)
+ *
+ * v0.3.5:
+ * - Adds validate_motion gate (always required) before validate_agency
+ *   - Runs portal/scripts/validate-motion.mjs --motion <motion.yaml>
+ *   - Included in required_gates + policy/decision gating
+ *
+ * v0.3.6:
+ * - Shared YAML+Zod motion parser:
+ *   - portal/src/lib/motion/motionLib.mjs
+ *
+ * v0.3.7:
+ * - Ensures council-run uses a *strict* parsed motion (from motionLib) after validate_motion passes
+ * - Adds target_domain/target_repo to policy.yaml and decision.yaml for self-describing artifacts
  */
 
 import fs from "node:fs";
@@ -34,7 +52,9 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
-const PROTOCOL_VERSION = "0.3.3";
+import { parseMotionText } from "../src/lib/motion/motionLib.mjs";
+
+const PROTOCOL_VERSION = "0.3.7";
 
 // -----------------------------
 // tiny utils
@@ -234,7 +254,6 @@ if (!exists(motionSpecPath)) {
 }
 
 const motionYaml = readText(motionSpecPath);
-const title = getYamlScalar(motionYaml, "title") ?? motionId;
 
 const proposalPath = path.join(motionDir, "proposal.md");
 const challengePath = path.join(motionDir, "challenge.md");
@@ -262,105 +281,21 @@ writeTextIfMissing(
     `# Execution Plan (${motionId})\n\n## Intended changes\n- \n\n## Files touched\n- \n\n## Rollback plan\n- \n`
 );
 
+// Best-effort parse just for the header print (validate_motion is authoritative).
+let headerTitle = motionId;
+let headerTarget = { domain: null, repo: null };
+try {
+    const pre = parseMotionText(motionYaml);
+    headerTitle = pre.title ?? motionId;
+    headerTarget = pre.target ?? { domain: null, repo: null };
+} catch { }
+
 console.log(`\n[COUNCIL-RUN] Motion: ${motionId}`);
-console.log(`[COUNCIL-RUN] Title: ${title}`);
-console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}\n`);
-
-// -----------------------------
-// Robust parsing of motion.yaml controls
-// -----------------------------
-function parseYamlListKeys(yamlText, listKey) {
-    const lines = yamlText.split(/\r?\n/);
-    const out = [];
-
-    // supports:
-    // checks_required:
-    //   - a
-    //   - b
-    // and also:
-    // checks_required: [a, b]
-    const inline = yamlText.match(new RegExp(`^\\s*${listKey}:\\s*\\[(.*)\\]\\s*$`, "m"));
-    if (inline && inline[1] != null) {
-        return inline[1]
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-    }
-
-    let inList = false;
-    for (const raw of lines) {
-        const line = raw.replace(/\t/g, "  ");
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        if (new RegExp(`^${listKey}:\\s*$`, "i").test(trimmed)) {
-            inList = true;
-            continue;
-        }
-
-        if (inList && /^[A-Za-z0-9_-]+:\s*/.test(trimmed) && !trimmed.startsWith("-")) {
-            inList = false;
-        }
-
-        if (!inList) continue;
-
-        if (trimmed.startsWith("-")) {
-            const v = trimmed.replace(/^-+\s*/, "").trim();
-            if (v) out.push(v);
-        }
-    }
-
-    return out;
-}
-
-function parseAutoRatifyEnabled(yamlText) {
-    const m = yamlText.match(/auto_ratify:\s*[\s\S]*?\benabled:\s*(true|false|1|0|"true"|"false")/i);
-    if (!m) return false;
-    const v = String(m[1]).replace(/"/g, "").toLowerCase();
-    return v === "true" || v === "1";
-}
-
-function parseMaxRiskScore(yamlText, fallback = 0.2) {
-    const m = yamlText.match(/max_risk_score:\s*([0-9.]+)/i);
-    if (!m) return fallback;
-    const n = Number(m[1]);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-const checksRequired = new Set(parseYamlListKeys(motionYaml, "checks_required"));
-const checksOptional = new Set(parseYamlListKeys(motionYaml, "checks_optional"));
-
-// validate_agency is ALWAYS required (even if absent)
-checksRequired.add("validate_agency");
-
-// If a gate exists in both, treat as required
-for (const g of checksOptional) {
-    if (checksRequired.has(g)) checksOptional.delete(g);
-}
-
-function motionRequires(gateId) {
-    return checksRequired.has(gateId);
-}
-function motionOptional(gateId) {
-    return checksOptional.has(gateId);
-}
-
-// Required/Optional membership
-const requiresReplay = motionRequires("dct_replay_check");
-const requiresPatch = motionRequires("execution_patch_exists");
-const requiresApply = motionRequires("patch_apply_check");
-const requiresTypecheck = motionRequires("typecheck");
-
-const optionalReplay = motionOptional("dct_replay_check");
-const optionalPatch = motionOptional("execution_patch_exists");
-const optionalApply = motionOptional("patch_apply_check");
-const optionalTypecheck = motionOptional("typecheck");
-
-// Run flags (required OR optional)
-const runReplay = requiresReplay || optionalReplay;
-const runPatch = requiresPatch || optionalPatch;
-const runApply = requiresApply || optionalApply;
-const runTypecheck = requiresTypecheck || optionalTypecheck;
+console.log(`[COUNCIL-RUN] Title: ${headerTitle}`);
+console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}`);
+console.log(
+    `[COUNCIL-RUN] Target: domain=${headerTarget.domain ?? "(none)"} repo=${headerTarget.repo ?? "(none)"}\n`
+);
 
 // -----------------------------
 // verify.json writer (scoreboard-only, no-churn)
@@ -424,19 +359,124 @@ function writeVerify(update) {
 }
 
 // -----------------------------
+// Gate 0: validate_motion (always required)
+// -----------------------------
+const validateMotion = path.join(portalDir, "scripts", "validate-motion.mjs");
+if (exists(validateMotion)) {
+    console.log("[COUNCIL-RUN] Running validate-motion.mjs …");
+    appendChat("GATE_START", "Starting validate_motion gate", 2);
+
+    const motionRel = path.relative(repoRoot, motionSpecPath);
+    const r = run("node", [validateMotion, "--motion", motionRel], {
+        label: "validate_motion",
+        required: true,
+        prettyCommand: `node ${path.relative(repoRoot, validateMotion)} --motion ${motionRel}`,
+    });
+
+    writeVerify(r.meta);
+    if (!r.ok) {
+        console.error("[COUNCIL-RUN] validate_motion FAILED.");
+        die("motion.yaml failed schema validation (validate_motion is required).");
+    }
+} else {
+    appendChat("GATE_SKIP", "validate_motion script missing", 2);
+    writeVerify({
+        gate: "validate_motion",
+        started: nowIso(),
+        finished: nowIso(),
+        ok: false,
+        status: 1,
+        command: "missing: portal/scripts/validate-motion.mjs",
+        cwd: ".",
+        required: true,
+        stdout_tail: "",
+        stderr_tail: "script_missing",
+    });
+    die("portal/scripts/validate-motion.mjs not found (validate_motion is required).");
+}
+
+// Strict parse after validate_motion success
+let motionParsed;
+try {
+    motionParsed = parseMotionText(motionYaml);
+} catch (err) {
+    die(`validate_motion passed but motion parse failed in-process: ${err?.message || String(err)}`);
+}
+
+const title = motionParsed.title ?? motionId;
+const motionTarget = motionParsed.target ?? { domain: null, repo: null };
+
+// -----------------------------
+// Motion controls (required/optional gates) via motionLib
+// -----------------------------
+const checksRequired = new Set(motionParsed.checks_required ?? []);
+const checksOptional = new Set(motionParsed.checks_optional ?? []);
+
+// validate_motion + validate_agency are ALWAYS required (even if absent)
+checksRequired.add("validate_motion");
+checksRequired.add("validate_agency");
+
+// If a gate exists in both, treat as required
+for (const g of checksOptional) {
+    if (checksRequired.has(g)) checksOptional.delete(g);
+}
+
+function motionRequires(gateId) {
+    return checksRequired.has(gateId);
+}
+function motionOptional(gateId) {
+    return checksOptional.has(gateId);
+}
+
+// Required/Optional membership
+const requiresReplay = motionRequires("dct_replay_check");
+const requiresPatch = motionRequires("execution_patch_exists");
+const requiresApply = motionRequires("patch_apply_check");
+const requiresTypecheck = motionRequires("typecheck");
+
+const optionalReplay = motionOptional("dct_replay_check");
+const optionalPatch = motionOptional("execution_patch_exists");
+const optionalApply = motionOptional("patch_apply_check");
+const optionalTypecheck = motionOptional("typecheck");
+
+// Run flags (required OR optional)
+const runReplay = requiresReplay || optionalReplay;
+const runPatch = requiresPatch || optionalPatch;
+const runApply = requiresApply || optionalApply;
+const runTypecheck = requiresTypecheck || optionalTypecheck;
+
+// -----------------------------
 // Gate 1: validate_agency (always required)
 // -----------------------------
 const validateAgency = path.join(portalDir, "scripts", "validate-agency.mjs");
 if (exists(validateAgency)) {
     console.log("[COUNCIL-RUN] Running validate-agency.mjs …");
     appendChat("GATE_START", "Starting validate_agency gate", 2);
-    const r = run("node", [validateAgency], {
+
+    const vaArgs = [validateAgency];
+
+    if (motionTarget.domain) vaArgs.push("--domain", motionTarget.domain);
+    else vaArgs.push("--no-domain");
+
+    if (motionTarget.repo) vaArgs.push("--repo", motionTarget.repo);
+    else vaArgs.push("--no-repo");
+
+    const pretty =
+        `node ${path.relative(repoRoot, validateAgency)}` +
+        (motionTarget.domain ? ` --domain ${motionTarget.domain}` : " --no-domain") +
+        (motionTarget.repo ? ` --repo ${motionTarget.repo}` : " --no-repo");
+
+    const r = run("node", vaArgs, {
         label: "validate_agency",
         required: true,
-        prettyCommand: `node ${path.relative(repoRoot, validateAgency)}`,
+        prettyCommand: pretty,
     });
+
     writeVerify(r.meta);
-    if (!r.ok) console.error("[COUNCIL-RUN] validate_agency FAILED.");
+    if (!r.ok) {
+        console.error("[COUNCIL-RUN] validate_agency FAILED.");
+        die("validate_agency failed (required).");
+    }
 } else {
     appendChat("GATE_SKIP", "validate_agency script missing", 2);
     writeVerify({
@@ -601,7 +641,7 @@ if (runTypecheck) {
 // Gate lists for policy
 // -----------------------------
 function requiredGateList() {
-    const gates = ["validate_agency"]; // always required
+    const gates = ["validate_motion", "validate_agency"]; // always required
     if (requiresReplay) gates.push("dct_replay_check");
     if (requiresPatch) gates.push("execution_patch_exists");
     if (requiresApply) gates.push("patch_apply_check");
@@ -625,8 +665,9 @@ console.log("[COUNCIL-RUN] Calculating policy…");
 const challengeText = exists(challengePath) ? readText(challengePath) : "";
 const riskScore = parseRiskScore(challengeText);
 
-const autoRatifyEnabled = parseAutoRatifyEnabled(motionYaml);
-const maxRiskScore = parseMaxRiskScore(motionYaml, 0.2);
+// motionLib-backed values (validate_motion gate enforces correctness)
+const autoRatifyEnabled = motionParsed.auto_ratify_enabled ?? false;
+const maxRiskScore = motionParsed.max_risk_score ?? 0.2;
 
 const scoreboard = safeReadJsonFile(verifyPath, { latest: {} });
 const gates = scoreboard.latest || {};
@@ -653,6 +694,8 @@ if (failed_optional_gates.length > 0) warnings.push(`Optional gates failed: ${fa
 const policyTemplate = `protocol_version: "${PROTOCOL_VERSION}"
 motion_id: ${motionId}
 evaluated_at: "${nowIso()}"
+target_domain: ${motionTarget.domain ? `"${motionTarget.domain}"` : "null"}
+target_repo: ${motionTarget.repo ? `"${motionTarget.repo}"` : "null"}
 risk_score: ${riskScore.toFixed(2)}
 max_risk_score: ${maxRiskScore.toFixed(2)}
 required_gates: [${required_gates.join(", ")}]
@@ -753,6 +796,8 @@ const decisionTemplate = (st, ratBy, note) => `protocol_version: "${PROTOCOL_VER
 motion_id: ${motionId}
 status: ${st}
 ratified_by: ${ratBy ?? "null"}
+target_domain: ${motionTarget.domain ? `"${motionTarget.domain}"` : "null"}
+target_repo: ${motionTarget.repo ? `"${motionTarget.repo}"` : "null"}
 required_gates: [${required_gates.join(", ")}]
 last_updated: "${nowIso()}"
 notes: "${String(note ?? `Outcome determined by council-run.mjs v${PROTOCOL_VERSION}`).replace(/"/g, '\\"')}"
@@ -774,6 +819,7 @@ const runTrace = {
     title,
     run_id: runId,
     ts: nowIso(),
+    target: motionTarget,
     files: {
         motion: path.relative(repoRoot, motionSpecPath),
         proposal: path.relative(repoRoot, proposalPath),

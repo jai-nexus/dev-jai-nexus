@@ -1,9 +1,11 @@
-protocol_version: "0.3.3"
+protocol_version: "0.3.7"
 motion_id: motion-0003
-evaluated_at: "2026-02-27T20:13:58.303Z"
+evaluated_at: "2026-02-28T19:35:46.990Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
 risk_score: 0.05
 max_risk_score: 0.20
-required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
+required_gates: [validate_motion, validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
 optional_gates: []
 failed_required_gates: []
 failed_optional_gates: []

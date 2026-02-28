@@ -1,0 +1,28 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0004",
+  "latest": {
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-02-28T06:50:07.512Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --no-domain --no-repo",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-02-28T16:51:51.281Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0004\\motion.yaml",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-02-28T16:51:51.282Z"
+  }
+}

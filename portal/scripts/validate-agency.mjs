@@ -7,8 +7,8 @@
 // 1) agents.index.json structural integrity:
 //    - version, generated_at, global, by_domain, by_repo
 //    - Tier 0 seats present: steward/challenger/arbiter/meta_analyst/librarian
-//    - Tier 1 domain seats present for --domain (default dev.jai.nexus)
-//    - Tier 2 repo seats present for --repo (default dev-jai-nexus)
+//    - Tier 1 domain seats present for --domain (default dev.jai.nexus) unless --no-domain
+//    - Tier 2 repo seats present for --repo (default dev-jai-nexus) unless --no-repo
 //
 // 2) Seat IDs resolve to real agents in agents.generated.yaml (optional but enabled by default):
 //    - Loads registry/agents.generated.yaml adjacent to agents.index.json
@@ -19,6 +19,9 @@
 //   node portal/scripts/validate-agency.mjs --verbose
 //   node portal/scripts/validate-agency.mjs --index workspace/jai-nexus/nexus-core/registry/agents.index.json
 //   node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus
+//   node portal/scripts/validate-agency.mjs --no-domain
+//   node portal/scripts/validate-agency.mjs --no-repo
+//   node portal/scripts/validate-agency.mjs --no-domain --no-repo   (Tier 0 only)
 //   node portal/scripts/validate-agency.mjs --no-yaml   (skip agents.generated.yaml cross-check)
 //
 // Exit codes:
@@ -39,26 +42,47 @@ const yaml = require("yaml");
 function parseArgs(argv) {
     const args = {
         index: null, // optional explicit path to agents.index.json
+
+        // defaults remain for backwards compatibility
         domain: "dev.jai.nexus",
         repo: "dev-jai-nexus",
+
+        // allow motions (or callers) to explicitly validate Tier 0 only
+        checkDomain: true,
+        checkRepo: true,
+
         verbose: false,
         yamlCheck: true, // cross-check seat IDs exist in agents.generated.yaml
     };
 
     for (let i = 2; i < argv.length; i++) {
         const a = argv[i];
+
         if (a === "--index" && argv[i + 1]) {
             args.index = argv[++i];
             continue;
         }
+
         if (a === "--domain" && argv[i + 1]) {
             args.domain = argv[++i];
+            args.checkDomain = true;
             continue;
         }
         if (a === "--repo" && argv[i + 1]) {
             args.repo = argv[++i];
+            args.checkRepo = true;
             continue;
         }
+
+        if (a === "--no-domain") {
+            args.checkDomain = false;
+            continue;
+        }
+        if (a === "--no-repo") {
+            args.checkRepo = false;
+            continue;
+        }
+
         if (a === "--verbose") {
             args.verbose = true;
             continue;
@@ -68,6 +92,10 @@ function parseArgs(argv) {
             continue;
         }
     }
+
+    // If we aren't checking domain/repo tiers, null them out for clearer output
+    if (!args.checkDomain) args.domain = null;
+    if (!args.checkRepo) args.repo = null;
 
     return args;
 }
@@ -89,6 +117,10 @@ function ok(msg) {
 
 function isNonEmptyString(x) {
     return typeof x === "string" && x.trim().length > 0;
+}
+
+function isBooleanOrObject(x) {
+    return typeof x === "boolean" || (x && typeof x === "object");
 }
 
 function readJson(filePath) {
@@ -162,7 +194,7 @@ function assertSeat(seatsObj, seat, where) {
     return v;
 }
 
-function collectSeatIds(idx, domainKey, repoKey) {
+function collectSeatIds(idx, domainKey, repoKey, { checkDomain, checkRepo }) {
     const seatIds = [];
 
     // Tier 0
@@ -170,28 +202,52 @@ function collectSeatIds(idx, domainKey, repoKey) {
     const globalRequired = ["steward", "challenger", "arbiter", "meta_analyst", "librarian"];
     for (const s of globalRequired) seatIds.push(assertSeat(globalSeats, s, "agents.index.json.global"));
 
-    // Tier 1
-    const dom = idx.by_domain?.[domainKey];
-    if (!dom) die(`agents.index.json.by_domain missing domain '${domainKey}'.`);
-    if (!isNonEmptyString(dom.engine)) die(`by_domain['${domainKey}'].engine missing or invalid.`);
-    if (typeof dom.auto_ratify !== "boolean") die(`by_domain['${domainKey}'].auto_ratify missing or not boolean.`);
-
     const tierSeats = ["proposer", "executor", "challenger", "arbiter"];
-    for (const s of tierSeats) seatIds.push(assertSeat(dom, s, `agents.index.json.by_domain['${domainKey}']`));
 
-    // Tier 2
-    const repo = idx.by_repo?.[repoKey];
-    if (!repo) die(`agents.index.json.by_repo missing repo '${repoKey}'.`);
-    if (!isNonEmptyString(repo.primary_domain)) die(`by_repo['${repoKey}'].primary_domain missing or invalid.`);
-    if (!Array.isArray(repo.secondary_domains)) die(`by_repo['${repoKey}'].secondary_domains missing or not array.`);
-    if (!isNonEmptyString(repo.engine)) die(`by_repo['${repoKey}'].engine missing or invalid.`);
-    if (typeof repo.external !== "boolean") die(`by_repo['${repoKey}'].external missing or not boolean.`);
-    if (typeof repo.apply !== "boolean") die(`by_repo['${repoKey}'].apply missing or not boolean.`);
+    // Tier 1 (domain) — optional
+    let dom = null;
+    if (checkDomain) {
+        if (!isNonEmptyString(domainKey)) die(`--domain is required unless you pass --no-domain.`);
+        dom = idx.by_domain?.[domainKey];
+        if (!dom) die(`agents.index.json.by_domain missing domain '${domainKey}'.`);
+        if (!isNonEmptyString(dom.engine)) die(`by_domain['${domainKey}'].engine missing or invalid.`);
 
-    for (const s of tierSeats) seatIds.push(assertSeat(repo, s, `agents.index.json.by_repo['${repoKey}']`));
+        // index typing may allow boolean OR object OR absent
+        if ("auto_ratify" in dom && dom.auto_ratify != null && !isBooleanOrObject(dom.auto_ratify)) {
+            die(`by_domain['${domainKey}'].auto_ratify must be boolean or object when present.`);
+        }
 
-    // Consistency warning only
-    if (repo.primary_domain !== domainKey) {
+        for (const s of tierSeats) seatIds.push(assertSeat(dom, s, `agents.index.json.by_domain['${domainKey}']`));
+    }
+
+    // Tier 2 (repo) — optional
+    let repo = null;
+    if (checkRepo) {
+        if (!isNonEmptyString(repoKey)) die(`--repo is required unless you pass --no-repo.`);
+        repo = idx.by_repo?.[repoKey];
+        if (!repo) die(`agents.index.json.by_repo missing repo '${repoKey}'.`);
+        if (!isNonEmptyString(repo.primary_domain)) die(`by_repo['${repoKey}'].primary_domain missing or invalid.`);
+
+        // secondary_domains may be optional in some index versions
+        if ("secondary_domains" in repo && repo.secondary_domains != null && !Array.isArray(repo.secondary_domains)) {
+            die(`by_repo['${repoKey}'].secondary_domains must be an array when present.`);
+        }
+
+        if (!isNonEmptyString(repo.engine)) die(`by_repo['${repoKey}'].engine missing or invalid.`);
+
+        // external/apply may be optional booleans depending on index version
+        if ("external" in repo && repo.external != null && typeof repo.external !== "boolean") {
+            die(`by_repo['${repoKey}'].external must be boolean when present.`);
+        }
+        if ("apply" in repo && repo.apply != null && typeof repo.apply !== "boolean") {
+            die(`by_repo['${repoKey}'].apply must be boolean when present.`);
+        }
+
+        for (const s of tierSeats) seatIds.push(assertSeat(repo, s, `agents.index.json.by_repo['${repoKey}']`));
+    }
+
+    // Consistency warning only (only meaningful if both are checked)
+    if (checkRepo && checkDomain && repo && dom && repo.primary_domain !== domainKey) {
         warn(
             `Repo '${repoKey}' primary_domain is '${repo.primary_domain}' but validator domain is '${domainKey}'. ` +
             "This may be intentional; if not, fix repos.yaml in nexus-core."
@@ -243,7 +299,10 @@ function loadAgentsGeneratedIdSet(indexPath) {
         assertHas(idx, "by_domain", "agents.index.json");
         assertHas(idx, "by_repo", "agents.index.json");
 
-        const { seatIds, dom, repo } = collectSeatIds(idx, args.domain, args.repo);
+        const { seatIds, dom, repo } = collectSeatIds(idx, args.domain, args.repo, {
+            checkDomain: args.checkDomain,
+            checkRepo: args.checkRepo,
+        });
 
         // Cross-check seat IDs exist in agents.generated.yaml
         let yamlInfo = null;
@@ -266,14 +325,26 @@ function loadAgentsGeneratedIdSet(indexPath) {
         // Summary
         ok("registry-backed agency OK");
         console.log(`   Index: ${path.relative(process.cwd(), indexPath)}`);
-        console.log(`   Domain: ${args.domain}`);
-        console.log(`   Repo: ${args.repo}`);
         console.log("   Tier 0 (global): OK");
-        console.log("   Tier 1 (domain): OK");
-        console.log("   Tier 2 (repo): OK");
+
+        if (args.checkDomain) {
+            console.log(`   Domain: ${args.domain}`);
+            console.log("   Tier 1 (domain): OK");
+        } else {
+            console.log("   Tier 1 (domain): SKIPPED (--no-domain)");
+        }
+
+        if (args.checkRepo) {
+            console.log(`   Repo: ${args.repo}`);
+            console.log("   Tier 2 (repo): OK");
+        } else {
+            console.log("   Tier 2 (repo): SKIPPED (--no-repo)");
+        }
 
         if (yamlInfo) {
-            console.log(`   agents.generated.yaml: OK (${path.relative(process.cwd(), yamlInfo.yamlPath)}; ${yamlInfo.count} agents)`);
+            console.log(
+                `   agents.generated.yaml: OK (${path.relative(process.cwd(), yamlInfo.yamlPath)}; ${yamlInfo.count} agents)`
+            );
         } else {
             console.log("   agents.generated.yaml: SKIPPED (--no-yaml)");
         }
@@ -282,18 +353,24 @@ function loadAgentsGeneratedIdSet(indexPath) {
             console.log("");
             console.log("Seats (resolved IDs):");
             console.log("  global:", idx.global);
-            console.log(`  domain[${args.domain}]:`, {
-                proposer: dom.proposer,
-                executor: dom.executor,
-                challenger: dom.challenger,
-                arbiter: dom.arbiter,
-            });
-            console.log(`  repo[${args.repo}]:`, {
-                proposer: repo.proposer,
-                executor: repo.executor,
-                challenger: repo.challenger,
-                arbiter: repo.arbiter,
-            });
+
+            if (args.checkDomain && dom) {
+                console.log(`  domain[${args.domain}]:`, {
+                    proposer: dom.proposer,
+                    executor: dom.executor,
+                    challenger: dom.challenger,
+                    arbiter: dom.arbiter,
+                });
+            }
+
+            if (args.checkRepo && repo) {
+                console.log(`  repo[${args.repo}]:`, {
+                    proposer: repo.proposer,
+                    executor: repo.executor,
+                    challenger: repo.challenger,
+                    arbiter: repo.arbiter,
+                });
+            }
         }
 
         process.exit(0);
