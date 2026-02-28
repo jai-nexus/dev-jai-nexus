@@ -1,0 +1,7 @@
+protocol_version: "0.3.4"
+motion_id: motion-0004
+status: RATIFIED
+ratified_by: auto
+required_gates: [validate_agency]
+last_updated: "2026-02-28T06:50:07.524Z"
+notes: "RATIFIED: policy PASS + vote PASS"

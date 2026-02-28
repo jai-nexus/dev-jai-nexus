@@ -1,0 +1,6 @@
+title: "Global-only motion (Tier0 agency check)"
+auto_ratify:
+  enabled: true
+max_risk_score: 0.2
+checks_required:
+  - validate_agency

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.3.3 (Tiered Council + Scoreboard + Stable Artifacts)
+ * Council Runner v0.3.4 (Tiered Council + Scoreboard + Stable Artifacts + Motion Targets)
  *
  * Executes a motion using file-based artifacts plus a governance loop.
  * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
@@ -27,6 +27,20 @@
  * - More robust auto_ratify + max_risk_score parsing
  * - Policy/Decision idempotency ignores evaluated_at/last_updated so repeated runs don’t churn
  * - Gate list parsing supports inline lists and YAML-ish booleans for auto_ratify.enabled
+ *
+ * v0.3.4:
+ * - Motion targets: parse motion.yaml target domain/repo and pass to validate-agency.mjs
+ *   - If target.domain absent => pass --no-domain (Tier 0 only)
+ *   - If target.repo absent => pass --no-repo   (Tier 0/1 only)
+ *   - Supports:
+ *       target:
+ *         domain: ...
+ *         repo: ...
+ *     and legacy:
+ *       domain: ...
+ *       repo: ...
+ *     and inline:
+ *       target: { domain: ..., repo: ... }
  */
 
 import fs from "node:fs";
@@ -34,7 +48,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
-const PROTOCOL_VERSION = "0.3.3";
+const PROTOCOL_VERSION = "0.3.4";
 
 // -----------------------------
 // tiny utils
@@ -84,6 +98,12 @@ function getYamlScalar(yamlText, key) {
     const m = yamlText.match(re);
     return m ? m[1].trim().replace(/^"|"$/g, "") : null;
 }
+function stripQuotes(s) {
+    return String(s ?? "")
+        .trim()
+        .replace(/^"|"$/g, "")
+        .replace(/^'|'$/g, "");
+}
 function summarizeFile(p, maxChars = 1200) {
     if (!exists(p)) return null;
     const t = readText(p);
@@ -126,6 +146,78 @@ function writeYamlIfChangedIgnoringKeys(filePath, nextText, ignoreKeys) {
     }
     fs.writeFileSync(filePath, next, "utf8");
     return true;
+}
+
+// -----------------------------
+// motion target parsing
+// -----------------------------
+function parseMotionTarget(yamlText) {
+    // Supports:
+    // 1) block:
+    //    target:
+    //      domain: dev.jai.nexus
+    //      repo: dev-jai-nexus
+    // 2) inline:
+    //    target: { domain: dev.jai.nexus, repo: dev-jai-nexus }
+    // 3) legacy:
+    //    domain: dev.jai.nexus
+    //    repo: dev-jai-nexus
+
+    const flatDomain = getYamlScalar(yamlText, "domain");
+    const flatRepo = getYamlScalar(yamlText, "repo");
+
+    let tDomain = null;
+    let tRepo = null;
+
+    // inline
+    const inline = yamlText.match(/^\s*target:\s*\{(.*)\}\s*$/m);
+    if (inline && inline[1]) {
+        for (const part of inline[1].split(",")) {
+            const [k, ...rest] = part.split(":");
+            const key = (k || "").trim();
+            const val = stripQuotes(rest.join(":"));
+            if (key === "domain") tDomain = val;
+            if (key === "repo") tRepo = val;
+        }
+    }
+
+    // block
+    const lines = yamlText.split(/\r?\n/);
+    let inTarget = false;
+    let targetIndent = 0;
+
+    for (const raw of lines) {
+        const start = raw.match(/^(\s*)target:\s*$/);
+        if (!inTarget && start) {
+            inTarget = true;
+            targetIndent = start[1].length;
+            continue;
+        }
+        if (!inTarget) continue;
+        if (!raw.trim() || raw.trim().startsWith("#")) continue;
+
+        const indent = (raw.match(/^(\s*)/)?.[1] || "").length;
+        if (indent <= targetIndent) {
+            inTarget = false;
+            continue;
+        }
+
+        const kv = raw.trim().match(/^(domain|repo):\s*(.+)\s*$/);
+        if (kv) {
+            const key = kv[1];
+            const val = stripQuotes(kv[2]);
+            if (key === "domain") tDomain = val;
+            if (key === "repo") tRepo = val;
+        }
+    }
+
+    const domain = stripQuotes(flatDomain || tDomain || "");
+    const repo = stripQuotes(flatRepo || tRepo || "");
+
+    return {
+        domain: domain.length ? domain : null,
+        repo: repo.length ? repo : null,
+    };
 }
 
 // -----------------------------
@@ -235,6 +327,7 @@ if (!exists(motionSpecPath)) {
 
 const motionYaml = readText(motionSpecPath);
 const title = getYamlScalar(motionYaml, "title") ?? motionId;
+const motionTarget = parseMotionTarget(motionYaml);
 
 const proposalPath = path.join(motionDir, "proposal.md");
 const challengePath = path.join(motionDir, "challenge.md");
@@ -264,7 +357,10 @@ writeTextIfMissing(
 
 console.log(`\n[COUNCIL-RUN] Motion: ${motionId}`);
 console.log(`[COUNCIL-RUN] Title: ${title}`);
-console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}\n`);
+console.log(`[COUNCIL-RUN] Motion spec: ${path.relative(repoRoot, motionSpecPath)}`);
+console.log(
+    `[COUNCIL-RUN] Target: domain=${motionTarget.domain ?? "(none)"} repo=${motionTarget.repo ?? "(none)"}\n`
+);
 
 // -----------------------------
 // Robust parsing of motion.yaml controls
@@ -430,11 +526,26 @@ const validateAgency = path.join(portalDir, "scripts", "validate-agency.mjs");
 if (exists(validateAgency)) {
     console.log("[COUNCIL-RUN] Running validate-agency.mjs …");
     appendChat("GATE_START", "Starting validate_agency gate", 2);
-    const r = run("node", [validateAgency], {
+
+    const vaArgs = [validateAgency];
+
+    if (motionTarget.domain) vaArgs.push("--domain", motionTarget.domain);
+    else vaArgs.push("--no-domain");
+
+    if (motionTarget.repo) vaArgs.push("--repo", motionTarget.repo);
+    else vaArgs.push("--no-repo");
+
+    const pretty =
+        `node ${path.relative(repoRoot, validateAgency)}` +
+        (motionTarget.domain ? ` --domain ${motionTarget.domain}` : " --no-domain") +
+        (motionTarget.repo ? ` --repo ${motionTarget.repo}` : " --no-repo");
+
+    const r = run("node", vaArgs, {
         label: "validate_agency",
         required: true,
-        prettyCommand: `node ${path.relative(repoRoot, validateAgency)}`,
+        prettyCommand: pretty,
     });
+
     writeVerify(r.meta);
     if (!r.ok) console.error("[COUNCIL-RUN] validate_agency FAILED.");
 } else {
@@ -774,6 +885,7 @@ const runTrace = {
     title,
     run_id: runId,
     ts: nowIso(),
+    target: motionTarget,
     files: {
         motion: path.relative(repoRoot, motionSpecPath),
         proposal: path.relative(repoRoot, proposalPath),

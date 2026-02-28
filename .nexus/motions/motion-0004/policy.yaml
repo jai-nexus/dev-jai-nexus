@@ -1,9 +1,9 @@
 protocol_version: "0.3.4"
-motion_id: motion-0003
-evaluated_at: "2026-02-28T06:49:07.032Z"
-risk_score: 0.05
+motion_id: motion-0004
+evaluated_at: "2026-02-28T06:50:07.517Z"
+risk_score: 0.00
 max_risk_score: 0.20
-required_gates: [validate_agency, dct_replay_check, execution_patch_exists, patch_apply_check, typecheck]
+required_gates: [validate_agency]
 optional_gates: []
 failed_required_gates: []
 failed_optional_gates: []

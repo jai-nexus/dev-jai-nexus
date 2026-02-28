@@ -1,4 +1,9 @@
 title: "Scaling Council to v0.2 (Tiered Chat + Scoreboard)"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
 auto_ratify:
   enabled: true
 max_risk_score: 0.2
