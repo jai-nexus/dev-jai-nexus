@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Council Runner v0.3.5 (Tiered Council + Scoreboard + Stable Artifacts + Motion Targets)
+ * Council Runner v0.3.6 (Tiered Council + Scoreboard + Stable Artifacts + Shared Motion Parser)
  *
  * Executes a motion using file-based artifacts plus a governance loop.
  * Stages: motion -> proposal -> critique -> verify -> policy -> vote -> ratify
@@ -32,20 +32,16 @@
  * - Motion targets: parse motion.yaml target domain/repo and pass to validate-agency.mjs
  *   - If target.domain absent => pass --no-domain (Tier 0 only)
  *   - If target.repo absent => pass --no-repo   (Tier 0/1 only)
- *   - Supports:
- *       target:
- *         domain: ...
- *         repo: ...
- *     and legacy:
- *       domain: ...
- *       repo: ...
- *     and inline:
- *       target: { domain: ..., repo: ... }
  *
  * v0.3.5:
  * - Adds validate_motion gate (always required) before validate_agency
  *   - Runs portal/scripts/validate-motion.mjs --motion <motion.yaml>
  *   - Included in required_gates + policy/decision gating
+ *
+ * v0.3.6:
+ * - Replaces regex/indent parsing with shared YAML+Zod parser:
+ *   - portal/src/lib/motion/motionLib.mjs
+ * - council-run consumes: title/target/checks/auto_ratify/max_risk_score from motionLib
  */
 
 import fs from "node:fs";
@@ -53,7 +49,9 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
 
-const PROTOCOL_VERSION = "0.3.5";
+import { parseMotionText } from "../src/lib/motion/motionLib.mjs";
+
+const PROTOCOL_VERSION = "0.3.6";
 
 // -----------------------------
 // tiny utils
@@ -103,12 +101,6 @@ function getYamlScalar(yamlText, key) {
     const m = yamlText.match(re);
     return m ? m[1].trim().replace(/^"|"$/g, "") : null;
 }
-function stripQuotes(s) {
-    return String(s ?? "")
-        .trim()
-        .replace(/^"|"$/g, "")
-        .replace(/^'|'$/g, "");
-}
 function summarizeFile(p, maxChars = 1200) {
     if (!exists(p)) return null;
     const t = readText(p);
@@ -151,78 +143,6 @@ function writeYamlIfChangedIgnoringKeys(filePath, nextText, ignoreKeys) {
     }
     fs.writeFileSync(filePath, next, "utf8");
     return true;
-}
-
-// -----------------------------
-// motion target parsing
-// -----------------------------
-function parseMotionTarget(yamlText) {
-    // Supports:
-    // 1) block:
-    //    target:
-    //      domain: dev.jai.nexus
-    //      repo: dev-jai-nexus
-    // 2) inline:
-    //    target: { domain: dev.jai.nexus, repo: dev-jai-nexus }
-    // 3) legacy:
-    //    domain: dev.jai.nexus
-    //    repo: dev-jai-nexus
-
-    const flatDomain = getYamlScalar(yamlText, "domain");
-    const flatRepo = getYamlScalar(yamlText, "repo");
-
-    let tDomain = null;
-    let tRepo = null;
-
-    // inline
-    const inline = yamlText.match(/^\s*target:\s*\{(.*)\}\s*$/m);
-    if (inline && inline[1]) {
-        for (const part of inline[1].split(",")) {
-            const [k, ...rest] = part.split(":");
-            const key = (k || "").trim();
-            const val = stripQuotes(rest.join(":"));
-            if (key === "domain") tDomain = val;
-            if (key === "repo") tRepo = val;
-        }
-    }
-
-    // block
-    const lines = yamlText.split(/\r?\n/);
-    let inTarget = false;
-    let targetIndent = 0;
-
-    for (const raw of lines) {
-        const start = raw.match(/^(\s*)target:\s*$/);
-        if (!inTarget && start) {
-            inTarget = true;
-            targetIndent = start[1].length;
-            continue;
-        }
-        if (!inTarget) continue;
-        if (!raw.trim() || raw.trim().startsWith("#")) continue;
-
-        const indent = (raw.match(/^(\s*)/)?.[1] || "").length;
-        if (indent <= targetIndent) {
-            inTarget = false;
-            continue;
-        }
-
-        const kv = raw.trim().match(/^(domain|repo):\s*(.+)\s*$/);
-        if (kv) {
-            const key = kv[1];
-            const val = stripQuotes(kv[2]);
-            if (key === "domain") tDomain = val;
-            if (key === "repo") tRepo = val;
-        }
-    }
-
-    const domain = stripQuotes(flatDomain || tDomain || "");
-    const repo = stripQuotes(flatRepo || tRepo || "");
-
-    return {
-        domain: domain.length ? domain : null,
-        repo: repo.length ? repo : null,
-    };
 }
 
 // -----------------------------
@@ -331,8 +251,17 @@ if (!exists(motionSpecPath)) {
 }
 
 const motionYaml = readText(motionSpecPath);
-const title = getYamlScalar(motionYaml, "title") ?? motionId;
-const motionTarget = parseMotionTarget(motionYaml);
+
+// Parse motion via shared lib (best-effort; validate_motion gate is authoritative)
+let motionParsed = null;
+try {
+    motionParsed = parseMotionText(motionYaml);
+} catch {
+    motionParsed = null;
+}
+
+const title = motionParsed?.title ?? motionId;
+const motionTarget = motionParsed?.target ?? { domain: null, repo: null };
 
 const proposalPath = path.join(motionDir, "proposal.md");
 const challengePath = path.join(motionDir, "challenge.md");
@@ -368,68 +297,10 @@ console.log(
 );
 
 // -----------------------------
-// Robust parsing of motion.yaml controls
+// Motion controls (required/optional gates) via motionLib
 // -----------------------------
-function parseYamlListKeys(yamlText, listKey) {
-    const lines = yamlText.split(/\r?\n/);
-    const out = [];
-
-    // supports:
-    // checks_required:
-    //   - a
-    //   - b
-    // and also:
-    // checks_required: [a, b]
-    const inline = yamlText.match(new RegExp(`^\\s*${listKey}:\\s*\\[(.*)\\]\\s*$`, "m"));
-    if (inline && inline[1] != null) {
-        return inline[1]
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-    }
-
-    let inList = false;
-    for (const raw of lines) {
-        const line = raw.replace(/\t/g, "  ");
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        if (new RegExp(`^${listKey}:\\s*$`, "i").test(trimmed)) {
-            inList = true;
-            continue;
-        }
-
-        if (inList && /^[A-Za-z0-9_-]+:\s*/.test(trimmed) && !trimmed.startsWith("-")) {
-            inList = false;
-        }
-
-        if (!inList) continue;
-
-        if (trimmed.startsWith("-")) {
-            const v = trimmed.replace(/^-+\s*/, "").trim();
-            if (v) out.push(v);
-        }
-    }
-
-    return out;
-}
-
-function parseAutoRatifyEnabled(yamlText) {
-    const m = yamlText.match(/auto_ratify:\s*[\s\S]*?\benabled:\s*(true|false|1|0|"true"|"false")/i);
-    if (!m) return false;
-    const v = String(m[1]).replace(/"/g, "").toLowerCase();
-    return v === "true" || v === "1";
-}
-
-function parseMaxRiskScore(yamlText, fallback = 0.2) {
-    const m = yamlText.match(/max_risk_score:\s*([0-9.]+)/i);
-    if (!m) return fallback;
-    const n = Number(m[1]);
-    return Number.isFinite(n) ? n : fallback;
-}
-
-const checksRequired = new Set(parseYamlListKeys(motionYaml, "checks_required"));
-const checksOptional = new Set(parseYamlListKeys(motionYaml, "checks_optional"));
+const checksRequired = new Set(motionParsed?.checks_required ?? []);
+const checksOptional = new Set(motionParsed?.checks_optional ?? []);
 
 // validate_motion + validate_agency are ALWAYS required (even if absent)
 checksRequired.add("validate_motion");
@@ -723,7 +594,7 @@ if (runApply) {
         });
         writeVerify(r.meta);
         if (!r.ok && requiresApply) console.error("[COUNCIL-RUN] patch_apply_check failed (required).");
-        else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: patch_apply_check failed but gate is optional.");
+        else if (!r.ok) console.warn("[COUNCIL-RUN] NOTE: patch_apply_check failed but is optional.");
     }
 }
 
@@ -782,8 +653,9 @@ console.log("[COUNCIL-RUN] Calculating policy…");
 const challengeText = exists(challengePath) ? readText(challengePath) : "";
 const riskScore = parseRiskScore(challengeText);
 
-const autoRatifyEnabled = parseAutoRatifyEnabled(motionYaml);
-const maxRiskScore = parseMaxRiskScore(motionYaml, 0.2);
+// motionLib-backed defaults (validate_motion gate enforces correctness)
+const autoRatifyEnabled = motionParsed?.auto_ratify_enabled ?? false;
+const maxRiskScore = motionParsed?.max_risk_score ?? 0.2;
 
 const scoreboard = safeReadJsonFile(verifyPath, { latest: {} });
 const gates = scoreboard.latest || {};
