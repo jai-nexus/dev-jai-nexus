@@ -1,0 +1,16 @@
+protocol_version: "0.3.7"
+motion_id: motion-0007
+evaluated_at: "2026-03-02T18:52:59.679Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+risk_score: 0.10
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings: []

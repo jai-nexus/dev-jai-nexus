@@ -1,0 +1,25 @@
+version: "dispatch.v0"
+repo: "dev-jai-nexus"
+domain_primary: "dev.jai.nexus"
+engine: "helper"
+
+available_gates:
+  required: ["validate_motion", "validate_agency"]
+  optional: ["typecheck", "dct_replay_check"]
+
+assigned_roles:
+  proposer: "nhid_2_dev_jai_nexus_dev-jai-nexus_proposer_001"
+  executor: "nhid_2_dev_jai_nexus_dev-jai-nexus_executor_001"
+  challenger: "nhid_2_dev_jai_nexus_dev-jai-nexus_challenger_001"
+  arbiter: "nhid_2_dev_jai_nexus_dev-jai-nexus_arbiter_001"
+
+work_packet_template:
+  summary: "dev-jai-nexus cockpit work packet"
+  tasks:
+    - "Implement smallest viable change that advances CRL level or governance loop."
+    - "Stage changes via SyncRun and require review before apply."
+  evidence:
+    commands:
+      - "pnpm -C portal typecheck"
+    expected:
+      - "PASS"
