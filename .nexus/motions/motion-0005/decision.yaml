@@ -1,0 +1,9 @@
+protocol_version: "0.3.7"
+motion_id: motion-0005
+status: RATIFIED
+ratified_by: auto
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+required_gates: [validate_motion, validate_agency, dct_replay_check, typecheck]
+last_updated: "2026-03-02T18:31:58.836Z"
+notes: "RATIFIED: policy PASS + vote PASS"
