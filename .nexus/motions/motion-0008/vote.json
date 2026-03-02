@@ -1,0 +1,19 @@
+{
+  "motion_id": "motion-0008",
+  "votes": [
+    {
+      "voter_id": "auto",
+      "tier": 0,
+      "vote": "yes",
+      "rationale": "Auto-ratify threshold met",
+      "ts": "2026-03-02T18:54:34.829Z"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "result": "PASS"
+  },
+  "last_updated": "2026-03-02T18:54:34.829Z"
+}
