@@ -1,0 +1,15 @@
+title: "Coverage v0: RepoCard schema + seed Wave0/1 (CRL-0 → CRL-1)"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: true
+
+max_risk_score: 0.15
+
+checks_required:
+  - validate_agency
+# validate_motion is implicit and always runs
+checks_optional: []
