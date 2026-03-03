@@ -1,0 +1,49 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0009",
+    "vote_mode": "unanimous_consent",
+    "votes": [
+        {
+            "voter_id": "auto:proposer",
+            "role": "proposer",
+            "tier": 1,
+            "vote": "yes_with_reservations",
+            "reservations": [
+                {
+                    "reservation": "Unanimous consent must be enforced by code before it is treated as constitutional canon.",
+                    "risk": 0.2,
+                    "mitigation": [
+                        "Ship vote-mode + blocker-packet validation behind config + env override first."
+                    ],
+                    "what_to_watch": "Any motion ratified without required role votes or without blocker packets on NO."
+                }
+            ],
+            "rationale": "Approve the direction; implementation is the next execution step.",
+            "ts": "2026-03-03T18:05:00.000Z"
+        },
+        {
+            "voter_id": "auto:challenger",
+            "role": "challenger",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "The process adds structured friction and preserves objections; deadlock protocol prevents paralysis.",
+            "ts": "2026-03-03T18:05:10.000Z"
+        },
+        {
+            "voter_id": "auto:arbiter",
+            "role": "arbiter",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "Ratify as constitutional intent; enforce via runner changes next.",
+            "ts": "2026-03-03T18:05:20.000Z"
+        }
+    ],
+    "outcome": {
+        "yes": 2,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 1,
+        "result": "PASS"
+    },
+    "last_updated": "2026-03-03T18:05:30.000Z"
+}
