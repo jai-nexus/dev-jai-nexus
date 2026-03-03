@@ -4,38 +4,38 @@
     "vote_mode": "unanimous_consent",
     "votes": [
         {
-            "voter_id": "auto:proposer",
+            "voter_id": "manual:proposer",
             "role": "proposer",
             "tier": 1,
             "vote": "yes_with_reservations",
             "reservations": [
                 {
-                    "reservation": "Unanimous consent must be enforced by code before it is treated as constitutional canon.",
+                    "reservation": "Treat this as constitutional intent; enforcement must remain strict and audited in council-run outputs.",
                     "risk": 0.2,
                     "mitigation": [
-                        "Ship vote-mode + blocker-packet validation behind config + env override first."
+                        "Log vote_mode + blocker packets + reservations into motion artifacts every run."
                     ],
-                    "what_to_watch": "Any motion ratified without required role votes or without blocker packets on NO."
+                    "what_to_watch": "Any ratification missing required role votes or allowing NO without blocker_packet."
                 }
             ],
-            "rationale": "Approve the direction; implementation is the next execution step.",
-            "ts": "2026-03-03T18:05:00.000Z"
+            "rationale": "Approve the pivot; the runner now has vote-mode support and should enforce it consistently.",
+            "ts": "2026-03-03T18:20:00.000Z"
         },
         {
-            "voter_id": "auto:challenger",
+            "voter_id": "manual:challenger",
             "role": "challenger",
             "tier": 1,
             "vote": "yes",
-            "rationale": "The process adds structured friction and preserves objections; deadlock protocol prevents paralysis.",
-            "ts": "2026-03-03T18:05:10.000Z"
+            "rationale": "Unanimous consent + blocker packets prevents majority railroading and preserves objections durably.",
+            "ts": "2026-03-03T18:20:10.000Z"
         },
         {
-            "voter_id": "auto:arbiter",
+            "voter_id": "manual:arbiter",
             "role": "arbiter",
             "tier": 1,
             "vote": "yes",
-            "rationale": "Ratify as constitutional intent; enforce via runner changes next.",
-            "ts": "2026-03-03T18:05:20.000Z"
+            "rationale": "Deadlock protocol ensures productive friction without paralysis; objections remain part of trace.",
+            "ts": "2026-03-03T18:20:20.000Z"
         }
     ],
     "outcome": {
@@ -45,5 +45,5 @@
         "yes_with_reservations": 1,
         "result": "PASS"
     },
-    "last_updated": "2026-03-03T18:05:30.000Z"
+    "last_updated": "2026-03-03T18:20:30.000Z"
 }
