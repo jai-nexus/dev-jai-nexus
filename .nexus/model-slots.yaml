@@ -1,0 +1,37 @@
+version: "model.slots.v0"
+
+# Named model variables. Swap providers/models over time without changing role identity.
+# Do NOT store secrets here.
+
+slots:
+  # --- BUILDER candidate set (5 variables) ---
+  SLOT_BUILDER_01:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best coding model #1 (primary)"
+
+  SLOT_BUILDER_02:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best coding model #2 (alt)"
+
+  SLOT_BUILDER_03:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best coding model #3 (alt)"
+
+  SLOT_BUILDER_04:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best coding model #4 (alt)"
+
+  SLOT_BUILDER_05:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best coding model #5 (alt)"
+
+  # --- Selector slot (the “best course of action” chooser) ---
+  SLOT_BUILDER_SELECTOR:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Selector model for Builder panel (scores candidates + picks winner)"

@@ -1,0 +1,49 @@
+version: "agent.panels.v0"
+
+# Panels define: role -> 5 candidate model slots + 1 selector slot + rubric.
+# The selector must be able to justify choice with explicit scoring.
+
+panels:
+  JAI_DEV_BUILDER_PANEL_V0:
+    role_id: "JAI::DEV::BUILDER"
+
+    candidates:
+      - SLOT_BUILDER_01
+      - SLOT_BUILDER_02
+      - SLOT_BUILDER_03
+      - SLOT_BUILDER_04
+      - SLOT_BUILDER_05
+
+    selector:
+      slot: SLOT_BUILDER_SELECTOR
+      method: "rubric_score"
+
+    rubric:
+      # weights must sum to 1.00
+      - id: "correctness"
+        weight: 0.30
+        description: "Likely to be correct and match the requested change."
+
+      - id: "compilable"
+        weight: 0.20
+        description: "Type-safe, minimal TS errors, aligns with project conventions."
+
+      - id: "minimal_diff"
+        weight: 0.15
+        description: "Smallest patch that solves the problem."
+
+      - id: "maintainability"
+        weight: 0.15
+        description: "Readable, consistent patterns, low future risk."
+
+      - id: "evidence_plan_quality"
+        weight: 0.10
+        description: "Clear commands + expected outputs for verification."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Anticipates edge cases, security, governance constraints."
+
+# Default behavior (until automation exists):
+# - panel execution can be manual (Antigravity + you) following this spec
+# - later motion will implement “panel runner” that produces a selection record artifact

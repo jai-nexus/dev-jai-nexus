@@ -1,0 +1,17 @@
+title: "Agent Panels v0: role model variables + selector (Builder-first)"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: false
+
+max_risk_score: 0.15
+
+checks_required:
+  - validate_agency
+
+checks_optional:
+  - dct_replay_check
+  - typecheck
