@@ -1,0 +1,46 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0011",
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-04T18:52:38.291Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0011\\motion.yaml",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-04T18:52:38.646Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
+    },
+    "dct_replay_check": {
+      "gate": "dct_replay_check",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-04T18:52:40.010Z",
+      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
+      "cwd": "portal",
+      "required": false
+    },
+    "typecheck": {
+      "gate": "typecheck",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-04T18:52:44.663Z",
+      "command": "pnpm -C portal typecheck",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-04T18:52:44.663Z"
+  }
+}
