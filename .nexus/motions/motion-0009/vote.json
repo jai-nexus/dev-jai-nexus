@@ -15,7 +15,7 @@
             "tier": 2,
             "vote": "yes",
             "rationale": "Consent",
-            "ts": "2026-03-05T16:15:46.2101522Z"
+            "ts": "2026-03-05T16:15:46.210Z"
         },
         {
             "voter_id": "manual:challenger",
@@ -23,7 +23,7 @@
             "tier": 2,
             "vote": "yes",
             "rationale": "No blockers",
-            "ts": "2026-03-05T16:15:46.2101522Z"
+            "ts": "2026-03-05T16:15:46.210Z"
         },
         {
             "voter_id": "manual:arbiter",
@@ -31,7 +31,7 @@
             "tier": 2,
             "vote": "yes",
             "rationale": "Unanimous consent reached",
-            "ts": "2026-03-05T16:15:46.2101522Z"
+            "ts": "2026-03-05T16:15:46.210Z"
         }
     ],
     "outcome": {
@@ -43,5 +43,5 @@
         "reasons": [],
         "missing_required_roles": []
     },
-    "last_updated": "2026-03-05T16:16:16.182Z"
+    "last_updated": "2026-03-05T16:15:46.210Z"
 }
