@@ -2,7 +2,7 @@
   "version": "panel.selection.v0",
   "panel_id": "JAI_DEV_BUILDER_PANEL_V0",
   "motion_id": "motion-0010",
-  "task": "UNKNOWN",
+  "task": "motion-0015: implement deterministic panel selection runner (compute totals + winner from breakdown scores; write selection.json safely)",
   "winner": "UNKNOWN",
   "scores": {
     "SLOT_BUILDER_01": {
@@ -64,8 +64,27 @@
   "winner_rationale": [],
   "reservations": [],
   "evidence_plan": {
-    "commands": [],
-    "expected": []
+    "commands": [
+      "pnpm -C portal typecheck",
+      "node portal/scripts/panel-select.mjs --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0",
+      "node portal/scripts/panel-select.mjs --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0 --write",
+      "pnpm council:run motion-0015"
+    ],
+    "expected": [
+      "typecheck PASS",
+      "panel-select dry-run prints computed best slot and winner remains UNKNOWN when all totals are 0",
+      "panel-select --write updates totals and winner once breakdown scores are nonzero",
+      "council-run motion-0015 completes and writes verify/decision artifacts"
+    ]
   },
-  "files": []
+  "files": [
+    "candidates/SLOT_BUILDER_01.md",
+    "candidates/SLOT_BUILDER_02.md",
+    "candidates/SLOT_BUILDER_03.md",
+    "candidates/SLOT_BUILDER_04.md",
+    "candidates/SLOT_BUILDER_05.md",
+    "panel.json",
+    "selection.json",
+    "selector.md"
+  ]
 }
