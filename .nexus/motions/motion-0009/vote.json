@@ -1,49 +1,47 @@
 {
     "version": "0.2",
+    "protocol_version": "0.3.8",
     "motion_id": "motion-0009",
     "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
     "votes": [
         {
             "voter_id": "manual:proposer",
             "role": "proposer",
-            "tier": 1,
-            "vote": "yes_with_reservations",
-            "reservations": [
-                {
-                    "reservation": "Treat this as constitutional intent; enforcement must remain strict and audited in council-run outputs.",
-                    "risk": 0.2,
-                    "mitigation": [
-                        "Log vote_mode + blocker packets + reservations into motion artifacts every run."
-                    ],
-                    "what_to_watch": "Any ratification missing required role votes or allowing NO without blocker_packet."
-                }
-            ],
-            "rationale": "Approve the pivot; the runner now has vote-mode support and should enforce it consistently.",
-            "ts": "2026-03-03T18:20:00.000Z"
+            "tier": 2,
+            "vote": "yes",
+            "rationale": "Consent",
+            "ts": "2026-03-05T16:15:46.2101522Z"
         },
         {
             "voter_id": "manual:challenger",
             "role": "challenger",
-            "tier": 1,
+            "tier": 2,
             "vote": "yes",
-            "rationale": "Unanimous consent + blocker packets prevents majority railroading and preserves objections durably.",
-            "ts": "2026-03-03T18:20:10.000Z"
+            "rationale": "No blockers",
+            "ts": "2026-03-05T16:15:46.2101522Z"
         },
         {
             "voter_id": "manual:arbiter",
             "role": "arbiter",
-            "tier": 1,
+            "tier": 2,
             "vote": "yes",
-            "rationale": "Deadlock protocol ensures productive friction without paralysis; objections remain part of trace.",
-            "ts": "2026-03-03T18:20:20.000Z"
+            "rationale": "Unanimous consent reached",
+            "ts": "2026-03-05T16:15:46.2101522Z"
         }
     ],
     "outcome": {
-        "yes": 2,
+        "result": "PASS",
+        "yes": 3,
+        "yes_with_reservations": 0,
         "no": 0,
         "abstain": 0,
-        "yes_with_reservations": 1,
-        "result": "PASS"
+        "reasons": [],
+        "missing_required_roles": []
     },
-    "last_updated": "2026-03-03T18:20:30.000Z"
+    "last_updated": "2026-03-05T16:16:16.182Z"
 }

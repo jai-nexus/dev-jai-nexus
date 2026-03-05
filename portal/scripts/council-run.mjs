@@ -539,15 +539,18 @@ function resolveAllowReservations(cfg) {
 
 const councilCfg = readCouncilConfig();
 const voteMode = resolveVoteMode(councilCfg);
-console.log(
-    `[COUNCIL-RUN] Council config path: ${path.relative(repoRoot, councilConfigPath)} exists=${exists(councilConfigPath)}`
-);
-console.log(`[COUNCIL-RUN] Council config loaded: ${councilCfg ? "YES" : "NO"}`);
-if (councilCfg?.voting?.default_mode) {
-    console.log(`[COUNCIL-RUN] Council default_mode: ${String(councilCfg.voting.default_mode)}`);
-}
-if (process.env.JAI_COUNCIL_VOTE_MODE) {
-    console.log(`[COUNCIL-RUN] Env override JAI_COUNCIL_VOTE_MODE: ${process.env.JAI_COUNCIL_VOTE_MODE}`);
+
+if (process.env.JAI_COUNCIL_DEBUG === "1") {
+    console.log(
+        `[COUNCIL-RUN] Council config path: ${path.relative(repoRoot, councilConfigPath)} exists=${exists(councilConfigPath)}`
+    );
+    console.log(`[COUNCIL-RUN] Council config loaded: ${councilCfg ? "YES" : "NO"}`);
+    if (councilCfg?.voting?.default_mode) {
+        console.log(`[COUNCIL-RUN] Council default_mode: ${String(councilCfg.voting.default_mode)}`);
+    }
+    if (process.env.JAI_COUNCIL_VOTE_MODE) {
+        console.log(`[COUNCIL-RUN] Env override JAI_COUNCIL_VOTE_MODE: ${process.env.JAI_COUNCIL_VOTE_MODE}`);
+    }
 }
 
 const allowYesWithReservations = resolveAllowReservations(councilCfg);
