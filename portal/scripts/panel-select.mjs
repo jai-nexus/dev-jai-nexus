@@ -1,24 +1,8 @@
 #!/usr/bin/env node
-/**
- * Panel Selection Runner v0
- *
- * Reads:
- * - .nexus/motions/<motionId>/panels/<panelId>/panel.json
- * - .nexus/motions/<motionId>/panels/<panelId>/selection.json
- *
- * Computes:
- * - scores.<slot>.total = sum(breakdown[criterion] * weight) * 10  -> 0..100
- * - winner = max total (tie-break slot name asc)
- *
- * Writes (only if --write):
- * - selection.json (atomic write)
- *
- * No API calls. No secrets. Deterministic.
- */
-
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { computeSelection } from "../src/lib/panels/panelSelectCore.mjs";
 
 function die(msg) {
     console.error(`\n[PANEL-SELECT] ERROR: ${msg}\n`);
@@ -84,36 +68,10 @@ async function atomicWriteJsonIfChanged(p, obj) {
         // ignore
     }
     if (cur === text) return false;
-
     const tmp = `${p}.tmp`;
     await fs.writeFile(tmp, text, "utf8");
     await fs.rename(tmp, p);
     return true;
-}
-
-function clamp01to10(n) {
-    const x = Number(n);
-    if (!Number.isFinite(x)) return 0;
-    if (x < 0) return 0;
-    if (x > 10) return 10;
-    return x;
-}
-
-function round2(n) {
-    return Math.round(n * 100) / 100;
-}
-
-function computeTotal(breakdown, rubric) {
-    // sum(score * weight) * 10 => 0..100
-    let sum = 0;
-    for (const r of rubric) {
-        const id = String(r?.id ?? "").trim();
-        const w = Number(r?.weight ?? 0);
-        if (!id || !Number.isFinite(w)) continue;
-        const s = clamp01to10(breakdown?.[id] ?? 0);
-        sum += s * w;
-    }
-    return round2(sum * 10);
 }
 
 async function listCandidateFiles(panelDir) {
@@ -137,14 +95,7 @@ async function listCandidateFiles(panelDir) {
     const repoRoot = await findRepoRoot(process.cwd());
     if (!repoRoot) die("Repo root not found (missing .nexus directory).");
 
-    const panelDir = path.join(
-        repoRoot,
-        ".nexus",
-        "motions",
-        args.motion,
-        "panels",
-        args.panel
-    );
+    const panelDir = path.join(repoRoot, ".nexus", "motions", args.motion, "panels", args.panel);
 
     const panelJsonPath = path.join(panelDir, "panel.json");
     const selectionJsonPath = path.join(panelDir, "selection.json");
@@ -155,66 +106,16 @@ async function listCandidateFiles(panelDir) {
     if (!(await pathExists(selectionJsonPath))) die(`Missing selection.json: ${selectionJsonPath}`);
 
     const panel = await readJson(panelJsonPath);
-    const selection = await readJson(selectionJsonPath);
+    let selection = await readJson(selectionJsonPath);
 
-    const rubric = Array.isArray(panel?.rubric) ? panel.rubric : [];
-    if (rubric.length === 0) die("panel.json rubric is missing or empty.");
-
-    const scores = selection?.scores ?? {};
-    const slots = Object.keys(scores).sort((a, b) => a.localeCompare(b));
-
-    if (slots.length === 0) die("selection.json has no scores entries.");
-
-    let anyNonZero = false;
-    const totalsBySlot = [];
-
-    for (const slot of slots) {
-        const entry = scores[slot] ?? {};
-        const breakdown = entry.breakdown ?? {};
-        const total = computeTotal(breakdown, rubric);
-
-        if (total > 0) anyNonZero = true;
-
-        // normalize breakdown values to clamped numbers (0..10)
-        const nextBreakdown = { ...breakdown };
-        for (const r of rubric) {
-            const id = String(r?.id ?? "").trim();
-            if (!id) continue;
-            nextBreakdown[id] = clamp01to10(nextBreakdown[id] ?? 0);
-        }
-
-        scores[slot] = {
-            total,
-            breakdown: nextBreakdown,
-        };
-
-        totalsBySlot.push({ slot, total });
-    }
-
-    totalsBySlot.sort((a, b) => {
-        if (b.total !== a.total) return b.total - a.total;
-        return a.slot.localeCompare(b.slot);
-    });
-
-    const best = totalsBySlot[0];
-    const computedWinner =
-        (anyNonZero || args.forceWinner) && best ? best.slot : "UNKNOWN";
-
-    // update selection record core ids to match path (safe + self-healing)
+    // self-heal ids (bounded + harmless)
     selection.motion_id = args.motion;
     selection.panel_id = args.panel;
 
-    selection.scores = scores;
+    const { next, meta } = computeSelection(panel, selection, { forceWinner: args.forceWinner });
+    selection = next;
 
-    // only override winner if we actually computed one OR force is set
-    if (computedWinner !== "UNKNOWN" || args.forceWinner) {
-        selection.winner = computedWinner;
-    } else {
-        // keep UNKNOWN if nothing is scored yet
-        selection.winner = "UNKNOWN";
-    }
-
-    // update files list (bounded + useful)
+    // files list (useful for viewer)
     const files = new Set();
     files.add("panel.json");
     files.add("selection.json");
@@ -222,15 +123,15 @@ async function listCandidateFiles(panelDir) {
     for (const f of await listCandidateFiles(panelDir)) files.add(f);
     selection.files = Array.from(files).sort((a, b) => a.localeCompare(b));
 
-    // show result
     console.log(`[PANEL-SELECT] motion=${args.motion} panel=${args.panel}`);
-    console.log(`[PANEL-SELECT] slots=${slots.length}`);
-    console.log(`[PANEL-SELECT] best=${best.slot} total=${best.total}`);
+    console.log(`[PANEL-SELECT] slots=${meta.slots}`);
+    if (meta.best) console.log(`[PANEL-SELECT] best=${meta.best.slot} total=${meta.best.total}`);
     console.log(`[PANEL-SELECT] winner=${selection.winner}`);
     console.log(`[PANEL-SELECT] mode=${args.write ? "WRITE" : "DRY-RUN"}`);
 
-    if (args.verbose) {
-        for (const t of totalsBySlot) console.log(`  - ${t.slot}: ${t.total}`);
+    if (args.verbose && selection?.scores) {
+        const slots = Object.keys(selection.scores).sort((a, b) => a.localeCompare(b));
+        for (const s of slots) console.log(`  - ${s}: ${selection.scores[s]?.total ?? 0}`);
     }
 
     if (args.write) {

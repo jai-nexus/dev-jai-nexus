@@ -1,0 +1,107 @@
+{
+  "version": "panel.selection.v0",
+  "panel_id": "JAI_DEV_BUILDER_PANEL_V0",
+  "motion_id": "motion-0016",
+  "task": "motion-0016: Panels Operationalization v0 — score UX + shared scorer + coverage signal",
+  "winner": "SLOT_BUILDER_01",
+  "scores": {
+    "SLOT_BUILDER_01": {
+      "total": 38,
+      "breakdown": {
+        "correctness": 8,
+        "compilable": 7,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_BUILDER_02": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_BUILDER_03": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_BUILDER_04": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_BUILDER_05": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    }
+  },
+  "winner_rationale": [
+    "Winner selected by deterministic max-total rule after applying rubric weights to breakdown scores (0–10) and scaling to a 0–100 total.",
+    "SLOT_BUILDER_01 has nonzero scores (correctness=8, compilable=7) producing total=38; all other slots remain unscored (total=0).",
+    "No tie-break was required (unique highest total).",
+    "This selection record is used as operational evidence for motion-0016 (shared scorer + UI scoring workflow + coverage signal)."
+  ],
+  "reservations": [
+    {
+      "reservation": "Partial scoring: only SLOT_BUILDER_01 has nonzero breakdown values; selection reflects current inputs rather than a full comparative evaluation.",
+      "risk": 0.2,
+      "mitigation": [
+        "Score at least one additional slot across the same criteria to validate that SLOT_BUILDER_01 remains the highest-total option.",
+        "If future scoring changes the winner, update winner_rationale and record why the decision changed."
+      ],
+      "what_to_watch": "If additional slots are scored later and totals change materially, confirm the recompute step was run and the winner remains stable under the same rubric."
+    }
+  ],
+  "evidence_plan": {
+    "commands": [
+      "pnpm -C portal typecheck",
+      "pnpm -C portal dev",
+      "node portal/scripts/panel-select.mjs --motion motion-0016 --panel JAI_DEV_BUILDER_PANEL_V0 --verbose",
+      "node portal/scripts/panel-select.mjs --motion motion-0016 --panel JAI_DEV_BUILDER_PANEL_V0 --write --verbose",
+      "pnpm council:run motion-0016"
+    ],
+    "expected": [
+      "typecheck PASS",
+      "dev server loads /operator/panels, /operator/panels/<motion>/<panel>, and /operator/registry/coverage",
+      "panel-select computes deterministic totals and winner from breakdown + rubric (dry-run prints best slot and totals)",
+      "panel-select --write persists updated totals and winner idempotently",
+      "council-run motion-0016 completes and writes verify/decision artifacts"
+    ]
+  },
+  "files": [
+    "candidates/SLOT_BUILDER_01.md",
+    "candidates/SLOT_BUILDER_02.md",
+    "candidates/SLOT_BUILDER_03.md",
+    "candidates/SLOT_BUILDER_04.md",
+    "candidates/SLOT_BUILDER_05.md",
+    "panel.json",
+    "selection.json",
+    "selector.md"
+  ]
+}

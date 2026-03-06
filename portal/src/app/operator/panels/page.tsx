@@ -1,10 +1,50 @@
 import Link from "next/link";
-import { listPanelsIndex } from "@/lib/panels/panelIndex";
+import { listPanelsIndex, type WinnerStatus } from "@/lib/panels/panelIndex";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export default async function PanelsIndexPage() {
-    const items = await listPanelsIndex();
+type SearchParamValue = string | string[] | undefined;
+
+function firstParam(v: SearchParamValue): string | undefined {
+    if (!v) return undefined;
+    return Array.isArray(v) ? v[0] : v;
+}
+
+function sanitizeId(input?: string): string | undefined {
+    const raw = (input ?? "").trim();
+    if (!raw) return undefined;
+    if (!/^[a-zA-Z0-9._-]+$/.test(raw)) return undefined;
+    return raw.length > 140 ? raw.slice(0, 140) : raw;
+}
+
+function sanitizeStatus(input?: string): WinnerStatus | undefined {
+    const raw = (input ?? "").trim().toUpperCase();
+    if (raw === "UNKNOWN") return "UNKNOWN";
+    if (raw === "SELECTED") return "SELECTED";
+    return undefined;
+}
+
+function sanitizeCompleted(input?: string): boolean | undefined {
+    const raw = (input ?? "").trim().toUpperCase();
+    if (raw === "Y") return true;
+    if (raw === "N") return false;
+    return undefined; // ANY / missing
+}
+
+export default async function PanelsIndexPage(props: {
+    searchParams?: Promise<Record<string, SearchParamValue>> | Record<string, SearchParamValue>;
+}) {
+    const sp = (await Promise.resolve(props.searchParams ?? {})) as Record<string, SearchParamValue>;
+
+    const motionId = sanitizeId(firstParam(sp.motionId));
+    const panelId = sanitizeId(firstParam(sp.panelId));
+    const status = sanitizeStatus(firstParam(sp.status));
+    const completed = sanitizeCompleted(firstParam(sp.completed));
+
+    const items = await listPanelsIndex({ motionId, panelId, status, completed });
+
+    const completedCount = items.filter((x) => x.completed).length;
 
     return (
         <div className="min-h-screen bg-zinc-950 text-gray-100 p-8">
@@ -12,7 +52,8 @@ export default async function PanelsIndexPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-sky-400">Panels</h1>
                     <p className="text-sm text-gray-400 mt-1">
-                        Index of panel artifacts discovered under <span className="font-mono">.nexus/motions/*/panels/*</span>
+                        Index of panel artifacts discovered under{" "}
+                        <span className="font-mono">.nexus/motions/*/panels/*</span>
                     </p>
                 </div>
                 <div className="text-xs text-gray-500 bg-zinc-900 px-3 py-2 rounded border border-gray-800">
@@ -20,14 +61,84 @@ export default async function PanelsIndexPage() {
                 </div>
             </div>
 
+            {/* Filters */}
+            <form method="GET" className="mb-4 flex flex-wrap items-end gap-3">
+                <div>
+                    <div className="text-[11px] text-gray-500 mb-1">motionId</div>
+                    <input
+                        name="motionId"
+                        defaultValue={motionId ?? ""}
+                        placeholder="motion-0010"
+                        className="w-[200px] rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200 placeholder:text-gray-600"
+                    />
+                </div>
+
+                <div>
+                    <div className="text-[11px] text-gray-500 mb-1">panelId</div>
+                    <input
+                        name="panelId"
+                        defaultValue={panelId ?? ""}
+                        placeholder="JAI_DEV_BUILDER_PANEL_V0"
+                        className="w-[320px] rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200 placeholder:text-gray-600"
+                    />
+                </div>
+
+                <div>
+                    <div className="text-[11px] text-gray-500 mb-1">status</div>
+                    <select
+                        name="status"
+                        defaultValue={status ?? ""}
+                        className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200"
+                    >
+                        <option value="">ANY</option>
+                        <option value="UNKNOWN">UNKNOWN</option>
+                        <option value="SELECTED">SELECTED</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div className="text-[11px] text-gray-500 mb-1">completed</div>
+                    <select
+                        name="completed"
+                        defaultValue={typeof completed === "boolean" ? (completed ? "Y" : "N") : ""}
+                        className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200"
+                    >
+                        <option value="">ANY</option>
+                        <option value="Y">Y</option>
+                        <option value="N">N</option>
+                    </select>
+                </div>
+
+                <button
+                    type="submit"
+                    className="rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-200 hover:bg-zinc-900"
+                >
+                    Apply
+                </button>
+
+                <Link
+                    href="/operator/panels"
+                    className="rounded border border-zinc-800 bg-transparent px-3 py-2 text-xs text-gray-400 hover:bg-zinc-900 hover:text-gray-200"
+                >
+                    Clear
+                </Link>
+
+                <div className="ml-auto flex items-center gap-4 text-xs text-gray-500">
+                    <div>
+                        Found <span className="font-mono text-gray-200">{items.length}</span>
+                    </div>
+                    <div>
+                        Completed{" "}
+                        <span className="font-mono text-emerald-300">{completedCount}</span>
+                    </div>
+                </div>
+            </form>
+
             {items.length === 0 ? (
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-5 text-gray-300">
                     <div className="font-semibold mb-2">No panels found</div>
                     <div className="text-sm text-gray-400">
-                        Create one with:{" "}
-                        <span className="font-mono">
-                            node portal/scripts/panel-run.mjs scaffold --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
-                        </span>
+                        Expected path: <span className="font-mono">.nexus/motions/*/panels/*</span>
                     </div>
                 </div>
             ) : (
@@ -38,31 +149,66 @@ export default async function PanelsIndexPage() {
                                 <th className="px-4 py-3">Motion</th>
                                 <th className="px-4 py-3">Panel</th>
                                 <th className="px-4 py-3">Role</th>
+                                <th className="px-4 py-3">Selector</th>
                                 <th className="px-4 py-3">Winner</th>
-                                <th className="px-4 py-3">Task</th>
+                                <th className="px-4 py-3">Status</th>
+                                <th className="px-4 py-3">Completed</th>
+                                <th className="px-4 py-3 text-right">Evidence</th>
                                 <th className="px-4 py-3 text-right">Candidates</th>
+                                <th className="px-4 py-3">Updated</th>
                             </tr>
                         </thead>
+
                         <tbody className="divide-y divide-zinc-800">
-                            {items.map((it) => (
-                                <tr key={`${it.motion_id}:${it.panel_id}`} className="hover:bg-zinc-900/40">
-                                    <td className="px-4 py-3 font-mono">{it.motion_id}</td>
-                                    <td className="px-4 py-3">
-                                        <Link
-                                            className="font-mono text-sky-300 hover:underline"
-                                            href={`/operator/panels/${it.motion_id}/${it.panel_id}`}
-                                        >
-                                            {it.panel_id}
-                                        </Link>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono text-gray-300">{it.role_id}</td>
-                                    <td className="px-4 py-3 font-mono text-gray-300">{it.winner}</td>
-                                    <td className="px-4 py-3 text-gray-400 max-w-[420px] truncate" title={it.task}>
-                                        {it.task}
-                                    </td>
-                                    <td className="px-4 py-3 text-right font-mono text-gray-300">{it.candidates_count}</td>
-                                </tr>
-                            ))}
+                            {items.map((it) => {
+                                const href = `/operator/panels/${it.motion_id}/${it.panel_id}`;
+
+                                return (
+                                    <tr key={`${it.motion_id}:${it.panel_id}`} className="hover:bg-zinc-900/40">
+                                        <td className="px-4 py-3 font-mono text-gray-200">{it.motion_id}</td>
+
+                                        <td className="px-4 py-3">
+                                            <Link className="font-mono text-sky-300 hover:underline" href={href}>
+                                                {it.panel_id}
+                                            </Link>
+                                        </td>
+
+                                        <td className="px-4 py-3 font-mono text-gray-300">{it.role_id}</td>
+
+                                        <td className="px-4 py-3 font-mono text-gray-300">{it.selector}</td>
+
+                                        <td className="px-4 py-3 font-mono text-gray-300">{it.winner}</td>
+
+                                        <td className="px-4 py-3 font-mono">
+                                            <span
+                                                className={
+                                                    it.winner_status === "SELECTED"
+                                                        ? "text-emerald-300"
+                                                        : "text-gray-500"
+                                                }
+                                            >
+                                                {it.winner_status}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-4 py-3 font-mono">
+                                            <span className={it.completed ? "text-emerald-300" : "text-amber-300"}>
+                                                {it.completed ? "Y" : "N"}
+                                            </span>
+                                        </td>
+
+                                        <td className="px-4 py-3 text-right font-mono text-gray-300">
+                                            {it.evidence_commands}
+                                        </td>
+
+                                        <td className="px-4 py-3 text-right font-mono text-gray-300">
+                                            {it.candidates_count}
+                                        </td>
+
+                                        <td className="px-4 py-3 font-mono text-gray-400">{it.updated_at}</td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

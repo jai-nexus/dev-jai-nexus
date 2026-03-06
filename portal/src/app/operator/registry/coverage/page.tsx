@@ -1,7 +1,10 @@
 // portal/src/app/operator/registry/coverage/page.tsx
 import { loadLatestHealthSnapshots, loadRegistryIndexes } from "@/lib/registryIndex";
+import { listPanelsForCoverage } from "@/lib/panels/panelStore";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 type EngineType = "frontend" | "backend" | "helper";
 
@@ -45,10 +48,18 @@ function safeArrayOfString(v: unknown): string[] {
     return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
 }
 
+function formatIsoDay(ts?: string) {
+    if (!ts) return "—";
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toISOString().slice(0, 10); // YYYY-MM-DD (stable across server/client)
+}
+
 export default async function RegistryCoveragePage() {
-    const [registryRaw, health] = await Promise.all([
+    const [registryRaw, health, panels] = await Promise.all([
         loadRegistryIndexes().catch(() => null),
         loadLatestHealthSnapshots(),
+        listPanelsForCoverage().catch(() => []),
     ]);
 
     if (!registryRaw) {
@@ -81,13 +92,17 @@ export default async function RegistryCoveragePage() {
 
     const repoIds = Object.keys(reposMap).sort();
 
+    const panelsTotal = panels.length;
+    const panelsCompleted = panels.filter((p) => p.completed).length;
+    const panelsIncomplete = panels.filter((p) => !p.completed);
+
     return (
         <div className="p-8 bg-zinc-950 min-h-screen text-gray-100">
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-sky-400">Workspace Coverage</h1>
                     <p className="text-sm text-gray-400 mt-1">
-                        Consolidated view of agents, domains, and health across all repos.
+                        Consolidated view of agents, domains, health, and panel completion across all repos.
                     </p>
                 </div>
                 <div className="text-xs text-gray-500 bg-zinc-900 px-3 py-1 rounded border border-gray-800">
@@ -95,6 +110,58 @@ export default async function RegistryCoveragePage() {
                 </div>
             </div>
 
+            {/* Panels Completion */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
+                    <div className="text-xs text-gray-500 mb-1">Panels discovered</div>
+                    <div className="text-2xl font-bold text-gray-200 font-mono">{panelsTotal}</div>
+                    <div className="text-xs text-gray-500 mt-2">
+                        Scanned from <span className="font-mono">.nexus/motions/*/panels/*</span>
+                    </div>
+                </div>
+
+                <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
+                    <div className="text-xs text-gray-500 mb-1">Panels completed</div>
+                    <div className="text-2xl font-bold text-emerald-300 font-mono">{panelsCompleted}</div>
+                    <div className="text-xs text-gray-500 mt-2">
+                        Completed = winner ≠ UNKNOWN AND evidence_plan.commands non-empty
+                    </div>
+                </div>
+
+                <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
+                    <div className="text-xs text-gray-500 mb-1">Incomplete panels</div>
+                    <div className="text-2xl font-bold text-amber-300 font-mono">{panelsIncomplete.length}</div>
+                    <div className="text-xs text-gray-500 mt-2">
+                        <Link href="/operator/panels" className="text-sky-300 hover:underline">
+                            Open panels index →
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            {panelsIncomplete.length ? (
+                <div className="border border-zinc-800 rounded-lg bg-zinc-900/20 p-4 mb-6">
+                    <div className="font-semibold text-gray-200 mb-2">Needs attention</div>
+                    <div className="text-xs text-gray-500 mb-3">Showing up to 8 incomplete panels.</div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                        {panelsIncomplete.slice(0, 8).map((p) => (
+                            <Link
+                                key={`${p.motion_id}:${p.panel_id}`}
+                                href={p.href}
+                                className="text-xs px-3 py-2 rounded border border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900/40"
+                            >
+                                <span className="font-mono text-gray-200">{p.motion_id}</span>{" "}
+                                <span className="text-gray-500">/</span>{" "}
+                                <span className="font-mono text-sky-300">{p.panel_id}</span>{" "}
+                                <span className="text-gray-500">·</span>{" "}
+                                <span className="font-mono text-gray-400">winner={p.winner}</span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
+
+            {/* Existing registry table */}
             {repoIds.length === 0 ? (
                 <div className="p-6 border border-gray-800 rounded bg-zinc-900/30 text-gray-300">
                     Registry loaded, but no repos were found in the index.
@@ -176,8 +243,8 @@ export default async function RegistryCoveragePage() {
                                             <div className="flex flex-col">
                                                 <span className={`font-bold ${statusColor}`}>{healthStatus}</span>
                                                 {healthInfo?.ts ? (
-                                                    <span className="text-[10px] text-gray-600 truncate">
-                                                        {new Date(healthInfo.ts).toLocaleDateString()}
+                                                    <span className="text-[10px] text-gray-600 truncate" suppressHydrationWarning>
+                                                        {formatIsoDay(healthInfo.ts)}
                                                     </span>
                                                 ) : null}
                                             </div>
