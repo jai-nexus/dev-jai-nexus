@@ -6,10 +6,10 @@
   "winner": "SLOT_BUILDER_01",
   "scores": {
     "SLOT_BUILDER_01": {
-      "total": 38,
+      "total": 0,
       "breakdown": {
-        "correctness": 8,
-        "compilable": 7,
+        "correctness": 0,
+        "compilable": 0,
         "minimal_diff": 0,
         "maintainability": 0,
         "evidence_plan_quality": 0,
@@ -61,8 +61,22 @@
       }
     }
   },
-  "winner_rationale": [],
-  "reservations": [],
+  "winner_rationale": [
+    "Winner selected by deterministic max-total rule after applying rubric weights to breakdown scores (0–10) and scaling to a 0–100 total.",
+    "SLOT_BUILDER_01 is the only slot with nonzero scores (correctness=8, compilable=7), producing total=38; all other slots remain unscored (total=0).",
+    "No tie-break was required (unique highest total)."
+  ],
+  "reservations": [
+    {
+      "reservation": "Partial scoring: only SLOT_BUILDER_01 has nonzero breakdown values; selection reflects current inputs rather than a full comparative evaluation.",
+      "risk": 0.2,
+      "mitigation": [
+        "Score at least one additional slot across the same criteria to validate that SLOT_BUILDER_01 remains the highest-total option.",
+        "If future scoring changes the winner, update winner_rationale and record why the decision changed."
+      ],
+      "what_to_watch": "If additional slots are scored later and totals change materially, confirm the recompute step was run and the winner remains stable under the same rubric."
+    }
+  ],
   "evidence_plan": {
     "commands": [
       "pnpm -C portal typecheck",
