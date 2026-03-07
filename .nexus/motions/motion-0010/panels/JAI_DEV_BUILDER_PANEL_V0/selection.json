@@ -3,7 +3,7 @@
   "panel_id": "JAI_DEV_BUILDER_PANEL_V0",
   "motion_id": "motion-0010",
   "task": "motion-0015: implement deterministic panel selection runner (compute totals + winner from breakdown scores; write selection.json safely)",
-  "winner": "SLOT_BUILDER_01",
+  "winner": "UNKNOWN",
   "scores": {
     "SLOT_BUILDER_01": {
       "total": 0,
