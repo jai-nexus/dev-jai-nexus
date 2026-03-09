@@ -30,8 +30,136 @@ slots:
     model: "UNKNOWN"
     notes: "Best coding model #5 (alt)"
 
-  # --- Selector slot (the “best course of action” chooser) ---
+  # --- BUILDER selector slot (scores candidates + picks winner) ---
   SLOT_BUILDER_SELECTOR:
     provider: "UNKNOWN"
     model: "UNKNOWN"
     notes: "Selector model for Builder panel (scores candidates + picks winner)"
+
+  # --- ARCHITECT candidate set (5 variables) ---
+  SLOT_ARCHITECT_01:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best architecture/plan model #1 (primary)"
+
+  SLOT_ARCHITECT_02:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best architecture/plan model #2 (alt)"
+
+  SLOT_ARCHITECT_03:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best architecture/plan model #3 (alt)"
+
+  SLOT_ARCHITECT_04:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best architecture/plan model #4 (alt)"
+
+  SLOT_ARCHITECT_05:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best architecture/plan model #5 (alt)"
+
+  # --- ARCHITECT selector slot (scores candidates + picks winner) ---
+  SLOT_ARCHITECT_SELECTOR:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Selector model for Architect panel (scores candidates + picks winner)"
+
+  # --- VERIFIER candidate set (5 variables) ---
+  SLOT_VERIFIER_01:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best verification/review model #1 (primary)"
+
+  SLOT_VERIFIER_02:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best verification/review model #2 (alt)"
+
+  SLOT_VERIFIER_03:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best verification/review model #3 (alt)"
+
+  SLOT_VERIFIER_04:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best verification/review model #4 (alt)"
+
+  SLOT_VERIFIER_05:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best verification/review model #5 (alt)"
+
+  # --- VERIFIER selector slot (scores candidates + picks winner) ---
+  SLOT_VERIFIER_SELECTOR:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Selector model for Verifier panel (scores candidates + picks winner)"
+
+  # --- LIBRARIAN candidate set (5 variables) ---
+  SLOT_LIBRARIAN_01:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best docs/summarization model #1 (primary)"
+
+  SLOT_LIBRARIAN_02:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best docs/summarization model #2 (alt)"
+
+  SLOT_LIBRARIAN_03:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best docs/summarization model #3 (alt)"
+
+  SLOT_LIBRARIAN_04:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best docs/summarization model #4 (alt)"
+
+  SLOT_LIBRARIAN_05:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best docs/summarization model #5 (alt)"
+
+  # --- LIBRARIAN selector slot (scores candidates + picks winner) ---
+  SLOT_LIBRARIAN_SELECTOR:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Selector model for Librarian panel (scores candidates + picks winner)"
+
+  # --- OPERATOR candidate set (5 variables) ---
+  SLOT_OPERATOR_01:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best operator/execution model #1 (primary)"
+
+  SLOT_OPERATOR_02:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best operator/execution model #2 (alt)"
+
+  SLOT_OPERATOR_03:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best operator/execution model #3 (alt)"
+
+  SLOT_OPERATOR_04:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best operator/execution model #4 (alt)"
+
+  SLOT_OPERATOR_05:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Best operator/execution model #5 (alt)"
+
+  # --- OPERATOR selector slot (scores candidates + picks winner) ---
+  SLOT_OPERATOR_SELECTOR:
+    provider: "UNKNOWN"
+    model: "UNKNOWN"
+    notes: "Selector model for Operator panel (scores candidates + picks winner)"
