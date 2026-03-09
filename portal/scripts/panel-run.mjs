@@ -1,17 +1,24 @@
 #!/usr/bin/env node
 /**
- * Panel Runner v0 (scaffold + score)
+ * Panel Runner v0 (scaffold + score + instantiate)
  *
  * Creates durable panel artifacts under:
  *   .nexus/motions/<motionId>/panels/<panelId>/
  *
  * Commands:
- *   node portal/scripts/panel-run.mjs scaffold --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
- *   node portal/scripts/panel-run.mjs score    --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
+ *   node portal/scripts/panel-run.mjs scaffold     --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0 [--force]
+ *   node portal/scripts/panel-run.mjs score        --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
+ *
+ * Bulk:
+ *   node portal/scripts/panel-run.mjs instantiate  --motion motion-0016 --all [--force] [--dry-run]
+ *   node portal/scripts/panel-run.mjs instantiate  --motion motion-0016 --all --only JAI_DEV_BUILDER_PANEL_V0,JAI_DEV_ARCHITECT_PANEL_V0
+ *   node portal/scripts/panel-run.mjs instantiate  --motion motion-0016 --all --exclude JAI_DEV_HELPER_PANEL_V0
+ *   node portal/scripts/panel-run.mjs instantiate  --motion motion-0016 --panels JAI_DEV_BUILDER_PANEL_V0,JAI_DEV_LIBRARIAN_PANEL_V0
  *
  * Notes:
  * - No LLM calls. This is scaffolding + record keeping only.
  * - Idempotent: scaffold does not overwrite existing files unless --force is used.
+ * - Manifest-gated: panels must be registered in .nexus/agent-panels.yaml
  */
 
 import fs from "node:fs/promises";
@@ -29,6 +36,10 @@ function die(msg) {
 
 function log(msg) {
     console.log(`[PANEL-RUN] ${msg}`);
+}
+
+function isSafeId(id) {
+    return /^[a-zA-Z0-9._-]+$/.test(String(id ?? ""));
 }
 
 async function exists(p) {
@@ -129,16 +140,32 @@ function assertArray(v, label) {
     return v;
 }
 
+function splitCsv(v) {
+    const raw = String(v ?? "").trim();
+    if (!raw) return [];
+    return raw
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+}
+
 function toPanelDir(repoRoot, motionId, panelId) {
     return path.join(repoRoot, ".nexus", "motions", motionId, "panels", panelId);
 }
 
-async function loadPanelSpec(repoRoot, panelId) {
+async function loadPanelsManifest(repoRoot) {
     const panelsPath = path.join(repoRoot, ".nexus", "agent-panels.yaml");
     if (!(await exists(panelsPath))) die(`Missing .nexus/agent-panels.yaml`);
-    const panelsObj = safeYamlLoad(await readText(panelsPath), ".nexus/agent-panels.yaml");
-    const panels = panelsObj?.panels;
+
+    const obj = safeYamlLoad(await readText(panelsPath), ".nexus/agent-panels.yaml");
+    const panels = obj?.panels;
     if (!panels || typeof panels !== "object") die(`agent-panels.yaml missing "panels:" root`);
+
+    return { panelsPath, panels };
+}
+
+async function loadPanelSpec(repoRoot, panelId) {
+    const { panelsPath, panels } = await loadPanelsManifest(repoRoot);
     const spec = panels[panelId];
     if (!spec) die(`Panel "${panelId}" not found in .nexus/agent-panels.yaml`);
     return { panelsPath, spec };
@@ -169,7 +196,6 @@ function validateRubric(rubric) {
         sum += w;
     }
 
-    // allow tiny float errors
     const close = Math.abs(sum - 1.0) < 0.0001;
     if (!close) die(`rubric weights must sum to 1.00 (got ${sum.toFixed(4)})`);
 
@@ -285,7 +311,6 @@ function computeTotals(selection, rubric) {
             breakdown[id] = clamped;
             weighted += clamped * (weights[id] ?? 0);
         }
-        // 0–100 scale
         entry.total = Math.round(weighted * 10 * 100) / 100;
     }
 
@@ -293,7 +318,9 @@ function computeTotals(selection, rubric) {
 }
 
 async function scaffold({ repoRoot, motionId, panelId, force }) {
-    // Validate motion dir exists
+    if (!isSafeId(motionId)) die(`Unsafe motion id: ${motionId}`);
+    if (!isSafeId(panelId)) die(`Unsafe panel id: ${panelId}`);
+
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
     if (!(await exists(motionDir))) die(`Motion folder missing: .nexus/motions/${motionId}`);
 
@@ -310,7 +337,6 @@ async function scaffold({ repoRoot, motionId, panelId, force }) {
     const rubric = assertArray(spec.rubric, `panels.${panelId}.rubric`);
     const rubricIds = validateRubric(rubric);
 
-    // Verify slots referenced exist (do not validate provider/model contents)
     for (const s of [...candidates, selectorSlot]) {
         if (!slots[s]) die(`model-slots.yaml missing slot: ${s}`);
     }
@@ -325,23 +351,19 @@ async function scaffold({ repoRoot, motionId, panelId, force }) {
 
     const panelJson = panelMeta({ panelId, roleId, candidateSlots: candidates, selectorSlot, rubric });
 
-    // panel.json: overwrite only if --force, otherwise only create if missing
     if (force) await writeTextIfChanged(panelJsonPath, stableJson(panelJson));
     else await writeTextIfMissing(panelJsonPath, stableJson(panelJson));
 
-    // selector.md: same behavior
     const selectorMd = selectorMdTemplate(panelId, rubric);
     if (force) await writeTextIfChanged(selectorMdPath, selectorMd);
     else await writeTextIfMissing(selectorMdPath, selectorMd);
 
-    // candidate files: never overwrite unless --force
     for (const slot of candidates) {
         const p = path.join(candidatesDir, `${slot}.md`);
         if (force) await writeTextIfChanged(p, candidateMdTemplate(slot));
         else await writeTextIfMissing(p, candidateMdTemplate(slot));
     }
 
-    // selection.json template: same behavior
     const selectionObj = selectionTemplate({ panelId, motionId, candidateSlots: candidates, rubricIds });
     if (force) await writeTextIfChanged(selectionJsonPath, stableJson(selectionObj));
     else await writeTextIfMissing(selectionJsonPath, stableJson(selectionObj));
@@ -351,10 +373,36 @@ async function scaffold({ repoRoot, motionId, panelId, force }) {
     log(`- selector.md`);
     log(`- candidates/${candidates.length} files`);
     log(`- selection.json`);
-    log(`Next: fill candidates + selector, then run: score --motion ${motionId} --panel ${panelId}`);
+}
+
+async function instantiate({ repoRoot, motionId, panelIds, force, dryRun }) {
+    if (!isSafeId(motionId)) die(`Unsafe motion id: ${motionId}`);
+
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+    if (!(await exists(motionDir))) die(`Motion folder missing: .nexus/motions/${motionId}`);
+
+    const unique = Array.from(new Set(panelIds)).sort((a, b) => a.localeCompare(b));
+    for (const id of unique) {
+        if (!isSafeId(id)) die(`Unsafe panel id in list: ${id}`);
+    }
+
+    if (dryRun) {
+        log(`Dry run: would scaffold ${unique.length} panel(s) into .nexus/motions/${motionId}/panels/*`);
+        for (const id of unique) log(`- ${id}`);
+        return;
+    }
+
+    log(`Instantiating ${unique.length} panel(s) for ${motionId}…`);
+    for (const panelId of unique) {
+        await scaffold({ repoRoot, motionId, panelId, force });
+    }
+    log(`Instantiate done: ${unique.length} panel(s)`);
 }
 
 async function score({ repoRoot, motionId, panelId }) {
+    if (!isSafeId(motionId)) die(`Unsafe motion id: ${motionId}`);
+    if (!isSafeId(panelId)) die(`Unsafe panel id: ${panelId}`);
+
     const panelDir = toPanelDir(repoRoot, motionId, panelId);
     const panelJsonPath = path.join(panelDir, "panel.json");
     const selectionJsonPath = path.join(panelDir, "selection.json");
@@ -369,7 +417,6 @@ async function score({ repoRoot, motionId, panelId }) {
     const selectionObj = JSON.parse(await readText(selectionJsonPath));
     const updated = computeTotals(selectionObj, rubric);
 
-    // Write only if totals changed (idempotent)
     const nextText = stableJson(updated);
     const oldText = await readText(selectionJsonPath);
     if (normalizeText(oldText) !== normalizeText(nextText)) {
@@ -379,7 +426,6 @@ async function score({ repoRoot, motionId, panelId }) {
         log(`No changes (totals already consistent): ${path.relative(repoRoot, selectionJsonPath)}`);
     }
 
-    // Print a quick summary
     const scores = updated.scores ?? {};
     const entries = Object.entries(scores).map(([slot, v]) => ({ slot, total: v?.total ?? 0 }));
     entries.sort((a, b) => (b.total ?? 0) - (a.total ?? 0));
@@ -392,12 +438,19 @@ function usage() {
 PANEL-RUN ${SCRIPT_VERSION}
 
 Usage:
-  node portal/scripts/panel-run.mjs scaffold --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0 [--force]
-  node portal/scripts/panel-run.mjs score    --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
+  node portal/scripts/panel-run.mjs scaffold    --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0 [--force]
+  node portal/scripts/panel-run.mjs score       --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0
+
+Bulk (manifest-gated):
+  node portal/scripts/panel-run.mjs instantiate --motion motion-0016 --all [--force] [--dry-run]
+  node portal/scripts/panel-run.mjs instantiate --motion motion-0016 --panels A,B,C [--force] [--dry-run]
+  node portal/scripts/panel-run.mjs instantiate --motion motion-0016 --all --only A,B
+  node portal/scripts/panel-run.mjs instantiate --motion motion-0016 --all --exclude A,B
 
 Notes:
   - scaffold creates panel artifacts under .nexus/motions/<motion>/panels/<panel>/
   - score recomputes totals in selection.json using the panel rubric
+  - instantiate scaffolds multiple panels using .nexus/agent-panels.yaml (no free-form panels)
   - --force overwrites templates; without it, scaffold is create-if-missing
 `);
 }
@@ -418,15 +471,58 @@ async function main() {
     const force = args.force === true;
 
     if (!motionId) die(`Missing --motion (e.g., --motion motion-0010)`);
-    if (!panelId) die(`Missing --panel (e.g., --panel JAI_DEV_BUILDER_PANEL_V0)`);
 
     if (cmd === "scaffold") {
+        if (!panelId) die(`Missing --panel (e.g., --panel JAI_DEV_BUILDER_PANEL_V0)`);
         await scaffold({ repoRoot, motionId, panelId, force });
         return;
     }
 
     if (cmd === "score") {
+        if (!panelId) die(`Missing --panel (e.g., --panel JAI_DEV_BUILDER_PANEL_V0)`);
         await score({ repoRoot, motionId, panelId });
+        return;
+    }
+
+    if (cmd === "instantiate") {
+        const dryRun = args["dry-run"] === true || args.dryrun === true;
+        const all = args.all === true;
+
+        const only = splitCsv(args.only);
+        const exclude = splitCsv(args.exclude);
+        const panelsCsv = splitCsv(args.panels);
+
+        let panelIds = [];
+
+        if (all) {
+            const { panels } = await loadPanelsManifest(repoRoot);
+            panelIds = Object.keys(panels).sort((a, b) => a.localeCompare(b));
+        } else if (panelsCsv.length) {
+            panelIds = panelsCsv;
+        } else if (panelId) {
+            panelIds = [panelId];
+        } else {
+            die(`instantiate requires --all, or --panels A,B,C, or --panel <panelId>`);
+        }
+
+        if (only.length) {
+            const set = new Set(only);
+            // validate requested panel ids exist if using --all
+            if (all) {
+                const { panels } = await loadPanelsManifest(repoRoot);
+                for (const id of only) if (!panels[id]) die(`--only panel not found in agent-panels.yaml: ${id}`);
+            }
+            panelIds = panelIds.filter((id) => set.has(id));
+        }
+
+        if (exclude.length) {
+            const set = new Set(exclude);
+            panelIds = panelIds.filter((id) => !set.has(id));
+        }
+
+        if (panelIds.length === 0) die(`instantiate resolved to 0 panels (check --only/--exclude filters)`);
+
+        await instantiate({ repoRoot, motionId, panelIds, force, dryRun });
         return;
     }
 
