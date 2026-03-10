@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { loadPanelView } from "@/lib/panels/panelStore";
 import { loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
 import { computeSelection, computeSlotTotal, normalizeBreakdown } from "@/lib/panels/panelSelectCore.mjs";
-import { computePanelProgress } from "@/lib/panels/panelProgress";
+import { computePanelProgress, type PanelProgress } from "@/lib/panels/panelProgress";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +24,58 @@ function clamp10(v: unknown) {
     return n;
 }
 
+function nextActionForProgress(progress: PanelProgress, motionId: string, panelId: string) {
+    const queueHref = `/operator/panels?progress=${encodeURIComponent(progress.status)}`;
+    const panelSelectionPath = `.nexus/motions/${motionId}/panels/${panelId}/selection.json`;
+
+    switch (progress.status) {
+        case "INVALID":
+            return {
+                label: "Repair selection.json",
+                detail: "selection.json is malformed or missing required structure. Start by fixing the scores object and required fields.",
+                queueHref,
+                jumpHref: undefined as string | undefined,
+            };
+        case "NEEDS_SCORES":
+            return {
+                label: "Enter rubric scores",
+                detail: "Enter rubric scores for at least one slot below, then compute the winner.",
+                queueHref,
+                jumpHref: "#score-entry",
+            };
+        case "NEEDS_WINNER":
+            return {
+                label: "Compute winner",
+                detail: "Scores already exist. Use the Compute winner action in the Selection card to set the winner deterministically.",
+                queueHref,
+                jumpHref: undefined as string | undefined,
+            };
+        case "NEEDS_EVIDENCE":
+            return {
+                label: "Add evidence commands",
+                detail: `Edit ${panelSelectionPath} and populate evidence_plan.commands plus expected outputs.`,
+                queueHref,
+                jumpHref: undefined as string | undefined,
+            };
+        case "COMPLETE":
+            return {
+                label: "No action required",
+                detail: "This panel is complete under the current semantics.",
+                queueHref,
+                jumpHref: undefined as string | undefined,
+            };
+        default:
+            return {
+                label: "Inspect panel",
+                detail: "Review the current selection state.",
+                queueHref,
+                jumpHref: undefined as string | undefined,
+            };
+    }
+}
+
 type Params = { motionId: string; panelId: string };
 
-// -------- server actions (write lane) --------
 async function saveSlotScores(formData: FormData) {
     "use server";
 
@@ -60,7 +110,6 @@ async function saveSlotScores(formData: FormData) {
 
     sel.scores[slot] = { total, breakdown: normalized };
 
-    // do not change winner here — winner is computed explicitly via the action below
     await writePanelSelection({ motionId, panelId, selection: sel });
 
     redirect(`/operator/panels/${encodeURIComponent(motionId)}/${encodeURIComponent(panelId)}?saved=${encodeURIComponent(slot)}`);
@@ -137,6 +186,8 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
     const { panel, selection, candidates, motion_id, panel_id, resolved_slots } = view;
 
     const progress = computePanelProgress(selection);
+    const nextAction = nextActionForProgress(progress, motion_id, panel_id);
+
     const progressTone =
         progress.status === "COMPLETE"
             ? "text-emerald-300 border-emerald-800/50 bg-emerald-900/10"
@@ -145,7 +196,12 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 : "text-amber-300 border-amber-800/50 bg-amber-900/10";
 
     const rubric = Array.isArray(panel.rubric) ? panel.rubric : [];
-    const scoreEntries = Object.entries(selection.scores ?? {}).map(([slot, v]) => ({
+    const scoresObj =
+        selection && typeof selection.scores === "object" && selection.scores
+            ? selection.scores
+            : {};
+
+    const scoreEntries = Object.entries(scoresObj).map(([slot, v]) => ({
         slot,
         total: num((v as any)?.total, 0),
         breakdown: (v as any)?.breakdown ?? {},
@@ -188,7 +244,6 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Meta */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
                     <h2 className="font-semibold text-gray-200 mb-2">Panel Meta</h2>
@@ -210,7 +265,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
                     <h2 className="font-semibold text-gray-200 mb-2">Selection</h2>
-                    <div className="text-sm text-gray-300 space-y-2">
+                    <div className="text-sm text-gray-300 space-y-3">
                         <div className="flex items-center gap-2">
                             <span className="text-gray-500">progress:</span>
                             <span className={`inline-flex items-center rounded border px-2 py-1 font-mono ${progressTone}`} title={progress.reason}>
@@ -219,6 +274,22 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                         </div>
 
                         <div className="text-xs text-gray-500">{progress.reason}</div>
+
+                        <div className="rounded border border-zinc-800 bg-zinc-950/40 p-3">
+                            <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">Next action</div>
+                            <div className="font-medium text-gray-200">{nextAction.label}</div>
+                            <div className="text-xs text-gray-400 mt-1">{nextAction.detail}</div>
+                            <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                                <Link href={nextAction.queueHref} className="text-sky-300 hover:underline" prefetch={false}>
+                                    View queue
+                                </Link>
+                                {nextAction.jumpHref ? (
+                                    <a href={nextAction.jumpHref} className="text-sky-300 hover:underline">
+                                        Jump to score entry
+                                    </a>
+                                ) : null}
+                            </div>
+                        </div>
 
                         <div>
                             <span className="text-gray-500">winner:</span>{" "}
@@ -229,7 +300,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                             <span className="font-mono">{safeStr(selection.task)}</span>
                         </div>
 
-                        <form action={computeWinnerAction} className="pt-2">
+                        <form action={computeWinnerAction} className="pt-1">
                             <input type="hidden" name="motionId" value={motion_id} />
                             <input type="hidden" name="panelId" value={panel_id} />
                             <button
@@ -243,7 +314,6 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Slot Bindings */}
             <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Slot Bindings</h2>
@@ -287,8 +357,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Score Entry */}
-            <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
+            <div id="score-entry" className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Score Entry</h2>
                     <p className="text-xs text-gray-500 mt-1">
@@ -355,7 +424,6 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Score Table */}
             <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Scores</h2>
@@ -399,7 +467,6 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Candidates */}
             <div className="border border-zinc-800 rounded-lg overflow-hidden">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Candidates</h2>

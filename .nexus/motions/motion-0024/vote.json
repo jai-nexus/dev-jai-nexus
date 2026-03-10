@@ -1,0 +1,47 @@
+{
+    "motion_id": "motion-0024",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "Progress state is already computed deterministically, but operators still have to manually route themselves to the next panel task. Adding progress filters, queue links, and next-action guidance improves throughput without changing scoring or governance semantics.",
+            "ts": "2026-03-10T19:49:00.000Z"
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "Scope is bounded to operator workflow UX on top of existing panel progress logic. Risk is low because the motion does not alter selection semantics, scaffold behavior, or completion rules.",
+            "ts": "2026-03-10T19:50:00.000Z"
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "Unanimous consent satisfied. The change is isolated, reversible, and improves operator dispatch from coverage to panels while preserving deterministic panel state semantics.",
+            "ts": "2026-03-10T19:51:00.000Z"
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "vote_mode": "unanimous_consent",
+    "version": "0.2",
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-10T19:51:30.000Z"
+}

@@ -1,6 +1,7 @@
 // portal/src/app/operator/panels/page.tsx
 import Link from "next/link";
 import { listPanelsIndex, type WinnerStatus } from "@/lib/panels/panelIndex";
+import type { PanelProgressStatus } from "@/lib/panels/panelProgress";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,10 +34,49 @@ function sanitizeCompleted(input?: string): boolean | undefined {
     return undefined; // ANY / missing
 }
 
+function sanitizeProgress(input?: string): PanelProgressStatus | undefined {
+    const raw = (input ?? "").trim().toUpperCase();
+    if (raw === "INVALID") return "INVALID";
+    if (raw === "NEEDS_SCORES") return "NEEDS_SCORES";
+    if (raw === "NEEDS_WINNER") return "NEEDS_WINNER";
+    if (raw === "NEEDS_EVIDENCE") return "NEEDS_EVIDENCE";
+    if (raw === "COMPLETE") return "COMPLETE";
+    return undefined;
+}
+
 function isoDay(ts?: string) {
     if (!ts) return "—";
-    // expected ts already ISO from server; slice makes it stable
     return ts.length >= 10 ? ts.slice(0, 10) : ts;
+}
+
+function progressTone(status: PanelProgressStatus) {
+    switch (status) {
+        case "COMPLETE":
+            return "text-emerald-300 border-emerald-800/50 bg-emerald-900/10";
+        case "INVALID":
+            return "text-red-300 border-red-800/50 bg-red-900/10";
+        default:
+            return "text-amber-300 border-amber-800/50 bg-amber-900/10";
+    }
+}
+
+function buildPanelsHref(filters: {
+    motionId?: string;
+    panelId?: string;
+    status?: WinnerStatus;
+    completed?: boolean;
+    progress?: PanelProgressStatus;
+}) {
+    const qp = new URLSearchParams();
+
+    if (filters.motionId) qp.set("motionId", filters.motionId);
+    if (filters.panelId) qp.set("panelId", filters.panelId);
+    if (filters.status) qp.set("status", filters.status);
+    if (typeof filters.completed === "boolean") qp.set("completed", filters.completed ? "Y" : "N");
+    if (filters.progress) qp.set("progress", filters.progress);
+
+    const qs = qp.toString();
+    return qs ? `/operator/panels?${qs}` : "/operator/panels";
 }
 
 const antiExtensionProps = {
@@ -53,8 +93,6 @@ const antiExtensionProps = {
 type RowModel = Awaited<ReturnType<typeof listPanelsIndex>>[number];
 
 function PanelsTable({ rows }: { rows: React.ReactNode }) {
-    // Keep thead/tbody adjacent by returning the whole <table> tree as a single expression.
-    // (Avoids stray whitespace text nodes that can appear around <table> parsing.)
     return (
         <div className="border border-zinc-800 rounded-lg overflow-hidden">
             <table className="w-full text-left text-xs">
@@ -68,6 +106,7 @@ function PanelsTable({ rows }: { rows: React.ReactNode }) {
                         <th className="px-4 py-3">Bound</th>
                         <th className="px-4 py-3">Winner</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Progress</th>
                         <th className="px-4 py-3">Completed</th>
                         <th className="px-4 py-3 text-right">Evidence</th>
                         <th className="px-4 py-3 text-right">Candidates</th>
@@ -129,6 +168,15 @@ function renderRow(it: RowModel) {
             </td>
 
             <td className="px-4 py-3 font-mono">
+                <span
+                    className={`inline-flex items-center rounded border px-2 py-1 ${progressTone(it.progress_status)}`}
+                    title={it.progress_reason}
+                >
+                    {it.progress_status}
+                </span>
+            </td>
+
+            <td className="px-4 py-3 font-mono">
                 <span className={it.completed ? "text-emerald-300" : "text-amber-300"}>
                     {it.completed ? "Y" : "N"}
                 </span>
@@ -153,9 +201,22 @@ export default async function PanelsIndexPage(props: {
     const panelId = sanitizeId(firstParam(sp.panelId));
     const status = sanitizeStatus(firstParam(sp.status));
     const completed = sanitizeCompleted(firstParam(sp.completed));
+    const progress = sanitizeProgress(firstParam(sp.progress));
 
-    const items = await listPanelsIndex({ motionId, panelId, status, completed });
+    const [allItems, items] = await Promise.all([
+        listPanelsIndex(),
+        listPanelsIndex({ motionId, panelId, status, completed, progress }),
+    ]);
+
     const completedCount = items.filter((x) => x.completed).length;
+
+    const queueCounts = {
+        INVALID: allItems.filter((x) => x.progress_status === "INVALID").length,
+        NEEDS_SCORES: allItems.filter((x) => x.progress_status === "NEEDS_SCORES").length,
+        NEEDS_WINNER: allItems.filter((x) => x.progress_status === "NEEDS_WINNER").length,
+        NEEDS_EVIDENCE: allItems.filter((x) => x.progress_status === "NEEDS_EVIDENCE").length,
+        COMPLETE: allItems.filter((x) => x.progress_status === "COMPLETE").length,
+    };
 
     const rows = items.map(renderRow);
 
@@ -174,7 +235,31 @@ export default async function PanelsIndexPage(props: {
                 </div>
             </div>
 
-            {/* Filters */}
+            <div className="mb-4 border border-zinc-800 rounded-lg bg-zinc-900/20 p-4">
+                <div className="text-sm font-semibold text-gray-200 mb-3">Work Queue</div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                    {(
+                        [
+                            ["INVALID", queueCounts.INVALID],
+                            ["NEEDS_SCORES", queueCounts.NEEDS_SCORES],
+                            ["NEEDS_WINNER", queueCounts.NEEDS_WINNER],
+                            ["NEEDS_EVIDENCE", queueCounts.NEEDS_EVIDENCE],
+                            ["COMPLETE", queueCounts.COMPLETE],
+                        ] as Array<[PanelProgressStatus, number]>
+                    ).map(([state, count]) => (
+                        <Link
+                            key={state}
+                            href={buildPanelsHref({ progress: state })}
+                            prefetch={false}
+                            className={`inline-flex items-center gap-2 rounded border px-3 py-2 font-mono hover:bg-zinc-900 ${progressTone(state)}`}
+                        >
+                            <span>{state}</span>
+                            <span className="text-gray-300">{count}</span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+
             <form method="GET" className="mb-4 flex flex-wrap items-end gap-3" suppressHydrationWarning>
                 <div>
                     <div className="text-[11px] text-gray-500 mb-1">motionId</div>
@@ -209,6 +294,23 @@ export default async function PanelsIndexPage(props: {
                         <option value="">ANY</option>
                         <option value="UNKNOWN">UNKNOWN</option>
                         <option value="SELECTED">SELECTED</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div className="text-[11px] text-gray-500 mb-1">progress</div>
+                    <select
+                        {...antiExtensionProps}
+                        name="progress"
+                        defaultValue={progress ?? ""}
+                        className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200"
+                    >
+                        <option value="">ANY</option>
+                        <option value="INVALID">INVALID</option>
+                        <option value="NEEDS_SCORES">NEEDS_SCORES</option>
+                        <option value="NEEDS_WINNER">NEEDS_WINNER</option>
+                        <option value="NEEDS_EVIDENCE">NEEDS_EVIDENCE</option>
+                        <option value="COMPLETE">COMPLETE</option>
                     </select>
                 </div>
 
