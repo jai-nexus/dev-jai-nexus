@@ -15,6 +15,8 @@ import {
   getAssigneeFromTags,
 } from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
+import { computeExecutionLaneState } from "@/lib/work/executionLane";
+import { applyPacketRouteAction, type PacketRouteAction } from "@/lib/work/workPacketActions";
 import {
   DEBUG_LOOP_EVENT_KINDS,
   HANDOFF_EVENT_KINDS,
@@ -30,7 +32,12 @@ type Props = {
 const ALLOWED_STATUSES = new Set(Object.values(WorkPacketStatus));
 const DEBUG_KIND_SET = new Set<string>([...DEBUG_LOOP_EVENT_KINDS]);
 const RUNTIME_KIND_SET = new Set<string>([...RUNTIME_EVENT_KINDS]);
-const HANDOFF_KIND_SET = new Set<string>([...HANDOFF_EVENT_KINDS]);
+const HANDOFF_KIND_SET = new Set<string>([
+  ...HANDOFF_EVENT_KINDS,
+  "WORK_ROUTED",
+  "WORK_REVIEW_REQUESTED",
+  "WORK_APPROVED",
+]);
 
 function parseStatus(value: unknown): WorkPacketStatus {
   const s = String(value ?? WorkPacketStatus.DRAFT).trim();
@@ -62,6 +69,16 @@ function toneForControl(tone: string) {
   if (tone === "amber") return "bg-amber-900/40 text-amber-200 border-amber-800";
   if (tone === "purple") return "bg-purple-900/50 text-purple-200 border-purple-800";
   if (tone === "red") return "bg-red-900/40 text-red-200 border-red-800";
+  return "bg-zinc-900 text-gray-200 border-gray-800";
+}
+
+function toneForLane(lane: string) {
+  if (lane === "COMPLETE") return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
+  if (lane === "ATTENTION") return "bg-red-900/40 text-red-200 border-red-800";
+  if (lane === "VERIFIER") return "bg-purple-900/50 text-purple-200 border-purple-800";
+  if (lane === "BUILDER") return "bg-sky-900/50 text-sky-200 border-sky-800";
+  if (lane === "ARCHITECT") return "bg-amber-900/40 text-amber-200 border-amber-800";
+  if (lane === "OPERATOR_REVIEW") return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
   return "bg-zinc-900 text-gray-200 border-gray-800";
 }
 
@@ -113,9 +130,7 @@ async function updatePacket(id: number, formData: FormData) {
     const kind = statusChanged ? "WORK_PACKET_STATUS_CHANGED" : "WORK_PACKET_UPDATED";
 
     const summary = statusChanged
-      ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(
-        statusChanged.to,
-      )}`
+      ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(statusChanged.to)}`
       : `WorkPacket updated: ${after.nhId} · ${after.title}`;
 
     const data: Prisma.InputJsonValue = {
@@ -142,6 +157,25 @@ async function updatePacket(id: number, formData: FormData) {
 
   if (result.type === "missing") redirect("/operator/work");
   redirect(`/operator/work/${id}`);
+}
+
+async function runRouteAction(packetId: number, action: PacketRouteAction) {
+  "use server";
+
+  const session = await getServerAuthSession();
+  const user = session?.user;
+  if (!user) redirect("/login");
+
+  await applyPacketRouteAction({
+    packetId,
+    action,
+    actor: {
+      email: user.email ?? null,
+      name: user.name ?? null,
+    },
+  });
+
+  redirect(`/operator/work/${packetId}`);
 }
 
 export default async function WorkPacketDetailPage({ params }: Props) {
@@ -173,9 +207,10 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   });
 
   const assigneeNhId = getAssigneeFromTags(coerceStringArray(latestInbox?.tags));
-  const assignedAgent = assigneeNhId
-    ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
-    : null;
+  const assignedAgent =
+    assigneeNhId != null
+      ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
+      : null;
   const requestedRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
 
   const WORK_PACKET_KINDS = [
@@ -183,6 +218,9 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     "WORK_PACKET_UPDATED",
     "WORK_PACKET_STATUS_CHANGED",
     "WORK_DELEGATED",
+    "WORK_ROUTED",
+    "WORK_REVIEW_REQUESTED",
+    "WORK_APPROVED",
   ] as const;
 
   const ALL_PACKET_KINDS = [
@@ -201,7 +239,15 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   });
 
   const mutationEvents = packetEvents.filter((evt) =>
-    ["WORK_PACKET_CREATED", "WORK_PACKET_UPDATED", "WORK_PACKET_STATUS_CHANGED", "WORK_DELEGATED"].includes(evt.kind),
+    [
+      "WORK_PACKET_CREATED",
+      "WORK_PACKET_UPDATED",
+      "WORK_PACKET_STATUS_CHANGED",
+      "WORK_DELEGATED",
+      "WORK_ROUTED",
+      "WORK_REVIEW_REQUESTED",
+      "WORK_APPROVED",
+    ].includes(evt.kind),
   );
 
   const runtimeAndDebugEvents = packetEvents.filter(
@@ -210,10 +256,22 @@ export default async function WorkPacketDetailPage({ params }: Props) {
 
   const handoffEvents = packetEvents.filter((evt) => HANDOFF_KIND_SET.has(evt.kind));
 
-  const latestRuntimeEvent = runtimeAndDebugEvents.find((evt) => RUNTIME_KIND_SET.has(evt.kind)) ?? null;
-  const latestDebugEvent = runtimeAndDebugEvents.find((evt) => DEBUG_KIND_SET.has(evt.kind)) ?? null;
+  const latestRuntimeEvent =
+    runtimeAndDebugEvents.find((evt) => RUNTIME_KIND_SET.has(evt.kind)) ?? null;
+  const latestDebugEvent =
+    runtimeAndDebugEvents.find((evt) => DEBUG_KIND_SET.has(evt.kind)) ?? null;
 
   const control = computeWorkPacketControlState({
+    packetStatus: String(p.status),
+    assigneeNhId,
+    requestedRole,
+    githubPrUrl: p.githubPrUrl ?? null,
+    verificationUrl: p.verificationUrl ?? null,
+    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
+    latestDebugKind: latestDebugEvent?.kind ?? null,
+  });
+
+  const lane = computeExecutionLaneState({
     packetStatus: String(p.status),
     assigneeNhId,
     requestedRole,
@@ -262,11 +320,11 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           {p.nhId} · {p.title}
         </h1>
         <p className="text-sm text-gray-400 mt-1">
-          Contract summary, AC/Plan, run ledger, handoff history, and packet mutation stream.
+          Contract summary, execution loop, run ledger, handoff history, and packet mutation stream.
         </p>
       </header>
 
-      <section className="mb-8 grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-3">
+      <section className="mb-8 grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-4">
         <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
           <h2 className="text-sm font-semibold text-gray-200">Contract Summary</h2>
           <div className="mt-3 space-y-2 text-sm text-gray-300">
@@ -319,6 +377,24 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </div>
 
         <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
+          <h2 className="text-sm font-semibold text-gray-200">Execution Lane</h2>
+          <div className="mt-3 flex items-center gap-2">
+            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${toneForLane(lane.currentLane)}`}>
+              {lane.currentLane}
+            </span>
+            {lane.nextLane ? (
+              <>
+                <span className="text-gray-500">→</span>
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${toneForLane(lane.nextLane)}`}>
+                  {lane.nextLane}
+                </span>
+              </>
+            ) : null}
+          </div>
+          <div className="mt-3 text-sm text-gray-300">{lane.reason}</div>
+        </div>
+
+        <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
           <h2 className="text-sm font-semibold text-gray-200">Debug Loop Coverage</h2>
           <div className="mt-3 text-sm text-gray-300">
             {completedCount}/{checklist.length} artifacts present
@@ -333,6 +409,69 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mb-8 max-w-6xl rounded-md border border-gray-800 bg-zinc-950 p-4">
+        <h2 className="text-sm font-semibold text-gray-200">Execution Loop Actions</h2>
+        <p className="mt-2 text-sm text-gray-400">
+          These actions are governed operator-side routing actions. They emit packet-linked SoT events and update inbox routing state.
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <form action={runRouteAction.bind(null, p.id, "ROUTE_ARCHITECT")}>
+            <button
+              type="submit"
+              className="rounded-md border border-amber-800 bg-amber-900/30 px-3 py-2 text-sm text-amber-200 hover:bg-amber-900/40"
+            >
+              Route to architect
+            </button>
+          </form>
+
+          <form action={runRouteAction.bind(null, p.id, "ROUTE_BUILDER")}>
+            <button
+              type="submit"
+              className="rounded-md border border-sky-800 bg-sky-900/30 px-3 py-2 text-sm text-sky-200 hover:bg-sky-900/40"
+            >
+              Route to builder
+            </button>
+          </form>
+
+          <form action={runRouteAction.bind(null, p.id, "ROUTE_VERIFIER")}>
+            <button
+              type="submit"
+              className="rounded-md border border-purple-800 bg-purple-900/30 px-3 py-2 text-sm text-purple-200 hover:bg-purple-900/40"
+            >
+              Route to verifier
+            </button>
+          </form>
+
+          <form action={runRouteAction.bind(null, p.id, "REQUEST_CHANGES")}>
+            <button
+              type="submit"
+              className="rounded-md border border-red-800 bg-red-900/30 px-3 py-2 text-sm text-red-200 hover:bg-red-900/40"
+            >
+              Request changes
+            </button>
+          </form>
+
+          <form action={runRouteAction.bind(null, p.id, "REQUEUE")}>
+            <button
+              type="submit"
+              className="rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 text-sm text-gray-200 hover:bg-zinc-900"
+            >
+              Requeue
+            </button>
+          </form>
+
+          <form action={runRouteAction.bind(null, p.id, "APPROVE")}>
+            <button
+              type="submit"
+              className="rounded-md border border-emerald-800 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-900/40"
+            >
+              Approve
+            </button>
+          </form>
         </div>
       </section>
 

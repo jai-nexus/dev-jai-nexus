@@ -10,8 +10,13 @@ import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { getAgencyConfig, type AgencyAgent } from "@/lib/agencyConfig";
 import { WorkPacketStatus } from "@prisma/client";
-import { coerceStringArray, getAssigneeFromTags } from "@/lib/work/workPacketContract";
+import {
+  coerceStringArray,
+  deriveRequestedRoleFromAgentKey,
+  getAssigneeFromTags,
+} from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
+import { computeExecutionLaneState } from "@/lib/work/executionLane";
 import { DEBUG_LOOP_EVENT_KINDS, RUNTIME_EVENT_KINDS } from "@/lib/work/agentRunContract";
 
 type SearchParamValue = string | string[] | undefined;
@@ -119,6 +124,16 @@ type WorkPacketWhereInput = WorkPacketFindManyArgs["where"];
 const RUNTIME_KIND_SET = new Set<string>([...RUNTIME_EVENT_KINDS]);
 const DEBUG_KIND_SET = new Set<string>([...DEBUG_LOOP_EVENT_KINDS]);
 
+function laneTone(lane: string) {
+  if (lane === "COMPLETE") return "emerald";
+  if (lane === "ATTENTION") return "red";
+  if (lane === "VERIFIER") return "purple";
+  if (lane === "BUILDER") return "sky";
+  if (lane === "ARCHITECT") return "amber";
+  if (lane === "OPERATOR_REVIEW") return "emerald";
+  return "slate";
+}
+
 export default async function WorkPage({ searchParams }: Props) {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/login?next=/operator/work");
@@ -208,19 +223,45 @@ export default async function WorkPage({ searchParams }: Props) {
     const tags = coerceStringArray(inbox?.tags);
     const assigneeNh = getAssigneeFromTags(tags);
 
+    const assignedAgent =
+      assigneeNh != null
+        ? agents.find((a) => a.nh_id === assigneeNh) ?? null
+        : null;
+
+    const requestedRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
+
     const latestRuntime = latestRuntimeByPacket.get(p.id) ?? null;
     const latestDebug = latestDebugByPacket.get(p.id) ?? null;
 
     const control = computeWorkPacketControlState({
       packetStatus: String(p.status),
       assigneeNhId: assigneeNh,
+      requestedRole,
       githubPrUrl: p.githubPrUrl ?? null,
       verificationUrl: p.verificationUrl ?? null,
       latestRuntimeKind: latestRuntime?.kind ?? null,
       latestDebugKind: latestDebug?.kind ?? null,
     });
 
-    return { packet: p, inbox, assigneeNh, latestRuntime, latestDebug, control };
+    const lane = computeExecutionLaneState({
+      packetStatus: String(p.status),
+      assigneeNhId: assigneeNh,
+      requestedRole,
+      githubPrUrl: p.githubPrUrl ?? null,
+      verificationUrl: p.verificationUrl ?? null,
+      latestRuntimeKind: latestRuntime?.kind ?? null,
+      latestDebugKind: latestDebug?.kind ?? null,
+    });
+
+    return {
+      packet: p,
+      inbox,
+      assigneeNh,
+      latestRuntime,
+      latestDebug,
+      control,
+      lane,
+    };
   });
 
   const filtered = rows.filter((r) => {
@@ -371,6 +412,7 @@ export default async function WorkPage({ searchParams }: Props) {
               <th className="py-2 px-3 text-xs text-gray-400">Title</th>
               <th className="py-2 px-3 text-xs text-gray-400">Status</th>
               <th className="py-2 px-3 text-xs text-gray-400">Control</th>
+              <th className="py-2 px-3 text-xs text-gray-400">Lane</th>
               <th className="py-2 px-3 text-xs text-gray-400">Assignee</th>
               <th className="py-2 px-3 text-xs text-gray-400">Inbox</th>
               <th className="py-2 px-3 text-xs text-gray-400">Execution</th>
@@ -381,7 +423,7 @@ export default async function WorkPage({ searchParams }: Props) {
           </thead>
 
           <tbody>
-            {filtered.map(({ packet: p, inbox, assigneeNh, latestRuntime, latestDebug, control }) => (
+            {filtered.map(({ packet: p, inbox, assigneeNh, latestRuntime, latestDebug, control, lane }) => (
               <tr key={p.id} className="border-b border-gray-900 hover:bg-zinc-900/60">
                 <td className="py-2 px-3 whitespace-nowrap font-mono text-xs">{p.nhId}</td>
 
@@ -396,6 +438,19 @@ export default async function WorkPage({ searchParams }: Props) {
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
                   <Chip tone={control.tone}>{control.phase}</Chip>
+                </td>
+
+                <td className="py-2 px-3 text-xs min-w-[170px]">
+                  <div className="flex items-center gap-2">
+                    <Chip tone={laneTone(lane.currentLane)}>{lane.currentLane}</Chip>
+                    {lane.nextLane ? (
+                      <>
+                        <span className="text-gray-500">→</span>
+                        <Chip tone={laneTone(lane.nextLane)}>{lane.nextLane}</Chip>
+                      </>
+                    ) : null}
+                  </div>
+                  <div className="mt-1 text-[11px] text-gray-500">{lane.reason}</div>
                 </td>
 
                 <td className="py-2 px-3 text-xs whitespace-nowrap">
@@ -470,7 +525,7 @@ export default async function WorkPage({ searchParams }: Props) {
 
             {filtered.length === 0 ? (
               <tr>
-                <td className="py-6 px-3 text-sm text-gray-400" colSpan={10}>
+                <td className="py-6 px-3 text-sm text-gray-400" colSpan={11}>
                   No work packets match the current filters.
                 </td>
               </tr>
