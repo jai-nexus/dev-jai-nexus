@@ -1,0 +1,71 @@
+{
+  "version": "panel.selection.v0",
+  "panel_id": "JAI_DEV_LIBRARIAN_PANEL_V0",
+  "motion_id": "motion-0020",
+  "task": "UNKNOWN",
+  "winner": "UNKNOWN",
+  "scores": {
+    "SLOT_LIBRARIAN_01": {
+      "total": 0,
+      "breakdown": {
+        "fidelity": 0,
+        "clarity": 0,
+        "canon_alignment": 0,
+        "completeness": 0,
+        "minimal_diff": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_LIBRARIAN_02": {
+      "total": 0,
+      "breakdown": {
+        "fidelity": 0,
+        "clarity": 0,
+        "canon_alignment": 0,
+        "completeness": 0,
+        "minimal_diff": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_LIBRARIAN_03": {
+      "total": 0,
+      "breakdown": {
+        "fidelity": 0,
+        "clarity": 0,
+        "canon_alignment": 0,
+        "completeness": 0,
+        "minimal_diff": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_LIBRARIAN_04": {
+      "total": 0,
+      "breakdown": {
+        "fidelity": 0,
+        "clarity": 0,
+        "canon_alignment": 0,
+        "completeness": 0,
+        "minimal_diff": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_LIBRARIAN_05": {
+      "total": 0,
+      "breakdown": {
+        "fidelity": 0,
+        "clarity": 0,
+        "canon_alignment": 0,
+        "completeness": 0,
+        "minimal_diff": 0,
+        "risk_awareness": 0
+      }
+    }
+  },
+  "winner_rationale": [],
+  "reservations": [],
+  "evidence_plan": {
+    "commands": [],
+    "expected": []
+  },
+  "files": []
+}
