@@ -1,4 +1,3 @@
-// portal/src/app/operator/work/new/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
@@ -10,25 +9,24 @@ import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import { getAgencyConfig } from "@/lib/agencyConfig";
 import { InboxItemStatus, WorkPacketStatus, type Prisma } from "@prisma/client";
 import { validateReposAgainstAgentScope } from "@/lib/scopeValidator";
+import {
+  buildInboxTags,
+  deriveRequestedRoleFromAgentKey,
+  sanitizeNhLike,
+} from "@/lib/work/workPacketContract";
 
 type SearchParamValue = string | string[] | undefined;
 
 type Props = {
   searchParams?: Promise<{
-    // legacy + new param names (accept both)
-    assignee?: SearchParamValue; // legacy
-    assigneeNhId?: SearchParamValue; // new
-
-    // optional prefill
+    assignee?: SearchParamValue;
+    assigneeNhId?: SearchParamValue;
     nhId?: SearchParamValue;
     title?: SearchParamValue;
-
-    // delegate hints (prefill only; not trusted for governance)
     agentKey?: SearchParamValue;
     scope?: SearchParamValue;
-    labels?: SearchParamValue; // legacy
-    githubLabels?: SearchParamValue; // new
-
+    labels?: SearchParamValue;
+    githubLabels?: SearchParamValue;
     error?: SearchParamValue;
   }>;
 };
@@ -46,15 +44,11 @@ function splitCsv(v: string | undefined): string[] {
 }
 
 function sanitizeNh(v: string | undefined): string | null {
-  const s = String(v ?? "").trim();
-  if (!s) return null;
-  if (!/^\d+(\.\d+)*$/.test(s)) return null;
-  return s;
+  return sanitizeNhLike(v) ?? null;
 }
 
 function safeRedirectWithError(baseAssignee: string | null, message: string): never {
   const qs = new URLSearchParams();
-  // keep both names so either UI version can read it
   if (baseAssignee) {
     qs.set("assigneeNhId", baseAssignee);
     qs.set("assignee", baseAssignee);
@@ -76,8 +70,6 @@ async function createPacket(formData: FormData) {
   const plan = String(formData.get("plan") ?? "");
 
   const assigneeNhId = sanitizeNh(String(formData.get("assigneeNhId") ?? ""));
-
-  // Repo.id is a NUMBER in Prisma
   const repoIdRaw = String(formData.get("repoId") ?? "").trim();
   const repoId = repoIdRaw ? Number(repoIdRaw) : null;
 
@@ -87,32 +79,26 @@ async function createPacket(formData: FormData) {
 
   if (!nhId || !title) redirect("/operator/work/new");
 
-  // If assigned, repo MUST be chosen (otherwise scope enforcement is meaningless)
   if (assigneeNhId && repoId == null) {
     safeRedirectWithError(
       assigneeNhId,
-      `Scope enforcement: assigned work requires a repo. Choose a repo within the assignee scope.`
+      "Scope enforcement: assigned work requires a repo. Choose a repo within the assignee scope.",
     );
   }
 
-  // Derive agent info from agency.yaml (do NOT trust query params)
   const agency = getAgencyConfig();
   const agent = assigneeNhId
     ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
     : null;
 
   if (assigneeNhId && !agent) {
-    safeRedirectWithError(
-      assigneeNhId,
-      `Agent not found for assignee NH: ${assigneeNhId}`
-    );
+    safeRedirectWithError(assigneeNhId, `Agent not found for assignee NH: ${assigneeNhId}`);
   }
 
+  const requestedRole = deriveRequestedRoleFromAgentKey(agent?.agent_key ?? null);
   const mutationId = crypto.randomUUID();
 
   const created = await prisma.$transaction(async (tx) => {
-    // If repo chosen AND assigned, enforce repo ∈ agent.scope (single-repo MVP)
-    // Keep this inside the transaction so validate + create + emit are atomic.
     if (assigneeNhId && repoId != null) {
       const repo = await tx.repo.findUnique({
         where: { id: repoId },
@@ -123,15 +109,14 @@ async function createPacket(formData: FormData) {
         safeRedirectWithError(assigneeNhId, `Unknown repoId: ${repoId}`);
       }
 
-      // Centralized scope validation (normalizes org/repo vs bare repo names)
       const res = validateReposAgainstAgentScope(assigneeNhId, [repo.name]);
 
       if (!res.valid) {
         safeRedirectWithError(
           assigneeNhId,
           `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(
-            ", "
-          )}`
+            ", ",
+          )}`,
         );
       }
     }
@@ -147,8 +132,7 @@ async function createPacket(formData: FormData) {
       },
     });
 
-    const tags: string[] = [];
-    if (assigneeNhId) tags.push(`assignee:${assigneeNhId}`);
+    const tags = buildInboxTags(assigneeNhId);
 
     const inbox = await tx.agentInboxItem.create({
       data: {
@@ -161,10 +145,13 @@ async function createPacket(formData: FormData) {
     });
 
     const createdPayload: Prisma.InputJsonValue = {
+      contract_version: "work-packet-0.1",
       workPacketId: created.id,
       nhId: created.nhId,
       title: created.title,
       status: created.status,
+      requestedRole,
+      requiresOperatorApproval: true,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
       ...(assigneeNhId ? { assigneeNhId } : {}),
       inbox: {
@@ -187,10 +174,8 @@ async function createPacket(formData: FormData) {
       data: createdPayload,
     });
 
-    // Emit delegation SoT event (only if assigned)
     if (assigneeNhId) {
-      const toAgent =
-        agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null;
+      const toAgent = agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null;
 
       const derivedAgentKey = toAgent?.agent_key ?? "";
       const derivedLabels: string[] = toAgent?.github_labels ?? [];
@@ -202,17 +187,20 @@ async function createPacket(formData: FormData) {
         nhId: created.nhId,
         repoId: created.repoId ?? null,
         summary: `Work delegated: ${created.nhId} → ${assigneeNhId}`,
-        mutationId: crypto.randomUUID(), // distinct event id
+        mutationId: crypto.randomUUID(),
         workPacket: { id: created.id, nhId: created.nhId },
         actor: { email: user.email ?? null, name: user.name ?? null },
         data: {
+          contract_version: "work-packet-0.1",
           workPacketId: created.id,
           fromAgent: { nhId: "1.0", agentKey: "JAI::OPERATOR" },
           toAgentNhId: assigneeNhId,
           toAgentKey: derivedAgentKey,
+          requestedRole,
           repoId: created.repoId ?? null,
           allowedScope: derivedScope,
           githubLabels: derivedLabels,
+          requiresOperatorApproval: true,
         } satisfies Prisma.InputJsonValue,
       });
     }
@@ -236,9 +224,8 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   const agency = getAgencyConfig();
   const agents = [...agency.agents].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
 
-  // Accept assigneeNhId (new) OR assignee (legacy)
   const assigneeFromQuery = sanitizeNh(
-    firstParam(sp?.assigneeNhId) ?? firstParam(sp?.assignee)
+    firstParam(sp?.assigneeNhId) ?? firstParam(sp?.assignee),
   );
 
   const assigneeIsValid =
@@ -246,19 +233,16 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
 
   const defaultAssignee = assigneeIsValid ? assigneeFromQuery : "";
 
-  // Optional query prefill hints (NOT trusted for governance; only for display)
   const requestedScope = splitCsv(firstParam(sp?.scope));
   const requestedLabels = splitCsv(
-    firstParam(sp?.githubLabels) ?? firstParam(sp?.labels)
+    firstParam(sp?.githubLabels) ?? firstParam(sp?.labels),
   );
 
-  // Load repos for dropdown (Repo.id is number)
   const repos = await prisma.repo.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 
-  // Derive scope+labels for display (truth from config)
   const selectedAgent = defaultAssignee
     ? agents.find((a) => a.nh_id === defaultAssignee) ?? null
     : null;
@@ -266,13 +250,14 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   const agentKey = selectedAgent?.agent_key ?? "";
   const agentScope: string[] = selectedAgent?.scope ?? [];
   const agentLabels: string[] = selectedAgent?.github_labels ?? [];
+  const requestedRole = deriveRequestedRoleFromAgentKey(agentKey);
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">New Work Packet</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Minimum: NH + Title. AC/Plan recommended. Optional: assign to an agent.
+          Minimum: NH + Title. AC/Plan recommended. Optional: assign to an agent and enter governed execution.
         </p>
       </header>
 
@@ -312,8 +297,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
 
             <p className="text-[11px] text-gray-500">
               Delegation is recorded as an inbox tag{" "}
-              <span className="font-mono">assignee:&lt;nh&gt;</span> + included in the
-              SoT event payload.
+              <span className="font-mono">assignee:&lt;nh&gt;</span> and emitted into SoT payloads.
             </p>
 
             {selectedAgent ? (
@@ -321,6 +305,11 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
                 <div>
                   <span className="text-gray-500">agent_key:</span>{" "}
                   <span className="font-mono">{agentKey || "—"}</span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">requested role:</span>{" "}
+                  <span className="font-mono">{requestedRole ?? "—"}</span>
                 </div>
 
                 <div>
@@ -376,8 +365,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             ))}
           </select>
           <p className="text-[11px] text-gray-500">
-            If you assign an agent, you must choose a repo, and it must be within the
-            agent’s scope.
+            If you assign an agent, you must choose a repo, and it must be within the agent’s scope.
           </p>
         </div>
 

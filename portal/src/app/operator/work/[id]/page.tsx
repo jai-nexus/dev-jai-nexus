@@ -1,4 +1,3 @@
-// portal/src/app/operator/work/[id]/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
@@ -9,13 +8,29 @@ import { getServerAuthSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import { WorkPacketStatus, type Prisma } from "@prisma/client";
+import { getAgencyConfig } from "@/lib/agencyConfig";
+import {
+  coerceStringArray,
+  deriveRequestedRoleFromAgentKey,
+  getAssigneeFromTags,
+} from "@/lib/work/workPacketContract";
+import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
+import {
+  DEBUG_LOOP_EVENT_KINDS,
+  HANDOFF_EVENT_KINDS,
+  RUNTIME_EVENT_KINDS,
+  toHandoffEntry,
+  toRunLedgerEntry,
+} from "@/lib/work/agentRunContract";
 
 type Props = {
-  // Next.js 16 sync-dynamic APIs: params is a Promise in server components
   params: Promise<{ id: string }>;
 };
 
 const ALLOWED_STATUSES = new Set(Object.values(WorkPacketStatus));
+const DEBUG_KIND_SET = new Set<string>([...DEBUG_LOOP_EVENT_KINDS]);
+const RUNTIME_KIND_SET = new Set<string>([...RUNTIME_EVENT_KINDS]);
+const HANDOFF_KIND_SET = new Set<string>([...HANDOFF_EVENT_KINDS]);
 
 function parseStatus(value: unknown): WorkPacketStatus {
   const s = String(value ?? WorkPacketStatus.DRAFT).trim();
@@ -24,7 +39,6 @@ function parseStatus(value: unknown): WorkPacketStatus {
     : WorkPacketStatus.DRAFT;
 }
 
-// JSON helpers (no `any`)
 type JsonValue = Prisma.JsonValue;
 type JsonObject = Record<string, JsonValue>;
 
@@ -32,10 +46,7 @@ function isJsonObject(v: JsonValue | null | undefined): v is JsonObject {
   return v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
 }
 
-function getJsonProp(
-  v: JsonValue | null | undefined,
-  key: string,
-): JsonValue | undefined {
+function getJsonProp(v: JsonValue | null | undefined, key: string): JsonValue | undefined {
   if (!isJsonObject(v)) return undefined;
   return v[key];
 }
@@ -43,6 +54,15 @@ function getJsonProp(
 function getPayloadChanges(payload: JsonValue | null | undefined): JsonValue | undefined {
   const data = getJsonProp(payload, "data");
   return getJsonProp(data, "changes");
+}
+
+function toneForControl(tone: string) {
+  if (tone === "emerald") return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
+  if (tone === "sky") return "bg-sky-900/50 text-sky-200 border-sky-800";
+  if (tone === "amber") return "bg-amber-900/40 text-amber-200 border-amber-800";
+  if (tone === "purple") return "bg-purple-900/50 text-purple-200 border-purple-800";
+  if (tone === "red") return "bg-red-900/40 text-red-200 border-red-800";
+  return "bg-zinc-900 text-gray-200 border-gray-800";
 }
 
 async function updatePacket(id: number, formData: FormData) {
@@ -99,6 +119,7 @@ async function updatePacket(id: number, formData: FormData) {
       : `WorkPacket updated: ${after.nhId} · ${after.title}`;
 
     const data: Prisma.InputJsonValue = {
+      contract_version: "work-packet-0.1",
       workPacketId: after.id,
       changes,
       ...(statusChanged ? { statusChanged } : {}),
@@ -132,53 +153,107 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/login");
 
-  const p = await prisma.workPacket.findUnique({ where: { id } });
+  const p = await prisma.workPacket.findUnique({
+    where: { id },
+    include: { repo: true },
+  });
   if (!p) redirect("/operator/work");
+
+  const agency = getAgencyConfig();
+
+  const latestInbox = await prisma.agentInboxItem.findFirst({
+    where: { workPacketId: p.id },
+    orderBy: { id: "desc" },
+    select: {
+      id: true,
+      status: true,
+      priority: true,
+      tags: true,
+    },
+  });
+
+  const assigneeNhId = getAssigneeFromTags(coerceStringArray(latestInbox?.tags));
+  const assignedAgent = assigneeNhId
+    ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
+    : null;
+  const requestedRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
 
   const WORK_PACKET_KINDS = [
     "WORK_PACKET_CREATED",
     "WORK_PACKET_UPDATED",
     "WORK_PACKET_STATUS_CHANGED",
+    "WORK_DELEGATED",
   ] as const;
 
-  const DEBUG_KINDS = [
-    "debug.plan", // Architect
-    "debug.patch", // Builder
-    "debug.verify", // Verifier
-    "debug.docs", // Librarian
-    "debug.approve", // Operator
+  const ALL_PACKET_KINDS = [
+    ...WORK_PACKET_KINDS,
+    ...RUNTIME_EVENT_KINDS,
+    ...DEBUG_LOOP_EVENT_KINDS,
   ] as const;
 
-  // ✅ canonical anchor = workPacketId; legacy fallback = nhId (pre-backfill)
-  const events = await prisma.sotEvent.findMany({
+  const packetEvents = await prisma.sotEvent.findMany({
     where: {
-      kind: { in: [...WORK_PACKET_KINDS] },
-      OR: [{ workPacketId: p.id }, { workPacketId: null, nhId: p.nhId }],
-    },
-    orderBy: { ts: "desc" },
-    take: 50,
-  });
-
-  const debugEvents = await prisma.sotEvent.findMany({
-    where: {
-      kind: { in: [...DEBUG_KINDS] },
+      kind: { in: [...ALL_PACKET_KINDS] },
       OR: [{ workPacketId: p.id }, { workPacketId: null, nhId: p.nhId }],
     },
     orderBy: { ts: "desc" },
     take: 200,
   });
 
-  const latestByKind = new Map<string, (typeof debugEvents)[number]>();
-  for (const evt of debugEvents) {
+  const mutationEvents = packetEvents.filter((evt) =>
+    ["WORK_PACKET_CREATED", "WORK_PACKET_UPDATED", "WORK_PACKET_STATUS_CHANGED", "WORK_DELEGATED"].includes(evt.kind),
+  );
+
+  const runtimeAndDebugEvents = packetEvents.filter(
+    (evt) => RUNTIME_KIND_SET.has(evt.kind) || DEBUG_KIND_SET.has(evt.kind),
+  );
+
+  const handoffEvents = packetEvents.filter((evt) => HANDOFF_KIND_SET.has(evt.kind));
+
+  const latestRuntimeEvent = runtimeAndDebugEvents.find((evt) => RUNTIME_KIND_SET.has(evt.kind)) ?? null;
+  const latestDebugEvent = runtimeAndDebugEvents.find((evt) => DEBUG_KIND_SET.has(evt.kind)) ?? null;
+
+  const control = computeWorkPacketControlState({
+    packetStatus: String(p.status),
+    assigneeNhId,
+    requestedRole,
+    githubPrUrl: p.githubPrUrl ?? null,
+    verificationUrl: p.verificationUrl ?? null,
+    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
+    latestDebugKind: latestDebugEvent?.kind ?? null,
+  });
+
+  const latestByKind = new Map<string, (typeof packetEvents)[number]>();
+  for (const evt of packetEvents) {
     if (!latestByKind.has(evt.kind)) latestByKind.set(evt.kind, evt);
   }
 
-  const checklist = DEBUG_KINDS.map((k) => ({
+  const checklist = DEBUG_LOOP_EVENT_KINDS.map((k) => ({
     kind: k,
     evt: latestByKind.get(k) ?? null,
   }));
 
   const completedCount = checklist.filter((x) => !!x.evt).length;
+
+  const runLedger = runtimeAndDebugEvents.map((evt) =>
+    toRunLedgerEntry({
+      id: evt.id,
+      kind: evt.kind,
+      summary: evt.summary,
+      ts: evt.ts,
+      payload: evt.payload,
+    }),
+  );
+
+  const handoffHistory = handoffEvents.map((evt) =>
+    toHandoffEntry({
+      id: evt.id,
+      kind: evt.kind,
+      summary: evt.summary,
+      ts: evt.ts,
+      payload: evt.payload,
+    }),
+  );
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
@@ -187,9 +262,79 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           {p.nhId} · {p.title}
         </h1>
         <p className="text-sm text-gray-400 mt-1">
-          Update AC/Plan, attach PR, mark status.
+          Contract summary, AC/Plan, run ledger, handoff history, and packet mutation stream.
         </p>
       </header>
+
+      <section className="mb-8 grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
+          <h2 className="text-sm font-semibold text-gray-200">Contract Summary</h2>
+          <div className="mt-3 space-y-2 text-sm text-gray-300">
+            <div>
+              <span className="text-gray-500">status:</span>{" "}
+              <span className="font-mono">{p.status}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">repo:</span>{" "}
+              <span className="font-mono">{p.repo?.name ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">assignee:</span>{" "}
+              <span className="font-mono">{assigneeNhId ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">requested role:</span>{" "}
+              <span className="font-mono">{requestedRole ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">inbox:</span>{" "}
+              <span className="font-mono">
+                {latestInbox ? `${String(latestInbox.status)} · p${String(latestInbox.priority)}` : "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">tags:</span>{" "}
+              <span className="font-mono">
+                {latestInbox ? coerceStringArray(latestInbox.tags).join(", ") || "—" : "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
+          <h2 className="text-sm font-semibold text-gray-200">Control State</h2>
+          <div className="mt-3">
+            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${toneForControl(control.tone)}`}>
+              {control.phase}
+            </span>
+          </div>
+          <div className="mt-3 text-sm text-gray-300">{control.reason}</div>
+          <div className="mt-2 text-sm text-sky-300">{control.nextAction}</div>
+          <div className="mt-4 text-xs text-gray-500">
+            latest runtime: <span className="font-mono text-gray-300">{latestRuntimeEvent?.kind ?? "—"}</span>
+          </div>
+          <div className="mt-1 text-xs text-gray-500">
+            latest debug: <span className="font-mono text-gray-300">{latestDebugEvent?.kind ?? "—"}</span>
+          </div>
+        </div>
+
+        <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
+          <h2 className="text-sm font-semibold text-gray-200">Debug Loop Coverage</h2>
+          <div className="mt-3 text-sm text-gray-300">
+            {completedCount}/{checklist.length} artifacts present
+          </div>
+          <div className="mt-3 space-y-1 text-xs text-gray-400">
+            {checklist.map(({ kind, evt }) => (
+              <div key={kind} className="flex items-center justify-between gap-4">
+                <span className="font-mono">{kind}</span>
+                <span className={evt ? "text-emerald-300" : "text-amber-300"}>
+                  {evt ? "present" : "missing"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <form action={updatePacket.bind(null, p.id)} className="max-w-4xl space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -284,57 +429,100 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </button>
       </form>
 
-      {/* Debug Loop Checklist + Timeline */}
-      <section className="mt-10 max-w-4xl">
-        <h2 className="text-lg font-semibold">Debug Loop Timeline</h2>
+      <section className="mt-10 max-w-6xl">
+        <h2 className="text-lg font-semibold">Run Ledger</h2>
         <p className="mt-1 text-sm text-gray-400">
-          {completedCount}/{checklist.length} artifacts present (plan → patch → verify → docs → approve).
-          This is soft-gated (informational), not blocking status changes.
+          Derived from runtime and debug SoT events linked to this packet.
         </p>
 
         <div className="mt-4 space-y-3">
-          {checklist.map(({ kind, evt }) => (
-            <details key={kind} className="rounded-md border border-gray-800 bg-zinc-950 p-3">
-              <summary className="cursor-pointer select-none">
-                <span className="text-xs font-semibold text-gray-200">{kind}</span>
-                {evt ? (
-                  <>
-                    <span className="ml-3 font-mono text-xs text-gray-400">
-                      {evt.ts.toISOString()}
-                    </span>
-                    {evt.summary ? (
-                      <span className="ml-3 text-sm text-gray-200">{evt.summary}</span>
-                    ) : null}
-                  </>
-                ) : (
-                  <span className="ml-3 text-xs text-amber-300">missing</span>
-                )}
-              </summary>
+          {runLedger.length === 0 ? (
+            <div className="rounded-md border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+              No runtime or debug events yet.
+            </div>
+          ) : (
+            runLedger.map((entry) => (
+              <details key={entry.id} className="rounded-md border border-gray-800 bg-zinc-950 p-3">
+                <summary className="cursor-pointer select-none">
+                  <span className="font-mono text-xs text-gray-400">{entry.ts.toISOString()}</span>
+                  <span className="ml-3 text-xs font-semibold text-gray-200">{entry.kind}</span>
+                  <span className="ml-3 text-xs text-sky-300">{entry.role}</span>
+                  <span className="ml-3 text-xs text-gray-400">{entry.status}</span>
+                  {entry.agentNhId ? (
+                    <span className="ml-3 font-mono text-xs text-purple-300">{entry.agentNhId}</span>
+                  ) : null}
+                  <span className="ml-3 text-sm text-gray-200">{entry.summary}</span>
+                </summary>
 
-              <pre className="mt-3 overflow-x-auto text-xs text-gray-200">
-                {JSON.stringify(evt?.payload ?? null, null, 2)}
-              </pre>
-            </details>
-          ))}
+                <div className="mt-3 text-xs text-gray-400">{entry.detail}</div>
+
+                <pre className="mt-3 overflow-x-auto text-xs text-gray-200">
+                  {JSON.stringify(entry.payload, null, 2)}
+                </pre>
+              </details>
+            ))
+          )}
         </div>
       </section>
 
-      {/* SoT Event Stream (WorkPacket mutations) */}
-      <section className="mt-10 max-w-4xl">
-        <h2 className="text-lg font-semibold">SoT Event Stream</h2>
+      <section className="mt-10 max-w-6xl">
+        <h2 className="text-lg font-semibold">Handoff History</h2>
         <p className="mt-1 text-sm text-gray-400">
-          Latest {events.length} events for WorkPacket{" "}
-          <span className="font-mono">#{p.id}</span> (nhId:{" "}
-          <span className="font-mono">{p.nhId}</span>)
+          Delegation and execution-lane handoff signals for this packet.
         </p>
 
         <div className="mt-4 space-y-3">
-          {events.length === 0 ? (
+          {handoffHistory.length === 0 ? (
+            <div className="rounded-md border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+              No handoff events yet.
+            </div>
+          ) : (
+            handoffHistory.map((entry) => (
+              <details key={entry.id} className="rounded-md border border-gray-800 bg-zinc-950 p-3">
+                <summary className="cursor-pointer select-none">
+                  <span className="font-mono text-xs text-gray-400">{entry.ts.toISOString()}</span>
+                  <span className="ml-3 text-xs font-semibold text-gray-200">{entry.kind}</span>
+                  <span className="ml-3 text-xs text-sky-300">{entry.role}</span>
+                  <span className="ml-3 text-sm text-gray-200">{entry.summary}</span>
+                </summary>
+
+                <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-gray-400 md:grid-cols-3">
+                  <div>
+                    <span className="text-gray-500">from:</span>{" "}
+                    <span className="font-mono text-gray-200">{entry.fromAgentNhId ?? "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">to:</span>{" "}
+                    <span className="font-mono text-gray-200">{entry.toAgentNhId ?? "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">role:</span>{" "}
+                    <span className="font-mono text-gray-200">{entry.role}</span>
+                  </div>
+                </div>
+
+                <pre className="mt-3 overflow-x-auto text-xs text-gray-200">
+                  {JSON.stringify(entry.payload, null, 2)}
+                </pre>
+              </details>
+            ))
+          )}
+        </div>
+      </section>
+
+      <section className="mt-10 max-w-6xl">
+        <h2 className="text-lg font-semibold">SoT Event Stream</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Latest {mutationEvents.length} packet-linked events for WorkPacket <span className="font-mono">#{p.id}</span>.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          {mutationEvents.length === 0 ? (
             <div className="rounded-md border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
               No events yet.
             </div>
           ) : (
-            events.map((evt) => {
+            mutationEvents.map((evt) => {
               const payload = evt.payload as JsonValue | null;
               const changes = getPayloadChanges(payload);
 
