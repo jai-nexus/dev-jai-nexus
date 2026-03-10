@@ -1,6 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import yaml from "js-yaml";
+import {
+    computePanelProgress,
+    progressRank,
+    type PanelProgressStatus,
+} from "@/lib/panels/panelProgress";
 
 export type WinnerStatus = "UNKNOWN" | "SELECTED";
 
@@ -12,6 +17,10 @@ export type PanelIndexItem = {
 
     winner: string;
     winner_status: WinnerStatus;
+
+    // --- motion-0023: progress ---
+    progress_status: PanelProgressStatus;
+    progress_reason: string;
 
     task: string;
     evidence_commands: number;
@@ -33,10 +42,14 @@ export type ListPanelsIndexFilters = {
     panelId?: string;
     status?: WinnerStatus;
     completed?: boolean;
+    progress?: PanelProgressStatus;
 };
 
 type SlotBinding = { provider: string; model: string; notes: string };
-type ModelSlotsDoc = { version?: string; slots?: Record<string, { provider?: unknown; model?: unknown; notes?: unknown }> };
+type ModelSlotsDoc = {
+    version?: string;
+    slots?: Record<string, { provider?: unknown; model?: unknown; notes?: unknown }>;
+};
 
 async function pathExists(p: string): Promise<boolean> {
     try {
@@ -141,9 +154,8 @@ function computeBindingSummary(args: {
     selectorSlot: string | null;
     slotsMap: Record<string, SlotBinding>;
 }): { bindings_label: string; bound_slots: number; total_slots: number; unknown_slots: number } {
-    const ids = Array.from(
-        new Set([...(args.candidateSlots ?? []), ...(args.selectorSlot ? [args.selectorSlot] : [])])
-    ).filter((s) => typeof s === "string" && s.trim().length > 0);
+    const ids = Array.from(new Set([...(args.candidateSlots ?? []), ...(args.selectorSlot ? [args.selectorSlot] : [])]))
+        .filter((s) => typeof s === "string" && s.trim().length > 0);
 
     const total_slots = ids.length;
     if (total_slots === 0) {
@@ -162,11 +174,6 @@ function computeBindingSummary(args: {
         if (!isUnknownBinding(b)) knownKeys.add(bindingKey(b));
     }
 
-    // label logic:
-    // - if all unknown -> UNKNOWN
-    // - if all known and same -> "openai:gpt-5"
-    // - else if known keys > 1 -> "mixed"
-    // - else (some unknown + one known) -> that one known key
     let bindings_label = "UNKNOWN";
     if (knownKeys.size === 0) bindings_label = "UNKNOWN";
     else if (knownKeys.size === 1) bindings_label = Array.from(knownKeys)[0];
@@ -245,12 +252,17 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
                 ? selection.evidence_plan.commands.length
                 : 0;
 
-            const completed = winner !== "UNKNOWN" && evidence_commands > 0;
+            // motion-0023 progress
+            const progress = computePanelProgress(selection);
+            const completed = progress.status === "COMPLETE";
 
             if (filters.status && filters.status !== winner_status) continue;
             if (typeof filters.completed === "boolean" && filters.completed !== completed) continue;
+            if (filters.progress && filters.progress !== progress.status) continue;
 
-            const candidateSlots = Array.isArray(panel?.candidates) ? panel.candidates.filter((x: any) => typeof x === "string") : [];
+            const candidateSlots = Array.isArray(panel?.candidates)
+                ? panel.candidates.filter((x: any) => typeof x === "string")
+                : [];
             const selectorSlot = typeof panel?.selector === "string" ? panel.selector : null;
 
             const binding = computeBindingSummary({ candidateSlots, selectorSlot, slotsMap });
@@ -264,19 +276,26 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
                 selector,
                 winner,
                 winner_status,
+
+                progress_status: progress.status,
+                progress_reason: progress.reason,
+
                 task,
                 evidence_commands,
                 completed,
                 candidates_count,
+
                 bindings_label: binding.bindings_label,
                 bound_slots: binding.bound_slots,
                 total_slots: binding.total_slots,
                 unknown_slots: binding.unknown_slots,
+
                 updated_at,
             });
         }
     }
 
+    // stable sort: group by motion/panel, but you can still sort “needs attention” elsewhere
     out.sort((a, b) => {
         const m = a.motion_id.localeCompare(b.motion_id);
         if (m !== 0) return m;
@@ -284,4 +303,15 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
     });
 
     return out;
+}
+
+// handy helper for callers that want a consistent “needs attention” ordering
+export function sortByProgressSeverity(items: PanelIndexItem[]): PanelIndexItem[] {
+    return [...items].sort((a, b) => {
+        const d = progressRank(b.progress_status) - progressRank(a.progress_status);
+        if (d !== 0) return d;
+        const m = a.motion_id.localeCompare(b.motion_id);
+        if (m !== 0) return m;
+        return a.panel_id.localeCompare(b.panel_id);
+    });
 }

@@ -1,3 +1,4 @@
+// portal/src/app/operator/panels/page.tsx
 import Link from "next/link";
 import { listPanelsIndex, type WinnerStatus } from "@/lib/panels/panelIndex";
 
@@ -32,6 +33,117 @@ function sanitizeCompleted(input?: string): boolean | undefined {
     return undefined; // ANY / missing
 }
 
+function isoDay(ts?: string) {
+    if (!ts) return "—";
+    // expected ts already ISO from server; slice makes it stable
+    return ts.length >= 10 ? ts.slice(0, 10) : ts;
+}
+
+const antiExtensionProps = {
+    autoComplete: "off" as const,
+    spellCheck: false as const,
+    "data-gramm": "false",
+    "data-gramm_editor": "false",
+    "data-enable-grammarly": "false",
+    "data-lpignore": "true",
+    "data-1p-ignore": "true",
+    suppressHydrationWarning: true as const,
+};
+
+type RowModel = Awaited<ReturnType<typeof listPanelsIndex>>[number];
+
+function PanelsTable({ rows }: { rows: React.ReactNode }) {
+    // Keep thead/tbody adjacent by returning the whole <table> tree as a single expression.
+    // (Avoids stray whitespace text nodes that can appear around <table> parsing.)
+    return (
+        <div className="border border-zinc-800 rounded-lg overflow-hidden">
+            <table className="w-full text-left text-xs">
+                <thead className="bg-zinc-900 text-gray-400 border-b border-zinc-800">
+                    <tr>
+                        <th className="px-4 py-3">Motion</th>
+                        <th className="px-4 py-3">Panel</th>
+                        <th className="px-4 py-3">Role</th>
+                        <th className="px-4 py-3">Selector</th>
+                        <th className="px-4 py-3">Bindings</th>
+                        <th className="px-4 py-3">Bound</th>
+                        <th className="px-4 py-3">Winner</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Completed</th>
+                        <th className="px-4 py-3 text-right">Evidence</th>
+                        <th className="px-4 py-3 text-right">Candidates</th>
+                        <th className="px-4 py-3">Updated</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800">{rows}</tbody>
+            </table>
+        </div>
+    );
+}
+
+function renderRow(it: RowModel) {
+    const href = `/operator/panels/${it.motion_id}/${it.panel_id}`;
+
+    const bindingsTone =
+        it.total_slots === 0
+            ? "text-gray-500 border-zinc-800 bg-zinc-950/30"
+            : it.unknown_slots === 0
+                ? "text-emerald-300 border-emerald-800/50 bg-emerald-900/10"
+                : "text-amber-300 border-amber-800/50 bg-amber-900/10";
+
+    const boundTone =
+        it.total_slots === 0
+            ? "text-gray-500"
+            : it.unknown_slots === 0
+                ? "text-emerald-300"
+                : "text-amber-300";
+
+    return (
+        <tr key={`${it.motion_id}:${it.panel_id}`} className="hover:bg-zinc-900/40">
+            <td className="px-4 py-3 font-mono text-gray-200">{it.motion_id}</td>
+
+            <td className="px-4 py-3">
+                <Link className="font-mono text-sky-300 hover:underline" href={href} prefetch={false}>
+                    {it.panel_id}
+                </Link>
+            </td>
+
+            <td className="px-4 py-3 font-mono text-gray-300">{it.role_id}</td>
+            <td className="px-4 py-3 font-mono text-gray-300">{it.selector}</td>
+
+            <td className="px-4 py-3">
+                <span className={`inline-flex items-center rounded border px-2 py-1 font-mono ${bindingsTone}`}>
+                    {it.bindings_label}
+                </span>
+            </td>
+
+            <td className={`px-4 py-3 font-mono ${boundTone}`}>
+                {it.total_slots ? `${it.bound_slots}/${it.total_slots}` : "—"}
+            </td>
+
+            <td className="px-4 py-3 font-mono text-gray-300">{it.winner}</td>
+
+            <td className="px-4 py-3 font-mono">
+                <span className={it.winner_status === "SELECTED" ? "text-emerald-300" : "text-gray-500"}>
+                    {it.winner_status}
+                </span>
+            </td>
+
+            <td className="px-4 py-3 font-mono">
+                <span className={it.completed ? "text-emerald-300" : "text-amber-300"}>
+                    {it.completed ? "Y" : "N"}
+                </span>
+            </td>
+
+            <td className="px-4 py-3 text-right font-mono text-gray-300">{it.evidence_commands}</td>
+            <td className="px-4 py-3 text-right font-mono text-gray-300">{it.candidates_count}</td>
+
+            <td className="px-4 py-3 font-mono text-gray-400" suppressHydrationWarning>
+                {isoDay(it.updated_at)}
+            </td>
+        </tr>
+    );
+}
+
 export default async function PanelsIndexPage(props: {
     searchParams?: Promise<Record<string, SearchParamValue>> | Record<string, SearchParamValue>;
 }) {
@@ -43,8 +155,9 @@ export default async function PanelsIndexPage(props: {
     const completed = sanitizeCompleted(firstParam(sp.completed));
 
     const items = await listPanelsIndex({ motionId, panelId, status, completed });
-
     const completedCount = items.filter((x) => x.completed).length;
+
+    const rows = items.map(renderRow);
 
     return (
         <div className="min-h-screen bg-zinc-950 text-gray-100 p-8">
@@ -62,10 +175,11 @@ export default async function PanelsIndexPage(props: {
             </div>
 
             {/* Filters */}
-            <form method="GET" className="mb-4 flex flex-wrap items-end gap-3">
+            <form method="GET" className="mb-4 flex flex-wrap items-end gap-3" suppressHydrationWarning>
                 <div>
                     <div className="text-[11px] text-gray-500 mb-1">motionId</div>
                     <input
+                        {...antiExtensionProps}
                         name="motionId"
                         defaultValue={motionId ?? ""}
                         placeholder="motion-0010"
@@ -76,6 +190,7 @@ export default async function PanelsIndexPage(props: {
                 <div>
                     <div className="text-[11px] text-gray-500 mb-1">panelId</div>
                     <input
+                        {...antiExtensionProps}
                         name="panelId"
                         defaultValue={panelId ?? ""}
                         placeholder="JAI_DEV_BUILDER_PANEL_V0"
@@ -86,6 +201,7 @@ export default async function PanelsIndexPage(props: {
                 <div>
                     <div className="text-[11px] text-gray-500 mb-1">status</div>
                     <select
+                        {...antiExtensionProps}
                         name="status"
                         defaultValue={status ?? ""}
                         className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200"
@@ -99,6 +215,7 @@ export default async function PanelsIndexPage(props: {
                 <div>
                     <div className="text-[11px] text-gray-500 mb-1">completed</div>
                     <select
+                        {...antiExtensionProps}
                         name="completed"
                         defaultValue={typeof completed === "boolean" ? (completed ? "Y" : "N") : ""}
                         className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs font-mono text-gray-200"
@@ -119,17 +236,17 @@ export default async function PanelsIndexPage(props: {
                 <Link
                     href="/operator/panels"
                     className="rounded border border-zinc-800 bg-transparent px-3 py-2 text-xs text-gray-400 hover:bg-zinc-900 hover:text-gray-200"
+                    prefetch={false}
                 >
                     Clear
                 </Link>
 
-                <div className="ml-auto flex items-center gap-4 text-xs text-gray-500">
+                <div className="ml-auto flex items-center gap-4 text-xs text-gray-500" suppressHydrationWarning>
                     <div>
                         Found <span className="font-mono text-gray-200">{items.length}</span>
                     </div>
                     <div>
-                        Completed{" "}
-                        <span className="font-mono text-emerald-300">{completedCount}</span>
+                        Completed <span className="font-mono text-emerald-300">{completedCount}</span>
                     </div>
                 </div>
             </form>
@@ -142,96 +259,7 @@ export default async function PanelsIndexPage(props: {
                     </div>
                 </div>
             ) : (
-                <div className="border border-zinc-800 rounded-lg overflow-hidden">
-                    <table className="w-full text-left text-xs">
-                        <thead className="bg-zinc-900 text-gray-400 border-b border-zinc-800">
-                            <tr>
-                                <th className="px-4 py-3">Motion</th>
-                                <th className="px-4 py-3">Panel</th>
-                                <th className="px-4 py-3">Role</th>
-                                <th className="px-4 py-3">Selector</th>
-
-                                {/* motion-0022 */}
-                                <th className="px-4 py-3">Bindings</th>
-                                <th className="px-4 py-3">Bound</th>
-
-                                <th className="px-4 py-3">Winner</th>
-                                <th className="px-4 py-3">Status</th>
-                                <th className="px-4 py-3">Completed</th>
-                                <th className="px-4 py-3 text-right">Evidence</th>
-                                <th className="px-4 py-3 text-right">Candidates</th>
-                                <th className="px-4 py-3">Updated</th>
-                            </tr>
-                        </thead>
-
-                        <tbody className="divide-y divide-zinc-800">
-                            {items.map((it) => {
-                                const href = `/operator/panels/${it.motion_id}/${it.panel_id}`;
-
-                                const bindingsTone =
-                                    it.total_slots === 0
-                                        ? "text-gray-500 border-zinc-800 bg-zinc-950/30"
-                                        : it.unknown_slots === 0
-                                            ? "text-emerald-300 border-emerald-800/50 bg-emerald-900/10"
-                                            : "text-amber-300 border-amber-800/50 bg-amber-900/10";
-
-                                const boundTone =
-                                    it.total_slots === 0
-                                        ? "text-gray-500"
-                                        : it.unknown_slots === 0
-                                            ? "text-emerald-300"
-                                            : "text-amber-300";
-
-                                return (
-                                    <tr key={`${it.motion_id}:${it.panel_id}`} className="hover:bg-zinc-900/40">
-                                        <td className="px-4 py-3 font-mono text-gray-200">{it.motion_id}</td>
-
-                                        <td className="px-4 py-3">
-                                            <Link className="font-mono text-sky-300 hover:underline" href={href}>
-                                                {it.panel_id}
-                                            </Link>
-                                        </td>
-
-                                        <td className="px-4 py-3 font-mono text-gray-300">{it.role_id}</td>
-
-                                        <td className="px-4 py-3 font-mono text-gray-300">{it.selector}</td>
-
-                                        {/* motion-0022: bindings */}
-                                        <td className="px-4 py-3">
-                                            <span className={`inline-flex items-center rounded border px-2 py-1 font-mono ${bindingsTone}`}>
-                                                {it.bindings_label}
-                                            </span>
-                                        </td>
-
-                                        <td className={`px-4 py-3 font-mono ${boundTone}`}>
-                                            {it.total_slots ? `${it.bound_slots}/${it.total_slots}` : "—"}
-                                        </td>
-
-                                        <td className="px-4 py-3 font-mono text-gray-300">{it.winner}</td>
-
-                                        <td className="px-4 py-3 font-mono">
-                                            <span className={it.winner_status === "SELECTED" ? "text-emerald-300" : "text-gray-500"}>
-                                                {it.winner_status}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-4 py-3 font-mono">
-                                            <span className={it.completed ? "text-emerald-300" : "text-amber-300"}>
-                                                {it.completed ? "Y" : "N"}
-                                            </span>
-                                        </td>
-
-                                        <td className="px-4 py-3 text-right font-mono text-gray-300">{it.evidence_commands}</td>
-
-                                        <td className="px-4 py-3 text-right font-mono text-gray-300">{it.candidates_count}</td>
-
-                                        <td className="px-4 py-3 font-mono text-gray-400">{it.updated_at}</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                <PanelsTable rows={rows} />
             )}
         </div>
     );

@@ -1,6 +1,5 @@
-// portal/src/app/operator/registry/coverage/page.tsx
 import { loadLatestHealthSnapshots, loadRegistryIndexes } from "@/lib/registryIndex";
-import { listPanelsIndex } from "@/lib/panels/panelIndex";
+import { listPanelsIndex, sortByProgressSeverity } from "@/lib/panels/panelIndex";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +55,7 @@ function formatIsoDay(ts?: string) {
 }
 
 export default async function RegistryCoveragePage() {
-    const [registryRaw, health, panels] = await Promise.all([
+    const [registryRaw, health, panelsRaw] = await Promise.all([
         loadRegistryIndexes().catch(() => null),
         loadLatestHealthSnapshots(),
         listPanelsIndex().catch(() => []),
@@ -71,7 +70,6 @@ export default async function RegistryCoveragePage() {
         );
     }
 
-    // ---- normalize shapes (handles minor API/loader variations)
     const registry = registryRaw as unknown as RegistryIndexes;
 
     const reposMap: Record<string, RepoIndexEntry> =
@@ -86,12 +84,25 @@ export default async function RegistryCoveragePage() {
 
     const repoIds = Object.keys(reposMap).sort();
 
-    // --- Panels completion (existing semantics)
+    const panels = panelsRaw ?? [];
+
+    // Completion (same semantics as before, now sourced from progress_status)
     const panelsTotal = panels.length;
     const panelsCompleted = panels.filter((p) => p.completed).length;
-    const panelsIncomplete = panels.filter((p) => !p.completed);
+    const panelsNeedsAttention = panels.filter((p) => !p.completed);
 
-    // --- motion-0022: binding health
+    // Progress breakdown (motion-0023)
+    const counts = {
+        INVALID: panels.filter((p) => p.progress_status === "INVALID").length,
+        NEEDS_SCORES: panels.filter((p) => p.progress_status === "NEEDS_SCORES").length,
+        NEEDS_WINNER: panels.filter((p) => p.progress_status === "NEEDS_WINNER").length,
+        NEEDS_EVIDENCE: panels.filter((p) => p.progress_status === "NEEDS_EVIDENCE").length,
+        COMPLETE: panels.filter((p) => p.progress_status === "COMPLETE").length,
+    };
+
+    const needsAttentionSorted = sortByProgressSeverity(panelsNeedsAttention);
+
+    // Binding health (motion-0022)
     const slotsTotal = panels.reduce((sum, p) => sum + (p.total_slots ?? 0), 0);
     const slotsUnknown = panels.reduce((sum, p) => sum + (p.unknown_slots ?? 0), 0);
     const slotsBound = Math.max(0, slotsTotal - slotsUnknown);
@@ -99,7 +110,6 @@ export default async function RegistryCoveragePage() {
     const panelsWithUnknownBindings = panels
         .filter((p) => (p.total_slots ?? 0) > 0 && (p.unknown_slots ?? 0) > 0)
         .sort((a, b) => {
-            // most unknown first, deterministic tie-breaks
             const d = (b.unknown_slots ?? 0) - (a.unknown_slots ?? 0);
             if (d !== 0) return d;
             const m = a.motion_id.localeCompare(b.motion_id);
@@ -122,7 +132,7 @@ export default async function RegistryCoveragePage() {
             </div>
 
             {/* Panels Completion */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-3">
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
                     <div className="text-xs text-gray-500 mb-1">Panels discovered</div>
                     <div className="text-2xl font-bold text-gray-200 font-mono">{panelsTotal}</div>
@@ -140,8 +150,8 @@ export default async function RegistryCoveragePage() {
                 </div>
 
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
-                    <div className="text-xs text-gray-500 mb-1">Incomplete panels</div>
-                    <div className="text-2xl font-bold text-amber-300 font-mono">{panelsIncomplete.length}</div>
+                    <div className="text-xs text-gray-500 mb-1">Panels needing attention</div>
+                    <div className="text-2xl font-bold text-amber-300 font-mono">{panelsNeedsAttention.length}</div>
                     <div className="text-xs text-gray-500 mt-2">
                         <Link href="/operator/panels" className="text-sky-300 hover:underline">
                             Open panels index →
@@ -150,14 +160,26 @@ export default async function RegistryCoveragePage() {
                 </div>
             </div>
 
+            {/* motion-0023: progress breakdown line */}
+            <div className="mb-6 text-xs text-gray-500">
+                Progress breakdown:{" "}
+                <span className="font-mono text-red-300">INVALID {counts.INVALID}</span>{" "}
+                <span className="text-gray-600">·</span>{" "}
+                <span className="font-mono text-amber-300">NEEDS_EVIDENCE {counts.NEEDS_EVIDENCE}</span>{" "}
+                <span className="text-gray-600">·</span>{" "}
+                <span className="font-mono text-amber-300">NEEDS_WINNER {counts.NEEDS_WINNER}</span>{" "}
+                <span className="text-gray-600">·</span>{" "}
+                <span className="font-mono text-amber-300">NEEDS_SCORES {counts.NEEDS_SCORES}</span>{" "}
+                <span className="text-gray-600">·</span>{" "}
+                <span className="font-mono text-emerald-300">COMPLETE {counts.COMPLETE}</span>
+            </div>
+
             {/* motion-0022: Slot Binding Health */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
                     <div className="text-xs text-gray-500 mb-1">Slots bound</div>
                     <div className="text-2xl font-bold text-emerald-300 font-mono">{slotsBound}</div>
-                    <div className="text-xs text-gray-500 mt-2">
-                        Bound = provider/model not UNKNOWN across all panels
-                    </div>
+                    <div className="text-xs text-gray-500 mt-2">Bound = provider/model not UNKNOWN across all panels</div>
                 </div>
 
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
@@ -169,6 +191,43 @@ export default async function RegistryCoveragePage() {
                 </div>
             </div>
 
+            {/* motion-0023: Needs attention (progress) */}
+            {needsAttentionSorted.length ? (
+                <div className="border border-zinc-800 rounded-lg bg-zinc-900/20 p-4 mb-6">
+                    <div className="font-semibold text-gray-200 mb-2">Needs attention: panel progress</div>
+                    <div className="text-xs text-gray-500 mb-3">Showing up to 8 panels (sorted by severity).</div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                        {needsAttentionSorted.slice(0, 8).map((p) => {
+                            const href = `/operator/panels/${p.motion_id}/${p.panel_id}`;
+
+                            const tone =
+                                p.progress_status === "INVALID"
+                                    ? "text-red-300"
+                                    : "text-amber-300";
+
+                            return (
+                                <Link
+                                    key={`${p.motion_id}:${p.panel_id}`}
+                                    href={href}
+                                    className="text-xs px-3 py-2 rounded border border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900/40"
+                                    title={p.progress_reason}
+                                >
+                                    <span className="font-mono text-gray-200">{p.motion_id}</span>{" "}
+                                    <span className="text-gray-500">/</span>{" "}
+                                    <span className="font-mono text-sky-300">{p.panel_id}</span>{" "}
+                                    <span className="text-gray-500">·</span>{" "}
+                                    <span className={`font-mono ${tone}`}>{p.progress_status}</span>{" "}
+                                    <span className="text-gray-500">·</span>{" "}
+                                    <span className="text-gray-400">{p.progress_reason}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            ) : null}
+
+            {/* motion-0022: Unknown bindings */}
             {panelsWithUnknownBindings.length ? (
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/20 p-4 mb-6">
                     <div className="font-semibold text-gray-200 mb-2">Needs attention: unknown bindings</div>
@@ -191,31 +250,6 @@ export default async function RegistryCoveragePage() {
                                     </span>{" "}
                                     <span className="text-gray-500">·</span>{" "}
                                     <span className="font-mono text-gray-400">{p.bindings_label}</span>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </div>
-            ) : null}
-
-            {panelsIncomplete.length ? (
-                <div className="border border-zinc-800 rounded-lg bg-zinc-900/20 p-4 mb-6">
-                    <div className="font-semibold text-gray-200 mb-2">Needs attention: incomplete panels</div>
-                    <div className="text-xs text-gray-500 mb-3">Showing up to 8 incomplete panels.</div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                        {panelsIncomplete.slice(0, 8).map((p) => {
-                            const href = `/operator/panels/${p.motion_id}/${p.panel_id}`;
-                            return (
-                                <Link
-                                    key={`${p.motion_id}:${p.panel_id}`}
-                                    href={href}
-                                    className="text-xs px-3 py-2 rounded border border-zinc-800 bg-zinc-950/40 hover:bg-zinc-900/40"
-                                >
-                                    <span className="font-mono text-gray-200">{p.motion_id}</span>{" "}
-                                    <span className="text-gray-500">/</span>{" "}
-                                    <span className="font-mono text-sky-300">{p.panel_id}</span>{" "}
-                                    <span className="text-gray-500">·</span>{" "}
-                                    <span className="font-mono text-gray-400">winner={p.winner}</span>
                                 </Link>
                             );
                         })}
@@ -285,10 +319,7 @@ export default async function RegistryCoveragePage() {
                                             </span>
                                         </td>
 
-                                        <td
-                                            className="px-4 py-3 text-gray-500 max-w-[150px] truncate"
-                                            title={secondaryDomains.join(", ")}
-                                        >
+                                        <td className="px-4 py-3 text-gray-500 max-w-[150px] truncate" title={secondaryDomains.join(", ")}>
                                             {secondaryDomains.length ? secondaryDomains.join(", ") : "—"}
                                         </td>
 

@@ -1,6 +1,7 @@
 import { loadPanelView } from "@/lib/panels/panelStore";
 import { loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
 import { computeSelection, computeSlotTotal, normalizeBreakdown } from "@/lib/panels/panelSelectCore.mjs";
+import { computePanelProgress } from "@/lib/panels/panelProgress";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +75,6 @@ async function computeWinnerAction(formData: FormData) {
     const core = await loadPanelCore({ motionId, panelId });
     const { next } = computeSelection(core.panel, core.selection, { forceWinner: false });
 
-    // keep ids consistent
     next.motion_id = core.motion_id;
     next.panel_id = core.panel_id;
 
@@ -136,6 +136,14 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
     const { panel, selection, candidates, motion_id, panel_id, resolved_slots } = view;
 
+    const progress = computePanelProgress(selection);
+    const progressTone =
+        progress.status === "COMPLETE"
+            ? "text-emerald-300 border-emerald-800/50 bg-emerald-900/10"
+            : progress.status === "INVALID"
+                ? "text-red-300 border-red-800/50 bg-red-900/10"
+                : "text-amber-300 border-amber-800/50 bg-amber-900/10";
+
     const rubric = Array.isArray(panel.rubric) ? panel.rubric : [];
     const scoreEntries = Object.entries(selection.scores ?? {}).map(([slot, v]) => ({
         slot,
@@ -161,7 +169,6 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
             return { slotId, kind, ...b };
         })
         .sort((a, b) => {
-            // keep selector at bottom for readability
             if (a.kind !== b.kind) return a.kind === "candidate" ? -1 : 1;
             return a.slotId.localeCompare(b.slotId);
         });
@@ -204,6 +211,15 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
                     <h2 className="font-semibold text-gray-200 mb-2">Selection</h2>
                     <div className="text-sm text-gray-300 space-y-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-500">progress:</span>
+                            <span className={`inline-flex items-center rounded border px-2 py-1 font-mono ${progressTone}`} title={progress.reason}>
+                                {progress.status}
+                            </span>
+                        </div>
+
+                        <div className="text-xs text-gray-500">{progress.reason}</div>
+
                         <div>
                             <span className="text-gray-500">winner:</span>{" "}
                             <span className="font-mono text-emerald-300">{winner}</span>
@@ -227,7 +243,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
-            {/* Slot Bindings (motion-0021) */}
+            {/* Slot Bindings */}
             <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Slot Bindings</h2>
@@ -307,9 +323,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                                             {rubric.map((r: any) => (
                                                 <tr key={r.id}>
                                                     <td className="px-3 py-2 font-mono text-gray-200">{r.id}</td>
-                                                    <td className="px-3 py-2 font-mono text-gray-400">
-                                                        {Number(r.weight).toFixed(2)}
-                                                    </td>
+                                                    <td className="px-3 py-2 font-mono text-gray-400">{Number(r.weight).toFixed(2)}</td>
                                                     <td className="px-3 py-2">
                                                         <input
                                                             name={`score_${r.id}`}
