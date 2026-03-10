@@ -1,0 +1,17 @@
+title: "Agent Inbox + Run Ledger Execution Loop v0: governed routing + handoff actions"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: false
+
+max_risk_score: 0.20
+
+checks_required:
+  - validate_agency
+  - typecheck
+
+checks_optional:
+  - dct_replay_check
