@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import yaml from "js-yaml";
 
 export type WinnerStatus = "UNKNOWN" | "SELECTED";
 
@@ -17,6 +18,13 @@ export type PanelIndexItem = {
     completed: boolean;
 
     candidates_count: number;
+
+    // --- motion-0022: binding summary ---
+    bindings_label: string; // e.g. "openai:gpt-5" | "mixed" | "UNKNOWN"
+    bound_slots: number; // count of non-UNKNOWN provider/model
+    total_slots: number; // candidates + selector
+    unknown_slots: number; // total - bound
+
     updated_at: string;
 };
 
@@ -26,6 +34,9 @@ export type ListPanelsIndexFilters = {
     status?: WinnerStatus;
     completed?: boolean;
 };
+
+type SlotBinding = { provider: string; model: string; notes: string };
+type ModelSlotsDoc = { version?: string; slots?: Record<string, { provider?: unknown; model?: unknown; notes?: unknown }> };
 
 async function pathExists(p: string): Promise<boolean> {
     try {
@@ -78,12 +89,101 @@ async function newestMtimeISO(pathsToStat: string[]): Promise<string> {
     return newest ? toISO(newest) : toISO(0);
 }
 
+// --- model-slots.yaml loader (small cache) ---
+let _slotsCache:
+    | {
+        repoRoot: string;
+        mtimeMs: number;
+        slots: Record<string, SlotBinding>;
+    }
+    | null = null;
+
+async function loadModelSlots(repoRoot: string): Promise<Record<string, SlotBinding>> {
+    const p = path.join(repoRoot, ".nexus", "model-slots.yaml");
+    if (!(await pathExists(p))) return {};
+
+    try {
+        const st = await fs.stat(p);
+        if (_slotsCache && _slotsCache.repoRoot === repoRoot && _slotsCache.mtimeMs === st.mtimeMs) {
+            return _slotsCache.slots;
+        }
+
+        const raw = await fs.readFile(p, "utf8");
+        const doc = yaml.load(raw) as ModelSlotsDoc | null;
+
+        const slotsObj = doc?.slots && typeof doc.slots === "object" ? doc.slots : {};
+        const out: Record<string, SlotBinding> = {};
+
+        for (const [slotId, v] of Object.entries(slotsObj)) {
+            const provider = typeof v?.provider === "string" && v.provider.trim() ? v.provider.trim() : "UNKNOWN";
+            const model = typeof v?.model === "string" && v.model.trim() ? v.model.trim() : "UNKNOWN";
+            const notes = typeof v?.notes === "string" ? v.notes : "";
+            out[slotId] = { provider, model, notes };
+        }
+
+        _slotsCache = { repoRoot, mtimeMs: st.mtimeMs, slots: out };
+        return out;
+    } catch {
+        return {};
+    }
+}
+
+function bindingKey(b: SlotBinding): string {
+    return `${b.provider}:${b.model}`;
+}
+
+function isUnknownBinding(b: SlotBinding): boolean {
+    return b.provider === "UNKNOWN" || b.model === "UNKNOWN";
+}
+
+function computeBindingSummary(args: {
+    candidateSlots: string[];
+    selectorSlot: string | null;
+    slotsMap: Record<string, SlotBinding>;
+}): { bindings_label: string; bound_slots: number; total_slots: number; unknown_slots: number } {
+    const ids = Array.from(
+        new Set([...(args.candidateSlots ?? []), ...(args.selectorSlot ? [args.selectorSlot] : [])])
+    ).filter((s) => typeof s === "string" && s.trim().length > 0);
+
+    const total_slots = ids.length;
+    if (total_slots === 0) {
+        return { bindings_label: "UNKNOWN", bound_slots: 0, total_slots: 0, unknown_slots: 0 };
+    }
+
+    let bound_slots = 0;
+    let unknown_slots = 0;
+
+    const knownKeys = new Set<string>();
+    for (const slotId of ids) {
+        const b = args.slotsMap[slotId] ?? { provider: "UNKNOWN", model: "UNKNOWN", notes: "" };
+        if (isUnknownBinding(b)) unknown_slots += 1;
+        else bound_slots += 1;
+
+        if (!isUnknownBinding(b)) knownKeys.add(bindingKey(b));
+    }
+
+    // label logic:
+    // - if all unknown -> UNKNOWN
+    // - if all known and same -> "openai:gpt-5"
+    // - else if known keys > 1 -> "mixed"
+    // - else (some unknown + one known) -> that one known key
+    let bindings_label = "UNKNOWN";
+    if (knownKeys.size === 0) bindings_label = "UNKNOWN";
+    else if (knownKeys.size === 1) bindings_label = Array.from(knownKeys)[0];
+    else bindings_label = "mixed";
+
+    return { bindings_label, bound_slots, total_slots, unknown_slots };
+}
+
 export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Promise<PanelIndexItem[]> {
     const repoRoot = await findRepoRoot(process.cwd());
     if (!repoRoot) return [];
 
     const motionsRoot = path.join(repoRoot, ".nexus", "motions");
     if (!(await pathExists(motionsRoot))) return [];
+
+    const slotsMap = await loadModelSlots(repoRoot);
+    const modelSlotsPath = path.join(repoRoot, ".nexus", "model-slots.yaml");
 
     const motionEntries = await fs.readdir(motionsRoot, { withFileTypes: true });
     const motionIds = motionEntries
@@ -121,6 +221,9 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
             let candidates_count = 0;
             const statPaths: string[] = [panelJsonPath, selectionJsonPath, selectorMdPath, panelDir];
 
+            // Include model-slots.yaml so "updated" changes if bindings change
+            if (await pathExists(modelSlotsPath)) statPaths.push(modelSlotsPath);
+
             if (await pathExists(candidatesDir)) {
                 const c = await fs.readdir(candidatesDir, { withFileTypes: true });
                 const mdFiles = c
@@ -147,6 +250,11 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
             if (filters.status && filters.status !== winner_status) continue;
             if (typeof filters.completed === "boolean" && filters.completed !== completed) continue;
 
+            const candidateSlots = Array.isArray(panel?.candidates) ? panel.candidates.filter((x: any) => typeof x === "string") : [];
+            const selectorSlot = typeof panel?.selector === "string" ? panel.selector : null;
+
+            const binding = computeBindingSummary({ candidateSlots, selectorSlot, slotsMap });
+
             const updated_at = await newestMtimeISO(statPaths);
 
             out.push({
@@ -160,6 +268,10 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
                 evidence_commands,
                 completed,
                 candidates_count,
+                bindings_label: binding.bindings_label,
+                bound_slots: binding.bound_slots,
+                total_slots: binding.total_slots,
+                unknown_slots: binding.unknown_slots,
                 updated_at,
             });
         }

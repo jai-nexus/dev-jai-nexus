@@ -150,6 +150,11 @@ export default async function PanelsIndexPage(props: {
                                 <th className="px-4 py-3">Panel</th>
                                 <th className="px-4 py-3">Role</th>
                                 <th className="px-4 py-3">Selector</th>
+
+                                {/* motion-0022 */}
+                                <th className="px-4 py-3">Bindings</th>
+                                <th className="px-4 py-3">Bound</th>
+
                                 <th className="px-4 py-3">Winner</th>
                                 <th className="px-4 py-3">Status</th>
                                 <th className="px-4 py-3">Completed</th>
@@ -162,6 +167,20 @@ export default async function PanelsIndexPage(props: {
                         <tbody className="divide-y divide-zinc-800">
                             {items.map((it) => {
                                 const href = `/operator/panels/${it.motion_id}/${it.panel_id}`;
+
+                                const bindingsTone =
+                                    it.total_slots === 0
+                                        ? "text-gray-500 border-zinc-800 bg-zinc-950/30"
+                                        : it.unknown_slots === 0
+                                            ? "text-emerald-300 border-emerald-800/50 bg-emerald-900/10"
+                                            : "text-amber-300 border-amber-800/50 bg-amber-900/10";
+
+                                const boundTone =
+                                    it.total_slots === 0
+                                        ? "text-gray-500"
+                                        : it.unknown_slots === 0
+                                            ? "text-emerald-300"
+                                            : "text-amber-300";
 
                                 return (
                                     <tr key={`${it.motion_id}:${it.panel_id}`} className="hover:bg-zinc-900/40">
@@ -177,16 +196,21 @@ export default async function PanelsIndexPage(props: {
 
                                         <td className="px-4 py-3 font-mono text-gray-300">{it.selector}</td>
 
+                                        {/* motion-0022: bindings */}
+                                        <td className="px-4 py-3">
+                                            <span className={`inline-flex items-center rounded border px-2 py-1 font-mono ${bindingsTone}`}>
+                                                {it.bindings_label}
+                                            </span>
+                                        </td>
+
+                                        <td className={`px-4 py-3 font-mono ${boundTone}`}>
+                                            {it.total_slots ? `${it.bound_slots}/${it.total_slots}` : "—"}
+                                        </td>
+
                                         <td className="px-4 py-3 font-mono text-gray-300">{it.winner}</td>
 
                                         <td className="px-4 py-3 font-mono">
-                                            <span
-                                                className={
-                                                    it.winner_status === "SELECTED"
-                                                        ? "text-emerald-300"
-                                                        : "text-gray-500"
-                                                }
-                                            >
+                                            <span className={it.winner_status === "SELECTED" ? "text-emerald-300" : "text-gray-500"}>
                                                 {it.winner_status}
                                             </span>
                                         </td>
@@ -197,13 +221,9 @@ export default async function PanelsIndexPage(props: {
                                             </span>
                                         </td>
 
-                                        <td className="px-4 py-3 text-right font-mono text-gray-300">
-                                            {it.evidence_commands}
-                                        </td>
+                                        <td className="px-4 py-3 text-right font-mono text-gray-300">{it.evidence_commands}</td>
 
-                                        <td className="px-4 py-3 text-right font-mono text-gray-300">
-                                            {it.candidates_count}
-                                        </td>
+                                        <td className="px-4 py-3 text-right font-mono text-gray-300">{it.candidates_count}</td>
 
                                         <td className="px-4 py-3 font-mono text-gray-400">{it.updated_at}</td>
                                     </tr>
