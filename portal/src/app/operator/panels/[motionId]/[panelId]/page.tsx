@@ -1,4 +1,5 @@
-import { loadPanelView, loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
+import { loadPanelView } from "@/lib/panels/panelStore";
+import { loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
 import { computeSelection, computeSlotTotal, normalizeBreakdown } from "@/lib/panels/panelSelectCore.mjs";
 import { redirect } from "next/navigation";
 
@@ -133,7 +134,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
         );
     }
 
-    const { panel, selection, candidates, motion_id, panel_id } = view;
+    const { panel, selection, candidates, motion_id, panel_id, resolved_slots } = view;
 
     const rubric = Array.isArray(panel.rubric) ? panel.rubric : [];
     const scoreEntries = Object.entries(selection.scores ?? {}).map(([slot, v]) => ({
@@ -148,6 +149,22 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
     });
 
     const winner = safeStr(selection.winner, "UNKNOWN");
+
+    const candidateSlots = Array.isArray((panel as any).candidates) ? ((panel as any).candidates as string[]) : [];
+    const selectorSlot = safeStr((panel as any).selector, "");
+
+    const bindingRows = Array.from(new Set([...(candidateSlots ?? []), ...(selectorSlot ? [selectorSlot] : [])]))
+        .filter((s) => typeof s === "string" && s.length > 0)
+        .map((slotId) => {
+            const b = (resolved_slots ?? {})[slotId] ?? { provider: "UNKNOWN", model: "UNKNOWN", notes: "" };
+            const kind = slotId === selectorSlot ? "selector" : "candidate";
+            return { slotId, kind, ...b };
+        })
+        .sort((a, b) => {
+            // keep selector at bottom for readability
+            if (a.kind !== b.kind) return a.kind === "candidate" ? -1 : 1;
+            return a.slotId.localeCompare(b.slotId);
+        });
 
     return (
         <div className="min-h-screen bg-zinc-950 text-gray-100 p-8">
@@ -210,11 +227,57 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
+            {/* Slot Bindings (motion-0021) */}
+            <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
+                <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
+                    <h2 className="font-semibold text-gray-200">Slot Bindings</h2>
+                    <p className="text-xs text-gray-500 mt-1">
+                        Resolved from <span className="font-mono">.nexus/model-slots.yaml</span>
+                    </p>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-zinc-900/60 text-gray-400 border-b border-zinc-800">
+                            <tr>
+                                <th className="px-4 py-2">Slot</th>
+                                <th className="px-4 py-2">Kind</th>
+                                <th className="px-4 py-2">Provider</th>
+                                <th className="px-4 py-2">Model</th>
+                                <th className="px-4 py-2">Notes</th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-zinc-800">
+                            {bindingRows.map((r) => (
+                                <tr key={r.slotId} className={r.kind === "selector" ? "bg-sky-900/10" : "hover:bg-zinc-900/40"}>
+                                    <td className="px-4 py-2 font-mono text-gray-200">{r.slotId}</td>
+                                    <td className="px-4 py-2 font-mono text-gray-400">{r.kind}</td>
+                                    <td className="px-4 py-2 font-mono text-gray-200">{safeStr(r.provider)}</td>
+                                    <td className="px-4 py-2 font-mono text-gray-200">{safeStr(r.model)}</td>
+                                    <td className="px-4 py-2 text-gray-400">{r.notes || "—"}</td>
+                                </tr>
+                            ))}
+
+                            {bindingRows.length === 0 ? (
+                                <tr>
+                                    <td className="px-4 py-3 text-gray-500" colSpan={5}>
+                                        No slots found on panel.json (candidates/selector).
+                                    </td>
+                                </tr>
+                            ) : null}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {/* Score Entry */}
             <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
                     <h2 className="font-semibold text-gray-200">Score Entry</h2>
-                    <p className="text-xs text-gray-500 mt-1">Enter 0–10 per criterion. Save updates totals for that slot. Winner updates when you compute.</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        Enter 0–10 per criterion. Save updates totals for that slot. Winner updates when you compute.
+                    </p>
                 </div>
 
                 <div className="divide-y divide-zinc-800">
@@ -244,7 +307,9 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                                             {rubric.map((r: any) => (
                                                 <tr key={r.id}>
                                                     <td className="px-3 py-2 font-mono text-gray-200">{r.id}</td>
-                                                    <td className="px-3 py-2 font-mono text-gray-400">{Number(r.weight).toFixed(2)}</td>
+                                                    <td className="px-3 py-2 font-mono text-gray-400">
+                                                        {Number(r.weight).toFixed(2)}
+                                                    </td>
                                                     <td className="px-3 py-2">
                                                         <input
                                                             name={`score_${r.id}`}

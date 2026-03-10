@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import yaml from "js-yaml";
 
 export type PanelMeta = {
     version: string;
@@ -34,6 +35,12 @@ export type CandidatePreview = {
     preview: string;
 };
 
+export type ResolvedSlotBinding = {
+    provider: string;
+    model: string;
+    notes: string;
+};
+
 export type PanelView = {
     repo_root: string;
     motion_id: string;
@@ -41,6 +48,7 @@ export type PanelView = {
     panel: PanelMeta;
     selection: SelectionRecord;
     candidates: CandidatePreview[];
+    resolved_slots: Record<string, ResolvedSlotBinding>;
 };
 
 export type PanelCore = {
@@ -103,6 +111,10 @@ async function safeReadJson<T>(p: string): Promise<T | null> {
     }
 }
 
+function normalizeEofNewline(s: string): string {
+    return String(s ?? "").replace(/\r\n/g, "\n").trimEnd() + "\n";
+}
+
 function truncate(s: string, max = 2400): string {
     const t = s.replace(/\r\n/g, "\n").trimEnd();
     if (t.length <= max) return t;
@@ -110,19 +122,71 @@ function truncate(s: string, max = 2400): string {
 }
 
 async function atomicWriteJsonIfChanged(p: string, obj: unknown): Promise<boolean> {
-    const text = JSON.stringify(obj, null, 2);
+    const text = JSON.stringify(obj, null, 2) + "\n";
+
     let cur: string | null = null;
     try {
         cur = await fs.readFile(p, "utf8");
     } catch {
         // ignore
     }
-    if (cur === text) return false;
+
+    if (cur !== null && normalizeEofNewline(cur) === text) return false;
 
     const tmp = `${p}.tmp`;
     await fs.writeFile(tmp, text, "utf8");
     await fs.rename(tmp, p);
     return true;
+}
+
+type ModelSlotsYaml = {
+    version?: string;
+    slots?: Record<string, { provider?: unknown; model?: unknown; notes?: unknown }>;
+};
+
+let _modelSlotsCache:
+    | {
+        repoRoot: string;
+        mtimeMs: number;
+        slots: Record<string, ResolvedSlotBinding>;
+    }
+    | null = null;
+
+async function loadModelSlots(repoRoot: string): Promise<Record<string, ResolvedSlotBinding>> {
+    const p = path.join(repoRoot, ".nexus", "model-slots.yaml");
+    if (!(await pathExists(p))) return {};
+
+    // small cache to avoid re-parsing on every request
+    try {
+        const st = await fs.stat(p);
+        if (_modelSlotsCache && _modelSlotsCache.repoRoot === repoRoot && _modelSlotsCache.mtimeMs === st.mtimeMs) {
+            return _modelSlotsCache.slots;
+        }
+
+        const raw = await fs.readFile(p, "utf8");
+        const doc = yaml.load(raw) as ModelSlotsYaml | null;
+
+        const slotsObj = doc?.slots && typeof doc.slots === "object" ? doc.slots : {};
+        const out: Record<string, ResolvedSlotBinding> = {};
+
+        for (const [slotId, v] of Object.entries(slotsObj)) {
+            const provider = typeof v?.provider === "string" && v.provider.trim() ? v.provider.trim() : "UNKNOWN";
+            const model = typeof v?.model === "string" && v.model.trim() ? v.model.trim() : "UNKNOWN";
+            const notes = typeof v?.notes === "string" ? v.notes : "";
+            out[slotId] = { provider, model, notes };
+        }
+
+        _modelSlotsCache = { repoRoot, mtimeMs: st.mtimeMs, slots: out };
+        return out;
+    } catch {
+        return {};
+    }
+}
+
+function resolveSlot(slotsMap: Record<string, ResolvedSlotBinding>, slotId: string): ResolvedSlotBinding {
+    const hit = slotsMap[slotId];
+    if (hit) return hit;
+    return { provider: "UNKNOWN", model: "UNKNOWN", notes: "" };
 }
 
 export async function loadPanelCore(params: { motionId: string; panelId: string }): Promise<PanelCore> {
@@ -159,8 +223,8 @@ export async function loadPanelCore(params: { motionId: string; panelId: string 
         motion_id: motionId,
         panel_id: panelId,
         panel_dir: panelDir,
-        panel: panel,
-        selection: selection,
+        panel,
+        selection,
         panel_json_path: panelJsonPath,
         selection_json_path: selectionJsonPath,
         selector_md_path: selectorMdPath,
@@ -207,6 +271,21 @@ export async function loadPanelView(params: { motionId: string; panelId: string 
         );
     }
 
+    // --- resolve model slots (motion-0021)
+    const slotsMap = await loadModelSlots(core.repo_root);
+
+    const candidateSlots = Array.isArray(core.panel?.candidates) ? core.panel.candidates : [];
+    const selectorSlot = typeof core.panel?.selector === "string" ? core.panel.selector : "";
+
+    const slotIds = Array.from(new Set([...(candidateSlots ?? []), ...(selectorSlot ? [selectorSlot] : [])]))
+        .filter((s) => typeof s === "string" && s.length > 0)
+        .sort((a, b) => a.localeCompare(b));
+
+    const resolved_slots: Record<string, ResolvedSlotBinding> = {};
+    for (const slotId of slotIds) {
+        resolved_slots[slotId] = resolveSlot(slotsMap, slotId);
+    }
+
     return {
         repo_root: core.repo_root,
         motion_id: core.motion_id,
@@ -214,6 +293,7 @@ export async function loadPanelView(params: { motionId: string; panelId: string 
         panel: core.panel,
         selection: core.selection,
         candidates,
+        resolved_slots,
     };
 }
 
