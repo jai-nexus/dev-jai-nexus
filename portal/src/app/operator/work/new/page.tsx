@@ -6,26 +6,22 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
-import { getAgencyConfig } from "@/lib/agencyConfig";
+import {
+  EXECUTION_ROLES,
+  getAgentByNhId,
+  getExecutionAgents,
+  isAgentEligibleForExecutionRole,
+  type AgencyAgent,
+  type ExecutionRole,
+} from "@/lib/agencyConfig";
 import { InboxItemStatus, WorkPacketStatus, type Prisma } from "@prisma/client";
 import { validateReposAgainstAgentScope } from "@/lib/scopeValidator";
 import {
   buildInboxTags,
-  deriveRequestedRoleFromAgentKey,
   sanitizeNhLike,
 } from "@/lib/work/workPacketContract";
 
 type SearchParamValue = string | string[] | undefined;
-
-const REQUESTED_ROLES = [
-  "ARCHITECT",
-  "BUILDER",
-  "VERIFIER",
-  "LIBRARIAN",
-  "OPERATOR",
-] as const;
-
-type RequestedRole = (typeof REQUESTED_ROLES)[number];
 
 type Props = {
   searchParams?: Promise<{
@@ -58,19 +54,23 @@ function sanitizeNh(v: string | undefined): string | null {
   return sanitizeNhLike(v) ?? null;
 }
 
-function sanitizeRequestedRole(v: string | undefined): RequestedRole | null {
+function sanitizeRequestedRole(v: string | undefined): ExecutionRole | null {
   const raw = String(v ?? "").trim().toUpperCase();
   if (!raw) return null;
-  return REQUESTED_ROLES.includes(raw as RequestedRole) ? (raw as RequestedRole) : null;
+  return EXECUTION_ROLES.includes(raw as ExecutionRole) ? (raw as ExecutionRole) : null;
 }
 
-function buildRouteTags(role: RequestedRole | null): string[] {
+function buildRouteTags(role: ExecutionRole | null): string[] {
   return role ? [`route:${role}`] : [];
+}
+
+function sortAgents(list: AgencyAgent[]): AgencyAgent[] {
+  return [...list].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
 }
 
 function safeRedirectWithError(
   baseAssignee: string | null,
-  requestedRole: RequestedRole | null,
+  requestedRole: ExecutionRole | null,
   message: string,
 ): never {
   const qs = new URLSearchParams();
@@ -109,11 +109,11 @@ async function createPacket(formData: FormData) {
 
   if (!nhId || !title) redirect("/operator/work/new");
 
-  if (assigneeNhId && !requestedRole) {
+  if (!requestedRole) {
     safeRedirectWithError(
       assigneeNhId,
       requestedRole,
-      "Assigned work must also declare an execution role.",
+      "Execution role is required for governed work packets.",
     );
   }
 
@@ -125,10 +125,7 @@ async function createPacket(formData: FormData) {
     );
   }
 
-  const agency = getAgencyConfig();
-  const agent = assigneeNhId
-    ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
-    : null;
+  const agent = assigneeNhId ? getAgentByNhId(assigneeNhId) : null;
 
   if (assigneeNhId && !agent) {
     safeRedirectWithError(
@@ -138,7 +135,22 @@ async function createPacket(formData: FormData) {
     );
   }
 
-  const inferredRole = deriveRequestedRoleFromAgentKey(agent?.agent_key ?? null);
+  if (assigneeNhId && agent && !agent.execution_capable) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      `Agent ${agent.nh_id} (${agent.agent_key}) is governance-only and not eligible for execution assignment.`,
+    );
+  }
+
+  if (assigneeNhId && agent && requestedRole && !isAgentEligibleForExecutionRole(agent, requestedRole)) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      `Agent ${agent.nh_id} (${agent.agent_key}) is not eligible for execution role '${requestedRole}'. Allowed roles: ${agent.execution_roles.join(", ") || "—"}`,
+    );
+  }
+
   const mutationId = crypto.randomUUID();
 
   const created = await prisma.$transaction(async (tx) => {
@@ -202,7 +214,6 @@ async function createPacket(formData: FormData) {
       title: created.title,
       status: created.status,
       requestedRole,
-      inferredRole,
       requiresOperatorApproval: true,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
       ...(assigneeNhId ? { assigneeNhId } : {}),
@@ -226,13 +237,7 @@ async function createPacket(formData: FormData) {
       data: createdPayload,
     });
 
-    if (assigneeNhId) {
-      const toAgent = agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null;
-
-      const derivedAgentKey = toAgent?.agent_key ?? "";
-      const derivedLabels: string[] = toAgent?.github_labels ?? [];
-      const derivedScope: string[] = toAgent?.scope ?? [];
-
+    if (assigneeNhId && agent) {
       await emitWorkPacketSotEvent({
         db: tx,
         kind: "WORK_DELEGATED",
@@ -247,12 +252,12 @@ async function createPacket(formData: FormData) {
           workPacketId: created.id,
           fromAgent: { nhId: "1.0", agentKey: "JAI::OPERATOR" },
           toAgentNhId: assigneeNhId,
-          toAgentKey: derivedAgentKey,
+          toAgentKey: agent.agent_key,
           requestedRole,
-          inferredRole,
+          executionRoles: agent.execution_roles,
           repoId: created.repoId ?? null,
-          allowedScope: derivedScope,
-          githubLabels: derivedLabels,
+          allowedScope: agent.scope,
+          githubLabels: agent.github_labels,
           requiresOperatorApproval: true,
         } satisfies Prisma.InputJsonValue,
       });
@@ -274,15 +279,17 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   const prefillTitle = firstParam(sp?.title);
   const errorMsg = firstParam(sp?.error);
 
-  const agency = getAgencyConfig();
-  const agents = [...agency.agents].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
+  const requestedRoleFromQuery = sanitizeRequestedRole(firstParam(sp?.requestedRole));
+  const allExecutionAgents = sortAgents(getExecutionAgents(null));
+  const eligibleAgents = sortAgents(getExecutionAgents(requestedRoleFromQuery));
 
   const assigneeFromQuery = sanitizeNh(
     firstParam(sp?.assigneeNhId) ?? firstParam(sp?.assignee),
   );
 
   const assigneeIsValid =
-    !!assigneeFromQuery && agents.some((a) => a.nh_id === assigneeFromQuery);
+    !!assigneeFromQuery &&
+    allExecutionAgents.some((a) => a.nh_id === assigneeFromQuery);
 
   const defaultAssignee = assigneeIsValid ? assigneeFromQuery : "";
 
@@ -297,22 +304,20 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   });
 
   const selectedAgent = defaultAssignee
-    ? agents.find((a) => a.nh_id === defaultAssignee) ?? null
+    ? allExecutionAgents.find((a) => a.nh_id === defaultAssignee) ?? null
     : null;
 
-  const agentKey = selectedAgent?.agent_key ?? "";
-  const agentScope: string[] = selectedAgent?.scope ?? [];
-  const agentLabels: string[] = selectedAgent?.github_labels ?? [];
-  const inferredRole = deriveRequestedRoleFromAgentKey(agentKey);
-  const requestedRoleFromQuery = sanitizeRequestedRole(firstParam(sp?.requestedRole));
-  const defaultRequestedRole = requestedRoleFromQuery ?? inferredRole ?? "";
+  const selectedAgentEligible =
+    selectedAgent && requestedRoleFromQuery
+      ? isAgentEligibleForExecutionRole(selectedAgent, requestedRoleFromQuery)
+      : true;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">New Work Packet</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Minimum: NH + Title. AC/Plan recommended. Execution role is the canonical lane; assignee is the optional concrete carrier.
+          Execution role is the canonical lane. Assignee is the optional execution-capable carrier selected from the explicit execution pool.
         </p>
       </header>
 
@@ -321,6 +326,49 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
           {errorMsg}
         </div>
       ) : null}
+
+      <section className="mb-6 max-w-4xl rounded-md border border-gray-800 bg-zinc-950 p-4">
+        <h2 className="text-sm font-semibold text-gray-200">Role-Scoped Assignee Filter</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Choose an execution role first to narrow the assignee pool to eligible execution agents.
+        </p>
+
+        <form method="get" className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="min-w-[240px]">
+            <label className="block text-xs text-gray-300 mb-1">Execution Role</label>
+            <select
+              name="requestedRole"
+              defaultValue={requestedRoleFromQuery ?? ""}
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— Select role —</option>
+              {EXECUTION_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
+          >
+            Apply role filter
+          </button>
+
+          <a
+            href="/operator/work/new"
+            className="rounded-md border border-gray-700 bg-black px-3 py-2 text-sm text-gray-200 hover:bg-zinc-900"
+          >
+            Reset
+          </a>
+        </form>
+
+        <div className="mt-3 text-xs text-gray-500">
+          Eligible assignees: <span className="font-mono text-gray-300">{eligibleAgents.length}</span>
+        </div>
+      </section>
 
       <form action={createPacket} className="max-w-4xl space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -339,11 +387,12 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             <label className="block text-xs text-gray-300">Execution Role</label>
             <select
               name="requestedRole"
-              defaultValue={defaultRequestedRole}
+              defaultValue={requestedRoleFromQuery ?? ""}
+              required
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             >
               <option value="">— Select role —</option>
-              {REQUESTED_ROLES.map((role) => (
+              {EXECUTION_ROLES.map((role) => (
                 <option key={role} value={role}>
                   {role}
                 </option>
@@ -351,7 +400,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             </select>
 
             <p className="text-[11px] text-gray-500">
-              This is the canonical governed lane for the packet. Assignee does not define the role.
+              This is the canonical governed lane for the packet.
             </p>
           </div>
         </div>
@@ -372,7 +421,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
               ))}
             </select>
             <p className="text-[11px] text-gray-500">
-              If you assign an agent, you must choose a repo, and it must be within the agent’s scope.
+              If you assign an agent, you must choose a repo, and it must be within that agent’s scope.
             </p>
           </div>
 
@@ -383,8 +432,12 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
               defaultValue={defaultAssignee}
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             >
-              <option value="">— Unassigned —</option>
-              {agents.map((a) => (
+              <option value="">
+                {requestedRoleFromQuery
+                  ? "— Unassigned —"
+                  : "— Select role first —"}
+              </option>
+              {eligibleAgents.map((a) => (
                 <option key={a.nh_id} value={a.nh_id}>
                   {a.nh_id} · {a.label}
                 </option>
@@ -392,35 +445,53 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             </select>
 
             <p className="text-[11px] text-gray-500">
-              Assignee is the concrete carrier. Delegation is recorded as{" "}
-              <span className="font-mono">assignee:&lt;nh&gt;</span> and emitted into SoT payloads.
+              Only execution-capable agents eligible for the selected role are shown here.
             </p>
 
             {selectedAgent ? (
               <div className="mt-2 space-y-1 text-[11px] text-gray-400">
                 <div>
                   <span className="text-gray-500">agent_key:</span>{" "}
-                  <span className="font-mono">{agentKey || "—"}</span>
+                  <span className="font-mono">{selectedAgent.agent_key || "—"}</span>
                 </div>
 
                 <div>
-                  <span className="text-gray-500">agent inferred role:</span>{" "}
-                  <span className="font-mono">{inferredRole ?? "—"}</span>
-                </div>
-
-                <div>
-                  <span className="text-gray-500">allowed scope (from agency.yaml):</span>{" "}
+                  <span className="text-gray-500">execution roles:</span>{" "}
                   <span className="font-mono">
-                    {agentScope.length ? agentScope.join(", ") : "—"}
+                    {selectedAgent.execution_roles.length
+                      ? selectedAgent.execution_roles.join(", ")
+                      : "—"}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-gray-500">labels (from agency.yaml):</span>{" "}
+                  <span className="text-gray-500">governance only:</span>{" "}
                   <span className="font-mono">
-                    {agentLabels.length ? agentLabels.join(", ") : "—"}
+                    {selectedAgent.governance_only ? "true" : "false"}
                   </span>
                 </div>
+
+                <div>
+                  <span className="text-gray-500">allowed scope:</span>{" "}
+                  <span className="font-mono">
+                    {selectedAgent.scope.length ? selectedAgent.scope.join(", ") : "—"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">labels:</span>{" "}
+                  <span className="font-mono">
+                    {selectedAgent.github_labels.length
+                      ? selectedAgent.github_labels.join(", ")
+                      : "—"}
+                  </span>
+                </div>
+
+                {!selectedAgentEligible ? (
+                  <div className="pt-1 text-red-300">
+                    Selected assignee is not eligible for the currently requested execution role.
+                  </div>
+                ) : null}
 
                 {(requestedScope.length || requestedLabels.length) ? (
                   <div className="pt-1 text-[11px] text-gray-500">
@@ -437,7 +508,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
                       </span>
                     </div>
                     <div className="text-gray-600">
-                      (query prefill is informational only; enforcement uses agency.yaml)
+                      (query prefill is informational only; execution eligibility comes from agency.yaml)
                     </div>
                   </div>
                 ) : null}

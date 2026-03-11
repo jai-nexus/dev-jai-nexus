@@ -1,0 +1,14 @@
+{
+  "motion_id": "motion-0029",
+  "status": "PENDING",
+  "checks": {
+    "validate_agency": "PENDING",
+    "typecheck": "PENDING",
+    "dct_replay_check": "PENDING"
+  },
+  "required_ok": false,
+  "eligible_to_vote": false,
+  "recommended_vote": "pending",
+  "blocking_reasons": [],
+  "warnings": []
+}

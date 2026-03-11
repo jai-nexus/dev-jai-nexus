@@ -28,6 +28,9 @@ agents:
       - "actions:govern"
     delegates_to: []
     github_labels: ["council", "root"]
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
 
   - agent_key: "dev.proposer"
     id: "JAI::DEV::PROPOSER"
@@ -48,6 +51,9 @@ agents:
       - "actions:propose"
     delegates_to: []
     github_labels: ["council", "proposer"]
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
 
   - agent_key: "dev.executor"
     id: "JAI::DEV::EXECUTOR"
@@ -68,6 +74,9 @@ agents:
       - "actions:stage_diff"
     delegates_to: []
     github_labels: ["council", "executor"]
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
 
   - agent_key: "dev.challenger"
     id: "JAI::DEV::CHALLENGER"
@@ -89,6 +98,9 @@ agents:
       - "actions:verify"
     delegates_to: []
     github_labels: ["council", "challenger"]
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
 
   - agent_key: "dev.arbiter"
     id: "JAI::DEV::ARBITER"
@@ -111,3 +123,131 @@ agents:
       - "actions:ledger_write"
     delegates_to: []
     github_labels: ["council", "arbiter"]
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+
+  - agent_key: "dev.architect"
+    id: "JAI::DEV::ARCHITECT"
+    nh_id: "6.0.10"
+    parent_nh_id: "6.0"
+    label: "DEV Architect"
+    tier: 2
+    role: "architect"
+    function: "execution"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:portal/src/**"
+      - "paths:portal/docs/**"
+      - "paths:config/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:plan"
+      - "actions:design"
+    delegates_to: []
+    github_labels: ["execution", "architect"]
+    execution_capable: true
+    execution_roles: ["ARCHITECT"]
+    governance_only: false
+
+  - agent_key: "dev.builder"
+    id: "JAI::DEV::BUILDER"
+    nh_id: "6.0.11"
+    parent_nh_id: "6.0"
+    label: "DEV Builder"
+    tier: 2
+    role: "builder"
+    function: "execution"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:portal/src/**"
+      - "paths:portal/scripts/**"
+      - "paths:config/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:patch"
+      - "actions:build"
+    delegates_to: []
+    github_labels: ["execution", "builder"]
+    execution_capable: true
+    execution_roles: ["BUILDER"]
+    governance_only: false
+
+  - agent_key: "dev.verifier"
+    id: "JAI::DEV::VERIFIER"
+    nh_id: "6.0.12"
+    parent_nh_id: "6.0"
+    label: "DEV Verifier"
+    tier: 2
+    role: "verifier"
+    function: "execution"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:portal/src/**"
+      - "paths:portal/scripts/**"
+      - "paths:config/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:verify"
+      - "actions:test"
+    delegates_to: []
+    github_labels: ["execution", "verifier"]
+    execution_capable: true
+    execution_roles: ["VERIFIER"]
+    governance_only: false
+
+  - agent_key: "dev.librarian"
+    id: "JAI::DEV::LIBRARIAN"
+    nh_id: "6.0.13"
+    parent_nh_id: "6.0"
+    label: "DEV Librarian"
+    tier: 2
+    role: "librarian"
+    function: "execution"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:portal/docs/**"
+      - "paths:.nexus/**"
+      - "paths:config/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:document"
+      - "actions:index"
+    delegates_to: []
+    github_labels: ["execution", "librarian"]
+    execution_capable: true
+    execution_roles: ["LIBRARIAN"]
+    governance_only: false
+
+  - agent_key: "dev.operator"
+    id: "JAI::DEV::OPERATOR"
+    nh_id: "6.0.14"
+    parent_nh_id: "6.0"
+    label: "DEV Operator"
+    tier: 2
+    role: "operator"
+    function: "execution"
+    scope:
+      - "repo:dev-jai-nexus"
+      - "paths:portal/src/**"
+      - "paths:portal/scripts/**"
+      - "paths:.nexus/**"
+      - "deny:portal/.env*"
+      - "deny:**/*.env*"
+      - "deny:**/secrets/**"
+      - "actions:read"
+      - "actions:review"
+      - "actions:approve"
+    delegates_to: []
+    github_labels: ["execution", "operator"]
+    execution_capable: true
+    execution_roles: ["OPERATOR"]
+    governance_only: false

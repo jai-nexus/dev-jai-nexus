@@ -8,12 +8,15 @@ import { getServerAuthSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import { WorkPacketStatus, type Prisma } from "@prisma/client";
-import { getAgencyConfig } from "@/lib/agencyConfig";
+import {
+  getAgentByNhId,
+  isAgentEligibleForExecutionRole,
+  type ExecutionRole,
+} from "@/lib/agencyConfig";
 import {
   coerceStringArray,
   deriveRequestedRoleFromAgentKey,
   getAssigneeFromTags,
-  type RequestedRole,
 } from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
 import { computeExecutionLaneState } from "@/lib/work/executionLane";
@@ -73,7 +76,7 @@ function normalizeRoleLike(value: unknown): string {
   return String(value ?? "").trim().toUpperCase();
 }
 
-function parseRequestedRole(value: unknown): RequestedRole | null {
+function parseRequestedRole(value: unknown): ExecutionRole | null {
   const raw = normalizeRoleLike(value);
 
   if (raw === "ARCHITECT") return "ARCHITECT";
@@ -85,13 +88,13 @@ function parseRequestedRole(value: unknown): RequestedRole | null {
   return null;
 }
 
-function getRequestedRoleFromTags(tags: string[]): RequestedRole | null {
+function getRequestedRoleFromTags(tags: string[]): ExecutionRole | null {
   const hit = tags.find((t) => typeof t === "string" && t.startsWith("route:"));
   if (!hit) return null;
   return parseRequestedRole(hit.slice("route:".length));
 }
 
-function getRequestedRoleFromPayload(payload: JsonValue | null | undefined): RequestedRole | null {
+function getRequestedRoleFromPayload(payload: JsonValue | null | undefined): ExecutionRole | null {
   const data = getNestedPayloadData(payload);
 
   const explicitRole = parseRequestedRole(getJsonProp(data, "requestedRole"));
@@ -137,6 +140,18 @@ function toneForSliceState(state: SliceStageState) {
 function stageStateLabel(state: SliceStageState) {
   if (state === "IN_PROGRESS") return "IN PROGRESS";
   return state;
+}
+
+function toneForEligibility(valid: boolean | null) {
+  if (valid === true) return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
+  if (valid === false) return "bg-red-900/40 text-red-200 border-red-800";
+  return "bg-zinc-900 text-gray-200 border-gray-800";
+}
+
+function labelForEligibility(valid: boolean | null) {
+  if (valid === true) return "VALID";
+  if (valid === false) return "INVALID";
+  return "N/A";
 }
 
 async function updatePacket(id: number, formData: FormData) {
@@ -250,8 +265,6 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   });
   if (!p) redirect("/operator/work");
 
-  const agency = getAgencyConfig();
-
   const latestInbox = await prisma.agentInboxItem.findFirst({
     where: { workPacketId: p.id },
     orderBy: { id: "desc" },
@@ -265,11 +278,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
 
   const inboxTags = coerceStringArray(latestInbox?.tags);
   const assigneeNhId = getAssigneeFromTags(inboxTags);
-
-  const assignedAgent =
-    assigneeNhId != null
-      ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
-      : null;
+  const assignedAgent = assigneeNhId ? getAgentByNhId(assigneeNhId) : null;
 
   const WORK_PACKET_KINDS = [
     "WORK_PACKET_CREATED",
@@ -318,9 +327,20 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   const requestedRoleFromEvents =
     packetEvents
       .map((evt) => getRequestedRoleFromPayload(evt.payload as JsonValue | null))
-      .find((role): role is RequestedRole => role != null) ?? null;
-  const inferredRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
+      .find((role): role is ExecutionRole => role != null) ?? null;
+  const inferredRole = parseRequestedRole(
+    deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null),
+  );
+
   const requestedRole = requestedRoleFromTags ?? requestedRoleFromEvents ?? inferredRole;
+
+  const assigneeExecutionCapable = assignedAgent ? assignedAgent.execution_capable : null;
+  const assigneeEligibleForRole =
+    assignedAgent && requestedRole
+      ? isAgentEligibleForExecutionRole(assignedAgent, requestedRole)
+      : assigneeNhId
+        ? false
+        : null;
 
   const latestRuntimeEvent =
     runtimeAndDebugEvents.find((evt) => RUNTIME_KIND_SET.has(evt.kind)) ?? null;
@@ -490,6 +510,31 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </p>
       </header>
 
+      {assigneeNhId && assigneeEligibleForRole === false ? (
+        <section className="mb-6 max-w-6xl rounded-md border border-red-800 bg-red-950/30 p-4">
+          <h2 className="text-sm font-semibold text-red-200">Execution Eligibility Mismatch</h2>
+          <p className="mt-2 text-sm text-red-100">
+            The assigned agent does not match the packet’s canonical execution role.
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-red-100 md:grid-cols-3">
+            <div>
+              <span className="text-red-300">assignee:</span>{" "}
+              <span className="font-mono">{assigneeNhId}</span>
+            </div>
+            <div>
+              <span className="text-red-300">execution role:</span>{" "}
+              <span className="font-mono">{requestedRole ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-red-300">allowed roles:</span>{" "}
+              <span className="font-mono">
+                {assignedAgent?.execution_roles.join(", ") || "—"}
+              </span>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mb-8 grid max-w-6xl grid-cols-1 gap-4 lg:grid-cols-4">
         <div className="rounded-md border border-gray-800 bg-zinc-950 p-4">
           <h2 className="text-sm font-semibold text-gray-200">Contract Summary</h2>
@@ -521,6 +566,42 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               <span className="font-mono">{inferredRole ?? "—"}</span>
             </div>
             <div>
+              <span className="text-gray-500">execution capable:</span>{" "}
+              <span className="font-mono">
+                {assigneeExecutionCapable == null
+                  ? "—"
+                  : assigneeExecutionCapable
+                    ? "true"
+                    : "false"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">role eligibility:</span>{" "}
+              <span
+                className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${toneForEligibility(
+                  assigneeEligibleForRole,
+                )}`}
+              >
+                {labelForEligibility(assigneeEligibleForRole)}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">allowed execution roles:</span>{" "}
+              <span className="font-mono">
+                {assignedAgent?.execution_roles.join(", ") || "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">governance only:</span>{" "}
+              <span className="font-mono">
+                {assignedAgent
+                  ? assignedAgent.governance_only
+                    ? "true"
+                    : "false"
+                  : "—"}
+              </span>
+            </div>
+            <div>
               <span className="text-gray-500">inbox:</span>{" "}
               <span className="font-mono">
                 {latestInbox ? `${String(latestInbox.status)} · p${String(latestInbox.priority)}` : "—"}
@@ -528,9 +609,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             </div>
             <div>
               <span className="text-gray-500">tags:</span>{" "}
-              <span className="font-mono">
-                {inboxTags.join(", ") || "—"}
-              </span>
+              <span className="font-mono">{inboxTags.join(", ") || "—"}</span>
             </div>
           </div>
         </div>
