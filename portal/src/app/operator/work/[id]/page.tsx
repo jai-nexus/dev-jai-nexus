@@ -13,6 +13,7 @@ import {
   coerceStringArray,
   deriveRequestedRoleFromAgentKey,
   getAssigneeFromTags,
+  type RequestedRole,
 } from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
 import { computeExecutionLaneState } from "@/lib/work/executionLane";
@@ -39,15 +40,17 @@ const HANDOFF_KIND_SET = new Set<string>([
   "WORK_APPROVED",
 ]);
 
+type JsonValue = Prisma.JsonValue;
+type JsonObject = Record<string, JsonValue>;
+
+type SliceStageState = "MISSING" | "READY" | "IN_PROGRESS" | "COMPLETE";
+
 function parseStatus(value: unknown): WorkPacketStatus {
   const s = String(value ?? WorkPacketStatus.DRAFT).trim();
   return ALLOWED_STATUSES.has(s as WorkPacketStatus)
     ? (s as WorkPacketStatus)
     : WorkPacketStatus.DRAFT;
 }
-
-type JsonValue = Prisma.JsonValue;
-type JsonObject = Record<string, JsonValue>;
 
 function isJsonObject(v: JsonValue | null | undefined): v is JsonObject {
   return v !== null && v !== undefined && typeof v === "object" && !Array.isArray(v);
@@ -58,8 +61,50 @@ function getJsonProp(v: JsonValue | null | undefined, key: string): JsonValue | 
   return v[key];
 }
 
+function getNestedPayloadData(payload: JsonValue | null | undefined): JsonValue | undefined {
+  const directData = getJsonProp(payload, "data");
+  if (directData !== undefined) return directData;
+
+  const nestedPayload = getJsonProp(payload, "payload");
+  return getJsonProp(nestedPayload, "data");
+}
+
+function normalizeRoleLike(value: unknown): string {
+  return String(value ?? "").trim().toUpperCase();
+}
+
+function parseRequestedRole(value: unknown): RequestedRole | null {
+  const raw = normalizeRoleLike(value);
+
+  if (raw === "ARCHITECT") return "ARCHITECT";
+  if (raw === "BUILDER") return "BUILDER";
+  if (raw === "VERIFIER") return "VERIFIER";
+  if (raw === "LIBRARIAN") return "LIBRARIAN";
+  if (raw === "OPERATOR" || raw === "OPERATOR_REVIEW") return "OPERATOR";
+
+  return null;
+}
+
+function getRequestedRoleFromTags(tags: string[]): RequestedRole | null {
+  const hit = tags.find((t) => typeof t === "string" && t.startsWith("route:"));
+  if (!hit) return null;
+  return parseRequestedRole(hit.slice("route:".length));
+}
+
+function getRequestedRoleFromPayload(payload: JsonValue | null | undefined): RequestedRole | null {
+  const data = getNestedPayloadData(payload);
+
+  const explicitRole = parseRequestedRole(getJsonProp(data, "requestedRole"));
+  if (explicitRole) return explicitRole;
+
+  const targetLaneRole = parseRequestedRole(getJsonProp(data, "targetLane"));
+  if (targetLaneRole) return targetLaneRole;
+
+  return null;
+}
+
 function getPayloadChanges(payload: JsonValue | null | undefined): JsonValue | undefined {
-  const data = getJsonProp(payload, "data");
+  const data = getNestedPayloadData(payload);
   return getJsonProp(data, "changes");
 }
 
@@ -80,6 +125,18 @@ function toneForLane(lane: string) {
   if (lane === "ARCHITECT") return "bg-amber-900/40 text-amber-200 border-amber-800";
   if (lane === "OPERATOR_REVIEW") return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
   return "bg-zinc-900 text-gray-200 border-gray-800";
+}
+
+function toneForSliceState(state: SliceStageState) {
+  if (state === "COMPLETE") return "bg-emerald-900/50 text-emerald-200 border-emerald-800";
+  if (state === "IN_PROGRESS") return "bg-sky-900/50 text-sky-200 border-sky-800";
+  if (state === "READY") return "bg-amber-900/40 text-amber-200 border-amber-800";
+  return "bg-zinc-900 text-gray-200 border-gray-800";
+}
+
+function stageStateLabel(state: SliceStageState) {
+  if (state === "IN_PROGRESS") return "IN PROGRESS";
+  return state;
 }
 
 async function updatePacket(id: number, formData: FormData) {
@@ -206,12 +263,13 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     },
   });
 
-  const assigneeNhId = getAssigneeFromTags(coerceStringArray(latestInbox?.tags));
+  const inboxTags = coerceStringArray(latestInbox?.tags);
+  const assigneeNhId = getAssigneeFromTags(inboxTags);
+
   const assignedAgent =
     assigneeNhId != null
       ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
       : null;
-  const requestedRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
 
   const WORK_PACKET_KINDS = [
     "WORK_PACKET_CREATED",
@@ -256,6 +314,14 @@ export default async function WorkPacketDetailPage({ params }: Props) {
 
   const handoffEvents = packetEvents.filter((evt) => HANDOFF_KIND_SET.has(evt.kind));
 
+  const requestedRoleFromTags = getRequestedRoleFromTags(inboxTags);
+  const requestedRoleFromEvents =
+    packetEvents
+      .map((evt) => getRequestedRoleFromPayload(evt.payload as JsonValue | null))
+      .find((role): role is RequestedRole => role != null) ?? null;
+  const inferredRole = deriveRequestedRoleFromAgentKey(assignedAgent?.agent_key ?? null);
+  const requestedRole = requestedRoleFromTags ?? requestedRoleFromEvents ?? inferredRole;
+
   const latestRuntimeEvent =
     runtimeAndDebugEvents.find((evt) => RUNTIME_KIND_SET.has(evt.kind)) ?? null;
   const latestDebugEvent =
@@ -292,6 +358,106 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   }));
 
   const completedCount = checklist.filter((x) => !!x.evt).length;
+
+  const architectEvt = latestByKind.get("debug.plan") ?? null;
+  const builderEvt = latestByKind.get("debug.patch") ?? null;
+  const verifierEvt = latestByKind.get("debug.verify") ?? null;
+  const operatorEvt =
+    latestByKind.get("WORK_APPROVED") ??
+    latestByKind.get("WORK_REVIEW_REQUESTED") ??
+    latestByKind.get("debug.approve") ??
+    null;
+
+  const architectState: SliceStageState = architectEvt
+    ? "COMPLETE"
+    : lane.currentLane === "ARCHITECT"
+      ? "IN_PROGRESS"
+      : "READY";
+
+  const builderState: SliceStageState = builderEvt || !!p.githubPrUrl
+    ? "COMPLETE"
+    : lane.currentLane === "BUILDER"
+      ? "IN_PROGRESS"
+      : architectEvt
+        ? "READY"
+        : "MISSING";
+
+  const verifierState: SliceStageState = verifierEvt || !!p.verificationUrl
+    ? "COMPLETE"
+    : lane.currentLane === "VERIFIER"
+      ? "IN_PROGRESS"
+      : builderEvt || !!p.githubPrUrl
+        ? "READY"
+        : "MISSING";
+
+  const operatorState: SliceStageState = operatorEvt || lane.currentLane === "COMPLETE"
+    ? "COMPLETE"
+    : lane.currentLane === "OPERATOR_REVIEW"
+      ? "IN_PROGRESS"
+      : verifierEvt || !!p.verificationUrl
+        ? "READY"
+        : "MISSING";
+
+  const sliceStages = [
+    {
+      key: "architect",
+      label: "Architect",
+      state: architectState,
+      evidence: architectEvt
+        ? architectEvt.kind
+        : lane.currentLane === "ARCHITECT"
+          ? "lane active"
+          : "waiting for plan",
+      note: architectEvt
+        ? "Planning evidence exists."
+        : "Produces planning/approach evidence.",
+    },
+    {
+      key: "builder",
+      label: "Builder",
+      state: builderState,
+      evidence: builderEvt
+        ? builderEvt.kind
+        : p.githubPrUrl
+          ? "GitHub PR URL"
+          : lane.currentLane === "BUILDER"
+            ? "lane active"
+            : "waiting for patch",
+      note: builderEvt || p.githubPrUrl
+        ? "Patch evidence exists."
+        : "Produces patch/PR evidence.",
+    },
+    {
+      key: "verifier",
+      label: "Verifier",
+      state: verifierState,
+      evidence: verifierEvt
+        ? verifierEvt.kind
+        : p.verificationUrl
+          ? "Verification URL"
+          : lane.currentLane === "VERIFIER"
+            ? "lane active"
+            : "waiting for verification",
+      note: verifierEvt || p.verificationUrl
+        ? "Verification evidence exists."
+        : "Produces verification evidence.",
+    },
+    {
+      key: "operator",
+      label: "Operator",
+      state: operatorState,
+      evidence: operatorEvt
+        ? operatorEvt.kind
+        : lane.currentLane === "OPERATOR_REVIEW"
+          ? "review lane active"
+          : "waiting for review",
+      note: operatorEvt
+        ? "Operator decision is recorded."
+        : "Approves or requests changes.",
+    },
+  ] as const;
+
+  const sliceCompleteCount = sliceStages.filter((s) => s.state === "COMPLETE").length;
 
   const runLedger = runtimeAndDebugEvents.map((evt) =>
     toRunLedgerEntry({
@@ -341,8 +507,18 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               <span className="font-mono">{assigneeNhId ?? "—"}</span>
             </div>
             <div>
-              <span className="text-gray-500">requested role:</span>{" "}
+              <span className="text-gray-500">execution role:</span>{" "}
               <span className="font-mono">{requestedRole ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">explicit route role:</span>{" "}
+              <span className="font-mono">
+                {requestedRoleFromTags ?? requestedRoleFromEvents ?? "—"}
+              </span>
+            </div>
+            <div>
+              <span className="text-gray-500">agent inferred role:</span>{" "}
+              <span className="font-mono">{inferredRole ?? "—"}</span>
             </div>
             <div>
               <span className="text-gray-500">inbox:</span>{" "}
@@ -353,7 +529,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             <div>
               <span className="text-gray-500">tags:</span>{" "}
               <span className="font-mono">
-                {latestInbox ? coerceStringArray(latestInbox.tags).join(", ") || "—" : "—"}
+                {inboxTags.join(", ") || "—"}
               </span>
             </div>
           </div>
@@ -409,6 +585,40 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mb-8 max-w-6xl rounded-md border border-gray-800 bg-zinc-950 p-4">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-200">Vertical Slice Progress</h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Proof strip for the first governed path: architect → builder → verifier → operator.
+            </p>
+          </div>
+          <div className="text-sm text-gray-300">
+            <span className="font-mono">{sliceCompleteCount}/4</span> stages complete
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {sliceStages.map((stage) => (
+            <div key={stage.key} className="rounded-md border border-gray-800 bg-black p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-medium text-gray-200">{stage.label}</div>
+                <span
+                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${toneForSliceState(stage.state)}`}
+                >
+                  {stageStateLabel(stage.state)}
+                </span>
+              </div>
+
+              <div className="mt-3 text-xs text-gray-500">Evidence</div>
+              <div className="mt-1 font-mono text-xs text-gray-200">{stage.evidence}</div>
+
+              <div className="mt-3 text-xs text-gray-400">{stage.note}</div>
+            </div>
+          ))}
         </div>
       </section>
 

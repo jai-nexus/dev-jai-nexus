@@ -17,10 +17,21 @@ import {
 
 type SearchParamValue = string | string[] | undefined;
 
+const REQUESTED_ROLES = [
+  "ARCHITECT",
+  "BUILDER",
+  "VERIFIER",
+  "LIBRARIAN",
+  "OPERATOR",
+] as const;
+
+type RequestedRole = (typeof REQUESTED_ROLES)[number];
+
 type Props = {
   searchParams?: Promise<{
     assignee?: SearchParamValue;
     assigneeNhId?: SearchParamValue;
+    requestedRole?: SearchParamValue;
     nhId?: SearchParamValue;
     title?: SearchParamValue;
     agentKey?: SearchParamValue;
@@ -47,11 +58,28 @@ function sanitizeNh(v: string | undefined): string | null {
   return sanitizeNhLike(v) ?? null;
 }
 
-function safeRedirectWithError(baseAssignee: string | null, message: string): never {
+function sanitizeRequestedRole(v: string | undefined): RequestedRole | null {
+  const raw = String(v ?? "").trim().toUpperCase();
+  if (!raw) return null;
+  return REQUESTED_ROLES.includes(raw as RequestedRole) ? (raw as RequestedRole) : null;
+}
+
+function buildRouteTags(role: RequestedRole | null): string[] {
+  return role ? [`route:${role}`] : [];
+}
+
+function safeRedirectWithError(
+  baseAssignee: string | null,
+  requestedRole: RequestedRole | null,
+  message: string,
+): never {
   const qs = new URLSearchParams();
   if (baseAssignee) {
     qs.set("assigneeNhId", baseAssignee);
     qs.set("assignee", baseAssignee);
+  }
+  if (requestedRole) {
+    qs.set("requestedRole", requestedRole);
   }
   qs.set("error", message);
   redirect(`/operator/work/new?${qs.toString()}`);
@@ -70,18 +98,29 @@ async function createPacket(formData: FormData) {
   const plan = String(formData.get("plan") ?? "");
 
   const assigneeNhId = sanitizeNh(String(formData.get("assigneeNhId") ?? ""));
+  const requestedRole = sanitizeRequestedRole(String(formData.get("requestedRole") ?? ""));
+
   const repoIdRaw = String(formData.get("repoId") ?? "").trim();
   const repoId = repoIdRaw ? Number(repoIdRaw) : null;
 
   if (repoIdRaw && (!Number.isFinite(repoId) || Number.isNaN(repoId))) {
-    safeRedirectWithError(assigneeNhId, `Invalid repoId: ${repoIdRaw}`);
+    safeRedirectWithError(assigneeNhId, requestedRole, `Invalid repoId: ${repoIdRaw}`);
   }
 
   if (!nhId || !title) redirect("/operator/work/new");
 
+  if (assigneeNhId && !requestedRole) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      "Assigned work must also declare an execution role.",
+    );
+  }
+
   if (assigneeNhId && repoId == null) {
     safeRedirectWithError(
       assigneeNhId,
+      requestedRole,
       "Scope enforcement: assigned work requires a repo. Choose a repo within the assignee scope.",
     );
   }
@@ -92,10 +131,14 @@ async function createPacket(formData: FormData) {
     : null;
 
   if (assigneeNhId && !agent) {
-    safeRedirectWithError(assigneeNhId, `Agent not found for assignee NH: ${assigneeNhId}`);
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      `Agent not found for assignee NH: ${assigneeNhId}`,
+    );
   }
 
-  const requestedRole = deriveRequestedRoleFromAgentKey(agent?.agent_key ?? null);
+  const inferredRole = deriveRequestedRoleFromAgentKey(agent?.agent_key ?? null);
   const mutationId = crypto.randomUUID();
 
   const created = await prisma.$transaction(async (tx) => {
@@ -106,7 +149,11 @@ async function createPacket(formData: FormData) {
       });
 
       if (!repo) {
-        safeRedirectWithError(assigneeNhId, `Unknown repoId: ${repoId}`);
+        safeRedirectWithError(
+          assigneeNhId,
+          requestedRole,
+          `Unknown repoId: ${repoId}`,
+        );
       }
 
       const res = validateReposAgainstAgentScope(assigneeNhId, [repo.name]);
@@ -114,6 +161,7 @@ async function createPacket(formData: FormData) {
       if (!res.valid) {
         safeRedirectWithError(
           assigneeNhId,
+          requestedRole,
           `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(
             ", ",
           )}`,
@@ -132,7 +180,10 @@ async function createPacket(formData: FormData) {
       },
     });
 
-    const tags = buildInboxTags(assigneeNhId);
+    const tags = [
+      ...buildInboxTags(assigneeNhId),
+      ...buildRouteTags(requestedRole),
+    ];
 
     const inbox = await tx.agentInboxItem.create({
       data: {
@@ -151,6 +202,7 @@ async function createPacket(formData: FormData) {
       title: created.title,
       status: created.status,
       requestedRole,
+      inferredRole,
       requiresOperatorApproval: true,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
       ...(assigneeNhId ? { assigneeNhId } : {}),
@@ -197,6 +249,7 @@ async function createPacket(formData: FormData) {
           toAgentNhId: assigneeNhId,
           toAgentKey: derivedAgentKey,
           requestedRole,
+          inferredRole,
           repoId: created.repoId ?? null,
           allowedScope: derivedScope,
           githubLabels: derivedLabels,
@@ -250,14 +303,16 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   const agentKey = selectedAgent?.agent_key ?? "";
   const agentScope: string[] = selectedAgent?.scope ?? [];
   const agentLabels: string[] = selectedAgent?.github_labels ?? [];
-  const requestedRole = deriveRequestedRoleFromAgentKey(agentKey);
+  const inferredRole = deriveRequestedRoleFromAgentKey(agentKey);
+  const requestedRoleFromQuery = sanitizeRequestedRole(firstParam(sp?.requestedRole));
+  const defaultRequestedRole = requestedRoleFromQuery ?? inferredRole ?? "";
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">New Work Packet</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Minimum: NH + Title. AC/Plan recommended. Optional: assign to an agent and enter governed execution.
+          Minimum: NH + Title. AC/Plan recommended. Execution role is the canonical lane; assignee is the optional concrete carrier.
         </p>
       </header>
 
@@ -281,6 +336,47 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
           </div>
 
           <div className="space-y-1">
+            <label className="block text-xs text-gray-300">Execution Role</label>
+            <select
+              name="requestedRole"
+              defaultValue={defaultRequestedRole}
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— Select role —</option>
+              {REQUESTED_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-[11px] text-gray-500">
+              This is the canonical governed lane for the packet. Assignee does not define the role.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="space-y-1 md:col-span-2">
+            <label className="block text-xs text-gray-300">Repo</label>
+            <select
+              name="repoId"
+              defaultValue=""
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— None —</option>
+              {repos.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-gray-500">
+              If you assign an agent, you must choose a repo, and it must be within the agent’s scope.
+            </p>
+          </div>
+
+          <div className="space-y-1">
             <label className="block text-xs text-gray-300">Assignee</label>
             <select
               name="assigneeNhId"
@@ -296,7 +392,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             </select>
 
             <p className="text-[11px] text-gray-500">
-              Delegation is recorded as an inbox tag{" "}
+              Assignee is the concrete carrier. Delegation is recorded as{" "}
               <span className="font-mono">assignee:&lt;nh&gt;</span> and emitted into SoT payloads.
             </p>
 
@@ -308,8 +404,8 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
                 </div>
 
                 <div>
-                  <span className="text-gray-500">requested role:</span>{" "}
-                  <span className="font-mono">{requestedRole ?? "—"}</span>
+                  <span className="text-gray-500">agent inferred role:</span>{" "}
+                  <span className="font-mono">{inferredRole ?? "—"}</span>
                 </div>
 
                 <div>
@@ -348,25 +444,6 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
               </div>
             ) : null}
           </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-xs text-gray-300">Repo</label>
-          <select
-            name="repoId"
-            defaultValue=""
-            className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
-          >
-            <option value="">— None —</option>
-            {repos.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-          <p className="text-[11px] text-gray-500">
-            If you assign an agent, you must choose a repo, and it must be within the agent’s scope.
-          </p>
         </div>
 
         <div className="space-y-1">
