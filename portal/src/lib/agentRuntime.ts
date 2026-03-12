@@ -1,23 +1,47 @@
-// portal/src/lib/agentRuntime.ts
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
 import { validateReposAgainstAgentScope } from "@/lib/scopeValidator";
 import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
+import {
+    coerceStringArray,
+    getAssigneeFromTags,
+    type RequestedRole,
+} from "@/lib/work/workPacketContract";
 
-// Keep your existing public type name so other agents compile.
 export type AgentQueueItem = {
-    id: string; // queue item uuid
-    workPacketId: number; // WorkPacket.id (Int)
-    agentNhId: string; // "1.2.1"
-    repoScope: string[]; // bare repo names preferred; validator tolerates org/repo
+    id: string;
+    workPacketId: number;
+    agentNhId: string;
+    repoScope: string[];
     status: "PENDING" | "CLAIMED" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
     claimedAt: Date | null;
-    leaseExpiry: Date | null; // for timeout-based re-queue
+    leaseExpiry: Date | null;
 };
 
-// Minimal “db-like” surface so we don't depend on PrismaClient typing
-// (your prisma wrapper type is currently missing agentQueueItem).
+export type WorkPacketRuntimeContext = {
+    id: number;
+    nhId: string | null;
+    repoId: number | null;
+    repoName: string | null;
+    status: string | null;
+    assigneeNhId: string | null;
+    requestedRole: RequestedRole | null;
+    githubPrUrl: string | null;
+    verificationUrl: string | null;
+    inboxTags: string[];
+};
+
+type ClaimCandidateRow = {
+    id: string;
+    workPacketId: number;
+    agentNhId: string;
+    status: string;
+    claimedAt: Date | null;
+    leaseExpiry: Date | null;
+    repoScope: string[] | null;
+};
+
 type DbLike = {
     $transaction: <T>(fn: (tx: DbLikeTx) => Promise<T>) => Promise<T>;
 };
@@ -28,6 +52,9 @@ type DbLikeTx = {
         update(args: unknown): Promise<unknown>;
         updateMany(args: unknown): Promise<unknown>;
         findMany(args: unknown): Promise<unknown>;
+    };
+    agentInboxItem: {
+        findFirst(args: unknown): Promise<unknown>;
     };
     workPacket: {
         findUnique(args: unknown): Promise<unknown>;
@@ -40,7 +67,20 @@ type DbLikeTx = {
     };
 };
 
-type RuntimeSotKind = "WORK_CLAIMED" | "WORK_COMPLETED" | "WORK_FAILED" | "WORK_REQUEUED";
+type RuntimeSotKind =
+    | "WORK_CLAIMED"
+    | "WORK_COMPLETED"
+    | "WORK_FAILED"
+    | "WORK_REQUEUED";
+
+type DebugSotKind =
+    | "debug.plan"
+    | "debug.patch"
+    | "debug.verify"
+    | "debug.docs"
+    | "debug.approve";
+
+type AgentSotKind = RuntimeSotKind | DebugSotKind;
 
 function toStatus(s: unknown): AgentQueueItem["status"] {
     const x = String(s ?? "").toUpperCase();
@@ -68,15 +108,27 @@ function normalizeRepoScope(scope: unknown): string[] {
     return scope.map((x) => String(x ?? "").trim()).filter(Boolean);
 }
 
+function parseRequestedRoleFromTags(tags: string[]): RequestedRole | null {
+    const hit = tags.find((t) => typeof t === "string" && t.startsWith("route:"));
+    if (!hit) return null;
+
+    const raw = hit.slice("route:".length).trim().toUpperCase();
+
+    if (raw === "ARCHITECT") return "ARCHITECT";
+    if (raw === "BUILDER") return "BUILDER";
+    if (raw === "VERIFIER") return "VERIFIER";
+    if (raw === "LIBRARIAN") return "LIBRARIAN";
+    if (raw === "OPERATOR" || raw === "OPERATOR_REVIEW") return "OPERATOR";
+
+    return null;
+}
+
 export class BaseAgentRuntime {
     readonly nhId: string;
     readonly pollIntervalMs: number;
 
-    // defaults
     readonly leaseMs: number = 60_000;
     readonly sweepIntervalMs: number = 5_000;
-
-    // claim behavior
     readonly claimBatchSize: number = 10;
 
     private running = false;
@@ -92,12 +144,12 @@ export class BaseAgentRuntime {
         if (this.running) return;
         this.running = true;
 
-        await this.tick().catch((e) => {
+        await this.runOnce().catch((e) => {
             console.error(`[agentRuntime:${this.nhId}] initial tick failed`, e);
         });
 
         this.pollTimer = setInterval(() => {
-            this.tick().catch((e) => {
+            this.runOnce().catch((e) => {
                 console.error(`[agentRuntime:${this.nhId}] tick failed`, e);
             });
         }, this.pollIntervalMs);
@@ -117,17 +169,135 @@ export class BaseAgentRuntime {
         this.sweepTimer = null;
     }
 
-    private async tick(): Promise<void> {
-        if (!this.running) return;
-
+    async runOnce(): Promise<boolean> {
         const item = await this.claimNext();
-        if (!item) return;
+        if (!item) return false;
 
         try {
             await this.execute(item);
+            return true;
         } catch (err) {
             await this.fail(item, err);
+            throw err;
         }
+    }
+
+    protected async loadWorkPacketContext(
+        tx: DbLikeTx,
+        workPacketId: number,
+    ): Promise<WorkPacketRuntimeContext | null> {
+        const packet = (await tx.workPacket.findUnique({
+            where: { id: workPacketId },
+            select: {
+                id: true,
+                nhId: true,
+                repoId: true,
+                status: true,
+                githubPrUrl: true,
+                verificationUrl: true,
+                repo: { select: { name: true } },
+            },
+        })) as
+            | {
+                id: number;
+                nhId: string | null;
+                repoId: number | null;
+                status: string | null;
+                githubPrUrl: string | null;
+                verificationUrl: string | null;
+                repo: { name: string } | null;
+            }
+            | null;
+
+        if (!packet) return null;
+
+        const latestInbox = (await tx.agentInboxItem.findFirst({
+            where: { workPacketId },
+            orderBy: { id: "desc" },
+            select: {
+                tags: true,
+            },
+        })) as { tags: unknown } | null;
+
+        const inboxTags = coerceStringArray(latestInbox?.tags);
+        const assigneeNhId = getAssigneeFromTags(inboxTags);
+        const requestedRole = parseRequestedRoleFromTags(inboxTags);
+
+        return {
+            id: packet.id,
+            nhId: packet.nhId,
+            repoId: packet.repoId,
+            repoName: packet.repo?.name ?? null,
+            status: packet.status ?? null,
+            assigneeNhId,
+            requestedRole,
+            githubPrUrl: packet.githubPrUrl ?? null,
+            verificationUrl: packet.verificationUrl ?? null,
+            inboxTags,
+        };
+    }
+
+    protected async canClaimCandidate(
+        _tx: DbLikeTx,
+        _candidate: ClaimCandidateRow,
+        packet: WorkPacketRuntimeContext,
+    ): Promise<boolean> {
+        if (packet.assigneeNhId && packet.assigneeNhId !== this.nhId) {
+            return false;
+        }
+        return true;
+    }
+
+    protected async onClaimed(
+        tx: DbLikeTx,
+        item: AgentQueueItem,
+        packet: WorkPacketRuntimeContext,
+    ): Promise<void> {
+        await this.emitAgentSotEvent(tx, {
+            kind: "WORK_CLAIMED",
+            nhId: packet.nhId,
+            repoId: packet.repoId,
+            workPacketId: item.workPacketId,
+            summary: `Work claimed: ${packet.nhId ?? `workPacket#${item.workPacketId}`} by ${this.nhId}`,
+            payload: {
+                schema: "agent-runtime-0.1",
+                agentNhId: this.nhId,
+                queueItemId: item.id,
+                workPacketId: item.workPacketId,
+                requestedRole: packet.requestedRole,
+                assigneeNhId: packet.assigneeNhId,
+                leaseExpiry: item.leaseExpiry?.toISOString?.() ?? null,
+                repoScope: item.repoScope,
+            },
+        });
+    }
+
+    protected async emitDebugArtifact(
+        tx: DbLikeTx,
+        args: {
+            kind: DebugSotKind;
+            nhId: string | null;
+            repoId: number | null;
+            workPacketId: number;
+            summary: string;
+            payload: Record<string, unknown>;
+        },
+    ): Promise<void> {
+        await this.emitAgentSotEvent(tx, args);
+    }
+
+    protected async emitRuntimeEvent(
+        tx: DbLikeTx,
+        args: {
+            kind: RuntimeSotKind;
+            nhId: string | null;
+            repoId: number | null;
+            workPacketId: number;
+            summary: string;
+            payload: Record<string, unknown>;
+        },
+    ): Promise<void> {
+        await this.emitAgentSotEvent(tx, args);
     }
 
     async claimNext(): Promise<AgentQueueItem | null> {
@@ -137,17 +307,7 @@ export class BaseAgentRuntime {
         const db = prisma as unknown as DbLike;
 
         return db.$transaction(async (tx) => {
-            const rows = await tx.$queryRaw<
-                Array<{
-                    id: string;
-                    workPacketId: number;
-                    agentNhId: string;
-                    status: string;
-                    claimedAt: Date | null;
-                    leaseExpiry: Date | null;
-                    repoScope: string[] | null;
-                }>
-            >(
+            const rows = await tx.$queryRaw<ClaimCandidateRow[]>(
                 Prisma.sql`
           SELECT
             "id",
@@ -163,34 +323,36 @@ export class BaseAgentRuntime {
           ORDER BY "createdAt" ASC
           LIMIT ${Prisma.raw(String(this.claimBatchSize))}
           FOR UPDATE SKIP LOCKED
-        `
+        `,
             );
 
             if (rows.length === 0) return null;
 
-            // Scan a small batch so one "bad" item doesn't block the queue.
             for (const candidate of rows) {
                 const repoScope = normalizeRepoScope(candidate.repoScope);
 
                 let reposToCheck: string[] = repoScope;
 
-                if (reposToCheck.length === 0) {
-                    const wp = (await tx.workPacket.findUnique({
-                        where: { id: candidate.workPacketId },
-                        select: { id: true, nhId: true, repo: { select: { name: true } } },
-                    })) as { id: number; nhId: string | null; repo: { name: string } | null } | null;
-
-                    reposToCheck = wp?.repo?.name ? [wp.repo.name] : [];
+                const packetCtx = await this.loadWorkPacketContext(tx, candidate.workPacketId);
+                if (!packetCtx) {
+                    continue;
                 }
 
                 if (reposToCheck.length === 0) {
-                    // Can't scope-check; skip it (leave PENDING).
+                    reposToCheck = packetCtx.repoName ? [packetCtx.repoName] : [];
+                }
+
+                if (reposToCheck.length === 0) {
                     continue;
                 }
 
                 const scopeRes = validateReposAgainstAgentScope(this.nhId, reposToCheck);
                 if (!scopeRes.valid) {
-                    // Reject out-of-scope (do not claim), keep scanning.
+                    continue;
+                }
+
+                const claimable = await this.canClaimCandidate(tx, candidate, packetCtx);
+                if (!claimable) {
                     continue;
                 }
 
@@ -206,32 +368,17 @@ export class BaseAgentRuntime {
                         leaseExpiry: true,
                         repoScope: true,
                     },
-                })) as AgentQueueItem;
+                })) as {
+                    id: string;
+                    workPacketId: number;
+                    agentNhId: string;
+                    status: string;
+                    claimedAt: Date | null;
+                    leaseExpiry: Date | null;
+                    repoScope: string[] | null;
+                };
 
-                const wp = (await tx.workPacket.findUnique({
-                    where: { id: updated.workPacketId },
-                    select: { id: true, nhId: true, repoId: true },
-                })) as { id: number; nhId: string | null; repoId: number | null } | null;
-
-                const workNh = wp?.nhId ?? null;
-
-                await this.emitRuntimeSotEvent(tx, {
-                    kind: "WORK_CLAIMED",
-                    nhId: workNh,
-                    repoId: wp?.repoId ?? null,
-                    workPacketId: updated.workPacketId,
-                    summary: `Work claimed: ${workNh ?? `workPacket#${updated.workPacketId}`} by ${this.nhId}`,
-                    payload: {
-                        schema: "agent-runtime-0.1",
-                        agentNhId: this.nhId,
-                        queueItemId: updated.id,
-                        workPacketId: updated.workPacketId,
-                        leaseExpiry: updated.leaseExpiry?.toISOString?.() ?? null,
-                        repoScope: normalizeRepoScope(updated.repoScope),
-                    },
-                });
-
-                return {
+                const item: AgentQueueItem = {
                     id: updated.id,
                     workPacketId: updated.workPacketId,
                     agentNhId: updated.agentNhId,
@@ -240,6 +387,9 @@ export class BaseAgentRuntime {
                     claimedAt: toDate(updated.claimedAt),
                     leaseExpiry: toDate(updated.leaseExpiry),
                 };
+
+                await this.onClaimed(tx, item, packetCtx);
+                return item;
             }
 
             return null;
@@ -260,29 +410,31 @@ export class BaseAgentRuntime {
                 select: { id: true, workPacketId: true },
             })) as { id: string; workPacketId: number };
 
-            const wp = (await tx.workPacket.findUnique({
-                where: { id: updated.workPacketId },
-                select: { id: true, nhId: true, repoId: true },
-            })) as { id: number; nhId: string | null; repoId: number | null } | null;
+            const packetCtx = await this.loadWorkPacketContext(tx, updated.workPacketId);
 
-            await this.emitRuntimeSotEvent(tx, {
+            await this.emitRuntimeEvent(tx, {
                 kind: "WORK_REQUEUED",
-                nhId: wp?.nhId ?? null,
-                repoId: wp?.repoId ?? null,
+                nhId: packetCtx?.nhId ?? null,
+                repoId: packetCtx?.repoId ?? null,
                 workPacketId: updated.workPacketId,
-                summary: `Work requeued: ${wp?.nhId ?? `workPacket#${updated.workPacketId}`} (${reason})`,
+                summary: `Work requeued: ${packetCtx?.nhId ?? `workPacket#${updated.workPacketId}`} (${reason})`,
                 payload: {
                     schema: "agent-runtime-0.1",
                     agentNhId: this.nhId,
                     queueItemId: updated.id,
                     workPacketId: updated.workPacketId,
                     reason,
+                    requestedRole: packetCtx?.requestedRole ?? null,
+                    assigneeNhId: packetCtx?.assigneeNhId ?? null,
                 },
             });
         });
     }
 
-    protected async complete(item: AgentQueueItem, extra?: Record<string, unknown>): Promise<void> {
+    protected async complete(
+        item: AgentQueueItem,
+        extra?: Record<string, unknown>,
+    ): Promise<void> {
         const db = prisma as unknown as DbLike;
 
         await db.$transaction(async (tx) => {
@@ -292,22 +444,21 @@ export class BaseAgentRuntime {
                 select: { id: true, workPacketId: true },
             })) as { id: string; workPacketId: number };
 
-            const wp = (await tx.workPacket.findUnique({
-                where: { id: updated.workPacketId },
-                select: { id: true, nhId: true, repoId: true },
-            })) as { id: number; nhId: string | null; repoId: number | null } | null;
+            const packetCtx = await this.loadWorkPacketContext(tx, updated.workPacketId);
 
-            await this.emitRuntimeSotEvent(tx, {
+            await this.emitRuntimeEvent(tx, {
                 kind: "WORK_COMPLETED",
-                nhId: wp?.nhId ?? null,
-                repoId: wp?.repoId ?? null,
+                nhId: packetCtx?.nhId ?? null,
+                repoId: packetCtx?.repoId ?? null,
                 workPacketId: updated.workPacketId,
-                summary: `Work completed: ${wp?.nhId ?? `workPacket#${updated.workPacketId}`} by ${this.nhId}`,
+                summary: `Work completed: ${packetCtx?.nhId ?? `workPacket#${updated.workPacketId}`} by ${this.nhId}`,
                 payload: {
                     schema: "agent-runtime-0.1",
                     agentNhId: this.nhId,
                     queueItemId: updated.id,
                     workPacketId: updated.workPacketId,
+                    requestedRole: packetCtx?.requestedRole ?? null,
+                    assigneeNhId: packetCtx?.assigneeNhId ?? null,
                     ...(extra ?? {}),
                 },
             });
@@ -337,22 +488,21 @@ export class BaseAgentRuntime {
                 select: { id: true, workPacketId: true },
             })) as { id: string; workPacketId: number };
 
-            const wp = (await tx.workPacket.findUnique({
-                where: { id: updated.workPacketId },
-                select: { id: true, nhId: true, repoId: true },
-            })) as { id: number; nhId: string | null; repoId: number | null } | null;
+            const packetCtx = await this.loadWorkPacketContext(tx, updated.workPacketId);
 
-            await this.emitRuntimeSotEvent(tx, {
+            await this.emitRuntimeEvent(tx, {
                 kind: "WORK_FAILED",
-                nhId: wp?.nhId ?? null,
-                repoId: wp?.repoId ?? null,
+                nhId: packetCtx?.nhId ?? null,
+                repoId: packetCtx?.repoId ?? null,
                 workPacketId: updated.workPacketId,
-                summary: `Work failed: ${wp?.nhId ?? `workPacket#${updated.workPacketId}`} by ${this.nhId}`,
+                summary: `Work failed: ${packetCtx?.nhId ?? `workPacket#${updated.workPacketId}`} by ${this.nhId}`,
                 payload: {
                     schema: "agent-runtime-0.1",
                     agentNhId: this.nhId,
                     queueItemId: updated.id,
                     workPacketId: updated.workPacketId,
+                    requestedRole: packetCtx?.requestedRole ?? null,
+                    assigneeNhId: packetCtx?.assigneeNhId ?? null,
                     error: msg,
                 },
             });
@@ -378,22 +528,21 @@ export class BaseAgentRuntime {
             });
 
             for (const e of expired) {
-                const wp = (await tx.workPacket.findUnique({
-                    where: { id: e.workPacketId },
-                    select: { id: true, nhId: true, repoId: true },
-                })) as { id: number; nhId: string | null; repoId: number | null } | null;
+                const packetCtx = await this.loadWorkPacketContext(tx, e.workPacketId);
 
-                await this.emitRuntimeSotEvent(tx, {
+                await this.emitRuntimeEvent(tx, {
                     kind: "WORK_FAILED",
-                    nhId: wp?.nhId ?? null,
-                    repoId: wp?.repoId ?? null,
+                    nhId: packetCtx?.nhId ?? null,
+                    repoId: packetCtx?.repoId ?? null,
                     workPacketId: e.workPacketId,
-                    summary: `Lease expired: ${wp?.nhId ?? `workPacket#${e.workPacketId}`} requeued`,
+                    summary: `Lease expired: ${packetCtx?.nhId ?? `workPacket#${e.workPacketId}`} requeued`,
                     payload: {
                         schema: "agent-runtime-0.1",
                         agentNhId: this.nhId,
                         queueItemId: e.id,
                         workPacketId: e.workPacketId,
+                        requestedRole: packetCtx?.requestedRole ?? null,
+                        assigneeNhId: packetCtx?.assigneeNhId ?? null,
                         reason: "lease_expired",
                         previousLeaseExpiry: e.leaseExpiry?.toISOString?.() ?? null,
                     },
@@ -402,16 +551,16 @@ export class BaseAgentRuntime {
         });
     }
 
-    private async emitRuntimeSotEvent(
+    private async emitAgentSotEvent(
         db: DbLikeTx,
         args: {
-            kind: RuntimeSotKind;
+            kind: AgentSotKind;
             nhId: string | null;
             repoId: number | null;
             workPacketId: number;
             summary: string;
             payload: Record<string, unknown>;
-        }
+        },
     ) {
         const ts = new Date();
         const eventId = crypto.randomUUID();
@@ -436,7 +585,7 @@ export class BaseAgentRuntime {
                 ts,
                 source: sotEvent.source,
                 kind: sotEvent.kind,
-                nhId: args.nhId ?? "", // SotEvent.nhId is non-null in your schema
+                nhId: args.nhId ?? "",
                 summary: args.summary,
                 payload: sotEvent as Prisma.InputJsonValue,
                 repoId: args.repoId ?? null,

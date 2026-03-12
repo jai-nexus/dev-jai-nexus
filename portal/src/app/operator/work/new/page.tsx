@@ -16,10 +16,8 @@ import {
 } from "@/lib/agencyConfig";
 import { InboxItemStatus, WorkPacketStatus, type Prisma } from "@prisma/client";
 import { validateReposAgainstAgentScope } from "@/lib/scopeValidator";
-import {
-  buildInboxTags,
-  sanitizeNhLike,
-} from "@/lib/work/workPacketContract";
+import { syncAgentQueueItemForPacket } from "@/lib/work/workPacketQueue";
+import { buildInboxTags, sanitizeNhLike } from "@/lib/work/workPacketContract";
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -107,7 +105,9 @@ async function createPacket(formData: FormData) {
     safeRedirectWithError(assigneeNhId, requestedRole, `Invalid repoId: ${repoIdRaw}`);
   }
 
-  if (!nhId || !title) redirect("/operator/work/new");
+  if (!nhId || !title) {
+    redirect("/operator/work/new");
+  }
 
   if (!requestedRole) {
     safeRedirectWithError(
@@ -143,7 +143,12 @@ async function createPacket(formData: FormData) {
     );
   }
 
-  if (assigneeNhId && agent && requestedRole && !isAgentEligibleForExecutionRole(agent, requestedRole)) {
+  if (
+    assigneeNhId &&
+    agent &&
+    requestedRole &&
+    !isAgentEligibleForExecutionRole(agent, requestedRole)
+  ) {
     safeRedirectWithError(
       assigneeNhId,
       requestedRole,
@@ -154,6 +159,8 @@ async function createPacket(formData: FormData) {
   const mutationId = crypto.randomUUID();
 
   const created = await prisma.$transaction(async (tx) => {
+    let selectedRepoName: string | null = null;
+
     if (assigneeNhId && repoId != null) {
       const repo = await tx.repo.findUnique({
         where: { id: repoId },
@@ -168,15 +175,15 @@ async function createPacket(formData: FormData) {
         );
       }
 
+      selectedRepoName = repo.name;
+
       const res = validateReposAgainstAgentScope(assigneeNhId, [repo.name]);
 
       if (!res.valid) {
         safeRedirectWithError(
           assigneeNhId,
           requestedRole,
-          `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(
-            ", ",
-          )}`,
+          `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(", ")}`,
         );
       }
     }
@@ -207,6 +214,14 @@ async function createPacket(formData: FormData) {
       select: { id: true, status: true, priority: true, tags: true },
     });
 
+    if (assigneeNhId) {
+      await syncAgentQueueItemForPacket(tx, {
+        workPacketId: created.id,
+        assigneeNhId,
+        repoScope: selectedRepoName ? [selectedRepoName] : [],
+      });
+    }
+
     const createdPayload: Prisma.InputJsonValue = {
       contract_version: "work-packet-0.1",
       workPacketId: created.id,
@@ -223,6 +238,13 @@ async function createPacket(formData: FormData) {
         priority: inbox.priority,
         tags: inbox.tags,
       },
+      queue: assigneeNhId
+        ? {
+          agentNhId: assigneeNhId,
+          repoScope: selectedRepoName ? [selectedRepoName] : [],
+          status: "PENDING",
+        }
+        : null,
     };
 
     await emitWorkPacketSotEvent({
@@ -366,7 +388,8 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
         </form>
 
         <div className="mt-3 text-xs text-gray-500">
-          Eligible assignees: <span className="font-mono text-gray-300">{eligibleAgents.length}</span>
+          Eligible assignees:{" "}
+          <span className="font-mono text-gray-300">{eligibleAgents.length}</span>
         </div>
       </section>
 
@@ -433,9 +456,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             >
               <option value="">
-                {requestedRoleFromQuery
-                  ? "— Unassigned —"
-                  : "— Select role first —"}
+                {requestedRoleFromQuery ? "— Unassigned —" : "— Select role first —"}
               </option>
               {eligibleAgents.map((a) => (
                 <option key={a.nh_id} value={a.nh_id}>
@@ -493,7 +514,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
                   </div>
                 ) : null}
 
-                {(requestedScope.length || requestedLabels.length) ? (
+                {requestedScope.length || requestedLabels.length ? (
                   <div className="pt-1 text-[11px] text-gray-500">
                     <div>
                       <span className="text-gray-600">prefill scope (query):</span>{" "}

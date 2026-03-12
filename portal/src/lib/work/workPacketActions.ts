@@ -5,6 +5,8 @@ import {
     emitWorkPacketSotEvent,
     type WorkPacketSotKind,
 } from "@/lib/sotWorkPackets";
+import { getAgentByNhId } from "@/lib/agencyConfig";
+import { syncAgentQueueItemForPacket } from "@/lib/work/workPacketQueue";
 import { InboxItemStatus, WorkPacketStatus, type Prisma } from "@prisma/client";
 
 import {
@@ -30,6 +32,14 @@ function packetStatusIfAvailable(
     return KNOWN_PACKET_STATUSES.has(candidate)
         ? (candidate as WorkPacketStatus)
         : fallback;
+}
+
+function isRouteAction(action: PacketRouteAction): boolean {
+    return (
+        action === "ROUTE_ARCHITECT" ||
+        action === "ROUTE_BUILDER" ||
+        action === "ROUTE_VERIFIER"
+    );
 }
 
 function routeLaneForAction(action: PacketRouteAction): string | null {
@@ -106,6 +116,7 @@ export async function applyPacketRouteAction(args: {
     action: PacketRouteAction;
     assigneeNhId?: string | null;
     note?: string | null;
+    clearAssignee?: boolean;
 }) {
     const mutationId = crypto.randomUUID();
 
@@ -138,8 +149,28 @@ export async function applyPacketRouteAction(args: {
 
         const existingTags = coerceStringArray(latestInbox?.tags);
         const existingAssigneeNhId = getAssigneeFromTags(existingTags);
-        const effectiveAssigneeNhId =
-            args.assigneeNhId ?? existingAssigneeNhId ?? null;
+
+        const explicitAssigneeProvided = Object.prototype.hasOwnProperty.call(
+            args,
+            "assigneeNhId",
+        );
+
+        const shouldClearAssignee =
+            args.clearAssignee ?? isRouteAction(args.action);
+
+        const effectiveAssigneeNhId = explicitAssigneeProvided
+            ? (args.assigneeNhId ?? null)
+            : shouldClearAssignee
+                ? null
+                : (existingAssigneeNhId ?? null);
+
+        const assigneeAgent = effectiveAssigneeNhId
+            ? getAgentByNhId(effectiveAssigneeNhId)
+            : null;
+
+        if (effectiveAssigneeNhId && !assigneeAgent) {
+            throw new Error(`Agent not found for assignee NH: ${effectiveAssigneeNhId}`);
+        }
 
         const targetLane = routeLaneForAction(args.action);
         const nextPacketStatus = nextStatusForAction(args.action, packet.status);
@@ -196,6 +227,12 @@ export async function applyPacketRouteAction(args: {
                     },
                 });
 
+        await syncAgentQueueItemForPacket(tx, {
+            workPacketId: packet.id,
+            assigneeNhId: effectiveAssigneeNhId,
+            repoScope: assigneeAgent?.scope ?? [],
+        });
+
         const kind = eventKindForAction(args.action);
         const summary = summaryForAction(args.action, packet.nhId, targetLane);
 
@@ -204,7 +241,9 @@ export async function applyPacketRouteAction(args: {
             workPacketId: packet.id,
             action: args.action,
             targetLane,
+            previousAssigneeNhId: existingAssigneeNhId,
             assigneeNhId: effectiveAssigneeNhId,
+            clearAssignee: shouldClearAssignee,
             previousStatus: packet.status,
             nextStatus: nextPacketStatus,
             inbox: {
@@ -235,7 +274,9 @@ export async function applyPacketRouteAction(args: {
             kind,
             summary,
             targetLane,
+            previousAssigneeNhId: existingAssigneeNhId,
             assigneeNhId: effectiveAssigneeNhId,
+            clearAssignee: shouldClearAssignee,
             nextStatus: nextPacketStatus,
             inboxStatus: inbox.status,
             inboxPriority: inbox.priority,

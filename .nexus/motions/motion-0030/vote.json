@@ -1,0 +1,41 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0030",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "vote": "yes",
+      "rationale": "Queue bridging is now live for governed work packets. Assigned packet creation writes AgentInboxItem and AgentQueueItem state, scope normalization accepts canonical repo names, and the architect one-shot runtime successfully claimed packet 1.2.100, emitted WORK_CLAIMED and debug.plan, completed the architect stage, and routed the packet to BUILDER."
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "vote": "yes",
+      "rationale": "Reviewed the execution-path changes across new packet creation, queue synchronization, runtime claim logic, migration add_agent_queue_item, and live proof results. No blocking inconsistency remains for the architect slice; the governed path is functioning end-to-end and produces the expected SoT evidence."
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "vote": "yes",
+      "rationale": "Required proof exists for motion-0030. The system now demonstrates a live architect runtime claim flow with queue-backed execution, deterministic event emission, and explicit routing into the next governed lane. Motion is eligible for ratification."
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-12T02:07:43.506Z"
+}

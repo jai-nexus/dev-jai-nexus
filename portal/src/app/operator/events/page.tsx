@@ -1,10 +1,8 @@
-// portal/src/app/operator/events/page.tsx
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatCentral, formatCentralTooltip } from "@/lib/time";
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -21,7 +19,6 @@ type SearchParamsObj = {
 };
 
 interface OperatorEventsPageProps {
-  // Next.js 16 can provide this as a Promise in some cases
   searchParams?: SearchParamsObj | Promise<SearchParamsObj>;
 }
 
@@ -30,6 +27,10 @@ type KindBreakdownRow = {
   _count: { kind: number };
 };
 
+function formatStableTs(value: Date): string {
+  return value.toISOString();
+}
+
 export default async function OperatorEventsPage({ searchParams }: OperatorEventsPageProps) {
   const sp = await Promise.resolve(searchParams ?? {});
 
@@ -37,7 +38,6 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
   const sourceFilter = firstParam(sp.source);
   const kindFilter = firstParam(sp.kind);
 
-  // Parse limit: default 100, max 500, min 1
   let limit = 100;
   if (sp.limit) {
     const parsed = parseInt(firstParam(sp.limit) || "0", 10);
@@ -51,7 +51,6 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
   if (sourceFilter) where.source = sourceFilter;
   if (kindFilter) where.kind = kindFilter;
 
-  // ✅ React purity: avoid Date.now() in render path
   const cutoff = new Date();
   cutoff.setTime(cutoff.getTime() - 24 * 60 * 60 * 1000);
 
@@ -82,7 +81,7 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
   type SotEventRow = (typeof events)[number];
 
   const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
-  const lastIngest = latestEvent?.ts ? formatCentral(latestEvent.ts) : "Never";
+  const lastIngest = latestEvent?.ts ? formatStableTs(latestEvent.ts) : "Never";
 
   const topKinds = kindsBreakdown.slice(0, 5);
   const hasMoreKinds = kindsBreakdown.length > 5;
@@ -95,7 +94,6 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
           <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>
@@ -132,37 +130,40 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
                 ))
               )}
 
-              {hasMoreKinds && <span className="text-xs text-zinc-500 italic">+ others</span>}
+              {hasMoreKinds ? <span className="text-xs text-zinc-500 italic">+ others</span> : null}
             </div>
           </div>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-400">Showing latest {limit} events · America/Chicago</span>
+          <span className="text-xs text-gray-400">Showing latest {limit} events · UTC</span>
 
-          {hasFilters && (
+          {hasFilters ? (
             <div className="flex flex-wrap gap-2 items-center">
-              {nhFilter && (
+              {nhFilter ? (
                 <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
                   NH: <span className="ml-1 font-mono">{nhFilter}</span>
                 </span>
-              )}
-              {sourceFilter && (
+              ) : null}
+              {sourceFilter ? (
                 <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
                   Source: <span className="ml-1 font-mono">{sourceFilter}</span>
                 </span>
-              )}
-              {kindFilter && (
+              ) : null}
+              {kindFilter ? (
                 <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
                   Kind: <span className="ml-1 font-mono">{kindFilter}</span>
                 </span>
-              )}
+              ) : null}
 
-              <Link href="/operator/events" className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1">
+              <Link
+                href="/operator/events"
+                className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1"
+              >
                 Clear filters
               </Link>
             </div>
-          )}
+          ) : null}
         </div>
       </header>
 
@@ -183,11 +184,11 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
                 </tr>
               </thead>
 
-              <tbody suppressHydrationWarning>
+              <tbody>
                 {events.map((evt: SotEventRow) => (
                   <tr key={evt.id} className="border-b border-gray-900 hover:bg-zinc-900/60">
-                    <td className="py-2 px-3 whitespace-nowrap text-xs" title={formatCentralTooltip(evt.ts)}>
-                      {formatCentral(evt.ts)}
+                    <td className="py-2 px-3 whitespace-nowrap text-xs" title={evt.ts.toISOString()}>
+                      {formatStableTs(evt.ts)}
                     </td>
 
                     <td className="py-2 px-3 whitespace-nowrap text-xs">
