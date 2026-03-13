@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0034",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0034 successfully proved the final operator decision layer of the first governed vertical slice. The approve branch emitted WORK_APPROVED and resolved the packet to DONE/COMPLETE, while the request-changes branch emitted WORK_REVIEW_REQUESTED and resolved the packet to BLOCKED/ATTENTION."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion stayed appropriately scoped. It clarified operator decision semantics using the existing packet and inbox status model, without introducing unnecessary schema expansion or operator automation."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and live-proven. Both operator branches were exercised from the UI, packet-linked SoT events were emitted correctly, and the detail surfaces reflected distinct approved and changes-requested outcomes."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T20:05:00.000Z"
+}

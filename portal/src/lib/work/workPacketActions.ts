@@ -24,17 +24,6 @@ export type PacketRouteAction =
     | "REQUEUE"
     | "APPROVE";
 
-const KNOWN_PACKET_STATUSES = new Set<string>(Object.values(WorkPacketStatus));
-
-function packetStatusIfAvailable(
-    candidate: string,
-    fallback: WorkPacketStatus,
-): WorkPacketStatus {
-    return KNOWN_PACKET_STATUSES.has(candidate)
-        ? (candidate as WorkPacketStatus)
-        : fallback;
-}
-
 function isRouteAction(action: PacketRouteAction): boolean {
     return (
         action === "ROUTE_ARCHITECT" ||
@@ -44,12 +33,15 @@ function isRouteAction(action: PacketRouteAction): boolean {
     );
 }
 
+function isDecisionAction(action: PacketRouteAction): boolean {
+    return action === "REQUEST_CHANGES" || action === "APPROVE";
+}
+
 function routeLaneForAction(action: PacketRouteAction): string | null {
     if (action === "ROUTE_ARCHITECT") return "ARCHITECT";
     if (action === "ROUTE_BUILDER") return "BUILDER";
     if (action === "ROUTE_VERIFIER") return "VERIFIER";
     if (action === "ROUTE_OPERATOR_REVIEW") return "OPERATOR_REVIEW";
-    if (action === "APPROVE") return "OPERATOR_REVIEW";
     return null;
 }
 
@@ -68,7 +60,7 @@ function summaryForAction(
     if (action === "REQUEST_CHANGES") return `Changes requested: ${nhId}`;
     if (action === "REQUEUE") return `Work requeued: ${nhId}`;
     if (action === "APPROVE") return `Work approved: ${nhId}`;
-    return `Work routed: ${nhId} → ${targetLane ?? "UNKNOWN"}`;
+    return `Work routed: ${nhId} -> ${targetLane ?? "UNKNOWN"}`;
 }
 
 function nextStatusForAction(
@@ -76,18 +68,37 @@ function nextStatusForAction(
     current: WorkPacketStatus,
 ): WorkPacketStatus {
     if (action === "REQUEST_CHANGES") {
-        return packetStatusIfAvailable("CHANGES_REQUESTED", current);
+        return WorkPacketStatus.BLOCKED;
     }
 
     if (action === "APPROVE") {
-        return packetStatusIfAvailable("APPROVED", current);
+        return WorkPacketStatus.DONE;
     }
 
     if (action === "REQUEUE") {
-        return packetStatusIfAvailable("DRAFT", current);
+        return WorkPacketStatus.DRAFT;
     }
 
     return current;
+}
+
+function nextInboxStatusForAction(
+    action: PacketRouteAction,
+    _current: InboxItemStatus,
+): InboxItemStatus {
+    if (action === "REQUEST_CHANGES") {
+        return InboxItemStatus.BLOCKED;
+    }
+
+    if (action === "APPROVE") {
+        return InboxItemStatus.DONE;
+    }
+
+    if (action === "REQUEUE") {
+        return InboxItemStatus.QUEUED;
+    }
+
+    return InboxItemStatus.QUEUED;
 }
 
 function nextPriorityForAction(
@@ -160,7 +171,8 @@ export async function applyPacketRouteAction(args: {
         );
 
         const shouldClearAssignee =
-            args.clearAssignee ?? isRouteAction(args.action);
+            args.clearAssignee ??
+            (isRouteAction(args.action) || isDecisionAction(args.action));
 
         const effectiveAssigneeNhId = explicitAssigneeProvided
             ? (args.assigneeNhId ?? null)
@@ -173,7 +185,9 @@ export async function applyPacketRouteAction(args: {
             : null;
 
         if (effectiveAssigneeNhId && !assigneeAgent) {
-            throw new Error(`Agent not found for assignee NH: ${effectiveAssigneeNhId}`);
+            throw new Error(
+                `Agent not found for assignee NH: ${effectiveAssigneeNhId}`,
+            );
         }
 
         const targetLane = routeLaneForAction(args.action);
@@ -181,6 +195,10 @@ export async function applyPacketRouteAction(args: {
         const nextPriority = nextPriorityForAction(
             args.action,
             latestInbox?.priority ?? 50,
+        );
+        const nextInboxStatus = nextInboxStatusForAction(
+            args.action,
+            latestInbox?.status ?? InboxItemStatus.QUEUED,
         );
 
         const nextTags = [
@@ -205,7 +223,7 @@ export async function applyPacketRouteAction(args: {
                 ? await tx.agentInboxItem.update({
                     where: { id: latestInbox.id },
                     data: {
-                        status: InboxItemStatus.QUEUED,
+                        status: nextInboxStatus,
                         priority: nextPriority,
                         tags: dedupedTags,
                     },
@@ -219,7 +237,7 @@ export async function applyPacketRouteAction(args: {
                 : await tx.agentInboxItem.create({
                     data: {
                         workPacketId: packet.id,
-                        status: InboxItemStatus.QUEUED,
+                        status: nextInboxStatus,
                         priority: nextPriority,
                         tags: dedupedTags,
                     },

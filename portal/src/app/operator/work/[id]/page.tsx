@@ -202,7 +202,7 @@ async function updatePacket(id: number, formData: FormData) {
     const kind = statusChanged ? "WORK_PACKET_STATUS_CHANGED" : "WORK_PACKET_UPDATED";
 
     const summary = statusChanged
-      ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} → ${String(statusChanged.to)}`
+      ? `WorkPacket status: ${after.nhId} ${String(statusChanged.from)} -> ${String(statusChanged.to)}`
       : `WorkPacket updated: ${after.nhId} · ${after.title}`;
 
     const data: Prisma.InputJsonValue = {
@@ -347,30 +347,69 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   const latestDebugEvent =
     runtimeAndDebugEvents.find((evt) => DEBUG_KIND_SET.has(evt.kind)) ?? null;
 
-  const control = computeWorkPacketControlState({
-    packetStatus: String(p.status),
-    assigneeNhId,
-    requestedRole,
-    githubPrUrl: p.githubPrUrl ?? null,
-    verificationUrl: p.verificationUrl ?? null,
-    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
-    latestDebugKind: latestDebugEvent?.kind ?? null,
-  });
-
-  const lane = computeExecutionLaneState({
-    packetStatus: String(p.status),
-    assigneeNhId,
-    requestedRole,
-    githubPrUrl: p.githubPrUrl ?? null,
-    verificationUrl: p.verificationUrl ?? null,
-    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
-    latestDebugKind: latestDebugEvent?.kind ?? null,
-  });
-
   const latestByKind = new Map<string, (typeof packetEvents)[number]>();
   for (const evt of packetEvents) {
     if (!latestByKind.has(evt.kind)) latestByKind.set(evt.kind, evt);
   }
+
+  const operatorDecisionEvent =
+    mutationEvents.find(
+      (evt) => evt.kind === "WORK_APPROVED" || evt.kind === "WORK_REVIEW_REQUESTED",
+    ) ?? null;
+
+  const operatorDecisionKind = operatorDecisionEvent?.kind ?? null;
+
+  const baseControl = computeWorkPacketControlState({
+    packetStatus: String(p.status),
+    assigneeNhId,
+    requestedRole,
+    githubPrUrl: p.githubPrUrl ?? null,
+    verificationUrl: p.verificationUrl ?? null,
+    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
+    latestDebugKind: latestDebugEvent?.kind ?? null,
+  });
+
+  const baseLane = computeExecutionLaneState({
+    packetStatus: String(p.status),
+    assigneeNhId,
+    requestedRole,
+    githubPrUrl: p.githubPrUrl ?? null,
+    verificationUrl: p.verificationUrl ?? null,
+    latestRuntimeKind: latestRuntimeEvent?.kind ?? null,
+    latestDebugKind: latestDebugEvent?.kind ?? null,
+  });
+
+  const control =
+    operatorDecisionKind === "WORK_APPROVED"
+      ? {
+        phase: "APPROVED",
+        tone: "emerald",
+        reason: "Operator approval is recorded for this packet.",
+        nextAction: "No further execution action is required unless follow-up work is opened.",
+      }
+      : operatorDecisionKind === "WORK_REVIEW_REQUESTED"
+        ? {
+          phase: "CHANGES_REQUESTED",
+          tone: "red",
+          reason: "Operator requested changes on this packet.",
+          nextAction: "Review the feedback and explicitly re-route the packet when rework is ready.",
+        }
+        : baseControl;
+
+  const lane =
+    operatorDecisionKind === "WORK_APPROVED"
+      ? {
+        currentLane: "COMPLETE",
+        nextLane: null,
+        reason: "Operator approval recorded; the governed slice is complete.",
+      }
+      : operatorDecisionKind === "WORK_REVIEW_REQUESTED"
+        ? {
+          currentLane: "ATTENTION",
+          nextLane: null,
+          reason: "Operator requested changes; the packet now awaits explicit re-routing or revision.",
+        }
+        : baseLane;
 
   const checklist = DEBUG_LOOP_EVENT_KINDS.map((k) => ({
     kind: k,
@@ -383,8 +422,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   const builderEvt = latestByKind.get("debug.patch") ?? null;
   const verifierEvt = latestByKind.get("debug.verify") ?? null;
   const operatorEvt =
-    latestByKind.get("WORK_APPROVED") ??
-    latestByKind.get("WORK_REVIEW_REQUESTED") ??
+    operatorDecisionEvent ??
     latestByKind.get("debug.approve") ??
     null;
 
@@ -499,6 +537,10 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     }),
   );
 
+  const canResolveOperatorDecision =
+    operatorDecisionKind == null &&
+    (baseLane.currentLane === "OPERATOR_REVIEW" || !!verifierEvt || !!p.verificationUrl);
+
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
@@ -611,6 +653,10 @@ export default async function WorkPacketDetailPage({ params }: Props) {
               <span className="text-gray-500">tags:</span>{" "}
               <span className="font-mono">{inboxTags.join(", ") || "—"}</span>
             </div>
+            <div>
+              <span className="text-gray-500">operator decision:</span>{" "}
+              <span className="font-mono">{operatorDecisionKind ?? "—"}</span>
+            </div>
           </div>
         </div>
 
@@ -628,6 +674,9 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           </div>
           <div className="mt-1 text-xs text-gray-500">
             latest debug: <span className="font-mono text-gray-300">{latestDebugEvent?.kind ?? "—"}</span>
+          </div>
+          <div className="mt-1 text-xs text-gray-500">
+            latest operator decision: <span className="font-mono text-gray-300">{operatorDecisionKind ?? "—"}</span>
           </div>
         </div>
 
@@ -704,7 +753,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
       <section className="mb-8 max-w-6xl rounded-md border border-gray-800 bg-zinc-950 p-4">
         <h2 className="text-sm font-semibold text-gray-200">Execution Loop Actions</h2>
         <p className="mt-2 text-sm text-gray-400">
-          These actions are governed operator-side routing actions. They emit packet-linked SoT events and update inbox routing state.
+          These actions include both governed routing actions and final operator decision actions. They emit packet-linked SoT events and update packet/inbox state.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -738,7 +787,8 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           <form action={runRouteAction.bind(null, p.id, "REQUEST_CHANGES")}>
             <button
               type="submit"
-              className="rounded-md border border-red-800 bg-red-900/30 px-3 py-2 text-sm text-red-200 hover:bg-red-900/40"
+              disabled={!canResolveOperatorDecision}
+              className="rounded-md border border-red-800 bg-red-900/30 px-3 py-2 text-sm text-red-200 hover:bg-red-900/40 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Request changes
             </button>
@@ -756,7 +806,8 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           <form action={runRouteAction.bind(null, p.id, "APPROVE")}>
             <button
               type="submit"
-              className="rounded-md border border-emerald-800 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-900/40"
+              disabled={!canResolveOperatorDecision}
+              className="rounded-md border border-emerald-800 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-900/40 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Approve
             </button>

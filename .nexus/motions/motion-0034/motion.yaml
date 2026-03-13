@@ -1,0 +1,53 @@
+motion_id: "motion-0034"
+title: "Fourth Governed Slice v0: operator review + approve/request-changes proof"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Prove the final operator-governed stage of the first vertical slice by showing
+  that a verifier-ready packet can be reviewed by an operator and resolved through
+  explicit approve and request-changes actions with correct packet-linked SoT events
+  and clear operator-facing UI state.
+
+problem: >
+  Motion-0030 through motion-0032 proved live architect, builder, and verifier
+  execution through operator-review-ready handoff. Motion-0033 added machine-generated
+  context bundles. The remaining missing proof in the first governed vertical slice
+  is the final operator decision stage: review-ready packets must be resolvable through
+  explicit operator actions with trustworthy event emission and coherent state updates.
+
+proposal:
+  - "Prove the operator approve path on a verifier-ready packet."
+  - "Prove the operator request-changes path on a verifier-ready packet."
+  - "Ensure operator actions emit the correct packet-linked SoT events."
+  - "Tighten operator action semantics where needed so approval and request-changes are modeled as decisions, not ambiguous routing."
+  - "Keep the operator stage manual and governed; do not add an operator bot/runtime in this motion."
+
+non_goals:
+  - "Do not add automatic operator approval."
+  - "Do not add a new operator execution runtime."
+  - "Do not redesign the full rework loop beyond what is required to prove operator decisions cleanly."
+  - "Do not expand this motion into broader workflow automation unrelated to operator review."
+
+success_criteria:
+  - "A verifier-ready packet can be approved by an operator from the operator UI."
+  - "The approve action emits WORK_APPROVED and the packet reflects a coherent approved/finalized operator decision state."
+  - "A verifier-ready packet can receive request-changes by an operator from the operator UI."
+  - "The request-changes action emits WORK_REVIEW_REQUESTED and the packet reflects a coherent changes-requested operator decision state."
+  - "Operator-facing UI surfaces clearly distinguish review-ready, approved, and changes-requested states."
+  - "No invalid or misleading packet status transition is introduced."
+  - "portal typecheck passes."
+  - "A live smoke proof demonstrates both approve and request-changes branches."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
