@@ -1,0 +1,78 @@
+version: "0.1"
+artifact: "claude-upload-order"
+scope: "dev-jai-nexus"
+
+purpose: >
+  Defines the recommended order for introducing governed repo context into a new
+  Claude project or Claude chat.
+
+layers:
+  - name: "repo_local_guidance"
+    order: 1
+    files:
+      - "CLAUDE.md"
+    reason: "Establish repo purpose, rules, and sensitive surfaces first."
+
+  - name: "stable_substrate"
+    order: 2
+    files:
+      - ".nexus/context/project-constitution.yaml"
+      - ".nexus/context/slot-policy.yaml"
+      - ".nexus/context/scoring-rubric.yaml"
+    optional_files:
+      - ".nexus/context/repo-capsule.schema.yaml"
+      - ".nexus/context/motion-packet.schema.json"
+    reason: "Establish stable constitutional and evaluation context before task-local context."
+
+  - name: "claude_repo_layer"
+    order: 3
+    files:
+      - ".nexus/claude/project-context-pack.md"
+      - ".nexus/claude/operating-workflow.md"
+    reason: "Establish Claude-specific repo behavior after stable substrate."
+
+  - name: "generated_bootstrap_handoff"
+    order: 4
+    files:
+      - "surfaces/claude/YYYY-MM-DD_claude-bootstrap.md"
+    reason: "Use the generated bootstrap as the compact current handoff layer."
+
+  - name: "active_motion"
+    order: 5
+    files:
+      - ".nexus/motions/motion-XXXX/motion.yaml"
+      - ".nexus/motions/motion-XXXX/proposal.md"
+      - ".nexus/motions/motion-XXXX/challenge.md"
+      - ".nexus/motions/motion-XXXX/execution.md"
+      - ".nexus/motions/motion-XXXX/policy.yaml"
+    optional_files:
+      - ".nexus/motions/motion-XXXX/decision.md"
+      - ".nexus/motions/motion-XXXX/decision.yaml"
+      - ".nexus/motions/motion-XXXX/verify.json"
+      - ".nexus/motions/motion-XXXX/vote.json"
+    reason: "Load the canonical governed unit of current work."
+
+  - name: "motion_local_generated_context"
+    order: 6
+    files:
+      - "surfaces/chat-context/YYYY-MM-DD_repo-capsule.txt"
+      - "surfaces/chat-context/YYYY-MM-DD_active-path-pack.txt"
+    optional_files:
+      - "surfaces/chat-context/YYYY-MM-DD_motion-snapshots.txt"
+    reason: "Add compact current context only after canonical sources are established."
+
+rules:
+  - "Prefer canonical artifacts before generated artifacts."
+  - "Use generated artifacts for compression and portability, not authority."
+  - "Do not upload the entire repository by default."
+  - "When the task is narrowly scoped, skip unnecessary optional layers."
+  - "Replace YYYY-MM-DD and motion-XXXX with the current values."
+
+minimal_fast_path:
+  description: "Use when you need a compact but still governed setup."
+  files:
+    - "CLAUDE.md"
+    - ".nexus/context/project-constitution.yaml"
+    - ".nexus/claude/project-context-pack.md"
+    - "surfaces/claude/YYYY-MM-DD_claude-bootstrap.md"
+    - ".nexus/motions/motion-XXXX/motion.yaml"
