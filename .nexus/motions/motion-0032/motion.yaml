@@ -1,0 +1,52 @@
+motion_id: "motion-0032"
+title: "Third Live Execution Runner v0: verifier claim + verification evidence + operator-review handoff"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add the first live verifier execution runner so a verifier-capable execution agent
+  can claim a governed work packet from AgentQueueItem, emit verification-shaped
+  evidence, complete the verifier stage, and route the packet into operator review.
+
+problem: >
+  Motion-0030 proved the architect slice end-to-end and motion-0031 proved the
+  builder slice end-to-end. The next missing governed leg is verifier execution.
+  The UI already understands verifier evidence as the lane immediately before
+  operator review, but there is not yet a live verifier one-shot runner and the
+  routing layer does not yet expose a dedicated verifier -> operator-review action.
+
+proposal:
+  - "Add a one-shot verifier runtime entrypoint for a selected verifier execution agent."
+  - "Add verifier-specific runtime behavior that only claims verifier-routed packets."
+  - "Emit packet-linked debug.verify evidence with compact, readable payload."
+  - "Complete the verifier run with WORK_CLAIMED, debug.verify, WORK_COMPLETED, and WORK_ROUTED -> OPERATOR_REVIEW."
+  - "Add an explicit ROUTE_OPERATOR_REVIEW packet action so verifier handoff is semantically distinct from APPROVE."
+
+non_goals:
+  - "Do not implement automatic operator assignment or auto-approval."
+  - "Do not collapse operator review into final approval semantics."
+  - "Do not add an operator runtime in this motion."
+  - "Do not change overall council governance semantics."
+
+success_criteria:
+  - "A verifier-capable execution agent can claim a verifier-routed packet from AgentQueueItem."
+  - "The live verifier runner emits WORK_CLAIMED."
+  - "The live verifier runner emits debug.verify."
+  - "The live verifier runner emits WORK_COMPLETED."
+  - "The packet is routed to OPERATOR_REVIEW with a packet-linked WORK_ROUTED event."
+  - "The work packet UI shows verifier complete and operator review ready."
+  - "portal typecheck passes."
+  - "council:run for motion-0032 passes and ratifies."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

@@ -19,6 +19,7 @@ export type PacketRouteAction =
     | "ROUTE_ARCHITECT"
     | "ROUTE_BUILDER"
     | "ROUTE_VERIFIER"
+    | "ROUTE_OPERATOR_REVIEW"
     | "REQUEST_CHANGES"
     | "REQUEUE"
     | "APPROVE";
@@ -38,7 +39,8 @@ function isRouteAction(action: PacketRouteAction): boolean {
     return (
         action === "ROUTE_ARCHITECT" ||
         action === "ROUTE_BUILDER" ||
-        action === "ROUTE_VERIFIER"
+        action === "ROUTE_VERIFIER" ||
+        action === "ROUTE_OPERATOR_REVIEW"
     );
 }
 
@@ -46,6 +48,7 @@ function routeLaneForAction(action: PacketRouteAction): string | null {
     if (action === "ROUTE_ARCHITECT") return "ARCHITECT";
     if (action === "ROUTE_BUILDER") return "BUILDER";
     if (action === "ROUTE_VERIFIER") return "VERIFIER";
+    if (action === "ROUTE_OPERATOR_REVIEW") return "OPERATOR_REVIEW";
     if (action === "APPROVE") return "OPERATOR_REVIEW";
     return null;
 }
@@ -91,6 +94,7 @@ function nextPriorityForAction(
     action: PacketRouteAction,
     currentPriority: number,
 ) {
+    if (action === "ROUTE_OPERATOR_REVIEW") return 90;
     if (action === "ROUTE_VERIFIER") return 80;
     if (action === "ROUTE_BUILDER") return 70;
     if (action === "ROUTE_ARCHITECT") return 60;
