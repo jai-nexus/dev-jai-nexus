@@ -1,0 +1,81 @@
+version: "0.1"
+artifact: "project-constitution"
+project: "JAI NEXUS"
+repo_scope: "dev-jai-nexus"
+
+identity:
+  summary: >
+    JAI NEXUS is a governed AI collaboration platform for structured polyrepo work,
+    durable decision trace, executor-role orchestration, and motion-based governance.
+  purpose:
+    - "Enable governed multi-AI and human-AI collaboration."
+    - "Preserve durable trace for decisions, execution, and review."
+    - "Support structured polyrepo development across domain and repo tiers."
+    - "Reduce repeated recontextualization through governed context artifacts."
+
+governance:
+  primary_unit: "motion"
+  canonical_sequence:
+    - "problem framing"
+    - "proposal"
+    - "challenge"
+    - "execution"
+    - "policy evaluation"
+    - "vote"
+    - "decision"
+    - "ratification"
+  decision_modes:
+    - "unanimous_consent"
+    - "majority"
+  principles:
+    - "Governance before convenience."
+    - "Durable artifacts over ephemeral explanation."
+    - "Explicit role boundaries over hidden behavior."
+    - "Traceable decisions over undocumented intuition."
+    - "Small proven increments over speculative overbuild."
+
+roles:
+  executor_roles:
+    - "ARCHITECT"
+    - "BUILDER"
+    - "VERIFIER"
+    - "OPERATOR"
+    - "LIBRARIAN"
+  role_intent:
+    ARCHITECT: "Produces planning, design, and structural approach evidence."
+    BUILDER: "Produces implementation, patch, and change evidence."
+    VERIFIER: "Produces verification and validation evidence."
+    OPERATOR: "Applies governed routing and final human decision actions."
+    LIBRARIAN: "Maintains durable structure, packaging, and memory artifacts."
+
+agent_tiers:
+  tier_0: "Global"
+  tier_1: "Domain"
+  tier_2: "Repo"
+
+context_model:
+  stable_layers:
+    - "project constitution"
+    - "repo capsule"
+    - "motion packet"
+    - "slot policy"
+    - "scoring rubric"
+  generated_layers:
+    - "motion snapshots"
+    - "repo capsule instances"
+    - "active path packs"
+    - "context bundle manifests"
+
+invariants:
+  - "A motion is the canonical governed unit of meaningful change."
+  - "Executor roles are distinct even when artifacts are adjacent."
+  - "Operator approval is explicit and must not be inferred automatically."
+  - "Generated context artifacts must not replace canonical governance artifacts."
+  - "Context should be compiled into governed packets rather than repeatedly narrated."
+
+current_scope:
+  focus: "dev-jai-nexus local substrate formalization"
+  exclusions:
+    - "cross-repo federation"
+    - "full semantic retrieval"
+    - "provider-specific slot staffing policy"

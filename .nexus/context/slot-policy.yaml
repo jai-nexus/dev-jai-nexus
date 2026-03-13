@@ -1,0 +1,95 @@
+version: "0.1"
+artifact: "slot-policy"
+scope: "dev-jai-nexus"
+
+purpose: >
+  Defines role-first slot intent for executor-role evaluation and future multi-model
+  staffing without binding the policy to any single provider.
+
+principles:
+  - "Slots are role-first, not provider-first."
+  - "Assignments may change; slot purpose should remain stable."
+  - "Diversity is useful when it improves comparison quality, not just variety."
+  - "Not every decision requires every slot."
+  - "Higher-cost orchestration should be reserved for higher-value decisions."
+
+roles:
+  ARCHITECT:
+    primary_goal: "Compare design and planning approaches."
+    preferred_strengths:
+      - "system design"
+      - "abstraction quality"
+      - "architecture reasoning"
+      - "tradeoff analysis"
+    minimum_slot_intent:
+      - "baseline planner"
+      - "alternative planner"
+      - "risk-oriented planner"
+
+  BUILDER:
+    primary_goal: "Compare implementation candidates and patch quality."
+    preferred_strengths:
+      - "coding correctness"
+      - "patch generation"
+      - "type safety"
+      - "maintainability"
+    minimum_slot_intent:
+      - "baseline implementation"
+      - "minimal-surface implementation"
+      - "refactor-aware implementation"
+      - "strictness-focused implementation"
+      - "speed-biased implementation"
+
+  VERIFIER:
+    primary_goal: "Compare validation, attack review, and failure detection."
+    preferred_strengths:
+      - "bug finding"
+      - "edge-case detection"
+      - "review discipline"
+      - "evidence quality"
+    minimum_slot_intent:
+      - "baseline verifier"
+      - "adversarial verifier"
+      - "contract verifier"
+
+  OPERATOR:
+    primary_goal: "Support routing and final governed decisions."
+    preferred_strengths:
+      - "workflow judgment"
+      - "decision clarity"
+      - "scope control"
+    minimum_slot_intent:
+      - "governance review"
+      - "workflow review"
+
+  LIBRARIAN:
+    primary_goal: "Support packaging, structure, and durable memory."
+    preferred_strengths:
+      - "compression"
+      - "schema discipline"
+      - "artifact structure"
+    minimum_slot_intent:
+      - "memory packager"
+      - "structure normalizer"
+
+decision_routing:
+  low_cost_default:
+    - "single obvious local patch"
+    - "minor wording change"
+    - "small deterministic cleanup"
+
+  medium_cost_default:
+    - "implementation comparison"
+    - "executor handoff change"
+    - "repo-local design tension"
+
+  high_cost_default:
+    - "governance change"
+    - "slot policy change"
+    - "constitutional artifact change"
+    - "cross-surface architectural shift"
+
+constraints:
+  - "Slots should not be fully activated when a simpler governed path is sufficient."
+  - "Provider/model assignment belongs to staffing/binding layers, not the base slot policy."
+  - "Slot outputs should be comparable using the scoring rubric."

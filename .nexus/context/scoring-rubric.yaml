@@ -1,0 +1,70 @@
+version: "0.1"
+artifact: "scoring-rubric"
+scope: "dev-jai-nexus"
+
+purpose: >
+  Defines reusable evaluation dimensions for comparing code candidates,
+  execution proposals, and governance decisions.
+
+dimensions:
+  correctness:
+    description: "Does the solution actually satisfy the intended requirement?"
+    scale: "1-5"
+
+  scope_discipline:
+    description: "Does the solution stay within motion scope and avoid unnecessary expansion?"
+    scale: "1-5"
+
+  maintainability:
+    description: "Is the result understandable, reviewable, and sustainable?"
+    scale: "1-5"
+
+  governance_coherence:
+    description: "Does the result align with JAI NEXUS role boundaries and governed workflow?"
+    scale: "1-5"
+
+  traceability:
+    description: "Does the result preserve clear evidence and durable reasoning trace?"
+    scale: "1-5"
+
+  reversibility:
+    description: "Can the change be adjusted or rolled back without excessive damage?"
+    scale: "1-5"
+
+  operational_clarity:
+    description: "Will operators and future sessions understand what this changed and why?"
+    scale: "1-5"
+
+recommended_profiles:
+  code_patch:
+    emphasize:
+      - "correctness"
+      - "maintainability"
+      - "scope_discipline"
+      - "traceability"
+
+  execution_flow:
+    emphasize:
+      - "correctness"
+      - "governance_coherence"
+      - "operational_clarity"
+      - "reversibility"
+
+  governance_change:
+    emphasize:
+      - "governance_coherence"
+      - "traceability"
+      - "scope_discipline"
+      - "operational_clarity"
+
+  context_artifact:
+    emphasize:
+      - "traceability"
+      - "operational_clarity"
+      - "maintainability"
+      - "scope_discipline"
+
+usage_rules:
+  - "Not every evaluation requires numeric scoring, but the dimensions should remain stable."
+  - "The rubric should support comparison, not replace judgment."
+  - "Profiles may emphasize different dimensions, but the base dimension set should remain consistent."
