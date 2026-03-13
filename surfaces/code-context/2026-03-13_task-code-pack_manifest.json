@@ -1,0 +1,26 @@
+{
+  "schema": "task-code-pack-0.1",
+  "generated_at": "2026-03-13T23:13:44.607Z",
+  "repo": "dev-jai-nexus",
+  "branch": "sprint/q1m3-council-pivot-polyrepo-coverage",
+  "head_commit": "f2efabb",
+  "motion": "motion-0042",
+  "output_dir": "surfaces/code-context",
+  "files": [
+    "2026-03-13_task-code-pack.txt"
+  ],
+  "inputs": {
+    "explicit_paths": [],
+    "motion_derived_paths": [
+      "portal/scripts/generate-task-code-pack.mjs"
+    ],
+    "git_modified_paths_considered": [
+      "package.json",
+      "portal/scripts/generate-task-code-pack.mjs"
+    ]
+  },
+  "selected_files": [
+    "package.json",
+    "portal/scripts/generate-task-code-pack.mjs"
+  ]
+}

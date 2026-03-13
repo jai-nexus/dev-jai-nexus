@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0042",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0042 successfully added a deterministic task-local code surface pack generator for code-heavy Claude sessions. The generated pack now compiles a bounded set of relevant code files with canonical paths, stable ordering, bounded excerpts, and a valid manifest sidecar."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion stayed appropriately scoped. It reduced manual file gathering without drifting into whole-repo dumping, semantic retrieval, or canonical-truth replacement. The resulting pack is compact, path-oriented, and practically useful."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and strategically useful. The task-local code surface pack now gives dev-jai-nexus a reusable middle layer between motion/bootstrap context and raw source files, improving the setup path for code-heavy Claude work."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T23:15:00.000Z"
+}

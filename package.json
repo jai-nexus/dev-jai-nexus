@@ -17,7 +17,8 @@
     "dct:verify": "pnpm typecheck && pnpm dct:replay-check",
     "dct:extract": "pnpm -C portal dct:extract",
     "council:run": "node portal/scripts/council-run.mjs",
-    "claude:bootstrap": "node portal/scripts/generate-claude-bootstrap.mjs"
+    "claude:bootstrap": "node portal/scripts/generate-claude-bootstrap.mjs",
+    "code:pack": "node portal/scripts/generate-task-code-pack.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
