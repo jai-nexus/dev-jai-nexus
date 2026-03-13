@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0036",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0036 successfully established the first governed Claude-facing operating layer for dev-jai-nexus. The repo now includes a canonical Claude project context pack, a repo-root CLAUDE.md, a compact bootstrap-set artifact, and a Claude operating workflow grounded in the formal substrate from motion-0035."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion remained appropriately scoped. It improved immediate Claude project setup without drifting into provider orchestration, account automation, or cross-repo federation. The artifacts are repo-centric, governance-aware, and compact enough for practical reuse."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and strategically useful. The Claude-facing artifacts now connect generated context bundles and formal substrate artifacts to a practical day-to-day coding workflow, reducing recontextualization while preserving motion-based governance."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T20:45:00.000Z"
+}

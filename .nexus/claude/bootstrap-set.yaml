@@ -1,0 +1,61 @@
+version: "0.1"
+artifact: "claude-bootstrap-set"
+scope: "dev-jai-nexus"
+
+purpose: >
+  Defines the minimal recommended file set for bootstrapping Claude project work
+  in a repo-centric and governance-aware way.
+
+default_bootstrap_order:
+  - "CLAUDE.md"
+  - ".nexus/context/project-constitution.yaml"
+  - ".nexus/context/slot-policy.yaml"
+  - ".nexus/context/scoring-rubric.yaml"
+  - ".nexus/claude/project-context-pack.md"
+
+recommended_sets:
+  strategic_setup:
+    description: "Use for starting a new Claude project or high-level strategy chat."
+    files:
+      - "CLAUDE.md"
+      - ".nexus/claude/project-context-pack.md"
+      - ".nexus/context/project-constitution.yaml"
+      - ".nexus/context/repo-capsule.schema.yaml"
+      - ".nexus/context/motion-packet.schema.json"
+      - ".nexus/context/slot-policy.yaml"
+      - ".nexus/context/scoring-rubric.yaml"
+
+  implementation_setup:
+    description: "Use for repo work tied to a specific motion."
+    files:
+      - "CLAUDE.md"
+      - ".nexus/claude/project-context-pack.md"
+      - ".nexus/context/project-constitution.yaml"
+      - ".nexus/context/slot-policy.yaml"
+      - ".nexus/context/scoring-rubric.yaml"
+      - "surfaces/chat-context/YYYY-MM-DD_repo-capsule.txt"
+      - "surfaces/chat-context/YYYY-MM-DD_active-path-pack.txt"
+
+  motion_review_setup:
+    description: "Use for reviewing or continuing a specific motion."
+    files:
+      - "CLAUDE.md"
+      - ".nexus/claude/project-context-pack.md"
+      - ".nexus/motions/motion-XXXX/motion.yaml"
+      - ".nexus/motions/motion-XXXX/proposal.md"
+      - ".nexus/motions/motion-XXXX/challenge.md"
+      - ".nexus/motions/motion-XXXX/execution.md"
+      - ".nexus/motions/motion-XXXX/policy.yaml"
+      - "surfaces/chat-context/YYYY-MM-DD_active-path-pack.txt"
+
+rules:
+  - "Do not upload the whole repository by default."
+  - "Prefer substrate artifacts first, then motion-specific artifacts, then generated context bundles."
+  - "Use generated context files for portability, not as replacements for canonical motion artifacts."
+  - "Keep bootstrap sets compact enough to reuse consistently."
+  - "When working on a specific motion, include the motion package before unrelated context."
+
+notes:
+  placeholders:
+    - "Replace YYYY-MM-DD with the current generated context date."
+    - "Replace motion-XXXX with the active motion id."

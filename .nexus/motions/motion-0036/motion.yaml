@@ -1,0 +1,52 @@
+motion_id: "motion-0036"
+title: "Claude Project Integration v0: project context pack + CLAUDE.md + repo-centric operating setup"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add the first governed Claude-facing operating setup for dev-jai-nexus by creating
+  a canonical project context pack, a repo-root CLAUDE.md, and a minimal repo-centric
+  bootstrap workflow derived from the new context substrate.
+
+problem: >
+  Motion-0033 proved generated context bundles and motion-0035 established the formal
+  context substrate, but dev-jai-nexus still lacks a governed Claude-facing integration
+  layer. Without a canonical Claude project pack and repo-local guidance file, Claude
+  usage remains dependent on manual briefing and inconsistent setup.
+
+proposal:
+  - "Create a canonical Claude project context pack derived from the existing substrate artifacts."
+  - "Add a repo-root CLAUDE.md for Claude Code / repo-centric operating guidance."
+  - "Define the minimum recommended upload/bootstrap set for Claude project setup."
+  - "Define a governed project-centric Claude operating workflow for dev-jai-nexus."
+  - "Keep the first version focused on Claude project setup, not multi-provider orchestration."
+
+non_goals:
+  - "Do not automate Anthropic account creation or billing."
+  - "Do not build provider routing or slot execution inside Claude in this motion."
+  - "Do not fully solve cross-repo Claude federation in this motion."
+  - "Do not replace motion governance with Claude-specific workflow."
+  - "Do not require Claude purchase or login proof to complete the motion."
+
+success_criteria:
+  - "A governed Claude project context pack exists in the repo."
+  - "A repo-root CLAUDE.md exists and is aligned with dev-jai-nexus workflow."
+  - "The Claude project pack clearly references the formal substrate artifacts from motion-0035."
+  - "A minimal recommended Claude bootstrap set is defined and compact enough for practical reuse."
+  - "The Claude setup is repo-centric and governance-aware rather than generic."
+  - "The artifacts are internally coherent and suitable for immediate manual Claude project setup."
+  - "portal typecheck passes if any code surfaces are touched."
+  - "A local proof demonstrates the Claude pack can be read as a compact onboarding packet."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
