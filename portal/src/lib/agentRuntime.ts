@@ -43,7 +43,14 @@ type ClaimCandidateRow = {
 };
 
 type DbLike = {
-    $transaction: <T>(fn: (tx: DbLikeTx) => Promise<T>) => Promise<T>;
+    $transaction: <T>(
+        fn: (tx: DbLikeTx) => Promise<T>,
+        options?: {
+            maxWait?: number;
+            timeout?: number;
+            isolationLevel?: Prisma.TransactionIsolationLevel;
+        },
+    ) => Promise<T>;
 };
 
 type DbLikeTx = {
@@ -81,6 +88,12 @@ type DebugSotKind =
     | "debug.approve";
 
 type AgentSotKind = RuntimeSotKind | DebugSotKind;
+
+const TX_OPTIONS = {
+    maxWait: 15_000,
+    timeout: 30_000,
+    isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+};
 
 function toStatus(s: unknown): AgentQueueItem["status"] {
     const x = String(s ?? "").toUpperCase();
@@ -393,7 +406,7 @@ export class BaseAgentRuntime {
             }
 
             return null;
-        });
+        }, TX_OPTIONS);
     }
 
     async execute(item: AgentQueueItem): Promise<void> {
@@ -428,7 +441,7 @@ export class BaseAgentRuntime {
                     assigneeNhId: packetCtx?.assigneeNhId ?? null,
                 },
             });
-        });
+        }, TX_OPTIONS);
     }
 
     protected async complete(
@@ -462,7 +475,7 @@ export class BaseAgentRuntime {
                     ...(extra ?? {}),
                 },
             });
-        });
+        }, TX_OPTIONS);
     }
 
     protected async fail(item: AgentQueueItem, err: unknown): Promise<void> {
@@ -506,7 +519,7 @@ export class BaseAgentRuntime {
                     error: msg,
                 },
             });
-        });
+        }, TX_OPTIONS);
     }
 
     private async requeueExpired(): Promise<void> {
@@ -548,7 +561,7 @@ export class BaseAgentRuntime {
                     },
                 });
             }
-        });
+        }, TX_OPTIONS);
     }
 
     private async emitAgentSotEvent(

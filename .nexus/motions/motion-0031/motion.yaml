@@ -1,0 +1,49 @@
+motion_id: "motion-0031"
+title: "Second Live Execution Runner v0: builder claim + patch evidence + verifier handoff"
+
+status: "proposed"
+created_at: "2026-03-11T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add the first live builder execution runner so a builder-capable execution agent
+  can claim a governed work packet from AgentQueueItem, emit patch-shaped evidence,
+  complete the builder stage, and route the packet into the verifier lane.
+
+problem: >
+  Motion-0030 proved the first live architect slice end-to-end. The next missing
+  leg is builder execution. The system can show builder-ready state in the UI,
+  but it does not yet have a live builder one-shot runner that claims work,
+  emits debug.patch evidence, and hands the packet forward to verifier.
+
+proposal:
+  - "Add a one-shot builder runtime entrypoint for a selected builder execution agent."
+  - "Implement builder runtime logic that claims eligible queue work and emits debug.patch evidence."
+  - "Complete the builder run with WORK_CLAIMED, debug.patch, WORK_COMPLETED, and WORK_ROUTED -> VERIFIER."
+  - "Keep assignment operator-governed and manual for this motion; do not add auto-handoff."
+
+non_goals:
+  - "Do not implement automatic architect -> builder assignee transfer."
+  - "Do not implement verifier runtime yet."
+  - "Do not change overall governance semantics for routing or council motions."
+
+success_criteria:
+  - "A builder-capable execution agent can claim a builder-routed packet from AgentQueueItem."
+  - "The live builder runner emits WORK_CLAIMED."
+  - "The live builder runner emits debug.patch."
+  - "The live builder runner emits WORK_COMPLETED."
+  - "The packet is routed to VERIFIER with a packet-linked WORK_ROUTED event."
+  - "The work packet UI shows builder complete and verifier ready."
+  - "portal typecheck passes."
+  - "council:run for motion-0031 passes and ratifies."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

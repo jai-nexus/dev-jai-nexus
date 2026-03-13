@@ -29,57 +29,57 @@ async function main() {
     const nhId = String(process.argv[2] ?? "").trim();
 
     if (!nhId) {
-        console.error("[ARCHITECT-ONCE] Usage: pnpm exec tsx scripts/run-architect-once.ts <agentNhId>");
+        console.error("[BUILDER-ONCE] Usage: pnpm exec tsx scripts/run-builder-once.ts <agentNhId>");
         process.exit(1);
     }
 
-    const [{ ArchitectAgentRuntime }, { getAgentByNhId, isAgentEligibleForExecutionRole }] =
+    const [{ BuilderAgentRuntime }, { getAgentByNhId, isAgentEligibleForExecutionRole }] =
         await Promise.all([
-            import("@/lib/work/architectRuntime"),
+            import("@/lib/work/builderRuntime"),
             import("@/lib/agencyConfig"),
         ]);
 
     const agent = getAgentByNhId(nhId);
 
     if (!agent) {
-        console.error(`[ARCHITECT-ONCE] Agent not found: ${nhId}`);
+        console.error(`[BUILDER-ONCE] Agent not found: ${nhId}`);
         process.exit(1);
     }
 
     if (!agent.execution_capable) {
         console.error(
-            `[ARCHITECT-ONCE] Agent ${nhId} (${agent.agent_key}) is not execution-capable.`,
+            `[BUILDER-ONCE] Agent ${nhId} (${agent.agent_key}) is not execution-capable.`,
         );
         process.exit(1);
     }
 
-    if (!isAgentEligibleForExecutionRole(agent, "ARCHITECT")) {
+    if (!isAgentEligibleForExecutionRole(agent, "BUILDER")) {
         console.error(
-            `[ARCHITECT-ONCE] Agent ${nhId} (${agent.agent_key}) is not eligible for ARCHITECT.`,
+            `[BUILDER-ONCE] Agent ${nhId} (${agent.agent_key}) is not eligible for BUILDER.`,
         );
         process.exit(1);
     }
 
-    const runtime = new ArchitectAgentRuntime(nhId);
+    const runtime = new BuilderAgentRuntime(nhId);
 
     try {
         const ok = await runtime.runOnce();
 
         if (!ok) {
-            console.log(`[ARCHITECT-ONCE] No claimable architect packet found for ${nhId}.`);
+            console.log(`[BUILDER-ONCE] No claimable builder packet found for ${nhId}.`);
             return;
         }
 
-        console.log(`[ARCHITECT-ONCE] Claimed and processed one architect packet for ${nhId}.`);
+        console.log(`[BUILDER-ONCE] Claimed and processed one builder packet for ${nhId}.`);
     } catch (err) {
-        console.error("[ARCHITECT-ONCE] FAILED");
+        console.error("[BUILDER-ONCE] FAILED");
         console.error(err);
         process.exit(1);
     }
 }
 
 main().catch((err) => {
-    console.error("[ARCHITECT-ONCE] UNCAUGHT FAILURE");
+    console.error("[BUILDER-ONCE] UNCAUGHT FAILURE");
     console.error(err);
     process.exit(1);
 });
