@@ -77,7 +77,36 @@ function excerpt(text, maxLines = 40) {
     return lines.slice(0, maxLines).join("\n").trim();
 }
 
-function firstMeaningfulBlock(text, maxLines = 24) {
+function trimBlankEdges(lines) {
+    let start = 0;
+    let end = lines.length;
+
+    while (start < end && lines[start].trim() === "") start += 1;
+    while (end > start && lines[end - 1].trim() === "") end -= 1;
+
+    return lines.slice(start, end);
+}
+
+function sectionBody(text, heading, maxLines = 24) {
+    const normalized = normalizeText(text);
+    if (!normalized) return "";
+
+    const lines = normalized.split("\n");
+    const target = `## ${heading}`;
+    const startIdx = lines.findIndex((line) => line.trim() === target);
+    if (startIdx === -1) return "";
+
+    const body = [];
+    for (let i = startIdx + 1; i < lines.length; i += 1) {
+        const line = lines[i];
+        if (line.startsWith("## ")) break;
+        body.push(line);
+    }
+
+    return trimBlankEdges(body).slice(0, maxLines).join("\n").trim();
+}
+
+function leadBlock(text, maxLines = 16) {
     const normalized = normalizeText(text);
     if (!normalized) return "";
 
@@ -85,39 +114,28 @@ function firstMeaningfulBlock(text, maxLines = 24) {
     const collected = [];
     let skippedTopHeading = false;
 
-    for (const rawLine of lines) {
-        const line = rawLine.trimEnd();
-
+    for (const line of lines) {
         if (!skippedTopHeading) {
             if (line.startsWith("# ")) {
                 skippedTopHeading = true;
                 continue;
             }
-
-            if (line.trim() === "") {
-                continue;
-            }
-
+            if (line.trim() === "") continue;
             skippedTopHeading = true;
         }
 
-        if (collected.length === 0 && line.trim() === "") {
-            continue;
-        }
-
-        if (collected.length > 0 && line.startsWith("## ")) {
-            break;
-        }
-
+        if (line.startsWith("## ")) break;
         collected.push(line);
     }
 
-    return collected
-        .join("\n")
-        .trim()
-        .split("\n")
-        .slice(0, maxLines)
-        .join("\n")
+    return trimBlankEdges(collected).slice(0, maxLines).join("\n").trim();
+}
+
+function joinBlocks(blocks) {
+    return blocks
+        .map((block) => String(block ?? "").trim())
+        .filter(Boolean)
+        .join("\n\n")
         .trim();
 }
 
@@ -179,6 +197,19 @@ async function main() {
         ...SUBSTRATE_FILES,
     ];
 
+    const repoClaudeGuidance = joinBlocks([
+        sectionBody(claudeRootText, "Purpose", 14),
+        sectionBody(claudeRootText, "Working assumptions", 14),
+        leadBlock(claudeRootText, 12),
+    ]);
+
+    const projectContextSummary = joinBlocks([
+        sectionBody(projectContextText, "What this pack is", 8),
+        sectionBody(projectContextText, "Repo identity", 8),
+        sectionBody(projectContextText, "Core working model", 10),
+        leadBlock(projectContextText, 12),
+    ]);
+
     const lines = [];
     lines.push("# Claude Bootstrap Pack - dev-jai-nexus");
     lines.push(`generated_for_date: ${date}`);
@@ -217,11 +248,11 @@ async function main() {
     lines.push("");
 
     lines.push("## Repo-root CLAUDE Guidance");
-    lines.push(firstMeaningfulBlock(claudeRootText) || "(missing)");
+    lines.push(repoClaudeGuidance || "(missing)");
     lines.push("");
 
     lines.push("## Project Context Summary");
-    lines.push(firstMeaningfulBlock(projectContextText) || "(missing)");
+    lines.push(projectContextSummary || "(missing)");
     lines.push("");
 
     lines.push("## Constitution Excerpt");
@@ -255,11 +286,12 @@ async function main() {
     lines.push("");
 
     lines.push("## Practical Setup Order");
-    lines.push("1. Read `CLAUDE.md`.");
-    lines.push("2. Read `.nexus/claude/project-context-pack.md`.");
-    lines.push("3. Read the active substrate references needed for the task.");
-    lines.push("4. Read the active motion package.");
-    lines.push("5. Use the latest generated repo context artifacts for portability.");
+    lines.push("1. Run `pnpm claude:bootstrap`.");
+    lines.push("2. Read `CLAUDE.md`.");
+    lines.push("3. Read `.nexus/claude/project-context-pack.md`.");
+    lines.push("4. Read the active substrate references needed for the task.");
+    lines.push("5. Read the active motion package.");
+    lines.push("6. Use the latest generated repo context artifacts for portability.");
     lines.push("");
 
     lines.push("## Canonical Truth Reminder");

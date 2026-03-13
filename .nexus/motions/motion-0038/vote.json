@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0038",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0038 successfully polished the Claude bootstrap flow. Section extraction is cleaner, the generated bootstrap pack reads more naturally, and a package script now provides a convenient repo-level invocation path."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion stayed tightly scoped. It improved practical usability without redesigning the generator, drifting into provider features, or confusing generated bootstrap artifacts with canonical repo truth."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and operationally useful. The package script works, the generated markdown is cleaner, and the Claude bootstrap pack now feels like a practical repo-centric setup handoff rather than a rough proof artifact."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T22:05:00.000Z"
+}

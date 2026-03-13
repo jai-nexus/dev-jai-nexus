@@ -2,17 +2,17 @@
 generated_for_date: 2026-03-13
 repo: dev-jai-nexus
 branch: sprint/q1m3-council-pivot-polyrepo-coverage
-head_commit: 9a405cc
-active_motion: motion-0037
+head_commit: d93b1cd
+active_motion: motion-0038
 
 ## Purpose
 This is the generated Claude bootstrap handoff for dev-jai-nexus. It is a compact, repo-centric setup pack derived from governed Claude artifacts, formal substrate artifacts, and current generated repo context.
 
 ## Current Repo State
-- latest_commit_subject: feat(claude): add repo-centric Claude project setup artifacts
-- active_motion: motion-0037
+- latest_commit_subject: feat(claude): add generated Claude bootstrap handoff pack
+- active_motion: motion-0038
 - branch: sprint/q1m3-council-pivot-polyrepo-coverage
-- head_commit: 9a405cc
+- head_commit: d93b1cd
 
 ## Claude-facing Canonical Sources
 - CLAUDE.md
@@ -34,14 +34,45 @@ This is the generated Claude bootstrap handoff for dev-jai-nexus. It is a compac
 - surfaces/chat-context/2026-03-13_context-bundle_manifest.json
 
 ## Repo-root CLAUDE Guidance
-## Repo
-dev-jai-nexus
+dev-jai-nexus is the governed execution and operator-surface repo for JAI NEXUS.
+
+This repo is responsible for:
+- motion-based governance workflows,
+- operator-facing work packet and routing surfaces,
+- executor runtime proofs,
+- packet-linked SoT event emission,
+- context portability artifacts,
+- local substrate artifacts for future council and multi-model work.
+
+- Meaningful change should be framed through a motion.
+- Durable artifacts are preferred over ad hoc explanation.
+- Role boundaries matter:
+  - ARCHITECT produces planning/design evidence
+  - BUILDER produces implementation/patch evidence
+  - VERIFIER produces validation evidence
+  - OPERATOR applies governed routing and final decisions
+  - LIBRARIAN maintains structure, packaging, and memory artifacts
+- Generated context artifacts do not replace canonical governance artifacts.
 
 ## Project Context Summary
-## What this pack is
 This is the compact Claude-facing onboarding packet for dev-jai-nexus.
 
 Its job is to let Claude begin from governed repo context instead of repeated ad hoc explanation.
+
+- Repo: `dev-jai-nexus`
+- Domain: `dev.jai.nexus`
+- Role in JAI NEXUS: governed execution, operator surfaces, work packet lifecycle, context portability, and local substrate formalization
+
+JAI NEXUS uses motions as the canonical governed unit of meaningful change.
+
+Canonical sequence:
+1. problem framing
+2. proposal
+3. challenge
+4. execution
+5. policy evaluation
+6. vote
+7. decision
 
 ## Constitution Excerpt
 ```yaml
@@ -249,11 +280,12 @@ Recommended inputs:
 ```
 
 ## Practical Setup Order
-1. Read `CLAUDE.md`.
-2. Read `.nexus/claude/project-context-pack.md`.
-3. Read the active substrate references needed for the task.
-4. Read the active motion package.
-5. Use the latest generated repo context artifacts for portability.
+1. Run `pnpm claude:bootstrap`.
+2. Read `CLAUDE.md`.
+3. Read `.nexus/claude/project-context-pack.md`.
+4. Read the active substrate references needed for the task.
+5. Read the active motion package.
+6. Use the latest generated repo context artifacts for portability.
 
 ## Canonical Truth Reminder
 This bootstrap pack is a generated handoff layer. Canonical truth remains in motion artifacts, formal substrate artifacts, and repo sources.

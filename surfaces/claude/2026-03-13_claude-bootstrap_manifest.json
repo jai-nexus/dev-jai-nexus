@@ -1,10 +1,10 @@
 {
   "schema": "claude-bootstrap-0.1",
-  "generated_at": "2026-03-13T21:52:28.309Z",
+  "generated_at": "2026-03-13T22:04:57.491Z",
   "repo": "dev-jai-nexus",
   "branch": "sprint/q1m3-council-pivot-polyrepo-coverage",
-  "head_commit": "9a405cc",
-  "motion": "motion-0037",
+  "head_commit": "d93b1cd",
+  "motion": "motion-0038",
   "output_dir": "surfaces/claude",
   "files": [
     "2026-03-13_claude-bootstrap.md"
