@@ -1,0 +1,131 @@
+# JAI NEXUS Motion Snapshot
+generated_for_date: 2026-03-13
+repo: dev-jai-nexus
+branch: sprint/q1m3-council-pivot-polyrepo-coverage
+head_commit: 981771a
+motions_total: 33
+motions_ratified: 31
+motions_pending_like: 1
+
+## Latest Motion
+- id: motion-0033
+- title: Context Bundle Generator v0: motion snapshots + repo capsule + active path pack
+- decision_status: DRAFT
+- required_ok: true
+- latest_updated: 2026-03-13T19:08:18.765Z
+
+## Motion Ledger
+- motion-0001 | UNKNOWN | Adopt Council Protocol v0.1 (dev-jai-nexus pilot)
+- motion-0002 | RATIFIED | Enforce DCT replay determinism gate + verify scoreboard
+- motion-0003 | RATIFIED | Scaling Council to v0.2 (Tiered Chat + Scoreboard)
+- motion-0004 | RATIFIED | Global-only motion (Tier0 agency check)
+- motion-0005 | RATIFIED | Q1M3: Polyrepo Coverage v0 + Conductor Dispatch (dev-jai-nexus)
+- motion-0006 | RATIFIED | Coverage v0: RepoCard schema + seed Wave0/1 (CRL-0 -> CRL-1)
+- motion-0007 | RATIFIED | Coverage v0: internal registry coverage endpoint (CRL counts + wilderness list)
+- motion-0008 | RATIFIED | Dispatch v0: config scaffold + seed for dev-jai-nexus (CRL-1 -> CRL-2)
+- motion-0009 | RATIFIED | Council Pivot: Unanimous Consent + Blocker Packets + Intel + Model Slots
+- motion-0010 | RATIFIED | Agent Panels v0: role model variables + selector (Builder-first)
+- motion-0011 | RATIFIED | UI Panel Viewer v0: view panel artifacts (panel.json + selection.json + candidates)
+- motion-0012 | RATIFIED | UI Panels Index v0: list panel artifacts and link to viewer
+- motion-0013 | RATIFIED | Canonical Boundaries v0: Agent Identity vs Role Behavior vs Council vs Panels vs Routing
+- motion-0014 | RATIFIED | Fix agency config path resolution v0 (repo-root SoT)
+- motion-0015 | RATIFIED | Panel Selection Runner v0: compute totals + winner from selection record
+- motion-0016 | RATIFIED | Panels Operationalization v0: score UX + shared scorer + coverage signal
+- motion-0017 | RATIFIED | Panel Instantiation at Scale v0: bulk scaffold registered panels for a motion
+- motion-0018 | RATIFIED | Role Panel Expansion v0: add model slots + register role panels
+- motion-0019 | RATIFIED | Bulk Panel Instantiate Demo v0: scaffold all registered role panels for a motion
+- motion-0020 | RATIFIED | Slot Binding v0: OpenAI-only provider/model assignments for all role slots
+- motion-0021 | RATIFIED | Panel Slot Resolution v0: show provider/model bindings in panel viewer
+- motion-0022 | RATIFIED | Panels Binding Summary v0: show slot provider/model overview in Panels index + Coverage
+- motion-0023 | RATIFIED | Panel Completion Status v1: progress codes + reasons across Panels index, Coverage, and Viewer
+- motion-0024 | RATIFIED | Panel Workflow Acceleration v0: progress filters + work queue + operator quick links
+- motion-0025 | RATIFIED | JAI Agent Work Packet Contract v0: shared contract + lifecycle + run ledger
+- motion-0026 | RATIFIED | Agent Inbox + Run Ledger Execution Loop v0: governed routing + handoff actions
+- motion-0027 | RATIFIED | Execution Loop UI Wiring v0: lane state + routing actions in operator work surfaces
+- motion-0028 | RATIFIED | Single Vertical Slice v0: Architect -> Builder -> Verifier -> Operator
+- motion-0029 | RATIFIED | Execution Agent Pool Separation v0: explicit execution roles + governance/execution split
+- motion-0030 | RATIFIED | First Live Execution Runner v0: architect claim + planning evidence + builder handoff
+- motion-0031 | RATIFIED | Second Live Execution Runner v0: builder claim + patch evidence + verifier handoff
+- motion-0032 | RATIFIED | Third Live Execution Runner v0: verifier claim + verification evidence + operator-review handoff
+- motion-0033 | DRAFT | Context Bundle Generator v0: motion snapshots + repo capsule + active path pack
+
+## Motion Briefs
+### motion-0024
+title: Panel Workflow Acceleration v0: progress filters + work queue + operator quick links
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-10T21:20:29.358Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.yaml, verify.json, vote.json
+
+### motion-0025
+title: JAI Agent Work Packet Contract v0: shared contract + lifecycle + run ledger
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-10T22:24:35.747Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0026
+title: Agent Inbox + Run Ledger Execution Loop v0: governed routing + handoff actions
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-10T22:45:38.070Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0027
+title: Execution Loop UI Wiring v0: lane state + routing actions in operator work surfaces
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-10T23:19:36.666Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0028
+title: Single Vertical Slice v0: Architect -> Builder -> Verifier -> Operator
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-11T14:58:42.779Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0029
+title: Execution Agent Pool Separation v0: explicit execution roles + governance/execution split
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-11T17:46:41.343Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0030
+title: First Live Execution Runner v0: architect claim + planning evidence + builder handoff
+motion_status: unknown
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-12T02:07:43.493Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0031
+title: Second Live Execution Runner v0: builder claim + patch evidence + verifier handoff
+motion_status: proposed
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-13T17:25:22.658Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0032
+title: Third Live Execution Runner v0: verifier claim + verification evidence + operator-review handoff
+motion_status: proposed
+decision_status: RATIFIED
+required_ok: true
+latest_updated: 2026-03-13T18:36:38.737Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.md, decision.yaml, verify.json, vote.json
+
+### motion-0033
+title: Context Bundle Generator v0: motion snapshots + repo capsule + active path pack
+motion_status: proposed
+decision_status: DRAFT
+required_ok: true
+latest_updated: 2026-03-13T19:08:18.765Z
+artifacts: motion.yaml, proposal.md, challenge.md, execution.md, policy.yaml, decision.yaml, verify.json

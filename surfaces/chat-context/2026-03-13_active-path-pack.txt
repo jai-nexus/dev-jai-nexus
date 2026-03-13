@@ -1,0 +1,458 @@
+# Active Path Pack
+generated_for_date: 2026-03-13
+motion: motion-0033
+
+## Selected Paths
+- .nexus/motions/motion-0033/challenge.md
+- .nexus/motions/motion-0033/execution.md
+- .nexus/motions/motion-0033/motion.yaml
+- .nexus/motions/motion-0033/policy.yaml
+- .nexus/motions/motion-0033/proposal.md
+- portal/scripts/generate-active-path-pack.mjs
+- portal/scripts/generate-context-bundle.mjs
+- portal/scripts/generate-motion-snapshot.mjs
+- portal/scripts/generate-repo-capsule.mjs
+
+## .nexus/motions/motion-0033/challenge.md
+```
+# Challenge - motion-0033
+
+## Main concern
+A context generator can become noisy or misleading if it copies too much, omits the wrong things, or changes output shape unpredictably between runs.
+
+The goal is not "more text." The goal is compact, stable, reusable context.
+
+## Risks
+1. **Raw dump risk**
+   - The generator may produce giant low-signal files that are too expensive to upload and too noisy to be useful.
+
+2. **Drift risk**
+   - The snapshot may disagree with canonical motion artifacts if the compilation logic is loose or incomplete.
+
+3. **Instability risk**
+   - File ordering, timestamps, or path enumeration may vary between runs, making the output hard to diff and hard to trust.
+
+4. **Over-scope risk**
+   - The motion could drift into retrieval, embeddings, or full indexing work instead of shipping a simple deterministic artifact generator.
+
+5. **Junk-path contamination**
+   - Build artifacts, caches, generated noise, or vendor folders may pollute the bundle.
+
+## Required safeguards
+- deterministic output ordering,
+- bounded tree export,
+- explicit ignore rules,
+- compact summaries where possible,
+- manifest sidecar for generation metadata,
+- direct linkage back to canonical motion artifacts rather than replacing them.
+
+## Challenger standard for approval
+I approve this motion only if:
+- the generated files are clearly useful in real chat bootstrapping,
+- the output is compact enough to upload,
+- the snapshot reflects real repo/motion state,
+- reruns are stable,
+- the motion stays text-first and scoped.
+
+## Risk score
+risk_score: 0.10
+```
+
+## .nexus/motions/motion-0033/execution.md
+```
+# Execution Plan - motion-0033
+
+## Goal
+Prove that dev-jai-nexus can generate its own reusable context bundle for multi-chat and multi-model workflows.
+
+## Plan
+1. Add motion snapshot generation
+   - compile motion history into a dated summary artifact.
+
+2. Add repo capsule generation
+   - compile repo purpose, branch/head state, bounded tree, key files, and important commands into a dated artifact.
+
+3. Add active path pack generation
+   - compile current motion / touched paths / selected task-local context into a dated artifact.
+
+4. Add bundle orchestration
+   - emit all dated artifacts together plus a manifest sidecar.
+
+5. Add ignore/filter logic
+   - exclude build paths, vendor noise, generated folders, and irrelevant heavy outputs.
+
+6. Add deterministic ordering
+   - sort motions, paths, and sections consistently.
+
+7. Add invocation path
+   - provide a simple command for local generation.
+
+## Suggested script surface
+- `portal/scripts/generate-motion-snapshot.mjs`
+- `portal/scripts/generate-repo-capsule.mjs`
+- `portal/scripts/generate-active-path-pack.mjs`
+- `portal/scripts/generate-context-bundle.mjs`
+
+## Suggested command
+Example:
+`node portal/scripts/generate-context-bundle.mjs --motion motion-0032`
+
+## Suggested output contract
+Emit:
+- `YYYY-MM-DD_motion-snapshots.txt`
+- `YYYY-MM-DD_repo-capsule.txt`
+- `YYYY-MM-DD_active-path-pack.txt`
+- `YYYY-MM-DD_context-bundle_manifest.json`
+
+## Suggested smoke proof
+- run the bundle generator on the current branch,
+- confirm all dated artifacts are created,
+- confirm stable ordering,
+- confirm build junk is excluded,
+- confirm the motion snapshot includes recently ratified motion-0032,
+```
+
+## .nexus/motions/motion-0033/motion.yaml
+```
+motion_id: "motion-0033"
+title: "Context Bundle Generator v0: motion snapshots + repo capsule + active path pack"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add deterministic text-first context bundle generation so the machine can emit
+  dated motion snapshots, a compact repo capsule, and a task-local active path pack
+  for reuse across chats, councils, and multi-model workflows.
+
+problem: >
+  Motion history and repo state are currently being hand-assembled into manual
+  snapshots. That is slow, inconsistent, bulky, and easy to drift. JAI NEXUS needs
+  a governed way to compile reusable memory artifacts so project context can be
+  uploaded into new chats without repeatedly narrating the whole repo.
+
+proposal:
+  - "Add a motion snapshot generator that compiles motion history into a dated text artifact."
+  - "Add a repo capsule generator that compiles current repo structure, commands, and architecture into a bounded text artifact."
+  - "Add an active path pack generator for current motion / touched-file / task-local context."
+  - "Add a bundle command that emits all context artifacts together plus a manifest sidecar."
+  - "Keep the first version text-first, deterministic, and optimized for upload into model chats."
+
+non_goals:
+  - "Do not build a full semantic retrieval system in this motion."
+  - "Do not dump the entire repository verbatim."
+  - "Do not index binary assets or build artifacts."
+  - "Do not replace formal motion artifacts as the canonical source of truth."
+
+success_criteria:
+  - "A dated motion snapshot file is generated deterministically."
+  - "A dated repo capsule file is generated deterministically."
+  - "A dated active path pack file is generated for a selected motion or path set."
+  - "A manifest sidecar is generated listing branch, commit, files emitted, and generation metadata."
+  - "Generated outputs exclude junk/build paths and remain upload-friendly."
+  - "Re-running the generator without repo changes yields stable output ordering."
+  - "portal typecheck passes."
+  - "A live smoke run proves the generator emits the expected dated files."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+```
+
+## .nexus/motions/motion-0033/policy.yaml
+```
+protocol_version: "0.3.8"
+motion_id: motion-0033
+evaluated_at: "2026-03-13T19:08:18.769Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.10
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings: []
+```
+
+## .nexus/motions/motion-0033/proposal.md
+```
+# Proposal - motion-0033
+
+## Title
+Context Bundle Generator v0: motion snapshots + repo capsule + active path pack
+
+## Why this motion exists
+The runtime strip has now been proven through verifier:
+- architect live runner,
+- builder live runner,
+- verifier live runner,
+- operator-review handoff.
+
+The next major bottleneck is not runtime proof. It is context portability.
+
+Today, motion state and repo context are being assembled manually into snapshot files. That creates four problems:
+1. repeated manual labor,
+2. inconsistent formatting,
+3. oversized uploads,
+4. context drift between chats.
+
+JAI NEXUS needs a deterministic way to compile reusable context artifacts so the same project state can be carried into new model sessions without repeatedly reconstructing it by hand.
+
+## What this motion changes
+This motion adds a first text-first context bundle pipeline with three primary artifacts:
+
+1. **Motion Snapshot**
+   - dated compiled view of motion history and current governance state.
+
+2. **Repo Capsule**
+   - dated bounded summary of repo structure, purpose, commands, key files, and current work front.
+
+3. **Active Path Pack**
+   - dated task-local context pack focused on the current motion, touched files, or selected paths.
+
+A manifest sidecar should also be emitted so later tooling can reason about the bundle programmatically.
+
+## Proposed outputs
+Suggested output names:
+- `YYYY-MM-DD_motion-snapshots.txt`
+- `YYYY-MM-DD_repo-capsule.txt`
+- `YYYY-MM-DD_active-path-pack.txt`
+- `YYYY-MM-DD_context-bundle_manifest.json`
+
+Suggested output location:
+- `surfaces/chat-context/`
+
+If the repo prefers a different governed location, preserve the same artifact shapes.
+
+## Design stance
+This motion should compile context, not dump it.
+```
+
+## portal/scripts/generate-active-path-pack.mjs
+```
+#!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "../..");
+const OUTPUT_DIR = path.join(REPO_ROOT, "surfaces", "chat-context");
+
+const EXCLUDED_PREFIXES = [
+    "surfaces/",
+    "surfaces\\",
+    "node_modules/",
+    "node_modules\\",
+    ".git/",
+    ".git\\",
+    ".next/",
+    ".next\\",
+    "dist/",
+    "dist\\",
+    "tmp/",
+    "tmp\\",
+    ".vercel/",
+    ".vercel\\",
+];
+
+function todayStamp() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function getArgValue(flag) {
+    const idx = process.argv.indexOf(flag);
+    if (idx === -1) return null;
+    return process.argv[idx + 1] ?? null;
+}
+
+function getArgValues(flag) {
+    const values = [];
+    for (let i = 0; i < process.argv.length; i += 1) {
+        if (process.argv[i] === flag && process.argv[i + 1]) {
+            values.push(process.argv[i + 1]);
+        }
+    }
+    return values;
+}
+
+function git(args) {
+    try {
+```
+
+## portal/scripts/generate-context-bundle.mjs
+```
+#!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "../..");
+const OUTPUT_DIR = path.join(REPO_ROOT, "surfaces", "chat-context");
+
+function todayStamp() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function utcNow() {
+    return new Date().toISOString();
+}
+
+function getArgValue(flag) {
+    const idx = process.argv.indexOf(flag);
+    if (idx === -1) return null;
+    return process.argv[idx + 1] ?? null;
+}
+
+function git(args) {
+    try {
+        return execFileSync("git", args, {
+            cwd: REPO_ROOT,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+        }).trim();
+    } catch {
+        return "";
+    }
+}
+
+function runNodeScript(scriptName, extraArgs = []) {
+    execFileSync("node", [path.join(REPO_ROOT, "portal", "scripts", scriptName), ...extraArgs], {
+        cwd: REPO_ROOT,
+        stdio: "inherit",
+    });
+}
+
+async function main() {
+    await fs.mkdir(OUTPUT_DIR, { recursive: true });
+
+    const motionId = getArgValue("--motion");
+    const args = motionId ? ["--motion", motionId] : [];
+```
+
+## portal/scripts/generate-motion-snapshot.mjs
+```
+#!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "../..");
+const MOTIONS_DIR = path.join(REPO_ROOT, ".nexus", "motions");
+const OUTPUT_DIR = path.join(REPO_ROOT, "surfaces", "chat-context");
+
+function todayStamp() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeText(text) {
+    return String(text)
+        .replace(/\r\n/g, "\n")
+        .replace(/[--]/g, "-")
+        .replace(/[->]/g, "->")
+        .replace(/\u00a0/g, " ")
+        .trim();
+}
+
+function safeReadText(filePath) {
+    return fs.readFile(filePath, "utf8").catch(() => "");
+}
+
+function extractYamlScalar(text, key) {
+    const re = new RegExp(`^${key}:\\s*"?([^"\\n]+)"?\\s*$`, "m");
+    const value = text.match(re)?.[1]?.trim() ?? null;
+    return value ? normalizeText(value) : null;
+}
+
+function extractJsonField(text, pathParts) {
+    try {
+        const obj = JSON.parse(text);
+        let cur = obj;
+        for (const part of pathParts) {
+            cur = cur?.[part];
+        }
+        return cur == null ? null : normalizeText(String(cur));
+    } catch {
+        return null;
+    }
+}
+
+function git(args) {
+    try {
+```
+
+## portal/scripts/generate-repo-capsule.mjs
+```
+#!/usr/bin/env node
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const REPO_ROOT = path.resolve(__dirname, "../..");
+const OUTPUT_DIR = path.join(REPO_ROOT, "surfaces", "chat-context");
+
+const IGNORE_DIRS = new Set([
+    ".git",
+    "node_modules",
+    ".next",
+    "dist",
+    "tmp",
+    ".vercel",
+    ".turbo",
+]);
+
+const KEY_PATHS = [
+    ".nexus/motions",
+    ".nexus/model-slots.yaml",
+    ".nexus/agent-panels.yaml",
+    ".nexus/agent-manifest.yaml",
+    "portal/scripts/council-run.mjs",
+    "portal/src/lib/agentRuntime.ts",
+    "portal/src/lib/work",
+    "portal/src/app/operator",
+    "portal/package.json",
+];
+
+function todayStamp() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function utcNow() {
+    return new Date().toISOString();
+}
+
+function git(args) {
+    try {
+        return execFileSync("git", args, {
+            cwd: REPO_ROOT,
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+        }).trim();
+    } catch {
+        return "";
+```
