@@ -1,0 +1,97 @@
+version: "0.1"
+artifact: "validation-presets"
+scope: "dev-jai-nexus"
+
+purpose: >
+  Defines reusable local validation profiles for recurring Claude code-edit
+  session types in dev-jai-nexus. These presets reduce repeated validation
+  briefing, but do not replace task-specific judgment.
+
+rules:
+  - "Presets guide validation expectations; they do not replace operator judgment."
+  - "Use the smallest preset that matches the actual task."
+  - "If a task touches multiple surfaces, combine or extend presets explicitly."
+  - "Canonical truth remains in repo source, motion artifacts, and actual command results."
+  - "When in doubt, state the expected validation command explicitly in the session."
+
+presets:
+  portal_code_edit:
+    description: "Use for bounded edits in portal source files."
+    typical_surfaces:
+      - "portal/src/**"
+      - "portal/src/lib/**"
+      - "portal/src/app/**"
+      - "portal/src/components/**"
+    primary_checks:
+      - "pnpm -C portal typecheck"
+    optional_checks:
+      - "pnpm -C portal build"
+    use_when:
+      - "The task changes TypeScript or React code in the portal workspace."
+      - "The task affects runtime or UI logic and type safety matters."
+    avoid_when:
+      - "The task is docs-only or config-only."
+      - "The task changes only non-portal artifacts."
+
+  script_or_generator_edit:
+    description: "Use for bounded edits to repo scripts or generator logic."
+    typical_surfaces:
+      - "portal/scripts/**"
+      - "package.json"
+      - ".nexus/**"
+    primary_checks:
+      - "Run the relevant script directly on a bounded proof case."
+    optional_checks:
+      - "pnpm -C portal typecheck"
+      - "Compare rerun stability with Get-FileHash when generated artifacts are involved."
+    use_when:
+      - "The task changes a script, generator, or packaging workflow."
+      - "The proof depends on emitted files or deterministic output."
+    avoid_when:
+      - "The task is purely UI or runtime code with no script changes."
+
+  docs_or_config_only:
+    description: "Use for docs, motion packages, Claude workflow artifacts, and config-only edits."
+    typical_surfaces:
+      - ".nexus/motions/**"
+      - ".nexus/claude/**"
+      - ".nexus/context/**"
+      - "*.md"
+      - "*.yaml"
+      - "*.yml"
+      - "package.json"
+    primary_checks:
+      - "Confirm artifact readability and internal consistency."
+    optional_checks:
+      - "Run the directly affected generator or command if the docs/config change references one."
+    use_when:
+      - "The task does not change executable portal source logic."
+      - "The task is governance, workflow, packaging, or configuration oriented."
+    avoid_when:
+      - "The task changes executable code that requires type or build validation."
+
+  bounded_multi_surface_change:
+    description: "Use for small tasks that touch code plus one adjacent workflow or script surface."
+    typical_surfaces:
+      - "portal/src/**"
+      - "portal/scripts/**"
+      - "package.json"
+      - ".nexus/**"
+    primary_checks:
+      - "pnpm -C portal typecheck"
+      - "Run the directly affected script or command if applicable."
+    optional_checks:
+      - "pnpm -C portal build"
+      - "Artifact rerun/hash comparison for generated outputs."
+    use_when:
+      - "The task spans a small number of related surfaces."
+      - "The session changes both source logic and supporting workflow/context."
+    avoid_when:
+      - "The task is so broad that a custom validation plan should be written explicitly."
+
+notes:
+  command_style:
+    - "Prefer explicit commands over vague statements like 'run validation'."
+    - "Record PASS/FAIL outcome in session notes or passalong when relevant."
+  reminder:
+    - "A preset is a starting point, not a substitute for thinking about the actual task."
