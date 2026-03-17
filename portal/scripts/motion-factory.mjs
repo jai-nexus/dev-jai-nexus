@@ -5,6 +5,7 @@
  * Commands:
  *   node portal/scripts/motion-factory.mjs context --intent "..." [--json]
  *   node portal/scripts/motion-factory.mjs draft   --intent "..." [--no-api]
+ *   node portal/scripts/motion-factory.mjs revise  --motion motion-NNNN --notes "..." [--files f1,f2]
  *
  * context:
  *   Gathers bounded repo-native context from .nexus/ surfaces and prints
@@ -17,7 +18,13 @@
  *       a) placeholder scaffolds (--no-api), or
  *       b) model-generated draft content via OpenAI.
  *
- * Output contract (stable for future draft/revise consumers):
+ * revise:
+ *   Updates selected narrative files in an existing motion draft from human notes.
+ *   - Narrower than draft: only touches narrative files.
+ *   - Atomic: all-or-nothing write. If any step fails, no files change.
+ *   - Structural governance files are never revised.
+ *
+ * Output contract (stable for future consumers):
  *   intent, next_motion_id, branch, head_commit, recent_motions,
  *   staffing_summary, panel_summary, governance_summary
  */
@@ -649,7 +656,7 @@ Draft scaffold — execution plan pending.
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// OpenAI narrative generation
+// OpenAI narrative generation (draft)
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
@@ -872,6 +879,260 @@ async function draftCommand({ repoRoot, intent, noApi }) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Revise command
+// ──────────────────────────────────────────────────────────────────────────────
+
+const ALLOWED_REVISE_FILES = new Set([
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+    "motion.yaml",
+]);
+
+const DEFAULT_REVISE_FILES = [
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+];
+
+const MOTION_YAML_STRUCTURAL_FIELDS = new Set([
+    "motion_id",
+    "title",
+    "status",
+    "created_at",
+    "owner",
+    "target",
+    "vote",
+]);
+
+async function callOpenAIRevise({ apiKey, context, existingContent, revisionNotes, targetFiles, originalIntent }) {
+    const fileDescriptions = targetFiles.map((f) => {
+        const content = existingContent[f] || "(empty)";
+        return `--- ${f} ---\n${content}\n--- end ${f} ---`;
+    }).join("\n\n");
+
+    const instructions = [
+        "You are a governance motion revision assistant for the dev-jai-nexus repository.",
+        "You are revising existing draft motion files based on human revision notes.",
+        "",
+        "HARD RULES — you must NEVER generate any of the following:",
+        "- Evidence tables",
+        "- PASS/FAIL claims",
+        "- Executed test-result claims",
+        "- Proof-result claims",
+        "- Vote entries or vote rationales",
+        "- Ratification claims or ratification outcomes",
+        "- Any content that implies work has already been performed or validated",
+        "",
+        "Your output is DRAFT content only. It will be reviewed by a human before ratification.",
+        "",
+        "REVISION RULES:",
+        "- Incorporate the human revision notes into the targeted files",
+        "- Preserve the section structure and headers of each file",
+        "- Use repo-native conventions: bounded scope, exact file surfaces, low-churn language",
+        "- Keep content precise and ratifiable",
+        "- Do not add speculative expansion beyond the revision notes",
+        "",
+        "OUTPUT FORMAT:",
+        "Return each revised file separated by markers exactly like this:",
+        "=== FILE: filename.md ===",
+        "(revised content)",
+        "=== END FILE ===",
+        "",
+        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
+    ].join("\n");
+
+    const input = [
+        `## Original intent`,
+        originalIntent,
+        ``,
+        `## Context`,
+        JSON.stringify(context, null, 2),
+        ``,
+        `## Revision notes`,
+        revisionNotes,
+        ``,
+        `## Files to revise`,
+        targetFiles.join(", "),
+        ``,
+        `## Current content of targeted files`,
+        fileDescriptions,
+        ``,
+        `Please revise the targeted files incorporating the revision notes.`,
+    ].join("\n");
+
+    const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            instructions,
+            input,
+            text: {
+                format: { type: "text" },
+                verbosity: "medium",
+            },
+        }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
+    }
+
+    const payload = await res.json();
+    return extractOutputText(payload);
+}
+
+function parseRevisedFiles(raw, targetFiles) {
+    const results = {};
+    for (const filename of targetFiles) {
+        const startMarker = `=== FILE: ${filename} ===`;
+        const endMarker = `=== END FILE ===`;
+        const startIdx = raw.indexOf(startMarker);
+        if (startIdx === -1) continue;
+
+        const contentStart = startIdx + startMarker.length;
+        const endIdx = raw.indexOf(endMarker, contentStart);
+        if (endIdx === -1) continue;
+
+        let content = raw.slice(contentStart, endIdx).trim();
+        if (content) {
+            results[filename] = content + "\n";
+        }
+    }
+    return results;
+}
+
+function mergeMotionYamlNarrative(existingYaml, revisedContent) {
+    const existing = safeYamlLoad(existingYaml, "motion.yaml (existing)");
+    if (!existing) return existingYaml;
+
+    const revised = safeYamlLoad(revisedContent, "motion.yaml (revised)");
+    if (!revised) return existingYaml;
+
+    // Preserve structural fields, take narrative fields from revised
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(revised)) {
+        if (!MOTION_YAML_STRUCTURAL_FIELDS.has(key)) {
+            merged[key] = value;
+        }
+    }
+
+    return yaml.dump(merged, {
+        lineWidth: -1,
+        noRefs: true,
+        quotingType: '"',
+        forceQuotes: false,
+    });
+}
+
+async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
+    // ── Validate all inputs before any file access ───────────────────────
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+    if (!(await exists(motionDir))) {
+        die(`Motion directory not found: .nexus/motions/${motionId}`);
+    }
+
+    // Determine target files
+    const targetFiles = requestedFiles.length > 0 ? requestedFiles : [...DEFAULT_REVISE_FILES];
+
+    // Validate all requested files are in allowed set
+    for (const f of targetFiles) {
+        if (!ALLOWED_REVISE_FILES.has(f)) {
+            die(`File "${f}" is not in the allowed revise set.\n  Allowed: ${[...ALLOWED_REVISE_FILES].join(", ")}`);
+        }
+    }
+
+    // Check API key before any generation
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        die(`Missing OPENAI_API_KEY. Set it in your environment before running revise.`);
+    }
+
+    // ── Read existing content ────────────────────────────────────────────
+    const existingContent = {};
+    for (const f of targetFiles) {
+        const fp = path.join(motionDir, f);
+        if (await exists(fp)) {
+            existingContent[f] = await readText(fp);
+        } else {
+            existingContent[f] = "";
+        }
+    }
+
+    // Read original intent from motion.yaml
+    const motionYamlPath = path.join(motionDir, "motion.yaml");
+    let originalIntent = "(unknown)";
+    if (await exists(motionYamlPath)) {
+        const motionObj = safeYamlLoad(await readText(motionYamlPath), "motion.yaml");
+        if (motionObj?.title) originalIntent = String(motionObj.title).trim();
+    }
+
+    // Gather context
+    const context = await buildContext(repoRoot, originalIntent);
+
+    // ── Generate revised content (all-or-nothing) ────────────────────────
+    log(`Revising ${targetFiles.length} file(s) for ${motionId}...`);
+
+    let revisedPayload;
+    try {
+        const raw = await callOpenAIRevise({
+            apiKey,
+            context,
+            existingContent,
+            revisionNotes: notes,
+            targetFiles,
+            originalIntent,
+        });
+        revisedPayload = parseRevisedFiles(raw, targetFiles);
+    } catch (err) {
+        log(`⚠  API call failed: ${err.message}`);
+        log(`   Existing files were NOT overwritten.`);
+        log(`   Draft remains in its pre-revision state.`);
+        return;
+    }
+
+    // Validate we got content for ALL targeted files (all-or-nothing)
+    const missingFiles = targetFiles.filter((f) => !revisedPayload[f]);
+    if (missingFiles.length > 0) {
+        log(`⚠  API did not return content for: ${missingFiles.join(", ")}`);
+        log(`   Existing files were NOT overwritten (all-or-nothing).`);
+        log(`   Draft remains in its pre-revision state.`);
+        return;
+    }
+
+    // ── Atomic write: all files together ─────────────────────────────────
+    for (const f of targetFiles) {
+        let content = revisedPayload[f];
+
+        // Special handling for motion.yaml: preserve structural fields
+        if (f === "motion.yaml") {
+            const existingYaml = existingContent["motion.yaml"] || "";
+            content = mergeMotionYamlNarrative(existingYaml, content);
+        }
+
+        await fs.writeFile(path.join(motionDir, f), content, "utf8");
+    }
+
+    // ── Stdout summary ───────────────────────────────────────────────────
+    log(`Revision complete for ${motionId}`);
+    log(`─────────────────────────────────────────`);
+    log(`Motion ID:       ${motionId}`);
+    log(`Files requested: ${targetFiles.join(", ")}`);
+    log(`Files revised:   ${targetFiles.join(", ")}`);
+    log(`Mode:            model-generated (OpenAI)`);
+    log(`Revision notes:  ${notes}`);
+    log(``);
+    log(`⚠  Human review is required before ratification.`);
+    log(`   Check revised content with: git diff .nexus/motions/${motionId}/`);
+    log(`─────────────────────────────────────────`);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -882,6 +1143,7 @@ MOTION-FACTORY ${SCRIPT_VERSION}
 Usage:
   node portal/scripts/motion-factory.mjs context --intent "..." [--json]
   node portal/scripts/motion-factory.mjs draft   --intent "..." [--no-api]
+  node portal/scripts/motion-factory.mjs revise  --motion motion-NNNN --notes "..." [--files f1,f2]
 
 Commands:
   context    Gather and display repo-native motion context for inspection.
@@ -891,13 +1153,20 @@ Commands:
              Structural files remain deterministic.
              Narrative files are placeholders (--no-api) or OpenAI-generated.
 
-Flags:
-  --intent   (required) Human intent prompt describing the next motion.
-  --json     (context only) Output as a stable JSON object.
-  --no-api   (draft only) Skip OpenAI generation and use placeholder narrative scaffolds.
-
-Future commands (not yet implemented):
   revise     Revise narrative files in an existing draft from human notes.
+             Narrower than draft: only touches narrative files.
+             Atomic: all-or-nothing write. If any step fails, no files change.
+
+Flags:
+  --intent   (required for context/draft) Human intent prompt.
+  --json     (context only) Output as a stable JSON object.
+  --no-api   (draft only) Skip OpenAI generation; use placeholder scaffolds.
+  --motion   (revise only) Target motion ID (e.g., motion-0055).
+  --notes    (revise only) Human revision notes describing what to change.
+  --files    (revise only) Comma-separated list of files to revise.
+             Default: proposal.md,challenge.md,execution.md
+             Allowed: proposal.md,challenge.md,execution.md,motion.yaml
+             Never revised: policy.yaml,decision.yaml,decision.md,vote.json,verify.json
 `);
 }
 
@@ -942,7 +1211,22 @@ async function main() {
     }
 
     if (cmd === "revise") {
-        die(`"revise" is not yet implemented. See motion-0055 for planned factory stages.`);
+        const motionId = args.motion ? String(args.motion) : null;
+        if (!motionId) {
+            die(`Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..."`);
+        }
+
+        const notes = args.notes ? String(args.notes) : null;
+        if (!notes) {
+            die(`Missing --notes.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..."`);
+        }
+
+        const requestedFiles = args.files
+            ? String(args.files).split(",").map((f) => f.trim()).filter(Boolean)
+            : [];
+
+        await reviseCommand({ repoRoot, motionId, notes, requestedFiles });
+        return;
     }
 
     usage();
