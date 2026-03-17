@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0047",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "motion-0047 wires the first live consumer of model-slots-phase1.yaml. The loadSlots function in panel-run.mjs now merges Phase 1 live slots over legacy slots when the file is present. Librarian panel scaffolded successfully with all 10 live slots resolved from the Phase 1 manifest. Minimal edit, no config files changed, no selector logic activated."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The edit is tightly scoped to one function in one file. Phase 1 overlay is additive and non-breaking — if the Phase 1 file is absent, behavior is identical to before. The split-brain state is intentional and bounded. The 5-candidate panel structure in agent-panels.yaml is correctly left untouched per the motion scope."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The Phase 1 staffing canon now has a proven live consumer. The resolution pattern in loadSlots is reusable for subsequent panel wiring motions. Execution matched the motion spec exactly: one function extended, no config files modified, Librarian resolution validated."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

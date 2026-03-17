@@ -177,6 +177,22 @@ async function loadSlots(repoRoot) {
     const slotsObj = safeYamlLoad(await readText(slotsPath), ".nexus/model-slots.yaml");
     const slots = slotsObj?.slots;
     if (!slots || typeof slots !== "object") die(`model-slots.yaml missing "slots:" root`);
+
+    // Phase 1 overlay: merge live slots from model-slots-phase1.yaml if present
+    const phase1Path = path.join(repoRoot, ".nexus", "model-slots-phase1.yaml");
+    if (await exists(phase1Path)) {
+        const phase1Obj = safeYamlLoad(await readText(phase1Path), ".nexus/model-slots-phase1.yaml");
+        const phase1Slots = phase1Obj?.slots;
+        if (phase1Slots && typeof phase1Slots === "object") {
+            for (const [key, val] of Object.entries(phase1Slots)) {
+                if (val?.live === true) {
+                    slots[key] = val;
+                }
+            }
+            log(`Merged ${Object.keys(phase1Slots).filter(k => phase1Slots[k]?.live === true).length} live slot(s) from model-slots-phase1.yaml`);
+        }
+    }
+
     return { slotsPath, slotsObj, slots };
 }
 
