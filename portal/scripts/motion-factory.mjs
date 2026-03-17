@@ -3,9 +3,10 @@
  * Motion Factory v0
  *
  * Commands:
- *   node portal/scripts/motion-factory.mjs context --intent "..." [--json]
- *   node portal/scripts/motion-factory.mjs draft   --intent "..." [--no-api]
- *   node portal/scripts/motion-factory.mjs revise  --motion motion-NNNN --notes "..." [--files f1,f2]
+ *   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
+ *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api]
+ *   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2]
+ *   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2]
  *
  * context:
  *   Gathers bounded repo-native context from .nexus/ surfaces and prints
@@ -23,6 +24,15 @@
  *   - Narrower than draft: only touches narrative files.
  *   - Atomic: all-or-nothing write. If any step fails, no files change.
  *   - Structural governance files are never revised.
+ *
+ * evidence:
+ *   Inserts human-provided proof evidence into targeted narrative files.
+ *   - Evidence-fed, not evidence-inventing. Source material from operator only.
+ *   - Model may quote, organize, summarize, or place provided evidence.
+ *   - Model may NOT invent PASS/FAIL claims, upgrade ambiguity, or add results
+ *     not present in the evidence file.
+ *   - Atomic: all-or-nothing write.
+ *   - Narrower than revise: never touches motion.yaml.
  *
  * Output contract (stable for future consumers):
  *   intent, next_motion_id, branch, head_commit, recent_motions,
@@ -777,7 +787,6 @@ async function draftCommand({ repoRoot, intent, noApi }) {
         );
     }
 
-    // If API mode is requested, require the key before writing anything.
     if (!noApi && !process.env.OPENAI_API_KEY) {
         die(`Missing OPENAI_API_KEY. Set it in the environment or use --no-api.`);
     }
@@ -790,7 +799,6 @@ async function draftCommand({ repoRoot, intent, noApi }) {
     let warning = null;
     let narrative = null;
 
-    // Create directory after preflight checks.
     await fs.mkdir(motionDir, { recursive: true });
 
     if (!noApi) {
@@ -987,7 +995,7 @@ async function callOpenAIRevise({ apiKey, context, existingContent, revisionNote
     return extractOutputText(payload);
 }
 
-function parseRevisedFiles(raw, targetFiles) {
+function parseMarkedFiles(raw, targetFiles) {
     const results = {};
     for (const filename of targetFiles) {
         const startMarker = `=== FILE: ${filename} ===`;
@@ -1014,7 +1022,6 @@ function mergeMotionYamlNarrative(existingYaml, revisedContent) {
     const revised = safeYamlLoad(revisedContent, "motion.yaml (revised)");
     if (!revised) return existingYaml;
 
-    // Preserve structural fields, take narrative fields from revised
     const merged = { ...existing };
     for (const [key, value] of Object.entries(revised)) {
         if (!MOTION_YAML_STRUCTURAL_FIELDS.has(key)) {
@@ -1031,26 +1038,242 @@ function mergeMotionYamlNarrative(existingYaml, revisedContent) {
 }
 
 async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
-    // ── Validate all inputs before any file access ───────────────────────
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
     if (!(await exists(motionDir))) {
         die(`Motion directory not found: .nexus/motions/${motionId}`);
     }
 
-    // Determine target files
     const targetFiles = requestedFiles.length > 0 ? requestedFiles : [...DEFAULT_REVISE_FILES];
 
-    // Validate all requested files are in allowed set
     for (const f of targetFiles) {
         if (!ALLOWED_REVISE_FILES.has(f)) {
             die(`File "${f}" is not in the allowed revise set.\n  Allowed: ${[...ALLOWED_REVISE_FILES].join(", ")}`);
         }
     }
 
-    // Check API key before any generation
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
         die(`Missing OPENAI_API_KEY. Set it in your environment before running revise.`);
+    }
+
+    const existingContent = {};
+    for (const f of targetFiles) {
+        const fp = path.join(motionDir, f);
+        if (await exists(fp)) {
+            existingContent[f] = await readText(fp);
+        } else {
+            existingContent[f] = "";
+        }
+    }
+
+    const motionYamlPath = path.join(motionDir, "motion.yaml");
+    let originalIntent = "(unknown)";
+    if (await exists(motionYamlPath)) {
+        const motionObj = safeYamlLoad(await readText(motionYamlPath), "motion.yaml");
+        if (motionObj?.title) originalIntent = String(motionObj.title).trim();
+    }
+
+    const context = await buildContext(repoRoot, originalIntent);
+
+    log(`Revising ${targetFiles.length} file(s) for ${motionId}...`);
+
+    let revisedPayload;
+    try {
+        const raw = await callOpenAIRevise({
+            apiKey,
+            context,
+            existingContent,
+            revisionNotes: notes,
+            targetFiles,
+            originalIntent,
+        });
+        revisedPayload = parseMarkedFiles(raw, targetFiles);
+    } catch (err) {
+        log(`⚠  API call failed: ${err.message}`);
+        log(`   Existing files were NOT overwritten.`);
+        log(`   Draft remains in its pre-revision state.`);
+        return;
+    }
+
+    const missingFiles = targetFiles.filter((f) => !revisedPayload[f]);
+    if (missingFiles.length > 0) {
+        log(`⚠  API did not return content for: ${missingFiles.join(", ")}`);
+        log(`   Existing files were NOT overwritten (all-or-nothing).`);
+        log(`   Draft remains in its pre-revision state.`);
+        return;
+    }
+
+    for (const f of targetFiles) {
+        let content = revisedPayload[f];
+
+        if (f === "motion.yaml") {
+            const existingYaml = existingContent["motion.yaml"] || "";
+            content = mergeMotionYamlNarrative(existingYaml, content);
+        }
+
+        await fs.writeFile(path.join(motionDir, f), content, "utf8");
+    }
+
+    log(`Revision complete for ${motionId}`);
+    log(`─────────────────────────────────────────`);
+    log(`Motion ID:       ${motionId}`);
+    log(`Files requested: ${targetFiles.join(", ")}`);
+    log(`Files revised:   ${targetFiles.join(", ")}`);
+    log(`Mode:            model-generated (OpenAI)`);
+    log(`Revision notes:  ${notes}`);
+    log(``);
+    log(`⚠  Human review is required before ratification.`);
+    log(`   Check revised content with: git diff .nexus/motions/${motionId}/`);
+    log(`─────────────────────────────────────────`);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Evidence command
+// ──────────────────────────────────────────────────────────────────────────────
+
+const ALLOWED_EVIDENCE_FILES = new Set([
+    "proposal.md",
+    "execution.md",
+    "challenge.md",
+]);
+
+const DEFAULT_EVIDENCE_FILES = [
+    "proposal.md",
+    "execution.md",
+];
+
+async function callOpenAIEvidence({ apiKey, context, existingContent, evidenceText, operatorNotes, targetFiles, originalIntent }) {
+    const fileDescriptions = targetFiles.map((f) => {
+        const content = existingContent[f] || "(empty)";
+        return `--- ${f} ---\n${content}\n--- end ${f} ---`;
+    }).join("\n\n");
+
+    const instructions = [
+        "You are an evidence placement assistant for the dev-jai-nexus repository.",
+        "You are inserting real operator-provided evidence into existing draft motion narrative files.",
+        "",
+        "CRITICAL BOUNDARY — evidence-fed, not evidence-inventing:",
+        "You may ONLY do the following with the provided evidence:",
+        "- Quote it directly",
+        "- Organize it into the appropriate narrative sections",
+        "- Summarize it when the source material clearly supports the summary",
+        "- Place terminal output, command logs, and results where they belong",
+        "",
+        "You must NEVER do any of the following:",
+        "- Invent PASS/FAIL claims not explicitly present in the evidence",
+        "- Upgrade ambiguous evidence into definitive conclusions",
+        "- Add proof results that were not in the evidence file",
+        "- Claim tests passed or failed beyond what the evidence explicitly shows",
+        "- Generate vote entries or vote rationales",
+        "- Generate ratification claims or ratification outcomes",
+        "- Resolve ambiguity — if evidence is inconclusive, preserve that ambiguity",
+        "",
+        "Your output will be reviewed by a human before ratification.",
+        "",
+        "PLACEMENT RULES:",
+        "- Incorporate the evidence into the appropriate sections of each targeted file",
+        "- Preserve the section structure and headers of each file",
+        "- Use repo-native conventions",
+        "- If operator notes are provided, use them for placement guidance",
+        "- Keep the evidence attribution clear (what came from the evidence file vs existing content)",
+        "",
+        "OUTPUT FORMAT:",
+        "Return each updated file separated by markers exactly like this:",
+        "=== FILE: filename.md ===",
+        "(updated content with evidence placed)",
+        "=== END FILE ===",
+        "",
+        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
+    ].join("\n");
+
+    const notesSection = operatorNotes
+        ? `## Operator notes\n${operatorNotes}\n`
+        : "";
+
+    const input = [
+        `## Original intent`,
+        originalIntent,
+        ``,
+        `## Context`,
+        JSON.stringify(context, null, 2),
+        ``,
+        notesSection,
+        `## Evidence payload (operator-provided, source material)`,
+        `The following is raw evidence provided by the operator. Place and organize`,
+        `this evidence into the targeted files. Do not invent claims beyond what`,
+        `this evidence shows.`,
+        ``,
+        `--- EVIDENCE START ---`,
+        evidenceText,
+        `--- EVIDENCE END ---`,
+        ``,
+        `## Files to update with evidence`,
+        targetFiles.join(", "),
+        ``,
+        `## Current content of targeted files`,
+        fileDescriptions,
+        ``,
+        `Please update the targeted files by placing the provided evidence into the appropriate sections.`,
+    ].join("\n");
+
+    const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            instructions,
+            input,
+            text: {
+                format: { type: "text" },
+                verbosity: "medium",
+            },
+        }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
+    }
+
+    const payload = await res.json();
+    return extractOutputText(payload);
+}
+
+async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles }) {
+    // ── Validate all inputs before any file access or API call ────────────
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+    if (!(await exists(motionDir))) {
+        die(`Motion directory not found: .nexus/motions/${motionId}`);
+    }
+
+    // Resolve evidence file path
+    const resolvedEvidencePath = path.resolve(evidenceFilePath);
+    if (!(await exists(resolvedEvidencePath))) {
+        die(`Evidence file not found: ${evidenceFilePath}`);
+    }
+
+    const evidenceText = (await readText(resolvedEvidencePath)).trim();
+    if (!evidenceText) {
+        die(`Evidence file is empty: ${evidenceFilePath}`);
+    }
+
+    // Determine target files
+    const targetFiles = requestedFiles.length > 0 ? requestedFiles : [...DEFAULT_EVIDENCE_FILES];
+
+    // Validate all requested files are in allowed set
+    for (const f of targetFiles) {
+        if (!ALLOWED_EVIDENCE_FILES.has(f)) {
+            die(`File "${f}" is not in the allowed evidence insertion set.\n  Allowed: ${[...ALLOWED_EVIDENCE_FILES].join(", ")}`);
+        }
+    }
+
+    // Check API key before any generation
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+        die(`Missing OPENAI_API_KEY. Set it in your environment before running evidence.`);
     }
 
     // ── Read existing content ────────────────────────────────────────────
@@ -1075,60 +1298,59 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
     // Gather context
     const context = await buildContext(repoRoot, originalIntent);
 
-    // ── Generate revised content (all-or-nothing) ────────────────────────
-    log(`Revising ${targetFiles.length} file(s) for ${motionId}...`);
+    // ── Generate evidence-updated content (all-or-nothing) ───────────────
+    log(`Inserting evidence into ${targetFiles.length} file(s) for ${motionId}...`);
+    log(`Evidence file: ${evidenceFilePath} (${evidenceText.length} chars)`);
 
-    let revisedPayload;
+    let updatedPayload;
     try {
-        const raw = await callOpenAIRevise({
+        const raw = await callOpenAIEvidence({
             apiKey,
             context,
             existingContent,
-            revisionNotes: notes,
+            evidenceText,
+            operatorNotes: operatorNotes || null,
             targetFiles,
             originalIntent,
         });
-        revisedPayload = parseRevisedFiles(raw, targetFiles);
+        updatedPayload = parseMarkedFiles(raw, targetFiles);
     } catch (err) {
         log(`⚠  API call failed: ${err.message}`);
         log(`   Existing files were NOT overwritten.`);
-        log(`   Draft remains in its pre-revision state.`);
+        log(`   Draft remains in its pre-evidence state.`);
         return;
     }
 
     // Validate we got content for ALL targeted files (all-or-nothing)
-    const missingFiles = targetFiles.filter((f) => !revisedPayload[f]);
+    const missingFiles = targetFiles.filter((f) => !updatedPayload[f]);
     if (missingFiles.length > 0) {
         log(`⚠  API did not return content for: ${missingFiles.join(", ")}`);
         log(`   Existing files were NOT overwritten (all-or-nothing).`);
-        log(`   Draft remains in its pre-revision state.`);
+        log(`   Draft remains in its pre-evidence state.`);
         return;
     }
 
     // ── Atomic write: all files together ─────────────────────────────────
     for (const f of targetFiles) {
-        let content = revisedPayload[f];
-
-        // Special handling for motion.yaml: preserve structural fields
-        if (f === "motion.yaml") {
-            const existingYaml = existingContent["motion.yaml"] || "";
-            content = mergeMotionYamlNarrative(existingYaml, content);
-        }
-
-        await fs.writeFile(path.join(motionDir, f), content, "utf8");
+        await fs.writeFile(path.join(motionDir, f), updatedPayload[f], "utf8");
     }
 
     // ── Stdout summary ───────────────────────────────────────────────────
-    log(`Revision complete for ${motionId}`);
+    log(`Evidence insertion complete for ${motionId}`);
     log(`─────────────────────────────────────────`);
     log(`Motion ID:       ${motionId}`);
+    log(`Evidence file:   ${evidenceFilePath}`);
     log(`Files requested: ${targetFiles.join(", ")}`);
-    log(`Files revised:   ${targetFiles.join(", ")}`);
-    log(`Mode:            model-generated (OpenAI)`);
-    log(`Revision notes:  ${notes}`);
+    log(`Files updated:   ${targetFiles.join(", ")}`);
+    log(`Mode:            evidence-fed, model-organized (OpenAI)`);
+    if (operatorNotes) {
+        log(`Operator notes:  ${operatorNotes}`);
+    }
     log(``);
     log(`⚠  Human review is required before ratification.`);
-    log(`   Check revised content with: git diff .nexus/motions/${motionId}/`);
+    log(`   The model organized provided evidence but may not have placed it perfectly.`);
+    log(`   Verify no claims were added beyond what the evidence shows.`);
+    log(`   Check updated content with: git diff .nexus/motions/${motionId}/`);
     log(`─────────────────────────────────────────`);
 }
 
@@ -1141,9 +1363,10 @@ function usage() {
 MOTION-FACTORY ${SCRIPT_VERSION}
 
 Usage:
-  node portal/scripts/motion-factory.mjs context --intent "..." [--json]
-  node portal/scripts/motion-factory.mjs draft   --intent "..." [--no-api]
-  node portal/scripts/motion-factory.mjs revise  --motion motion-NNNN --notes "..." [--files f1,f2]
+  node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
+  node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api]
+  node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2]
+  node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2]
 
 Commands:
   context    Gather and display repo-native motion context for inspection.
@@ -1157,16 +1380,29 @@ Commands:
              Narrower than draft: only touches narrative files.
              Atomic: all-or-nothing write. If any step fails, no files change.
 
+  evidence   Insert operator-provided evidence into proof-motion narrative files.
+             Narrower than revise: never touches motion.yaml.
+             Evidence-fed only: model organizes provided evidence, never invents results.
+             Atomic: all-or-nothing write. If any step fails, no files change.
+
 Flags:
-  --intent   (required for context/draft) Human intent prompt.
-  --json     (context only) Output as a stable JSON object.
-  --no-api   (draft only) Skip OpenAI generation; use placeholder scaffolds.
-  --motion   (revise only) Target motion ID (e.g., motion-0055).
-  --notes    (revise only) Human revision notes describing what to change.
-  --files    (revise only) Comma-separated list of files to revise.
-             Default: proposal.md,challenge.md,execution.md
-             Allowed: proposal.md,challenge.md,execution.md,motion.yaml
-             Never revised: policy.yaml,decision.yaml,decision.md,vote.json,verify.json
+  --intent         (required for context/draft) Human intent prompt.
+  --json           (context only) Output as a stable JSON object.
+  --no-api         (draft only) Skip OpenAI generation; use placeholder scaffolds.
+  --motion         (revise/evidence) Target motion ID (e.g., motion-0057).
+  --notes          (revise: required, evidence: optional) Human notes.
+  --files          (revise/evidence) Comma-separated list of files to update.
+  --evidence-file  (evidence only, required) Path to evidence file (terminal output, logs, etc).
+
+Revise file scope:
+  Default: proposal.md,challenge.md,execution.md
+  Allowed: proposal.md,challenge.md,execution.md,motion.yaml
+  Never:   policy.yaml,decision.yaml,decision.md,vote.json,verify.json
+
+Evidence file scope:
+  Default: proposal.md,execution.md
+  Allowed: proposal.md,execution.md,challenge.md
+  Never:   motion.yaml,policy.yaml,decision.yaml,decision.md,vote.json,verify.json
 `);
 }
 
@@ -1226,6 +1462,27 @@ async function main() {
             : [];
 
         await reviseCommand({ repoRoot, motionId, notes, requestedFiles });
+        return;
+    }
+
+    if (cmd === "evidence") {
+        const motionId = args.motion ? String(args.motion) : null;
+        if (!motionId) {
+            die(`Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path`);
+        }
+
+        const evidenceFilePath = args["evidence-file"] ? String(args["evidence-file"]) : null;
+        if (!evidenceFilePath) {
+            die(`Missing --evidence-file.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path`);
+        }
+
+        const operatorNotes = args.notes ? String(args.notes) : null;
+
+        const requestedFiles = args.files
+            ? String(args.files).split(",").map((f) => f.trim()).filter(Boolean)
+            : [];
+
+        await evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles });
         return;
     }
 

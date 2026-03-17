@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0057",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "The evidence command works correctly across all tested paths: default 2-file scope, narrow --files selection, and all four error cases (disallowed file, missing motion, missing evidence file, nonexistent motion). Evidence is source-fed from the operator file and placed by the model. Atomic write behavior confirmed. Structural governance files and motion.yaml are never touched."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "Evidence insertion is correctly narrower than revise: smaller default scope, no motion.yaml access, evidence-file-based input only. The non-invention boundary is enforced in the system prompt with operational language (may quote/organize/summarize, may not upgrade ambiguity or invent conclusions). Human review is the second line of defense. All-or-nothing write semantics confirmed."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 now supports the complete authoring cycle: context, draft, revise, and evidence insertion. Each command is progressively narrower in scope and write authority. The evidence command correctly separates evidence placement from judgment. The factory remains a bounded drafting and evidence-placement assistant with no governance authority."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
