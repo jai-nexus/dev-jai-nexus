@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0051",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Recomputed totals matched the pre-calculated weighted totals exactly on the tested differentiated-score input (SLOT_LIBRARIAN_01: 70.5, SLOT_LIBRARIAN_02: 51.0). Ranking and winner determination behaved correctly. No code changes were needed. The tested case supports confidence in the shared scoring path on the 2-candidate Phase 1 shape."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The proof target was correctly bounded to one explicit differentiated-score distribution with pre-calculated expectations. The motion is honest that only one panel was runtime-tested directly, that broader panel equivalence is a supported inference from shared code, and that edge cases such as tied totals and boundary scores remain unproven. These are appropriate targets for future motions."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The differentiated-score behavior proof extends the governed confirmation from zero-score path validation to realistic weighted scoring. Evidence is calibrated: one panel runtime-tested, pre-calculated expectations matched exactly, shared scoring core supports broader inference. The proof chain from motion-0046 through motion-0051 is internally consistent and each layer is cleanly bounded."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

@@ -6,25 +6,25 @@
   "winner": "UNKNOWN",
   "scores": {
     "SLOT_LIBRARIAN_01": {
-      "total": 0,
+      "total": 70.5,
       "breakdown": {
-        "fidelity": 0,
-        "clarity": 0,
-        "canon_alignment": 0,
-        "completeness": 0,
-        "minimal_diff": 0,
-        "risk_awareness": 0
+        "fidelity": 8,
+        "clarity": 7,
+        "canon_alignment": 6,
+        "completeness": 7,
+        "minimal_diff": 8,
+        "risk_awareness": 6
       }
     },
     "SLOT_LIBRARIAN_02": {
-      "total": 0,
+      "total": 51,
       "breakdown": {
-        "fidelity": 0,
-        "clarity": 0,
-        "canon_alignment": 0,
-        "completeness": 0,
-        "minimal_diff": 0,
-        "risk_awareness": 0
+        "fidelity": 5,
+        "clarity": 6,
+        "canon_alignment": 4,
+        "completeness": 5,
+        "minimal_diff": 6,
+        "risk_awareness": 5
       }
     }
   },
