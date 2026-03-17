@@ -1,7 +1,9 @@
 version: "agent.panels.v0"
 
-# Panels define: role -> 5 candidate model slots + 1 selector slot + rubric.
-# The selector must be able to justify choice with explicit scoring.
+# Panels define: role -> candidate model slots + selector (deferred) + rubric.
+# Reconciled to Phase 1 staffing canon (motion-0048).
+# Candidate counts match .nexus/model-slots-phase1.yaml (2 live slots per panel).
+# Selector slots remain deferred pending evaluation harness.
 #
 # Notes:
 # - Panel IDs are manifest-gated; panel-run instantiate/scaffold will only create panels listed here.
@@ -17,13 +19,11 @@ panels:
     candidates:
       - SLOT_BUILDER_01
       - SLOT_BUILDER_02
-      - SLOT_BUILDER_03
-      - SLOT_BUILDER_04
-      - SLOT_BUILDER_05
 
     selector:
       slot: SLOT_BUILDER_SELECTOR
       method: "rubric_score"
+      status: deferred
 
     rubric:
       - id: "correctness"
@@ -59,13 +59,11 @@ panels:
     candidates:
       - SLOT_ARCHITECT_01
       - SLOT_ARCHITECT_02
-      - SLOT_ARCHITECT_03
-      - SLOT_ARCHITECT_04
-      - SLOT_ARCHITECT_05
 
     selector:
       slot: SLOT_ARCHITECT_SELECTOR
       method: "rubric_score"
+      status: deferred
 
     rubric:
       - id: "correctness"
@@ -101,13 +99,11 @@ panels:
     candidates:
       - SLOT_VERIFIER_01
       - SLOT_VERIFIER_02
-      - SLOT_VERIFIER_03
-      - SLOT_VERIFIER_04
-      - SLOT_VERIFIER_05
 
     selector:
       slot: SLOT_VERIFIER_SELECTOR
       method: "rubric_score"
+      status: deferred
 
     rubric:
       - id: "correctness"
@@ -143,13 +139,11 @@ panels:
     candidates:
       - SLOT_LIBRARIAN_01
       - SLOT_LIBRARIAN_02
-      - SLOT_LIBRARIAN_03
-      - SLOT_LIBRARIAN_04
-      - SLOT_LIBRARIAN_05
 
     selector:
       slot: SLOT_LIBRARIAN_SELECTOR
       method: "rubric_score"
+      status: deferred
 
     rubric:
       - id: "fidelity"
@@ -185,13 +179,11 @@ panels:
     candidates:
       - SLOT_OPERATOR_01
       - SLOT_OPERATOR_02
-      - SLOT_OPERATOR_03
-      - SLOT_OPERATOR_04
-      - SLOT_OPERATOR_05
 
     selector:
       slot: SLOT_OPERATOR_SELECTOR
       method: "rubric_score"
+      status: deferred
 
     rubric:
       - id: "correctness"

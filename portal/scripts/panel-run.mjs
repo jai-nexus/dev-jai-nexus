@@ -345,8 +345,8 @@ async function scaffold({ repoRoot, motionId, panelId, force }) {
 
     const roleId = assertString(spec.role_id, `panels.${panelId}.role_id`);
     const candidates = assertArray(spec.candidates, `panels.${panelId}.candidates`).map((s) => assertString(s, "candidate slot"));
-    if (candidates.length !== 5) {
-        die(`Panel ${panelId} must define exactly 5 candidates (got ${candidates.length})`);
+    if (candidates.length < 2) {
+        die(`Panel ${panelId} must define at least 2 candidates (got ${candidates.length})`);
     }
 
     const selectorSlot = assertString(spec?.selector?.slot, `panels.${panelId}.selector.slot`);

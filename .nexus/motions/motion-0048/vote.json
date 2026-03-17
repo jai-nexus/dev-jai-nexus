@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0048",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "motion-0048 reconciles agent-panels.yaml with the ratified Phase 1 staffing canon. Each panel now lists 2 candidates matching the live Phase 1 slots. Scaffold output confirmed at 2 candidate files for both Librarian and Builder. Operator rubric YAML structure fixed. Selectors marked deferred. loadSlots overlay from motion-0047 intact."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The edit is structurally correct and tightly scoped. The exact-5 guard was relaxed to 2+ which is forward-compatible. No secondary fixed-shape assumptions were found in panel-select.mjs or panelSelectCore.mjs. Historical 5-candidate scaffold artifacts in older motions are intentionally left alone."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Panel structure now matches Phase 1 staffing canon. The mismatch between model-slots-phase1.yaml and agent-panels.yaml is resolved. Both scaffold and selection paths operate correctly on the new 2-candidate shape. No runtime behavior introduced, no selectors activated."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
