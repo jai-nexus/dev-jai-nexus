@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0050",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "The selection/scoring path behaved correctly on the tested 2-candidate Librarian panel across three behavior checks: score recompute, select dry-run, and force-winner. Code inspection of panelSelectCore.mjs found no fixed-shape assumptions. The shared implementation appears shape-agnostic, supporting reasonable inference that other panels sharing the same code path will behave consistently."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The proof target was correctly bounded to selection/scoring behavior on the current 2-candidate shape. Zero-score testing is sufficient for a shape-parity proof since the scoring math is deterministic and count-independent. The motion is honest about remaining gaps: differentiated-score ranking, selector activation, and broader runtime behavior remain unproven and are appropriate targets for future motions."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The behavior-proof layer is now validated on the tested surface. Evidence is calibrated: one panel runtime-tested, shared selection core inspected, three distinct behavior paths exercised. The motion correctly avoids overclaiming equivalence across all panels or candidate counts. The Phase 1 proof chain from canon through behavior is internally consistent."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

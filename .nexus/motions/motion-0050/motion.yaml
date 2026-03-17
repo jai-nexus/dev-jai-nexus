@@ -1,0 +1,60 @@
+motion_id: "motion-0050"
+title: "Phase 1 selection/scoring behavior proof on 2-candidate executor panels"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Validate that the existing selection and scoring path operates correctly
+  on the reconciled 2-candidate Phase 1 executor panel shape. This is a
+  behavior-proof motion with no code changes. It confirms that panel-run.mjs
+  score, panel-select.mjs select, and panelSelectCore.mjs computeSelection
+  all process 2-candidate panels without error and produce correct winner
+  determination behavior.
+
+problem: >
+  motion-0049 proved scaffold parity across all 5 executor panels, but did
+  not validate behavior beyond scaffold. The selection and scoring path —
+  panel-run.mjs score, panel-select.mjs, and panelSelectCore.mjs — has not
+  been formally proved on the 2-candidate shape. Without explicit behavior
+  validation, there is no governed confirmation that scoring, total
+  computation, and winner determination work correctly on Phase 1 panels.
+
+proposal:
+  - "Run panel-run.mjs score on a 2-candidate panel and confirm totals recompute correctly."
+  - "Run panel-select.mjs on a 2-candidate panel and confirm it processes both slots without error."
+  - "Run panel-select.mjs with --force-winner and confirm winner determination uses correct tiebreak logic."
+  - "Inspect panelSelectCore.mjs computeSelection for hidden shape assumptions and confirm it is shape-agnostic."
+  - "Record behavior results as the proof artifact for this motion."
+  - "No code changes unless validation reveals a defect."
+
+non_goals:
+  - "Do not activate selector slots."
+  - "Do not introduce agent orchestration or execution loops."
+  - "Do not change council voting mechanics."
+  - "Do not modify .nexus/agent-panels.yaml."
+  - "Do not modify .nexus/model-slots-phase1.yaml."
+  - "Do not modify portal/scripts/panel-run.mjs."
+  - "Do not modify portal/scripts/panel-select.mjs."
+  - "Do not modify portal/src/lib/panels/panelSelectCore.mjs."
+  - "Do not broaden into routing or runtime redesign."
+
+success_criteria:
+  - "panel-run.mjs score processes a 2-candidate panel without error."
+  - "panel-select.mjs processes a 2-candidate panel and reports slots=2."
+  - "panel-select.mjs with zero scores correctly returns winner=UNKNOWN."
+  - "panel-select.mjs with --force-winner picks a winner via tiebreak."
+  - "panelSelectCore.mjs computeSelection confirmed shape-agnostic (iterates Object.keys(scores), no hardcoded count)."
+  - "No code changes required."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
