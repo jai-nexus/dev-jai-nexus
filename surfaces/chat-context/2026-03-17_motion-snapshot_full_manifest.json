@@ -1,0 +1,610 @@
+{
+  "schema": "motion-snapshot-full-0.1",
+  "generated_at": "2026-03-17T14:56:16.150Z",
+  "repo": "dev-jai-nexus",
+  "branch": "sprint/q1m3-council-pivot-polyrepo-coverage",
+  "head_commit": "94d14bc",
+  "dirty_status": "DIRTY",
+  "snapshot_kind": "full_motion_snapshot",
+  "mode": "full_tree",
+  "output_dir": "surfaces/chat-context",
+  "files": [
+    "2026-03-17_motion-snapshot_full.txt",
+    "2026-03-17_motion-snapshot_full_manifest.json"
+  ],
+  "inputs": {
+    "explicit_paths": [],
+    "motion_ids": [],
+    "include_root_config": true,
+    "selected_entries": [
+      ".nexus/motions/motion-0001",
+      ".nexus/motions/motion-0002",
+      ".nexus/motions/motion-0003",
+      ".nexus/motions/motion-0004",
+      ".nexus/motions/motion-0005",
+      ".nexus/motions/motion-0006",
+      ".nexus/motions/motion-0007",
+      ".nexus/motions/motion-0008",
+      ".nexus/motions/motion-0009",
+      ".nexus/motions/motion-0010",
+      ".nexus/motions/motion-0011",
+      ".nexus/motions/motion-0012",
+      ".nexus/motions/motion-0013",
+      ".nexus/motions/motion-0014",
+      ".nexus/motions/motion-0015",
+      ".nexus/motions/motion-0016",
+      ".nexus/motions/motion-0017",
+      ".nexus/motions/motion-0018",
+      ".nexus/motions/motion-0019",
+      ".nexus/motions/motion-0020",
+      ".nexus/motions/motion-0021",
+      ".nexus/motions/motion-0022",
+      ".nexus/motions/motion-0023",
+      ".nexus/motions/motion-0024",
+      ".nexus/motions/motion-0025",
+      ".nexus/motions/motion-0026",
+      ".nexus/motions/motion-0027",
+      ".nexus/motions/motion-0028",
+      ".nexus/motions/motion-0029",
+      ".nexus/motions/motion-0030",
+      ".nexus/motions/motion-0031",
+      ".nexus/motions/motion-0032",
+      ".nexus/motions/motion-0033",
+      ".nexus/motions/motion-0034",
+      ".nexus/motions/motion-0035",
+      ".nexus/motions/motion-0036",
+      ".nexus/motions/motion-0037",
+      ".nexus/motions/motion-0038",
+      ".nexus/motions/motion-0039",
+      ".nexus/motions/motion-0040",
+      ".nexus/motions/motion-0041",
+      ".nexus/motions/motion-0042",
+      ".nexus/motions/motion-0043",
+      ".nexus/motions/motion-0044",
+      ".nexus/motions/motion-0045",
+      ".nexus/agent-manifest.yaml",
+      ".nexus/agent-panels.yaml",
+      ".nexus/model-slots.yaml",
+      ".nexus/council.config.yaml",
+      ".nexus/council.deps.yaml",
+      ".nexus/model-routing.yaml"
+    ]
+  },
+  "motion_range": {
+    "count": 45,
+    "first_motion": "motion-0001",
+    "last_motion": "motion-0045"
+  },
+  "emitted": {
+    "file_records_count": 565,
+    "missing_count": 26,
+    "empty_count": 9,
+    "binary_count": 0
+  },
+  "motions": [
+    {
+      "motion_id": "motion-0001",
+      "title": "Adopt Council Protocol v0.1 (dev-jai-nexus pilot)",
+      "status": null,
+      "derived_paths": []
+    },
+    {
+      "motion_id": "motion-0002",
+      "title": "Enforce DCT replay determinism gate + verify scoreboard",
+      "status": "RATIFIED",
+      "derived_paths": []
+    },
+    {
+      "motion_id": "motion-0003",
+      "title": "Scaling Council to v0.2 (Tiered Chat + Scoreboard)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "trace/"
+      ]
+    },
+    {
+      "motion_id": "motion-0004",
+      "title": "Global-only motion (Tier0 agency check)",
+      "status": "RATIFIED",
+      "derived_paths": []
+    },
+    {
+      "motion_id": "motion-0005",
+      "title": "Q1M3: Polyrepo Coverage v0 + Conductor Dispatch (dev-jai-nexus)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/scripts/",
+        "portal/src/app/operator/registry/coverage/",
+        "portal/src/lib/"
+      ]
+    },
+    {
+      "motion_id": "motion-0006",
+      "title": "Coverage v0: RepoCard schema + seed Wave0/1 (CRL-0 → CRL-1)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/config/repo-cards/",
+        "portal/config/repo-cards/README.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0007",
+      "title": "Coverage v0: internal registry coverage endpoint (CRL counts + wilderness list)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "crl0/crl1/crl2/crl3",
+        "portal/config/dispatch/",
+        "portal/config/repo-cards/",
+        "portal/config/repos.yaml",
+        "portal/src/app/api/internal/registry/coverage/route.ts",
+        "portal/src/lib/registryCoverage.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0008",
+      "title": "Dispatch v0: config scaffold + seed for dev-jai-nexus (CRL-1 → CRL-2)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/config/dispatch/dev-jai-nexus.yaml",
+        "portal/config/dispatch/README.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0009",
+      "title": "Council Pivot: Unanimous Consent + Blocker Packets + Intel + Model Slots",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/model-routing.yaml",
+        ".nexus/motions/",
+        "portal/scripts/council-run.mjs",
+        "portal/src/lib/motion/motionLib.mjs"
+      ]
+    },
+    {
+      "motion_id": "motion-0010",
+      "title": "Agent Panels v0: role model variables + selector (Builder-first)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/",
+        ".nexus/agent-panels.yaml",
+        ".nexus/model-slots.yaml"
+      ]
+    },
+    {
+      "motion_id": "motion-0011",
+      "title": "UI Panel Viewer v0: view panel artifacts (panel.json + selection.json + candidates)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/motions/",
+        "portal/src/app/operator/panels/",
+        "portal/src/lib/panels/panelStore.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0012",
+      "title": "UI Panels Index v0: list panel artifacts and link to viewer",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/motions/",
+        "portal/src/app/operator/panels/page.tsx",
+        "portal/src/lib/panels/panelIndex.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0013",
+      "title": "Canonical Boundaries v0: Agent Identity vs Role Behavior vs Council vs Panels vs Routing",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "identity/behavior",
+        "portal/docs/rfc/RFC-JAI-CANONICAL-BOUNDARIES-v0.1.md",
+        "required/optional"
+      ]
+    },
+    {
+      "motion_id": "motion-0014",
+      "title": "Fix agency config path resolution v0 (repo-root SoT)",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "config/agency.yaml",
+        "cwd=portal/",
+        "portal/",
+        "portal/config/",
+        "portal/config/agency.yaml",
+        "portal/src/lib/agencyConfig.ts",
+        "repoRoot/config/agency.yaml"
+      ]
+    },
+    {
+      "motion_id": "motion-0015",
+      "title": "Panel Selection Runner v0: compute totals + winner from selection record",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/motions/<motionId>/panels/<panelId>/",
+        "node portal/scripts/panel-select.mjs --motion motion-0010 --panel JAI_DEV_BUILDER_PANEL_V0 --write",
+        "portal/scripts/panel-select.mjs",
+        "Rubric/score"
+      ]
+    },
+    {
+      "motion_id": "motion-0016",
+      "title": "Panels Operationalization v0: score UX + shared scorer + coverage signal",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/scripts/panel-select.mjs",
+        "portal/src/lib/panels/panelSelect.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0017",
+      "title": "Panel Instantiation at Scale v0: bulk scaffold registered panels for a motion",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "--only/--exclude",
+        ".nexus/agent-panels.yaml",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0017 --all",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0017 --all --dry-run",
+        "panels/<panelId>/{panel.json, selector.md, selection.json, candidates/*.md}",
+        "portal/scripts/panel-run.mjs"
+      ]
+    },
+    {
+      "motion_id": "motion-0018",
+      "title": "Role Panel Expansion v0: add model slots + register role panels",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/agent-panels.yaml",
+        ".nexus/model-slots.yaml",
+        ".nexus/motions/motion-0018/panels/*",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0018 --all",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0018 --all --dry-run",
+        "Panel/rubric"
+      ]
+    },
+    {
+      "motion_id": "motion-0019",
+      "title": "Bulk Panel Instantiate Demo v0: scaffold all registered role panels for a motion",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/motions/motion-0019/panels/*",
+        "candidates/*.md",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0019 --all",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0019 --all --dry-run"
+      ]
+    },
+    {
+      "motion_id": "motion-0020",
+      "title": "Slot Binding v0: OpenAI-only provider/model assignments for all role slots",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/model-slots.yaml",
+        ".nexus/motions/motion-0020/panels/*",
+        "/operator/panels?motionId=motion-0020",
+        "Architect/Verifier/Operator",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0020 --all",
+        "node portal/scripts/panel-run.mjs instantiate --motion motion-0020 --all --dry-run"
+      ]
+    },
+    {
+      "motion_id": "motion-0021",
+      "title": "Panel Slot Resolution v0: show provider/model bindings in panel viewer",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/model-slots.yaml",
+        "/operator/panels/motion-0020/JAI_DEV_ARCHITECT_PANEL_V0",
+        "/operator/panels/motion-0020/JAI_DEV_BUILDER_PANEL_V0",
+        "/operator/panels/motion-0020/JAI_DEV_LIBRARIAN_PANEL_V0",
+        "/operator/panels/motion-0020/JAI_DEV_OPERATOR_PANEL_V0",
+        "/operator/panels/motion-0020/JAI_DEV_VERIFIER_PANEL_V0"
+      ]
+    },
+    {
+      "motion_id": "motion-0022",
+      "title": "Panels Binding Summary v0: show slot provider/model overview in Panels index + Coverage",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/panels",
+        "/operator/registry/coverage",
+        "4/6 bound",
+        "6/6 bound",
+        "provider/model"
+      ]
+    },
+    {
+      "motion_id": "motion-0023",
+      "title": "Panel Completion Status v1: progress codes + reasons across Panels index, Coverage, and Viewer",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/panels",
+        "/operator/panels/",
+        "/operator/registry/coverage",
+        "portal/src/app/operator/panels/",
+        "portal/src/app/operator/panels/page.tsx",
+        "portal/src/app/operator/registry/coverage/page.tsx",
+        "portal/src/lib/panels/panelIndex.ts",
+        "portal/src/lib/panels/panelProgress.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0024",
+      "title": "Panel Workflow Acceleration v0: progress filters + work queue + operator quick links",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/panels",
+        "/operator/panels/",
+        "/operator/registry/coverage",
+        "portal/src/app/operator/panels/",
+        "portal/src/app/operator/panels/page.tsx",
+        "portal/src/app/operator/registry/coverage/page.tsx"
+      ]
+    },
+    {
+      "motion_id": "motion-0025",
+      "title": "JAI Agent Work Packet Contract v0: shared contract + lifecycle + run ledger",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/work",
+        "/operator/work/",
+        "/operator/work/new",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/new/page.tsx",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/workPacketContract.ts",
+        "portal/src/lib/work/workPacketLifecycle.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0026",
+      "title": "Agent Inbox + Run Ledger Execution Loop v0: governed routing + handoff actions",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/work",
+        "/operator/work/",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/sotWorkPackets.ts",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/executionLane.ts",
+        "portal/src/lib/work/workPacketActions.ts",
+        "portal/src/lib/work/workPacketLifecycle.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0027",
+      "title": "Execution Loop UI Wiring v0: lane state + routing actions in operator work surfaces",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "/operator/work",
+        "/operator/work/",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/executionLane.ts",
+        "portal/src/lib/work/workPacketActions.ts",
+        "portal/src/lib/work/workPacketLifecycle.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0028",
+      "title": "Single Vertical Slice v0: Architect → Builder → Verifier → Operator",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "control/lifecycle",
+        "debug/runtime",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/new/page.tsx",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/sotWorkPackets.ts",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/executionLane.ts",
+        "portal/src/lib/work/workPacketActions.ts",
+        "portal/src/lib/work/workPacketLifecycle.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0029",
+      "title": "Execution Agent Pool Separation v0: explicit execution roles + governance/execution split",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "config/agency.yaml",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/new/page.tsx",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/agencyConfig.ts",
+        "portal/src/lib/work/executionAgents.ts",
+        "portal/src/lib/work/executionLane.ts",
+        "portal/src/lib/work/workPacketContract.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0030",
+      "title": "First Live Execution Runner v0: architect claim + planning evidence + builder handoff",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/motions/motion-0030/",
+        "config/agency.yaml",
+        "portal/scripts/",
+        "portal/src/app/operator/work/",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/agencyConfig.ts",
+        "portal/src/lib/agentRuntime.ts",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/executionLane.ts",
+        "portal/src/lib/work/workPacketActions.ts",
+        "portal/src/lib/work/workPacketContract.ts",
+        "portal/src/lib/work/workPacketLifecycle.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0031",
+      "title": "Second Live Execution Runner v0: builder claim + patch evidence + verifier handoff",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/scripts/run-builder-once.ts",
+        "portal/src/lib/agentRuntime.ts",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/builderRuntime.ts",
+        "portal/src/lib/work/workPacketActions.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0032",
+      "title": "Third Live Execution Runner v0: verifier claim + verification evidence + operator-review handoff",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/scripts/run-verifier-once.ts",
+        "portal/src/app/operator/work/[id]/page.tsx",
+        "portal/src/app/operator/work/page.tsx",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/verifierRuntime.ts",
+        "portal/src/lib/work/workPacketActions.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0033",
+      "title": "Context Bundle Generator v0: motion snapshots + repo capsule + active path pack",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "node portal/scripts/generate-context-bundle.mjs --motion motion-0032",
+        "portal/scripts/generate-active-path-pack.mjs",
+        "portal/scripts/generate-context-bundle.mjs",
+        "portal/scripts/generate-motion-snapshot.mjs",
+        "portal/scripts/generate-repo-capsule.mjs",
+        "surfaces/chat-context/"
+      ]
+    },
+    {
+      "motion_id": "motion-0034",
+      "title": "Fourth Governed Slice v0: operator review + approve/request-changes proof",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "portal/src/app/operator/work/",
+        "portal/src/lib/work/agentRunContract.ts",
+        "portal/src/lib/work/workPacketActions.ts"
+      ]
+    },
+    {
+      "motion_id": "motion-0035",
+      "title": "Context Substrate Foundation v0: project constitution + repo capsule schema + motion packet schema + slot policy + scoring rubric",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/context/motion-packet.schema.json",
+        ".nexus/context/project-constitution.yaml",
+        ".nexus/context/repo-capsule.schema.yaml",
+        ".nexus/context/scoring-rubric.yaml",
+        ".nexus/context/slot-policy.yaml"
+      ]
+    },
+    {
+      "motion_id": "motion-0036",
+      "title": "Claude Project Integration v0: project context pack + CLAUDE.md + repo-centric operating setup",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/bootstrap-set.yaml",
+        ".nexus/claude/operating-workflow.md",
+        ".nexus/claude/project-context-pack.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0037",
+      "title": "Claude Bootstrap Generator v0: substrate-aware setup pack + dated project handoff",
+      "status": "DRAFT",
+      "derived_paths": [
+        ".nexus/claude/bootstrap-set.yaml",
+        ".nexus/claude/operating-workflow.md",
+        ".nexus/claude/project-context-pack.md",
+        "portal/package.json",
+        "portal/scripts/generate-claude-bootstrap.mjs",
+        "role/governance",
+        "surfaces/claude/"
+      ]
+    },
+    {
+      "motion_id": "motion-0038",
+      "title": "Claude Bootstrap Polish v0: section extraction cleanup + package script + practical setup validation",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/operating-workflow.md",
+        ".nexus/claude/project-context-pack.md",
+        "portal/scripts/generate-claude-bootstrap.mjs"
+      ]
+    },
+    {
+      "motion_id": "motion-0039",
+      "title": "Claude Setup Validation v0: first-project workflow + upload routine + handoff checklist",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/first-project-workflow.md",
+        ".nexus/claude/handoff-checklist.md",
+        ".nexus/claude/setup-validation.md",
+        ".nexus/claude/upload-order.yaml",
+        "upload/read"
+      ]
+    },
+    {
+      "motion_id": "motion-0040",
+      "title": "Claude First Live Usage v0: real project session proof + passalong artifact validation",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/first-live-passalong.md",
+        ".nexus/claude/first-live-usage-report.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0041",
+      "title": "Claude Second Live Usage v0: code-heavy bounded task + setup stress test",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/second-live-passalong.md",
+        ".nexus/claude/second-live-usage-report.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0042",
+      "title": "Task-Local Code Surface Pack v0: bounded file-context generator for code-heavy Claude sessions",
+      "status": "RATIFIED",
+      "derived_paths": [
+        "--path path/to/file",
+        "portal/scripts/generate-task-code-pack.mjs",
+        "surfaces/code-context/",
+        "surfaces/code-context/YYYY-MM-DD_task-code-pack_manifest.json",
+        "surfaces/code-context/YYYY-MM-DD_task-code-pack.txt"
+      ]
+    },
+    {
+      "motion_id": "motion-0043",
+      "title": "Claude Third Live Usage v0: task-code-pack-assisted code edit + local validation proof",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/third-live-passalong.md",
+        ".nexus/claude/third-live-usage-report.md"
+      ]
+    },
+    {
+      "motion_id": "motion-0044",
+      "title": "Validation Presets v0: reusable local check profiles for Claude code-edit sessions",
+      "status": "RATIFIED",
+      "derived_paths": [
+        ".nexus/claude/session-validation-checklist.md",
+        ".nexus/claude/validation-guidance.md",
+        ".nexus/claude/validation-presets.yaml",
+        "docs/config-only",
+        "script/session"
+      ]
+    },
+    {
+      "motion_id": "motion-0045",
+      "title": "Full Motion Snapshot Generator v0: deterministic full-fidelity export + manifest",
+      "status": "DRAFT",
+      "derived_paths": [
+        ".nexus/",
+        ".nexus/motions/",
+        "evidence/**",
+        "panels/**",
+        "portal/scripts/snapshot-motion-full.mjs",
+        "surfaces/chat-context/YYYY-MM-DD_motion-snapshot_full_manifest.json",
+        "surfaces/chat-context/YYYY-MM-DD_motion-snapshot_full.txt"
+      ]
+    }
+  ]
+}

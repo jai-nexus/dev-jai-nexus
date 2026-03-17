@@ -18,7 +18,8 @@
     "dct:extract": "pnpm -C portal dct:extract",
     "council:run": "node portal/scripts/council-run.mjs",
     "claude:bootstrap": "node portal/scripts/generate-claude-bootstrap.mjs",
-    "code:pack": "node portal/scripts/generate-task-code-pack.mjs"
+    "code:pack": "node portal/scripts/generate-task-code-pack.mjs",
+    "snapshot:motions": "node portal/scripts/snapshot-motion-full.mjs --manifest"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
