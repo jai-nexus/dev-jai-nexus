@@ -1,0 +1,64 @@
+motion_id: "motion-0060"
+title: "Motion Factory v0 — operator playbook and canonical workflow"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Create a canonical operator playbook for Motion Factory v0 that documents
+  the placeholder-first workflow, command usage with concrete CLI examples,
+  provider selection, trust boundaries, and recommended end-to-end operator
+  workflow. No new commands or features are added. This is a documentation
+  and workflow canon motion.
+
+problem: >
+  Motion Factory v0 is now fully built and dual-provider proven across
+  motions 0052 through 0059. But the practical operator workflow — when to
+  use each command, what each command does and does not do, provider choice,
+  trust boundaries, and failure handling — exists only as scattered knowledge
+  across motion artifacts and chat history. Without a single canonical
+  playbook with concrete examples, operator workflow depends on memory
+  rather than documentation.
+
+proposal:
+  - "Create .nexus/docs/motion-factory-playbook.md as the canonical operator playbook for Motion Factory v0."
+  - "Document the placeholder-first workflow established in motion-0056."
+  - "Document command usage with concrete copy-pastable CLI examples for context, draft, revise, and evidence."
+  - "Document provider selection: OpenAI default, Anthropic via --provider anthropic, with examples of both."
+  - "Document trust boundaries: deterministic structural files, DRAFT-only narrative, source-fed evidence, human review required."
+  - "Document the recommended end-to-end workflow for creating a new motion."
+  - "Document failure handling and operator hygiene."
+  - "Reference key provenance motions (0052–0059) so operators understand where the workflow came from."
+  - "No new commands or features."
+
+non_goals:
+  - "Do not add new commands to motion-factory.mjs."
+  - "Do not add provider routing or selection logic."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not change staffing canon or governance config."
+  - "Do not modify motion-factory.mjs."
+
+success_criteria:
+  - ".nexus/docs/motion-factory-playbook.md exists and is well-structured."
+  - "Playbook covers: placeholder-first workflow, command guide, provider guide, trust boundaries, recommended workflow, failure handling."
+  - "Playbook includes concrete copy-pastable CLI examples for context, draft, draft with --provider anthropic, revise, and evidence."
+  - "Playbook clearly distinguishes default provider behavior (OpenAI when --provider omitted) from optional provider-selected behavior (--provider anthropic)."
+  - "Playbook is practical and operator-usable, not purely descriptive."
+  - "Playbook references key provenance motions (0052–0059)."
+  - "No new commands or features added."
+  - "No code changes."
+  - "No governance config changes."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

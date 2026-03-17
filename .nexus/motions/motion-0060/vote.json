@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0060",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "The playbook exists at .nexus/docs/motion-factory-playbook.md and covers all six required sections: placeholder-first workflow, command guide with concrete CLI examples, provider guide distinguishing default from optional, trust boundaries, recommended end-to-end workflow, and failure handling. Provenance references to motions 0052–0059 are present. No code changes were made."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The playbook is operator-usable, not purely descriptive. Concrete copy-pastable CLI examples are provided for all four commands across both providers. Default vs optional provider behavior is clearly distinguished. Trust boundaries are explicitly stated. The playbook correctly frames itself as a v0 reference with a note that future feature motions should update it."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 now has a canonical operator playbook that makes the workflow session-independent. The playbook documents the stable v0 surface without speculative v1 content. Provenance is traceable to governed motions. This completes the documentation layer for the factory bootstrap sequence."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
