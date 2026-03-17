@@ -1,0 +1,66 @@
+motion_id: "motion-0046"
+title: "Phase 1 Model Staffing: corrected dual-provider slot manifest + voting role assignments"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Replace the current model-slots.yaml (30 all-OpenAI placeholder slots) with a
+  corrected Phase 1 staffing manifest that assigns 10 live executor slots across
+  5 panels using Anthropic and OpenAI models, declares 5 selector slots as
+  DEFERRED, and formally assigns voting roles (Proposer, Challenger, Arbiter)
+  to specific models. This is the canonical staffing input for the council's
+  first governed multi-provider deployment.
+
+problem: >
+  The existing model-slots.yaml contains 30 identical OpenAI gpt-5 placeholders
+  across 5 panels plus 5 selector slots, all pointing at the same model. This
+  does not reflect actual Phase 1 intent: dual-provider diversity (Anthropic +
+  OpenAI), right-sized slot counts (2 per panel, not 5), cost-tier alignment
+  (Haiku/mini for Operator and Librarian), or explicit voting role assignments.
+  Selector slots were listed as live but have no evaluation harness to drive
+  them. The file also omits any reference to voting role model assignments,
+  which are currently implicit in model-routing.yaml but not governed as a
+  staffing decision. Without correction, the council would launch Phase 1 with
+  a staffing posture that is overprovisioned, single-provider, and ambiguous
+  on governance roles.
+
+proposal:
+  - "Commit .nexus/model-slots-phase1.yaml as the canonical Phase 1 staffing manifest."
+  - "Reduce live executor slots from 30 to 10 (2 per panel)."
+  - "Assign dual-provider primaries and alternates per panel: Architect (Sonnet 4.6 / GPT-5.4), Builder (Sonnet 4.6 / GPT-5.4), Verifier (GPT-5.4 / Sonnet 4.6), Operator (GPT-5 mini / Haiku 4.5), Librarian (Haiku 4.5 / GPT-5 mini)."
+  - "Mark all 5 selector slots as DEFERRED with explicit reason fields."
+  - "Add a voting section assigning Proposer (Sonnet 4.6), Challenger (GPT-5.4), Arbiter (Sonnet 4.6)."
+  - "Remove third-party pricing-source references from the artifact."
+  - "Restrict the providers allowlist to Anthropic and OpenAI only."
+
+non_goals:
+  - "Do not activate selector slots or the multi-candidate scoring pipeline in this motion."
+  - "Do not modify council.config.yaml voting mechanics."
+  - "Do not add models from providers other than Anthropic and OpenAI."
+  - "Do not change agent-panels.yaml rubrics or panel structure."
+  - "Do not deprecate model-slots.yaml in this motion; Phase 1 manifest is a parallel file."
+  - "Do not include external pricing data or cost benchmarks in the artifact."
+
+success_criteria:
+  - ".nexus/model-slots-phase1.yaml exists and is well-formed YAML."
+  - "Exactly 10 live executor slots are defined across 5 panels (2 each)."
+  - "Every live slot specifies provider, model, role, rank, phase, and live fields."
+  - "5 selector slots are present under deferred_slots with live: false."
+  - "Voting section assigns Proposer, Challenger, and Arbiter to specific models."
+  - "Only anthropic and openai appear in the providers allowlist."
+  - "No third-party pricing URLs, cost tables, or external benchmark references appear."
+  - "The file includes a summary block with slot counts and active model list."
+  - "The file is ratifiable as the canonical staffing input for Phase 1 council operations."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

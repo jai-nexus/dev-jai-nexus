@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0046",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0046 replaces the 30-slot all-OpenAI placeholder with a corrected Phase 1 staffing manifest: 10 live dual-provider executor slots, 5 honestly deferred selectors, and 3 explicit voting role assignments. The manifest is well-formed, right-sized, and ready to serve as the canonical staffing input for governed multi-provider council operations."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion stays tightly scoped to staffing corrections without overreaching into panel mechanics, voting config, or selector activation. Risks around reduced slot redundancy and Proposer/Arbiter provider overlap are acknowledged and appropriately mitigated by Phase 1 labeling and cross-provider Challenger independence. The parallel-file approach avoids breaking existing tooling."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The corrected manifest is structurally sound, practically deployable, and governs a real staffing decision that was previously implicit. Selector deferral is the right call given the absence of an evaluation harness. The follow-up reconciliation with model-slots.yaml and model-routing.yaml is noted and expected."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
