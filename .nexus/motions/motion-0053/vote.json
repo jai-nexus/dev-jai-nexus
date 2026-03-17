@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0053",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "The draft command creates a structurally correct 9-file motion package from deterministic templates. Structural files (policy.yaml, decision.yaml, vote.json, verify.json) are populated from governance config. Narrative files are clearly marked placeholder scaffolds. The scaffold-only reminder prints after every run. No API called, no files written outside the motion directory, intent required."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The draft command correctly separates deterministic scaffolding from model-generated narrative. The collision guard targets the next unused motion ID, which naturally avoids overwrites. Placeholder markers are consistent and visually obvious. The command is a single addition to the existing motion-factory.mjs script with no new dependencies or config surfaces."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 now has two proven commands: context (inspectable context gathering) and draft (deterministic package scaffold). The structural foundation is ready for model-assisted narrative generation in a future motion. The factory remains bounded, human-intent-gated, and DRAFT-only."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

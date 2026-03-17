@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0053",
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-17T18:45:16.159Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0053\\motion.yaml",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-17T18:45:16.459Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-17T18:45:16.460Z",
+    "notes": "Gates not yet executed. Run council-run.mjs to populate."
+  }
+}
