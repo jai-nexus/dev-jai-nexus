@@ -1,0 +1,63 @@
+motion_id: "motion-0052"
+title: "Motion Factory v0 — context gathering scaffold"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add portal/scripts/motion-factory.mjs with a context command as the first
+  inspectable step toward Motion Factory v0. The command gathers bounded
+  repo-native context from existing .nexus/ surfaces and prints a structured
+  summary to stdout. No motion files are generated. No model API is called.
+  No files are written.
+
+problem: >
+  Motion drafting in dev-jai-nexus is fully manual. Motions 0046 through 0051
+  were authored by hand across chat sessions, requiring 20–40 minutes per
+  motion package. The highest-leverage automation target is governed motion
+  drafting, and the first bounded step is inspectable context gathering. The
+  existing context-bundle generators (generate-context-bundle.mjs,
+  generate-repo-capsule.mjs) are heavyweight export tools that write to
+  surfaces/chat-context/. Motion Factory needs a lighter, focused context
+  capsule that prints to stdout and reads the Phase 1 governance surfaces.
+
+proposal:
+  - "Add portal/scripts/motion-factory.mjs with a context command."
+  - "The context command reads: .nexus/motions/ (recent motions, next motion ID), .nexus/model-slots-phase1.yaml, .nexus/agent-panels.yaml, .nexus/council.config.yaml, current branch and head commit."
+  - "The context command accepts --intent as a required CLI argument."
+  - "The context command accepts --json as an optional flag for machine-readable output."
+  - "The context command prints a structured context summary to stdout."
+  - "The context command writes no files."
+  - "The context command calls no model API."
+  - "The script reuses repo-root discovery and git helper patterns from existing portal scripts."
+
+non_goals:
+  - "Do not generate the 9-file motion package."
+  - "Do not call any model API."
+  - "Do not write to .nexus/motions/ or any other directory."
+  - "Do not implement draft or revise commands."
+  - "Do not introduce a new config family for the factory."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime loop behavior."
+  - "Do not read or write trace.json or transcript.jsonl."
+  - "Do not modify governance config files."
+
+success_criteria:
+  - "portal/scripts/motion-factory.mjs exists and runs without error."
+  - "context command prints: next motion ID, recent motions (last 3–5), branch, head commit, intent, and summaries of model-slots-phase1.yaml, agent-panels.yaml, and council.config.yaml."
+  - "context command accepts --intent and --json flags."
+  - "context command writes no files."
+  - "context command calls no external API."
+  - "Output is inspectable and useful as a pre-generation context check."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
