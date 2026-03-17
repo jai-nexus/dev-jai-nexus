@@ -1,0 +1,59 @@
+motion_id: "motion-0056"
+title: "Motion Factory v0 — first full-cycle proof and placeholder-first workflow"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Execute the Motion Factory v0 workflow end-to-end on a real governed motion
+  and record the resulting command/evidence trail as governed proof. Establish
+  placeholder-first as the default operator convention for future motions:
+  every new motion should begin with a factory-generated scaffold rather than
+  manual file creation.
+
+problem: >
+  Motions 0052 through 0055 proved each Motion Factory v0 command individually
+  (context, draft, revise), but no single motion has been authored end-to-end
+  through the factory workflow with a recorded evidence trail. Without a
+  governed full-cycle proof, the factory remains a collection of individually
+  tested commands rather than a validated workflow. Additionally, there is no
+  formal operator convention requiring that new motions start from a
+  factory-generated scaffold instead of manual creation.
+
+proposal:
+  - "Execute the complete Motion Factory v0 workflow on motion-0056 itself: context → draft → human review → revise → council:run → ratify → commit."
+  - "Record each workflow step and its real command/action outcome in proposal.md before ratification."
+  - "Establish placeholder-first as the default operator convention: future motions in dev-jai-nexus should begin by running motion-factory.mjs draft to generate a scaffold, then review and revise before ratification."
+  - "The placeholder-first rule is an operator convention, not an enforcement gate. It is not enforced by validation gates in this motion."
+  - "No new commands or features are added to motion-factory.mjs."
+
+non_goals:
+  - "Do not add new commands to motion-factory.mjs."
+  - "Do not add Anthropic or multi-provider support."
+  - "Do not add evidence-insertion features."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not modify governance config files."
+  - "Do not generate trace.json or transcript.jsonl."
+  - "Do not enforce placeholder-first via validation gates."
+
+success_criteria:
+  - "motion-0056 was executed using the Motion Factory v0 workflow (context → draft → revise → council:run → ratify → commit)."
+  - "proposal.md contains the completed workflow record with real command/action outcomes filled in before ratification."
+  - "The placeholder-first workflow is stated explicitly as a default operator convention, not an automated enforcement rule."
+  - "No new code is added to motion-factory.mjs."
+  - "The factory's existing commands (context, draft, revise) were sufficient to complete the full cycle."
+  - "Generated and revised content was human-reviewed before ratification."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

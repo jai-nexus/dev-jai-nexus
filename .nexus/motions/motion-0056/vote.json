@@ -1,0 +1,41 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0056",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "vote": "yes",
+      "rationale": "Motion Factory v0 was used to execute the full governed motion lifecycle on motion-0056 itself. The workflow — intent, context, draft, review, revise, council:run, ratify, commit — completed successfully using existing factory commands with no new code. The placeholder-first operator convention is stated as a non-enforced default workflow that replaces manual 9-file creation."
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "vote": "yes",
+      "rationale": "The full-cycle proof is honest about its scope: it proves the workflow executes end-to-end on one real motion, not that the factory handles all future edge cases. The placeholder-first convention is correctly framed as an operator convention without enforcement gates. Self-referential proof is acceptable because every step was human-reviewed. No code changes were needed."
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "vote": "yes",
+      "rationale": "Motion Factory v0 is proven end-to-end. The factory bootstrap sequence from motion-0052 through motion-0056 is internally consistent: context, deterministic scaffold, API narrative generation, atomic revision, and now full-cycle proof. The placeholder-first convention establishes a practical workflow default without overreaching into enforcement. The factory remains a bounded drafting assistant with no governance authority."
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-17T00:00:00.000Z"
+}

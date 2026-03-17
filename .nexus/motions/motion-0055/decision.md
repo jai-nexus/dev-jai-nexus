@@ -36,10 +36,3 @@ Structural governance files are never revised. Writes are all-or-nothing.
 
 ## Outcome
 All three required roles voted YES. No objections, no reservations.
-```
-
----
-
-### Recommended commit message
-```
-feat(factory): Motion Factory v0 revision command with atomic writes (motion-0055)
