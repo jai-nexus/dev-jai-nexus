@@ -49,6 +49,9 @@ import yaml from "js-yaml";
 const SCRIPT_VERSION = "motion-factory.v0";
 const RECENT_MOTION_WINDOW = 5;
 const OPENAI_MODEL = "gpt-5-mini";
+const ANTHROPIC_MODEL = "claude-sonnet-4-6";
+const SUPPORTED_PROVIDERS = new Set(["openai", "anthropic"]);
+const DEFAULT_PROVIDER = "openai";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -128,6 +131,29 @@ function parseArgs(argv) {
         }
     }
     return args;
+}
+
+function resolveProvider(args) {
+    const provider = args.provider ? String(args.provider).toLowerCase() : DEFAULT_PROVIDER;
+    if (!SUPPORTED_PROVIDERS.has(provider)) {
+        die(`Unknown provider: "${provider}"\n  Supported: ${[...SUPPORTED_PROVIDERS].join(", ")}`);
+    }
+    return provider;
+}
+
+function requireApiKey(provider) {
+    if (provider === "anthropic") {
+        const key = process.env.ANTHROPIC_API_KEY;
+        if (!key) die(`Missing ANTHROPIC_API_KEY. Set it in your environment for --provider anthropic.`);
+        return key;
+    }
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) die(`Missing OPENAI_API_KEY. Set it in your environment or use --no-api.`);
+    return key;
+}
+
+function providerLabel(provider) {
+    return provider === "anthropic" ? "model-generated (Anthropic)" : "model-generated (OpenAI)";
 }
 
 function utcNow() {
@@ -772,10 +798,131 @@ function normalizeNarrativePayload(parsed) {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Anthropic API functions
+// ──────────────────────────────────────────────────────────────────────────────
+
+async function callAnthropicApi({ apiKey, systemPrompt, userContent, maxTokens = 8000 }) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+            model: ANTHROPIC_MODEL,
+            max_tokens: maxTokens,
+            system: systemPrompt,
+            messages: [{ role: "user", content: userContent }],
+        }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        throw new Error(`Anthropic API returned ${res.status}: ${body}`);
+    }
+
+    const payload = await res.json();
+    const content = payload?.content;
+    if (!Array.isArray(content) || content.length === 0) {
+        throw new Error("Anthropic response contained no content blocks.");
+    }
+
+    const text = content.filter((c) => c.type === "text").map((c) => c.text).join("");
+    if (!text) throw new Error("Anthropic response contained no text content.");
+    return text;
+}
+
+async function generateNarrativeWithAnthropic({ context, motionId, intent, apiKey }) {
+    const systemPrompt = [
+        "You are generating draft-only JAI NEXUS motion artifacts.",
+        "Return JSON only. Do not use markdown fences.",
+        "Use repo-native motion conventions.",
+        "Do not generate evidence tables.",
+        "Do not generate PASS/FAIL claims.",
+        "Do not generate proof-result claims.",
+        "Do not generate executed test results.",
+        "Do not generate vote entries or vote rationales.",
+        "Do not generate ratification claims.",
+        "Do not claim that any motion has passed validation.",
+        "Keep content reviewable and clearly draft-quality.",
+        "Generate only the requested narrative fields.",
+    ].join(" ");
+
+    const task = {
+        task: "Generate draft-only motion narrative content",
+        motion_id: motionId, intent, context,
+        requested_fields: {
+            motion_yaml: ["summary", "problem", "proposal", "non_goals", "success_criteria"],
+            markdown_files: ["proposal_md", "challenge_md", "execution_md"],
+        },
+        output_schema: {
+            motion_yaml: { summary: "string", problem: "string", proposal: ["string"], non_goals: ["string"], success_criteria: ["string"] },
+            proposal_md: "string", challenge_md: "string", execution_md: "string",
+        },
+    };
+
+    const raw = await callAnthropicApi({ apiKey, systemPrompt, userContent: JSON.stringify(task) });
+    const cleaned = stripMarkdownFences(raw);
+    let parsed;
+    try { parsed = JSON.parse(cleaned); } catch (err) { throw new Error(`Failed to parse Anthropic JSON output: ${err.message}`); }
+    return normalizeNarrativePayload(parsed);
+}
+
+async function callAnthropicRevise({ apiKey, context, existingContent, revisionNotes, targetFiles, originalIntent }) {
+    const fileDescriptions = targetFiles.map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`).join("\n\n");
+
+    const systemPrompt = [
+        "You are a governance motion revision assistant for the dev-jai-nexus repository.",
+        "You are revising existing draft motion files based on human revision notes.\n",
+        "HARD RULES — you must NEVER generate any of the following:",
+        "- Evidence tables\n- PASS/FAIL claims\n- Executed test-result claims\n- Proof-result claims",
+        "- Vote entries or vote rationales\n- Ratification claims or ratification outcomes",
+        "- Any content that implies work has already been performed or validated\n",
+        "Your output is DRAFT content only. It will be reviewed by a human before ratification.\n",
+        "REVISION RULES:",
+        "- Incorporate the human revision notes into the targeted files",
+        "- Preserve the section structure and headers of each file",
+        "- Use repo-native conventions\n- Keep content precise and ratifiable",
+        "- Do not add speculative expansion beyond the revision notes\n",
+        "OUTPUT FORMAT:",
+        "Return each revised file separated by markers exactly like this:",
+        "=== FILE: filename.md ===\n(revised content)\n=== END FILE ===\n",
+        "Return ONLY the targeted files in this format.",
+    ].join("\n");
+
+    const userContent = `## Original intent\n${originalIntent}\n\n## Context\n${JSON.stringify(context, null, 2)}\n\n## Revision notes\n${revisionNotes}\n\n## Files to revise\n${targetFiles.join(", ")}\n\n## Current content of targeted files\n${fileDescriptions}\n\nPlease revise the targeted files incorporating the revision notes.`;
+
+    return await callAnthropicApi({ apiKey, systemPrompt, userContent });
+}
+
+async function callAnthropicEvidence({ apiKey, context, existingContent, evidenceText, operatorNotes, targetFiles, originalIntent }) {
+    const fileDescriptions = targetFiles.map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`).join("\n\n");
+
+    const systemPrompt = [
+        "You are an evidence placement assistant for the dev-jai-nexus repository.",
+        "You are inserting real operator-provided evidence into existing draft motion narrative files.\n",
+        "CRITICAL BOUNDARY — evidence-fed, not evidence-inventing:",
+        "You may ONLY: quote, organize, summarize, or place operator-provided evidence.",
+        "You must NEVER: invent PASS/FAIL claims, upgrade ambiguity, add results not in the evidence,",
+        "generate vote entries, generate ratification claims, or resolve ambiguity.\n",
+        "OUTPUT FORMAT:",
+        "Return each updated file separated by markers exactly like this:",
+        "=== FILE: filename.md ===\n(updated content with evidence placed)\n=== END FILE ===\n",
+        "Return ONLY the targeted files in this format.",
+    ].join("\n");
+
+    const notesSection = operatorNotes ? `## Operator notes\n${operatorNotes}\n\n` : "";
+    const userContent = `## Original intent\n${originalIntent}\n\n## Context\n${JSON.stringify(context, null, 2)}\n\n${notesSection}## Evidence payload\n--- EVIDENCE START ---\n${evidenceText}\n--- EVIDENCE END ---\n\n## Files to update\n${targetFiles.join(", ")}\n\n## Current content\n${fileDescriptions}\n\nPlease update the targeted files by placing the provided evidence.`;
+
+    return await callAnthropicApi({ apiKey, systemPrompt, userContent });
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Draft command
 // ──────────────────────────────────────────────────────────────────────────────
 
-async function draftCommand({ repoRoot, intent, noApi }) {
+async function draftCommand({ repoRoot, intent, noApi, provider }) {
     const context = await buildContext(repoRoot, intent);
     const motionId = context.next_motion_id;
     const governanceSummary = context.governance_summary;
@@ -787,8 +934,8 @@ async function draftCommand({ repoRoot, intent, noApi }) {
         );
     }
 
-    if (!noApi && !process.env.OPENAI_API_KEY) {
-        die(`Missing OPENAI_API_KEY. Set it in the environment or use --no-api.`);
+    if (!noApi) {
+        requireApiKey(provider);
     }
 
     const owner = "Jerry Ingram";
@@ -803,8 +950,13 @@ async function draftCommand({ repoRoot, intent, noApi }) {
 
     if (!noApi) {
         try {
-            narrative = await generateNarrativeWithOpenAI({ context, motionId, intent });
-            narrativeMode = "model-generated";
+            const apiKey = requireApiKey(provider);
+            if (provider === "anthropic") {
+                narrative = await generateNarrativeWithAnthropic({ context, motionId, intent, apiKey });
+            } else {
+                narrative = await generateNarrativeWithOpenAI({ context, motionId, intent });
+            }
+            narrativeMode = providerLabel(provider);
         } catch (err) {
             narrativeMode = "placeholder";
             warning = err?.message || String(err);
@@ -881,11 +1033,10 @@ async function draftCommand({ repoRoot, intent, noApi }) {
     if (narrativeMode === "placeholder") {
         log(`⚠  Narrative content is placeholder scaffold content.`);
     } else {
-        log(`⚠  Narrative content is model-generated draft content, not evidence-backed content.`);
+        log(`⚠  Narrative content is ${narrativeMode} draft content, not evidence-backed content.`);
     }
     log(`─────────────────────────────────────────`);
 }
-
 // ──────────────────────────────────────────────────────────────────────────────
 // Revise command
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1037,7 +1188,7 @@ function mergeMotionYamlNarrative(existingYaml, revisedContent) {
     });
 }
 
-async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
+async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provider }) {
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
     if (!(await exists(motionDir))) {
         die(`Motion directory not found: .nexus/motions/${motionId}`);
@@ -1051,10 +1202,7 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
         }
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        die(`Missing OPENAI_API_KEY. Set it in your environment before running revise.`);
-    }
+    const apiKey = requireApiKey(provider);
 
     const existingContent = {};
     for (const f of targetFiles) {
@@ -1079,7 +1227,8 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
 
     let revisedPayload;
     try {
-        const raw = await callOpenAIRevise({
+        const callRevise = provider === "anthropic" ? callAnthropicRevise : callOpenAIRevise;
+        const raw = await callRevise({
             apiKey,
             context,
             existingContent,
@@ -1119,7 +1268,7 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles }) {
     log(`Motion ID:       ${motionId}`);
     log(`Files requested: ${targetFiles.join(", ")}`);
     log(`Files revised:   ${targetFiles.join(", ")}`);
-    log(`Mode:            model-generated (OpenAI)`);
+    log(`Mode:            ${providerLabel(provider)}`);
     log(`Revision notes:  ${notes}`);
     log(``);
     log(`⚠  Human review is required before ratification.`);
@@ -1242,7 +1391,7 @@ async function callOpenAIEvidence({ apiKey, context, existingContent, evidenceTe
     return extractOutputText(payload);
 }
 
-async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles }) {
+async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles, provider }) {
     // ── Validate all inputs before any file access or API call ────────────
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
     if (!(await exists(motionDir))) {
@@ -1271,10 +1420,7 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
     }
 
     // Check API key before any generation
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        die(`Missing OPENAI_API_KEY. Set it in your environment before running evidence.`);
-    }
+    const apiKey = requireApiKey(provider);
 
     // ── Read existing content ────────────────────────────────────────────
     const existingContent = {};
@@ -1304,7 +1450,8 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
 
     let updatedPayload;
     try {
-        const raw = await callOpenAIEvidence({
+        const callEvidence = provider === "anthropic" ? callAnthropicEvidence : callOpenAIEvidence;
+        const raw = await callEvidence({
             apiKey,
             context,
             existingContent,
@@ -1342,7 +1489,7 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
     log(`Evidence file:   ${evidenceFilePath}`);
     log(`Files requested: ${targetFiles.join(", ")}`);
     log(`Files updated:   ${targetFiles.join(", ")}`);
-    log(`Mode:            evidence-fed, model-organized (OpenAI)`);
+    log(`Mode:            evidence-fed, ${providerLabel(provider)}`);
     if (operatorNotes) {
         log(`Operator notes:  ${operatorNotes}`);
     }
@@ -1388,8 +1535,9 @@ Commands:
 Flags:
   --intent         (required for context/draft) Human intent prompt.
   --json           (context only) Output as a stable JSON object.
-  --no-api         (draft only) Skip OpenAI generation; use placeholder scaffolds.
-  --motion         (revise/evidence) Target motion ID (e.g., motion-0057).
+  --no-api         (draft only) Skip API generation; use placeholder scaffolds.
+  --provider       (draft/revise/evidence) Provider: openai (default) or anthropic.
+  --motion         (revise/evidence) Target motion ID (e.g., motion-0058).
   --notes          (revise: required, evidence: optional) Human notes.
   --files          (revise/evidence) Comma-separated list of files to update.
   --evidence-file  (evidence only, required) Path to evidence file (terminal output, logs, etc).
@@ -1442,7 +1590,8 @@ async function main() {
         }
 
         const noApi = args["no-api"] === true;
-        await draftCommand({ repoRoot, intent, noApi });
+        const provider = resolveProvider(args);
+        await draftCommand({ repoRoot, intent, noApi, provider });
         return;
     }
 
@@ -1461,7 +1610,8 @@ async function main() {
             ? String(args.files).split(",").map((f) => f.trim()).filter(Boolean)
             : [];
 
-        await reviseCommand({ repoRoot, motionId, notes, requestedFiles });
+        const provider = resolveProvider(args);
+        await reviseCommand({ repoRoot, motionId, notes, requestedFiles, provider });
         return;
     }
 
@@ -1482,7 +1632,8 @@ async function main() {
             ? String(args.files).split(",").map((f) => f.trim()).filter(Boolean)
             : [];
 
-        await evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles });
+        const provider = resolveProvider(args);
+        await evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles, provider });
         return;
     }
 

@@ -1,0 +1,68 @@
+motion_id: "motion-0058"
+title: "Motion Factory v0 — Anthropic provider extension"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs so the existing narrative-generation
+  commands (draft, revise, evidence) can optionally use Anthropic in addition
+  to OpenAI. Provider choice is operator-selected via --provider flag. OpenAI
+  remains the default. All existing boundaries (deterministic structure,
+  narrative-only generation, atomic writes, DRAFT-only output) are unchanged.
+  Anthropic live connectivity is validated during execution of this motion.
+
+problem: >
+  Motion Factory v0 currently supports only OpenAI for narrative generation.
+  The Phase 1 staffing canon includes both Anthropic and OpenAI as approved
+  providers. Adding Anthropic as an operator-selected option gives the operator
+  flexibility to choose the better-performing provider for a given motion
+  without introducing routing complexity or multi-provider automation.
+
+proposal:
+  - "Add a --provider flag to draft, revise, and evidence commands."
+  - "Supported values: openai (default), anthropic."
+  - "When anthropic is selected, read ANTHROPIC_API_KEY from process.env and call the Anthropic Messages API."
+  - "When openai is selected, existing behavior is unchanged."
+  - "Missing provider-specific API key produces a clear error."
+  - "All existing boundaries remain: deterministic structure, narrative-only generation, atomic writes, DRAFT-only output, non-evidence-inventing."
+  - "No auto-selection or routing logic."
+  - "Validate Anthropic live connectivity during execution."
+
+non_goals:
+  - "Do not add auto-provider selection or routing."
+  - "Do not change the default provider from OpenAI."
+  - "Do not add providers other than OpenAI and Anthropic."
+  - "Do not change deterministic structural file generation."
+  - "Do not change narrative-only write scopes."
+  - "Do not change atomic write behavior."
+  - "Do not change provider staffing canon or model-slot assignments."
+  - "Do not modify routing policy or introduce auto-provider routing."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not generate trace.json or transcript.jsonl."
+  - "Do not modify governance config files."
+
+success_criteria:
+  - "draft --provider anthropic generates narrative content via the Anthropic API."
+  - "revise --provider anthropic revises narrative files via the Anthropic API."
+  - "evidence --provider anthropic inserts evidence via the Anthropic API."
+  - "Existing OpenAI-backed draft, revise, and evidence behavior remains unchanged when --provider is omitted."
+  - "Missing ANTHROPIC_API_KEY with --provider anthropic produces a clear error before any writes."
+  - "Missing OPENAI_API_KEY without --provider (or with --provider openai) produces a clear error before any writes."
+  - "Unknown --provider value produces a clear error."
+  - "All existing atomic write, non-invention, and structural preservation guarantees are unchanged."
+  - "Stdout identifies which provider was used and preserves the existing human-review reminder."
+  - "Anthropic live connectivity is validated during execution with real API response evidence."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

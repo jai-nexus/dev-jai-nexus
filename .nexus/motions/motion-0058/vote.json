@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0058",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Anthropic provider extension works correctly. Draft with --provider anthropic generated narrative via Anthropic API (claude-sonnet-4-6, status 200). OpenAI default path unchanged. Unknown provider rejected with clear error. Stdout correctly identifies which provider was used. All existing commands (context, draft, revise, evidence) now support --provider selection."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The implementation is minimal: provider-specific API functions are isolated, shared pipeline logic is not duplicated. OpenAI remains the default with no behavioral change when --provider is omitted. The Anthropic model string (claude-sonnet-4-6) was validated with a live API call during execution. All existing atomic write, scope guard, and non-invention boundaries are preserved."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 now supports both Phase 1 approved providers as operator-selected options. The extension does not change staffing canon, routing policy, or governance config. Provider choice is explicit and inspectable via stdout. The dual-provider philosophy of the Phase 1 staffing canon is now reflected in the factory."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
