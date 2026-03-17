@@ -1,0 +1,47 @@
+{
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "motion_id": "motion-0054",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Ratify motion-0054 to add the first working provider-backed narrative generation lane to Motion Factory v0 using OpenAI while preserving deterministic structural scaffolding and DRAFT-only output.",
+      "ts": "2026-03-17T00:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "The motion is tightly bounded. Structural files remain deterministic, generated narrative is limited to draft-time content, and the motion explicitly forbids evidence tables, vote entries, ratification claims, and writes outside the target motion directory.",
+      "ts": "2026-03-17T00:00:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Unanimous consent is satisfied. motion-0054 correctly activates the first live provider-backed proposer lane for Motion Factory without granting governance authority, revision behavior, or orchestration behavior.",
+      "ts": "2026-03-17T00:00:10.000Z"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-17T00:00:15.000Z"
+}
