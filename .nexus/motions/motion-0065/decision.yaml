@@ -1,0 +1,10 @@
+protocol_version: "council.config.v0"
+motion_id: motion-0065
+status: RATIFIED
+ratified_by: manual
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-03-18T22:30:37.000Z"
+notes: "RATIFIED: Motion Factory status and status --json now derive from shared snapshot logic, with explicit motion inventory reporting and preserved command semantics."
