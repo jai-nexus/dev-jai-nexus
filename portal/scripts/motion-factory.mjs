@@ -1732,44 +1732,61 @@ Usage:
   node portal/scripts/motion-factory.mjs status   [--json]
 
 Commands:
-  context    Gather and display repo-native motion context for inspection.
-             Writes no files. Calls no API. Generates no motion packages.
+  context    Inspect motion-specific repo context for a given intent.
+             Writes no files. Calls no API. Requires --intent.
 
   draft      Create a 9-file motion package in DRAFT state.
              Structural files remain deterministic.
              Narrative files are placeholders (--no-api) or provider-generated.
+             Provider: openai (default) or anthropic via --provider.
 
   revise     Revise narrative files in an existing draft from human notes.
              Narrower than draft: only touches narrative files.
              Atomic: all-or-nothing write. If any step fails, no files change.
+             Provider: openai (default) or anthropic via --provider.
 
   evidence   Insert operator-provided evidence into proof-motion narrative files.
              Narrower than revise: never touches motion.yaml.
              Evidence-fed only: model organizes provided evidence, never invents results.
              Atomic: all-or-nothing write. If any step fails, no files change.
+             Provider: openai (default) or anthropic via --provider.
 
-  status     Show live factory configuration and readiness state.
+  status     Show live factory configuration and readiness snapshot.
              No files written. No API calls. No arguments required.
+             Unlike context, does not require --intent and reports factory
+             configuration rather than motion-specific repo state.
 
 Flags:
   --intent         (required for context/draft) Human intent prompt.
-  --json           (context/status only) Output as a stable JSON object.
+  --json           (context/status) Output as a stable JSON object.
   --no-api         (draft only) Skip API generation; use placeholder scaffolds.
   --provider       (draft/revise/evidence) Provider: openai (default) or anthropic.
-  --motion         (revise/evidence) Target motion ID (e.g., motion-0058).
+  --motion         (revise/evidence) Target motion ID (e.g., motion-NNNN).
   --notes          (revise: required, evidence: optional) Human notes.
   --files          (revise/evidence) Comma-separated list of files to update.
-  --evidence-file  (evidence only, required) Path to evidence file (terminal output, logs, etc).
+  --evidence-file  (evidence only, required) Path to evidence file.
 
 Revise file scope:
-  Default: proposal.md,challenge.md,execution.md
-  Allowed: proposal.md,challenge.md,execution.md,motion.yaml
-  Never:   policy.yaml,decision.yaml,decision.md,vote.json,verify.json
+  Default: proposal.md, challenge.md, execution.md
+  Allowed: proposal.md, challenge.md, execution.md, motion.yaml
+  Never:   policy.yaml, decision.yaml, decision.md, vote.json, verify.json
 
 Evidence file scope:
-  Default: proposal.md,execution.md
-  Allowed: proposal.md,execution.md,challenge.md
-  Never:   motion.yaml,policy.yaml,decision.yaml,decision.md,vote.json,verify.json
+  Default: proposal.md, execution.md
+  Allowed: proposal.md, execution.md, challenge.md
+  Never:   motion.yaml, policy.yaml, decision.yaml, decision.md, vote.json, verify.json
+
+Examples (PowerShell-ready):
+  node portal/scripts/motion-factory.mjs context --intent "Reconcile model-routing.yaml"
+  node portal/scripts/motion-factory.mjs draft --intent "Legacy cleanup motion"
+  node portal/scripts/motion-factory.mjs draft --intent "Legacy cleanup" --provider anthropic
+  node portal/scripts/motion-factory.mjs draft --intent "Quick scaffold" --no-api
+  node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Tighten scope"
+  node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Rewrite" --provider anthropic
+  node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file proof.txt
+  node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file proof.txt --provider anthropic
+  node portal/scripts/motion-factory.mjs status
+  node portal/scripts/motion-factory.mjs status --json
 `);
 }
 

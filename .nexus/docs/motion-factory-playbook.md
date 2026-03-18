@@ -144,6 +144,32 @@ node portal/scripts/motion-factory.mjs evidence --motion motion-0060 --evidence-
 - Atomic writes: if the API fails or returns incomplete content, no files change
 - motion.yaml is never touched by the evidence command
 
+### status
+
+Show a live factory configuration and readiness snapshot. No files written.
+No API calls. No arguments required. Safe to run anytime.
+
+Unlike `context`, does not require `--intent` and reports factory configuration
+rather than motion-specific repo state.
+```
+node portal/scripts/motion-factory.mjs status
+```
+
+Machine-readable:
+```
+node portal/scripts/motion-factory.mjs status --json
+```
+
+**What it reports:**
+- Script version, repo root, branch, next motion ID
+- Available commands
+- Default and supported providers
+- API key presence (environmental only — does not validate correctness,
+  funding, or provider reachability)
+- Revise and evidence file scopes
+- Protected structural files
+- Workflow reminders
+
 ---
 
 ## 3. Provider Guide
