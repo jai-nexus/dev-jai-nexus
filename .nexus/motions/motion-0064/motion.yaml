@@ -1,0 +1,67 @@
+motion_id: "motion-0064"
+title: "Motion Factory v0 — preview mode for draft"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs with a --preview flag for the
+  draft command. Preview mode generates the full candidate 9-file package
+  content via the same pipeline as normal draft, prints it to stdout with
+  clear per-file markers, and writes no files. No directory is created.
+  The motion ID shown is provisional and not reserved. Normal draft
+  behavior remains unchanged.
+
+problem: >
+  The revise and evidence commands gained preview mode in motion-0063.
+  Draft is the last major factory surface that lacks a no-write inspection
+  lane. While draft creates new directories rather than overwriting existing
+  files, operators still benefit from inspecting the proposed package before
+  committing to a directory creation.
+
+proposal:
+  - "Add a --preview flag to the draft command."
+  - "Preview mode uses the same validation, context-gathering, and provider-generation pipeline as normal draft."
+  - "Preview mode generates the full candidate 9-file package (structural + narrative)."
+  - "Preview mode prints proposed content to stdout with clear per-file markers."
+  - "Preview mode writes no files and creates no directories."
+  - "The motion ID shown in preview is the current next motion ID as a provisional candidate only; it does not reserve that ID."
+  - "On preview failure, no files are written, no directory is created, and stdout does not imply a package was created."
+  - "Normal non-preview draft behavior remains unchanged."
+
+non_goals:
+  - "Do not add new top-level commands."
+  - "Do not add a diff engine."
+  - "Do not add approval or apply subcommands."
+  - "Do not add provider routing logic."
+  - "Do not change normal draft write semantics."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not change governance config or staffing canon."
+
+success_criteria:
+  - "draft --preview --intent '...' generates and prints the proposed 9-file package without creating a directory or writing files."
+  - "draft --preview --no-api --intent '...' previews the placeholder scaffold package."
+  - "draft --preview --provider anthropic --intent '...' previews the Anthropic-generated package."
+  - "Preview mode uses the same validation and provider-generation path as normal draft."
+  - "Preview output clearly identifies: intent, provider used (or placeholder/no-api mode), provisional next motion ID, and preview-only / no-write status."
+  - "Preview output uses clear per-file begin/end markers."
+  - "The motion ID shown in preview is provisional and not reserved. It is not guaranteed to remain the same by the time normal draft runs."
+  - "No files are written and no directories are created in preview mode under any success or failure path."
+  - "On preview failure, stdout reports a failed proposed generation, not a partial creation."
+  - "Normal draft without --preview remains unchanged."
+  - "Missing --intent still fails clearly in preview mode."
+  - "Missing API key still fails clearly in preview mode."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

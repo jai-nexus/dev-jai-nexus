@@ -4,7 +4,7 @@
  *
  * Commands:
  *   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
- *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic]
+ *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs status   [--json]
@@ -19,6 +19,9 @@
  *   - Narrative files are either:
  *       a) placeholder scaffolds (--no-api), or
  *       b) model-generated draft content via the selected provider.
+ *   - --preview uses the same validation and provider-generation path as apply mode,
+ *     but prints the full proposed 9-file package instead of writing files.
+ *   - Preview creates no directory and does not reserve motion numbering.
  *
  * revise:
  *   Updates selected narrative files in an existing motion draft from human notes.
@@ -319,16 +322,13 @@ function mergeMotionYamlNarrative(existingYaml, revisedContent) {
 function printPreviewFiles({
     motionId,
     operation,
-    provider,
+    headerLines = [],
     targetFiles,
     contentsByFile,
-    extraHeaderLines = [],
+    footerLines = [],
 }) {
     log(`Preview for ${motionId} (${operation})`);
-    log(`Target motion: ${motionId}`);
-    log(`Provider:      ${providerName(provider)}`);
-    log(`Files:         ${targetFiles.join(", ")}`);
-    for (const line of extraHeaderLines) {
+    for (const line of headerLines) {
         log(line);
     }
     log(`Status:        PREVIEW ONLY — proposed content not applied`);
@@ -346,6 +346,9 @@ function printPreviewFiles({
     log(`─────────────────────────────────────────`);
     log(`⚠  PREVIEW ONLY — no files were written.`);
     log(`   This preview used the same validation and provider-generation path as apply mode.`);
+    for (const line of footerLines) {
+        log(line);
+    }
     log(`   To apply, run the same command without --preview.`);
     log(`─────────────────────────────────────────`);
 }
@@ -1444,13 +1447,13 @@ async function callAnthropicEvidence({
 // Draft command
 // ──────────────────────────────────────────────────────────────────────────────
 
-async function draftCommand({ repoRoot, intent, noApi, provider }) {
+async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
     const context = await buildContext(repoRoot, intent);
     const motionId = context.next_motion_id;
     const governanceSummary = context.governance_summary;
 
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
-    if (await exists(motionDir)) {
+    if (!preview && (await exists(motionDir))) {
         die(
             `Motion directory already exists: .nexus/motions/${motionId}\nDelete it manually before running draft again.`
         );
@@ -1467,8 +1470,6 @@ async function draftCommand({ repoRoot, intent, noApi, provider }) {
     let narrativeMode = "placeholder";
     let warning = null;
     let narrative = null;
-
-    await fs.mkdir(motionDir, { recursive: true });
 
     if (!noApi) {
         try {
@@ -1532,6 +1533,30 @@ async function draftCommand({ repoRoot, intent, noApi, provider }) {
             content: generateVerifyJson({ motionId }),
         },
     ];
+
+    if (preview) {
+        const contentsByFile = Object.fromEntries(files.map((f) => [f.name, f.content]));
+        printPreviewFiles({
+            motionId,
+            operation: "draft",
+            headerLines: [
+                `Intent:        ${intent}`,
+                `Motion ID:     ${motionId} (provisional, not reserved)`,
+                `Narrative:     ${narrativeMode}`,
+                ...(warning ? [`Warning:       ${warning}`] : []),
+                `Directory:     not created in preview mode`,
+            ],
+            targetFiles: files.map((f) => f.name),
+            contentsByFile,
+            footerLines: [
+                `   No directory was created.`,
+                `   Motion ID ${motionId} is provisional and not reserved.`,
+            ],
+        });
+        return;
+    }
+
+    await fs.mkdir(motionDir, { recursive: true });
 
     for (const f of files) {
         await fs.writeFile(path.join(motionDir, f.name), f.content, "utf8");
@@ -1640,12 +1665,14 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provid
         printPreviewFiles({
             motionId,
             operation: "revise",
-            provider,
-            targetFiles,
-            contentsByFile: resolvedPayload,
-            extraHeaderLines: [
+            headerLines: [
+                `Target motion: ${motionId}`,
+                `Provider:      ${providerName(provider)}`,
+                `Files:         ${targetFiles.join(", ")}`,
                 `Revision notes: ${notes}`,
             ],
+            targetFiles,
+            contentsByFile: resolvedPayload,
         });
         return;
     }
@@ -1756,14 +1783,16 @@ async function evidenceCommand({
         printPreviewFiles({
             motionId,
             operation: "evidence",
-            provider,
-            targetFiles,
-            contentsByFile: updatedPayload,
-            extraHeaderLines: [
+            headerLines: [
+                `Target motion: ${motionId}`,
+                `Provider:      ${providerName(provider)}`,
+                `Files:         ${targetFiles.join(", ")}`,
                 `Evidence file: ${evidenceFilePath}`,
                 ...(operatorNotes ? [`Operator notes: ${operatorNotes}`] : []),
                 `Evidence mode: source-fed, non-inventing`,
             ],
+            targetFiles,
+            contentsByFile: updatedPayload,
         });
         return;
     }
@@ -1800,7 +1829,7 @@ MOTION-FACTORY ${SCRIPT_VERSION}
 
 Usage:
   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
-  node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic]
+  node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs status   [--json]
@@ -1813,6 +1842,7 @@ Commands:
              Structural files remain deterministic.
              Narrative files are placeholders (--no-api) or provider-generated.
              Provider: openai (default) or anthropic via --provider.
+             Use --preview to print the proposed 9-file package without writing files.
 
   revise     Revise narrative files in an existing draft from human notes.
              Narrower than draft: only touches narrative files.
@@ -1837,7 +1867,7 @@ Flags:
   --json           (context/status) Output as a stable JSON object.
   --no-api         (draft only) Skip API generation; use placeholder scaffolds.
   --provider       (draft/revise/evidence) Provider: openai (default) or anthropic.
-  --preview        (revise/evidence) Preview proposed changes without writing files.
+  --preview        (draft/revise/evidence) Preview proposed output without writing files.
   --motion         (revise/evidence) Target motion ID (e.g., motion-NNNN).
   --notes          (revise: required, evidence: optional) Human notes.
   --files          (revise/evidence) Comma-separated list of files to update.
@@ -1858,6 +1888,8 @@ Examples (PowerShell-ready):
   node portal/scripts/motion-factory.mjs draft --intent "Legacy cleanup motion"
   node portal/scripts/motion-factory.mjs draft --intent "Legacy cleanup" --provider anthropic
   node portal/scripts/motion-factory.mjs draft --intent "Quick scaffold" --no-api
+  node portal/scripts/motion-factory.mjs draft --intent "Preview scaffold" --no-api --preview
+  node portal/scripts/motion-factory.mjs draft --intent "Preview with Anthropic" --provider anthropic --preview
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Tighten scope"
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Rewrite" --provider anthropic
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Preview rewrite" --preview
@@ -1900,13 +1932,14 @@ async function main() {
         const intent = args.intent ? String(args.intent) : null;
         if (!intent) {
             die(
-                `Missing --intent. Motion Factory requires human intent to operate.\n  Usage: node portal/scripts/motion-factory.mjs draft --intent "..." [--no-api] [--provider openai|anthropic]`
+                `Missing --intent. Motion Factory requires human intent to operate.\n  Usage: node portal/scripts/motion-factory.mjs draft --intent "..." [--no-api] [--provider openai|anthropic] [--preview]`
             );
         }
 
         const noApi = args["no-api"] === true;
         const provider = resolveProvider(args);
-        await draftCommand({ repoRoot, intent, noApi, provider });
+        const preview = args.preview === true;
+        await draftCommand({ repoRoot, intent, noApi, provider, preview });
         return;
     }
 

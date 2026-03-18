@@ -1,0 +1,26 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0064",
+    "votes": [],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 0,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PENDING",
+        "reasons": [],
+        "missing_required_roles": [
+            "proposer",
+            "challenger",
+            "arbiter"
+        ]
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}
