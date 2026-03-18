@@ -1,10 +1,12 @@
 # Decision - motion-0064
 
 ## Status
-DRAFT — awaiting vote.
+RATIFIED
 
 ## Summary
-Pending ratification of Motion Factory v0 preview mode for draft.
+Motion Factory v0 draft preview mode is accepted. The implementation adds
+`--preview` to `draft`, prints the proposed 9-file package to stdout, writes
+no files, creates no directory, and does not reserve motion numbering.
 
 ## Outcome
-Not yet determined.
+Ratified by unanimous consent.
