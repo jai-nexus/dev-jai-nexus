@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0061",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Status command works correctly in both human-readable and JSON modes. Reports version, repo root, branch, next motion ID, commands, providers, key presence, file scopes, protected files, and workflow reminders. Key presence caveat is printed inline. No files written, no API calls. Status vs context distinction is clear in the output."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The command has no side effects and is safe to run anytime. Key presence is correctly scoped as environmental only with an explicit caveat that it does not validate correctness, funding, or reachability. The JSON output includes key_presence_semantics and status_vs_context fields that make the limitations machine-readable. The command complements the static playbook without duplicating it."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 now has five commands: context, draft, revise, evidence, and status. The status command closes the operator visibility gap identified after the playbook. The factory is complete, dual-provider, parity-proven, documented, and now inspectable at runtime."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

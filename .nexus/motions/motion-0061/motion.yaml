@@ -1,0 +1,65 @@
+motion_id: "motion-0061"
+title: "Motion Factory v0 — status command for operator visibility"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs with a status command that prints
+  a concise live summary of the Motion Factory v0 configuration and readiness
+  state. No files written. No API calls. Safe to run anytime. Key presence
+  reporting is environmental only — it does not validate key correctness,
+  funding, provider reachability, or live API readiness.
+
+problem: >
+  The operator playbook (motion-0060) is static documentation. The operator
+  still lacks a quick command to inspect live factory configuration: which
+  providers have keys present in the environment, what the next motion ID is,
+  what the current branch is, and what the factory's command surface and file
+  scopes are. Without a live status command, the operator must check these
+  things manually across multiple sources.
+
+proposal:
+  - "Add a status command to portal/scripts/motion-factory.mjs."
+  - "The command prints a concise live summary of Motion Factory v0 configuration to stdout."
+  - "No files written. No API calls. No arguments required."
+  - "Optional --json flag for machine-readable output."
+  - "Report: script version, available commands, providers, key presence, file scopes, protected files, repo root, branch, next motion ID."
+  - "Key presence reporting is environmental only; it does not validate key correctness, funding, provider reachability, or live API readiness."
+
+non_goals:
+  - "Do not add generation features."
+  - "Do not add provider routing or selection logic."
+  - "Do not add file writes."
+  - "Do not add API calls."
+  - "Do not add health checks, provider ping tests, or funding checks."
+  - "Do not validate key correctness or provider reachability."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not change governance config."
+  - "Do not build a dashboard or report generator."
+
+success_criteria:
+  - "status command runs without arguments and prints a live configuration summary."
+  - "No files written. No API calls."
+  - "Reports: script version, available commands, default provider, supported providers."
+  - "Reports: OPENAI_API_KEY presence, ANTHROPIC_API_KEY presence (present/missing only)."
+  - "Key presence reporting does not validate key correctness, funding, provider reachability, or live API readiness."
+  - "Reports: allowed revise file scope, allowed evidence file scope, protected structural files."
+  - "Reports: repo root, current branch, next motion ID."
+  - "--json flag produces machine-readable output."
+  - "Command is safe to run anytime with no side effects."
+  - "Status remains a no-write, no-API local visibility surface."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

@@ -4,9 +4,10 @@
  *
  * Commands:
  *   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
- *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api]
- *   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2]
- *   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2]
+ *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic]
+ *   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic]
+ *   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic]
+ *   node portal/scripts/motion-factory.mjs status   [--json]
  *
  * context:
  *   Gathers bounded repo-native context from .nexus/ surfaces and prints
@@ -17,7 +18,7 @@
  *   - Structural files remain deterministic.
  *   - Narrative files are either:
  *       a) placeholder scaffolds (--no-api), or
- *       b) model-generated draft content via OpenAI.
+ *       b) model-generated draft content via the selected provider.
  *
  * revise:
  *   Updates selected narrative files in an existing motion draft from human notes.
@@ -34,6 +35,14 @@
  *   - Atomic: all-or-nothing write.
  *   - Narrower than revise: never touches motion.yaml.
  *
+ * status:
+ *   Prints a live local status snapshot for Motion Factory v0.
+ *   - No files written.
+ *   - No API calls.
+ *   - Safe to run anytime.
+ *   - Key presence is environmental only; it does not validate correctness,
+ *     funding, provider reachability, or live API readiness.
+ *
  * Output contract (stable for future consumers):
  *   intent, next_motion_id, branch, head_commit, recent_motions,
  *   staffing_summary, panel_summary, governance_summary
@@ -48,10 +57,56 @@ import yaml from "js-yaml";
 
 const SCRIPT_VERSION = "motion-factory.v0";
 const RECENT_MOTION_WINDOW = 5;
+
 const OPENAI_MODEL = "gpt-5-mini";
 const ANTHROPIC_MODEL = "claude-sonnet-4-6";
+
 const SUPPORTED_PROVIDERS = new Set(["openai", "anthropic"]);
 const DEFAULT_PROVIDER = "openai";
+
+const AVAILABLE_COMMANDS = ["context", "draft", "revise", "evidence", "status"];
+
+const ALLOWED_REVISE_FILES = new Set([
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+    "motion.yaml",
+]);
+
+const DEFAULT_REVISE_FILES = [
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+];
+
+const ALLOWED_EVIDENCE_FILES = new Set([
+    "proposal.md",
+    "execution.md",
+    "challenge.md",
+]);
+
+const DEFAULT_EVIDENCE_FILES = [
+    "proposal.md",
+    "execution.md",
+];
+
+const PROTECTED_FILES = [
+    "policy.yaml",
+    "decision.yaml",
+    "decision.md",
+    "vote.json",
+    "verify.json",
+];
+
+const MOTION_YAML_STRUCTURAL_FIELDS = new Set([
+    "motion_id",
+    "title",
+    "status",
+    "created_at",
+    "owner",
+    "target",
+    "vote",
+]);
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -144,11 +199,16 @@ function resolveProvider(args) {
 function requireApiKey(provider) {
     if (provider === "anthropic") {
         const key = process.env.ANTHROPIC_API_KEY;
-        if (!key) die(`Missing ANTHROPIC_API_KEY. Set it in your environment for --provider anthropic.`);
+        if (!key) {
+            die(`Missing ANTHROPIC_API_KEY. Set it in your environment for --provider anthropic.`);
+        }
         return key;
     }
+
     const key = process.env.OPENAI_API_KEY;
-    if (!key) die(`Missing OPENAI_API_KEY. Set it in your environment or use --no-api.`);
+    if (!key) {
+        die(`Missing OPENAI_API_KEY. Set it in your environment or use --no-api.`);
+    }
     return key;
 }
 
@@ -178,9 +238,10 @@ function blockText(text, indent = 2) {
 }
 
 function yamlList(items, indent = 0) {
-    const values = Array.isArray(items) && items.length > 0
-        ? items
-        : ["Draft scaffold — content pending."];
+    const values =
+        Array.isArray(items) && items.length > 0
+            ? items
+            : ["Draft scaffold — content pending."];
     const pad = " ".repeat(indent);
     return values.map((item) => `${pad}- "${yamlEscape(item)}"`).join("\n");
 }
@@ -188,10 +249,7 @@ function yamlList(items, indent = 0) {
 function stripMarkdownFences(text) {
     const raw = String(text ?? "").trim();
     if (!raw.startsWith("```")) return raw;
-    return raw
-        .replace(/^```[a-zA-Z0-9_-]*\s*/, "")
-        .replace(/\s*```$/, "")
-        .trim();
+    return raw.replace(/^```[a-zA-Z0-9_-]*\s*/, "").replace(/\s*```$/, "").trim();
 }
 
 function extractOutputText(payload) {
@@ -206,6 +264,48 @@ function extractOutputText(payload) {
         }
     }
     throw new Error("OpenAI response did not contain output_text.");
+}
+
+function parseMarkedFiles(raw, targetFiles) {
+    const results = {};
+    for (const filename of targetFiles) {
+        const startMarker = `=== FILE: ${filename} ===`;
+        const endMarker = `=== END FILE ===`;
+        const startIdx = raw.indexOf(startMarker);
+        if (startIdx === -1) continue;
+
+        const contentStart = startIdx + startMarker.length;
+        const endIdx = raw.indexOf(endMarker, contentStart);
+        if (endIdx === -1) continue;
+
+        const content = raw.slice(contentStart, endIdx).trim();
+        if (content) {
+            results[filename] = `${content}\n`;
+        }
+    }
+    return results;
+}
+
+function mergeMotionYamlNarrative(existingYaml, revisedContent) {
+    const existing = safeYamlLoad(existingYaml, "motion.yaml (existing)");
+    if (!existing) return existingYaml;
+
+    const revised = safeYamlLoad(revisedContent, "motion.yaml (revised)");
+    if (!revised) return existingYaml;
+
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(revised)) {
+        if (!MOTION_YAML_STRUCTURAL_FIELDS.has(key)) {
+            merged[key] = value;
+        }
+    }
+
+    return yaml.dump(merged, {
+        lineWidth: -1,
+        noRefs: true,
+        quotingType: '"',
+        forceQuotes: false,
+    });
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -281,8 +381,7 @@ async function readStaffingSummary(repoRoot) {
     const deferred = obj.deferred_slots || {};
     const voting = obj.voting || {};
     const providers =
-        obj.providers?.allowlist ||
-        Object.keys(obj.providers?.catalog || obj.providers || {});
+        obj.providers?.allowlist || Object.keys(obj.providers?.catalog || obj.providers || {});
 
     const liveSlots = Object.values(slots).filter((s) => s?.live === true).length;
     const deferredCount = Object.keys(deferred).length;
@@ -424,6 +523,92 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
     } else {
         log(`  (agent-panels.yaml not found)`);
     }
+    log(`─────────────────────────────────────────`);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Status command
+// ──────────────────────────────────────────────────────────────────────────────
+
+async function statusCommand({ repoRoot, jsonOutput }) {
+    const branch = git(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const motionDirs = await enumerateMotions(repoRoot);
+    const nextId = nextMotionId(motionDirs);
+
+    const openaiKeyPresent = !!process.env.OPENAI_API_KEY;
+    const anthropicKeyPresent = !!process.env.ANTHROPIC_API_KEY;
+
+    const status = {
+        version: SCRIPT_VERSION,
+        repo_root: repoRoot,
+        branch,
+        next_motion_id: nextId,
+        total_motions: motionDirs.length,
+        commands: [...AVAILABLE_COMMANDS],
+        providers: {
+            default: DEFAULT_PROVIDER,
+            supported: [...SUPPORTED_PROVIDERS],
+            openai_key_present: openaiKeyPresent,
+            anthropic_key_present: anthropicKeyPresent,
+            key_presence_semantics:
+                "present/missing only; does not validate correctness, funding, provider reachability, or live API readiness",
+        },
+        file_scopes: {
+            revise_default: [...DEFAULT_REVISE_FILES],
+            revise_allowed: [...ALLOWED_REVISE_FILES],
+            evidence_default: [...DEFAULT_EVIDENCE_FILES],
+            evidence_allowed: [...ALLOWED_EVIDENCE_FILES],
+            protected: [...PROTECTED_FILES],
+        },
+        workflow: {
+            placeholder_first: true,
+            structural_files_deterministic: true,
+            human_review_required: true,
+            status_vs_context:
+                "status = local factory readiness/configuration snapshot; context = motion-specific repo context for a given intent",
+        },
+    };
+
+    if (jsonOutput) {
+        console.log(JSON.stringify(status, null, 2));
+        return;
+    }
+
+    log(`Motion Factory v0 — Status`);
+    log(`─────────────────────────────────────────`);
+    log(`Script version:    ${status.version}`);
+    log(`Repo root:         ${status.repo_root}`);
+    log(`Branch:            ${status.branch}`);
+    log(`Next motion ID:    ${status.next_motion_id}`);
+    log(`Total motions:     ${status.total_motions}`);
+    log(``);
+    log(`Commands:`);
+    log(`  context   — inspect repo context for a given intent (no files, no API)`);
+    log(`  draft     — create a 9-file motion package`);
+    log(`  revise    — update narrative files from notes`);
+    log(`  evidence  — insert proof evidence into narrative files`);
+    log(`  status    — local factory readiness/configuration snapshot`);
+    log(``);
+    log(`Providers:`);
+    log(`  Default:           ${DEFAULT_PROVIDER}`);
+    log(`  Supported:         ${[...SUPPORTED_PROVIDERS].join(", ")}`);
+    log(`  OPENAI_API_KEY:    ${openaiKeyPresent ? "present" : "missing"}`);
+    log(`  ANTHROPIC_API_KEY: ${anthropicKeyPresent ? "present" : "missing"}`);
+    log(`  (Key presence is environmental only; does not validate`);
+    log(`   correctness, funding, provider reachability, or live API readiness.)`);
+    log(``);
+    log(`File scopes:`);
+    log(`  Revise default:    ${[...DEFAULT_REVISE_FILES].join(", ")}`);
+    log(`  Revise allowed:    ${[...ALLOWED_REVISE_FILES].join(", ")}`);
+    log(`  Evidence default:  ${[...DEFAULT_EVIDENCE_FILES].join(", ")}`);
+    log(`  Evidence allowed:  ${[...ALLOWED_EVIDENCE_FILES].join(", ")}`);
+    log(`  Protected:         ${PROTECTED_FILES.join(", ")}`);
+    log(``);
+    log(`Workflow:`);
+    log(`  Placeholder-first: every motion starts with draft`);
+    log(`  Structural files:  deterministic, never model-generated`);
+    log(`  Human review:      required before ratification`);
+    log(`  status vs context: status = readiness snapshot; context = intent-specific repo context`);
     log(`─────────────────────────────────────────`);
 }
 
@@ -692,8 +877,31 @@ Draft scaffold — execution plan pending.
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// OpenAI narrative generation (draft)
+// Draft narrative generation
 // ──────────────────────────────────────────────────────────────────────────────
+
+function normalizeNarrativePayload(parsed) {
+    const motionYaml = parsed?.motion_yaml ?? {};
+
+    return {
+        motion_yaml: {
+            summary: typeof motionYaml.summary === "string" ? motionYaml.summary.trim() : "",
+            problem: typeof motionYaml.problem === "string" ? motionYaml.problem.trim() : "",
+            proposal: Array.isArray(motionYaml.proposal)
+                ? motionYaml.proposal.map((x) => String(x).trim()).filter(Boolean)
+                : [],
+            non_goals: Array.isArray(motionYaml.non_goals)
+                ? motionYaml.non_goals.map((x) => String(x).trim()).filter(Boolean)
+                : [],
+            success_criteria: Array.isArray(motionYaml.success_criteria)
+                ? motionYaml.success_criteria.map((x) => String(x).trim()).filter(Boolean)
+                : [],
+        },
+        proposal_md: typeof parsed?.proposal_md === "string" ? parsed.proposal_md.trim() : "",
+        challenge_md: typeof parsed?.challenge_md === "string" ? parsed.challenge_md.trim() : "",
+        execution_md: typeof parsed?.execution_md === "string" ? parsed.execution_md.trim() : "",
+    };
+}
 
 async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -713,7 +921,7 @@ async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
         "Do not generate ratification claims.",
         "Do not claim that any motion has passed validation.",
         "Keep content reviewable and clearly draft-quality.",
-        "Generate only the requested narrative fields."
+        "Generate only the requested narrative fields.",
     ].join(" ");
 
     const task = {
@@ -723,7 +931,7 @@ async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
         context,
         requested_fields: {
             motion_yaml: ["summary", "problem", "proposal", "non_goals", "success_criteria"],
-            markdown_files: ["proposal_md", "challenge_md", "execution_md"]
+            markdown_files: ["proposal_md", "challenge_md", "execution_md"],
         },
         output_schema: {
             motion_yaml: {
@@ -731,12 +939,12 @@ async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
                 problem: "string",
                 proposal: ["string"],
                 non_goals: ["string"],
-                success_criteria: ["string"]
+                success_criteria: ["string"],
             },
             proposal_md: "string",
             challenge_md: "string",
-            execution_md: "string"
-        }
+            execution_md: "string",
+        },
     };
 
     const res = await fetch("https://api.openai.com/v1/responses", {
@@ -774,31 +982,8 @@ async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
     return normalizeNarrativePayload(parsed);
 }
 
-function normalizeNarrativePayload(parsed) {
-    const motionYaml = parsed?.motion_yaml ?? {};
-
-    return {
-        motion_yaml: {
-            summary: typeof motionYaml.summary === "string" ? motionYaml.summary.trim() : "",
-            problem: typeof motionYaml.problem === "string" ? motionYaml.problem.trim() : "",
-            proposal: Array.isArray(motionYaml.proposal)
-                ? motionYaml.proposal.map((x) => String(x).trim()).filter(Boolean)
-                : [],
-            non_goals: Array.isArray(motionYaml.non_goals)
-                ? motionYaml.non_goals.map((x) => String(x).trim()).filter(Boolean)
-                : [],
-            success_criteria: Array.isArray(motionYaml.success_criteria)
-                ? motionYaml.success_criteria.map((x) => String(x).trim()).filter(Boolean)
-                : [],
-        },
-        proposal_md: typeof parsed?.proposal_md === "string" ? parsed.proposal_md.trim() : "",
-        challenge_md: typeof parsed?.challenge_md === "string" ? parsed.challenge_md.trim() : "",
-        execution_md: typeof parsed?.execution_md === "string" ? parsed.execution_md.trim() : "",
-    };
-}
-
 // ──────────────────────────────────────────────────────────────────────────────
-// Anthropic API functions
+// Anthropic API helpers
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function callAnthropicApi({ apiKey, systemPrompt, userContent, maxTokens = 8000 }) {
@@ -829,7 +1014,9 @@ async function callAnthropicApi({ apiKey, systemPrompt, userContent, maxTokens =
     }
 
     const text = content.filter((c) => c.type === "text").map((c) => c.text).join("");
-    if (!text) throw new Error("Anthropic response contained no text content.");
+    if (!text) {
+        throw new Error("Anthropic response contained no text content.");
+    }
     return text;
 }
 
@@ -851,69 +1038,362 @@ async function generateNarrativeWithAnthropic({ context, motionId, intent, apiKe
 
     const task = {
         task: "Generate draft-only motion narrative content",
-        motion_id: motionId, intent, context,
+        motion_id: motionId,
+        intent,
+        context,
         requested_fields: {
             motion_yaml: ["summary", "problem", "proposal", "non_goals", "success_criteria"],
             markdown_files: ["proposal_md", "challenge_md", "execution_md"],
         },
         output_schema: {
-            motion_yaml: { summary: "string", problem: "string", proposal: ["string"], non_goals: ["string"], success_criteria: ["string"] },
-            proposal_md: "string", challenge_md: "string", execution_md: "string",
+            motion_yaml: {
+                summary: "string",
+                problem: "string",
+                proposal: ["string"],
+                non_goals: ["string"],
+                success_criteria: ["string"],
+            },
+            proposal_md: "string",
+            challenge_md: "string",
+            execution_md: "string",
         },
     };
 
-    const raw = await callAnthropicApi({ apiKey, systemPrompt, userContent: JSON.stringify(task) });
+    const raw = await callAnthropicApi({
+        apiKey,
+        systemPrompt,
+        userContent: JSON.stringify(task),
+    });
+
     const cleaned = stripMarkdownFences(raw);
     let parsed;
-    try { parsed = JSON.parse(cleaned); } catch (err) { throw new Error(`Failed to parse Anthropic JSON output: ${err.message}`); }
+    try {
+        parsed = JSON.parse(cleaned);
+    } catch (err) {
+        throw new Error(`Failed to parse Anthropic JSON output: ${err.message}`);
+    }
     return normalizeNarrativePayload(parsed);
 }
 
-async function callAnthropicRevise({ apiKey, context, existingContent, revisionNotes, targetFiles, originalIntent }) {
-    const fileDescriptions = targetFiles.map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`).join("\n\n");
+// ──────────────────────────────────────────────────────────────────────────────
+// Revise generation
+// ──────────────────────────────────────────────────────────────────────────────
 
-    const systemPrompt = [
+async function callOpenAIRevise({
+    apiKey,
+    context,
+    existingContent,
+    revisionNotes,
+    targetFiles,
+    originalIntent,
+}) {
+    const fileDescriptions = targetFiles
+        .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
+        .join("\n\n");
+
+    const instructions = [
         "You are a governance motion revision assistant for the dev-jai-nexus repository.",
-        "You are revising existing draft motion files based on human revision notes.\n",
+        "You are revising existing draft motion files based on human revision notes.",
+        "",
         "HARD RULES — you must NEVER generate any of the following:",
-        "- Evidence tables\n- PASS/FAIL claims\n- Executed test-result claims\n- Proof-result claims",
-        "- Vote entries or vote rationales\n- Ratification claims or ratification outcomes",
-        "- Any content that implies work has already been performed or validated\n",
-        "Your output is DRAFT content only. It will be reviewed by a human before ratification.\n",
+        "- Evidence tables",
+        "- PASS/FAIL claims",
+        "- Executed test-result claims",
+        "- Proof-result claims",
+        "- Vote entries or vote rationales",
+        "- Ratification claims or ratification outcomes",
+        "- Any content that implies work has already been performed or validated",
+        "",
+        "Your output is DRAFT content only. It will be reviewed by a human before ratification.",
+        "",
         "REVISION RULES:",
         "- Incorporate the human revision notes into the targeted files",
         "- Preserve the section structure and headers of each file",
-        "- Use repo-native conventions\n- Keep content precise and ratifiable",
-        "- Do not add speculative expansion beyond the revision notes\n",
+        "- Use repo-native conventions: bounded scope, exact file surfaces, low-churn language",
+        "- Keep content precise and ratifiable",
+        "- Do not add speculative expansion beyond the revision notes",
+        "",
         "OUTPUT FORMAT:",
         "Return each revised file separated by markers exactly like this:",
-        "=== FILE: filename.md ===\n(revised content)\n=== END FILE ===\n",
+        "=== FILE: filename.md ===",
+        "(revised content)",
+        "=== END FILE ===",
+        "",
+        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
+    ].join("\n");
+
+    const input = [
+        "## Original intent",
+        originalIntent,
+        "",
+        "## Context",
+        JSON.stringify(context, null, 2),
+        "",
+        "## Revision notes",
+        revisionNotes,
+        "",
+        "## Files to revise",
+        targetFiles.join(", "),
+        "",
+        "## Current content of targeted files",
+        fileDescriptions,
+        "",
+        "Please revise the targeted files incorporating the revision notes.",
+    ].join("\n");
+
+    const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            instructions,
+            input,
+            text: {
+                format: { type: "text" },
+                verbosity: "medium",
+            },
+        }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
+    }
+
+    const payload = await res.json();
+    return extractOutputText(payload);
+}
+
+async function callAnthropicRevise({
+    apiKey,
+    context,
+    existingContent,
+    revisionNotes,
+    targetFiles,
+    originalIntent,
+}) {
+    const fileDescriptions = targetFiles
+        .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
+        .join("\n\n");
+
+    const systemPrompt = [
+        "You are a governance motion revision assistant for the dev-jai-nexus repository.",
+        "You are revising existing draft motion files based on human revision notes.",
+        "",
+        "HARD RULES — you must NEVER generate any of the following:",
+        "- Evidence tables",
+        "- PASS/FAIL claims",
+        "- Executed test-result claims",
+        "- Proof-result claims",
+        "- Vote entries or vote rationales",
+        "- Ratification claims or ratification outcomes",
+        "- Any content that implies work has already been performed or validated",
+        "",
+        "Your output is DRAFT content only. It will be reviewed by a human before ratification.",
+        "",
+        "REVISION RULES:",
+        "- Incorporate the human revision notes into the targeted files",
+        "- Preserve the section structure and headers of each file",
+        "- Use repo-native conventions",
+        "- Keep content precise and ratifiable",
+        "- Do not add speculative expansion beyond the revision notes",
+        "",
+        "OUTPUT FORMAT:",
+        "Return each revised file separated by markers exactly like this:",
+        "=== FILE: filename.md ===",
+        "(revised content)",
+        "=== END FILE ===",
+        "",
         "Return ONLY the targeted files in this format.",
     ].join("\n");
 
-    const userContent = `## Original intent\n${originalIntent}\n\n## Context\n${JSON.stringify(context, null, 2)}\n\n## Revision notes\n${revisionNotes}\n\n## Files to revise\n${targetFiles.join(", ")}\n\n## Current content of targeted files\n${fileDescriptions}\n\nPlease revise the targeted files incorporating the revision notes.`;
+    const userContent = [
+        `## Original intent`,
+        originalIntent,
+        ``,
+        `## Context`,
+        JSON.stringify(context, null, 2),
+        ``,
+        `## Revision notes`,
+        revisionNotes,
+        ``,
+        `## Files to revise`,
+        targetFiles.join(", "),
+        ``,
+        `## Current content of targeted files`,
+        fileDescriptions,
+        ``,
+        `Please revise the targeted files incorporating the revision notes.`,
+    ].join("\n");
 
     return await callAnthropicApi({ apiKey, systemPrompt, userContent });
 }
 
-async function callAnthropicEvidence({ apiKey, context, existingContent, evidenceText, operatorNotes, targetFiles, originalIntent }) {
-    const fileDescriptions = targetFiles.map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`).join("\n\n");
+// ──────────────────────────────────────────────────────────────────────────────
+// Evidence generation
+// ──────────────────────────────────────────────────────────────────────────────
+
+async function callOpenAIEvidence({
+    apiKey,
+    context,
+    existingContent,
+    evidenceText,
+    operatorNotes,
+    targetFiles,
+    originalIntent,
+}) {
+    const fileDescriptions = targetFiles
+        .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
+        .join("\n\n");
+
+    const instructions = [
+        "You are an evidence placement assistant for the dev-jai-nexus repository.",
+        "You are inserting real operator-provided evidence into existing draft motion narrative files.",
+        "",
+        "CRITICAL BOUNDARY — evidence-fed, not evidence-inventing:",
+        "You may ONLY do the following with the provided evidence:",
+        "- Quote it directly",
+        "- Organize it into the appropriate narrative sections",
+        "- Summarize it when the source material clearly supports the summary",
+        "- Place terminal output, command logs, and results where they belong",
+        "",
+        "You must NEVER do any of the following:",
+        "- Invent PASS/FAIL claims not explicitly present in the evidence",
+        "- Upgrade ambiguous evidence into definitive conclusions",
+        "- Add proof results that were not in the evidence file",
+        "- Claim tests passed or failed beyond what the evidence explicitly shows",
+        "- Generate vote entries or vote rationales",
+        "- Generate ratification claims or ratification outcomes",
+        "- Resolve ambiguity — if evidence is inconclusive, preserve that ambiguity",
+        "",
+        "Your output will be reviewed by a human before ratification.",
+        "",
+        "PLACEMENT RULES:",
+        "- Incorporate the evidence into the appropriate sections of each targeted file",
+        "- Preserve the section structure and headers of each file",
+        "- Use repo-native conventions",
+        "- If operator notes are provided, use them for placement guidance",
+        "- Keep the evidence attribution clear (what came from the evidence file vs existing content)",
+        "",
+        "OUTPUT FORMAT:",
+        "Return each updated file separated by markers exactly like this:",
+        "=== FILE: filename.md ===",
+        "(updated content with evidence placed)",
+        "=== END FILE ===",
+        "",
+        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
+    ].join("\n");
+
+    const notesSection = operatorNotes ? `## Operator notes\n${operatorNotes}\n` : "";
+
+    const input = [
+        `## Original intent`,
+        originalIntent,
+        ``,
+        `## Context`,
+        JSON.stringify(context, null, 2),
+        ``,
+        notesSection,
+        `## Evidence payload (operator-provided, source material)`,
+        `The following is raw evidence provided by the operator. Place and organize`,
+        `this evidence into the targeted files. Do not invent claims beyond what`,
+        `this evidence shows.`,
+        ``,
+        `--- EVIDENCE START ---`,
+        evidenceText,
+        `--- EVIDENCE END ---`,
+        ``,
+        `## Files to update with evidence`,
+        targetFiles.join(", "),
+        ``,
+        `## Current content of targeted files`,
+        fileDescriptions,
+        ``,
+        `Please update the targeted files by placing the provided evidence into the appropriate sections.`,
+    ].join("\n");
+
+    const res = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+            "content-type": "application/json",
+            authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            instructions,
+            input,
+            text: {
+                format: { type: "text" },
+                verbosity: "medium",
+            },
+        }),
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "(unreadable)");
+        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
+    }
+
+    const payload = await res.json();
+    return extractOutputText(payload);
+}
+
+async function callAnthropicEvidence({
+    apiKey,
+    context,
+    existingContent,
+    evidenceText,
+    operatorNotes,
+    targetFiles,
+    originalIntent,
+}) {
+    const fileDescriptions = targetFiles
+        .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
+        .join("\n\n");
 
     const systemPrompt = [
         "You are an evidence placement assistant for the dev-jai-nexus repository.",
-        "You are inserting real operator-provided evidence into existing draft motion narrative files.\n",
+        "You are inserting real operator-provided evidence into existing draft motion narrative files.",
+        "",
         "CRITICAL BOUNDARY — evidence-fed, not evidence-inventing:",
         "You may ONLY: quote, organize, summarize, or place operator-provided evidence.",
         "You must NEVER: invent PASS/FAIL claims, upgrade ambiguity, add results not in the evidence,",
-        "generate vote entries, generate ratification claims, or resolve ambiguity.\n",
+        "generate vote entries, generate ratification claims, or resolve ambiguity.",
+        "",
         "OUTPUT FORMAT:",
         "Return each updated file separated by markers exactly like this:",
-        "=== FILE: filename.md ===\n(updated content with evidence placed)\n=== END FILE ===\n",
+        "=== FILE: filename.md ===",
+        "(updated content with evidence placed)",
+        "=== END FILE ===",
+        "",
         "Return ONLY the targeted files in this format.",
     ].join("\n");
 
     const notesSection = operatorNotes ? `## Operator notes\n${operatorNotes}\n\n` : "";
-    const userContent = `## Original intent\n${originalIntent}\n\n## Context\n${JSON.stringify(context, null, 2)}\n\n${notesSection}## Evidence payload\n--- EVIDENCE START ---\n${evidenceText}\n--- EVIDENCE END ---\n\n## Files to update\n${targetFiles.join(", ")}\n\n## Current content\n${fileDescriptions}\n\nPlease update the targeted files by placing the provided evidence.`;
+    const userContent = [
+        `## Original intent`,
+        originalIntent,
+        ``,
+        `## Context`,
+        JSON.stringify(context, null, 2),
+        ``,
+        notesSection,
+        `## Evidence payload`,
+        `--- EVIDENCE START ---`,
+        evidenceText,
+        `--- EVIDENCE END ---`,
+        ``,
+        `## Files to update`,
+        targetFiles.join(", "),
+        ``,
+        `## Current content`,
+        fileDescriptions,
+        ``,
+        `Please update the targeted files by placing the provided evidence.`,
+    ].join("\n");
 
     return await callAnthropicApi({ apiKey, systemPrompt, userContent });
 }
@@ -1037,156 +1517,10 @@ async function draftCommand({ repoRoot, intent, noApi, provider }) {
     }
     log(`─────────────────────────────────────────`);
 }
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Revise command
 // ──────────────────────────────────────────────────────────────────────────────
-
-const ALLOWED_REVISE_FILES = new Set([
-    "proposal.md",
-    "challenge.md",
-    "execution.md",
-    "motion.yaml",
-]);
-
-const DEFAULT_REVISE_FILES = [
-    "proposal.md",
-    "challenge.md",
-    "execution.md",
-];
-
-const MOTION_YAML_STRUCTURAL_FIELDS = new Set([
-    "motion_id",
-    "title",
-    "status",
-    "created_at",
-    "owner",
-    "target",
-    "vote",
-]);
-
-async function callOpenAIRevise({ apiKey, context, existingContent, revisionNotes, targetFiles, originalIntent }) {
-    const fileDescriptions = targetFiles.map((f) => {
-        const content = existingContent[f] || "(empty)";
-        return `--- ${f} ---\n${content}\n--- end ${f} ---`;
-    }).join("\n\n");
-
-    const instructions = [
-        "You are a governance motion revision assistant for the dev-jai-nexus repository.",
-        "You are revising existing draft motion files based on human revision notes.",
-        "",
-        "HARD RULES — you must NEVER generate any of the following:",
-        "- Evidence tables",
-        "- PASS/FAIL claims",
-        "- Executed test-result claims",
-        "- Proof-result claims",
-        "- Vote entries or vote rationales",
-        "- Ratification claims or ratification outcomes",
-        "- Any content that implies work has already been performed or validated",
-        "",
-        "Your output is DRAFT content only. It will be reviewed by a human before ratification.",
-        "",
-        "REVISION RULES:",
-        "- Incorporate the human revision notes into the targeted files",
-        "- Preserve the section structure and headers of each file",
-        "- Use repo-native conventions: bounded scope, exact file surfaces, low-churn language",
-        "- Keep content precise and ratifiable",
-        "- Do not add speculative expansion beyond the revision notes",
-        "",
-        "OUTPUT FORMAT:",
-        "Return each revised file separated by markers exactly like this:",
-        "=== FILE: filename.md ===",
-        "(revised content)",
-        "=== END FILE ===",
-        "",
-        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
-    ].join("\n");
-
-    const input = [
-        `## Original intent`,
-        originalIntent,
-        ``,
-        `## Context`,
-        JSON.stringify(context, null, 2),
-        ``,
-        `## Revision notes`,
-        revisionNotes,
-        ``,
-        `## Files to revise`,
-        targetFiles.join(", "),
-        ``,
-        `## Current content of targeted files`,
-        fileDescriptions,
-        ``,
-        `Please revise the targeted files incorporating the revision notes.`,
-    ].join("\n");
-
-    const res = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
-            authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model: OPENAI_MODEL,
-            instructions,
-            input,
-            text: {
-                format: { type: "text" },
-                verbosity: "medium",
-            },
-        }),
-    });
-
-    if (!res.ok) {
-        const body = await res.text().catch(() => "(unreadable)");
-        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
-    }
-
-    const payload = await res.json();
-    return extractOutputText(payload);
-}
-
-function parseMarkedFiles(raw, targetFiles) {
-    const results = {};
-    for (const filename of targetFiles) {
-        const startMarker = `=== FILE: ${filename} ===`;
-        const endMarker = `=== END FILE ===`;
-        const startIdx = raw.indexOf(startMarker);
-        if (startIdx === -1) continue;
-
-        const contentStart = startIdx + startMarker.length;
-        const endIdx = raw.indexOf(endMarker, contentStart);
-        if (endIdx === -1) continue;
-
-        let content = raw.slice(contentStart, endIdx).trim();
-        if (content) {
-            results[filename] = content + "\n";
-        }
-    }
-    return results;
-}
-
-function mergeMotionYamlNarrative(existingYaml, revisedContent) {
-    const existing = safeYamlLoad(existingYaml, "motion.yaml (existing)");
-    if (!existing) return existingYaml;
-
-    const revised = safeYamlLoad(revisedContent, "motion.yaml (revised)");
-    if (!revised) return existingYaml;
-
-    const merged = { ...existing };
-    for (const [key, value] of Object.entries(revised)) {
-        if (!MOTION_YAML_STRUCTURAL_FIELDS.has(key)) {
-            merged[key] = value;
-        }
-    }
-
-    return yaml.dump(merged, {
-        lineWidth: -1,
-        noRefs: true,
-        quotingType: '"',
-        forceQuotes: false,
-    });
-}
 
 async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provider }) {
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
@@ -1198,7 +1532,11 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provid
 
     for (const f of targetFiles) {
         if (!ALLOWED_REVISE_FILES.has(f)) {
-            die(`File "${f}" is not in the allowed revise set.\n  Allowed: ${[...ALLOWED_REVISE_FILES].join(", ")}`);
+            die(
+                `File "${f}" is not in the allowed revise set.\n  Allowed: ${[
+                    ...ALLOWED_REVISE_FILES,
+                ].join(", ")}`
+            );
         }
     }
 
@@ -1207,11 +1545,7 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provid
     const existingContent = {};
     for (const f of targetFiles) {
         const fp = path.join(motionDir, f);
-        if (await exists(fp)) {
-            existingContent[f] = await readText(fp);
-        } else {
-            existingContent[f] = "";
-        }
+        existingContent[f] = (await exists(fp)) ? await readText(fp) : "";
     }
 
     const motionYamlPath = path.join(motionDir, "motion.yaml");
@@ -1254,12 +1588,10 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provid
 
     for (const f of targetFiles) {
         let content = revisedPayload[f];
-
         if (f === "motion.yaml") {
             const existingYaml = existingContent["motion.yaml"] || "";
             content = mergeMotionYamlNarrative(existingYaml, content);
         }
-
         await fs.writeFile(path.join(motionDir, f), content, "utf8");
     }
 
@@ -1280,125 +1612,19 @@ async function reviseCommand({ repoRoot, motionId, notes, requestedFiles, provid
 // Evidence command
 // ──────────────────────────────────────────────────────────────────────────────
 
-const ALLOWED_EVIDENCE_FILES = new Set([
-    "proposal.md",
-    "execution.md",
-    "challenge.md",
-]);
-
-const DEFAULT_EVIDENCE_FILES = [
-    "proposal.md",
-    "execution.md",
-];
-
-async function callOpenAIEvidence({ apiKey, context, existingContent, evidenceText, operatorNotes, targetFiles, originalIntent }) {
-    const fileDescriptions = targetFiles.map((f) => {
-        const content = existingContent[f] || "(empty)";
-        return `--- ${f} ---\n${content}\n--- end ${f} ---`;
-    }).join("\n\n");
-
-    const instructions = [
-        "You are an evidence placement assistant for the dev-jai-nexus repository.",
-        "You are inserting real operator-provided evidence into existing draft motion narrative files.",
-        "",
-        "CRITICAL BOUNDARY — evidence-fed, not evidence-inventing:",
-        "You may ONLY do the following with the provided evidence:",
-        "- Quote it directly",
-        "- Organize it into the appropriate narrative sections",
-        "- Summarize it when the source material clearly supports the summary",
-        "- Place terminal output, command logs, and results where they belong",
-        "",
-        "You must NEVER do any of the following:",
-        "- Invent PASS/FAIL claims not explicitly present in the evidence",
-        "- Upgrade ambiguous evidence into definitive conclusions",
-        "- Add proof results that were not in the evidence file",
-        "- Claim tests passed or failed beyond what the evidence explicitly shows",
-        "- Generate vote entries or vote rationales",
-        "- Generate ratification claims or ratification outcomes",
-        "- Resolve ambiguity — if evidence is inconclusive, preserve that ambiguity",
-        "",
-        "Your output will be reviewed by a human before ratification.",
-        "",
-        "PLACEMENT RULES:",
-        "- Incorporate the evidence into the appropriate sections of each targeted file",
-        "- Preserve the section structure and headers of each file",
-        "- Use repo-native conventions",
-        "- If operator notes are provided, use them for placement guidance",
-        "- Keep the evidence attribution clear (what came from the evidence file vs existing content)",
-        "",
-        "OUTPUT FORMAT:",
-        "Return each updated file separated by markers exactly like this:",
-        "=== FILE: filename.md ===",
-        "(updated content with evidence placed)",
-        "=== END FILE ===",
-        "",
-        "Return ONLY the targeted files in this format. Do not return files that were not requested.",
-    ].join("\n");
-
-    const notesSection = operatorNotes
-        ? `## Operator notes\n${operatorNotes}\n`
-        : "";
-
-    const input = [
-        `## Original intent`,
-        originalIntent,
-        ``,
-        `## Context`,
-        JSON.stringify(context, null, 2),
-        ``,
-        notesSection,
-        `## Evidence payload (operator-provided, source material)`,
-        `The following is raw evidence provided by the operator. Place and organize`,
-        `this evidence into the targeted files. Do not invent claims beyond what`,
-        `this evidence shows.`,
-        ``,
-        `--- EVIDENCE START ---`,
-        evidenceText,
-        `--- EVIDENCE END ---`,
-        ``,
-        `## Files to update with evidence`,
-        targetFiles.join(", "),
-        ``,
-        `## Current content of targeted files`,
-        fileDescriptions,
-        ``,
-        `Please update the targeted files by placing the provided evidence into the appropriate sections.`,
-    ].join("\n");
-
-    const res = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-            "content-type": "application/json",
-            authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-            model: OPENAI_MODEL,
-            instructions,
-            input,
-            text: {
-                format: { type: "text" },
-                verbosity: "medium",
-            },
-        }),
-    });
-
-    if (!res.ok) {
-        const body = await res.text().catch(() => "(unreadable)");
-        throw new Error(`OpenAI API returned ${res.status}: ${body}`);
-    }
-
-    const payload = await res.json();
-    return extractOutputText(payload);
-}
-
-async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles, provider }) {
-    // ── Validate all inputs before any file access or API call ────────────
+async function evidenceCommand({
+    repoRoot,
+    motionId,
+    evidenceFilePath,
+    operatorNotes,
+    requestedFiles,
+    provider,
+}) {
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
     if (!(await exists(motionDir))) {
         die(`Motion directory not found: .nexus/motions/${motionId}`);
     }
 
-    // Resolve evidence file path
     const resolvedEvidencePath = path.resolve(evidenceFilePath);
     if (!(await exists(resolvedEvidencePath))) {
         die(`Evidence file not found: ${evidenceFilePath}`);
@@ -1409,31 +1635,25 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
         die(`Evidence file is empty: ${evidenceFilePath}`);
     }
 
-    // Determine target files
     const targetFiles = requestedFiles.length > 0 ? requestedFiles : [...DEFAULT_EVIDENCE_FILES];
-
-    // Validate all requested files are in allowed set
     for (const f of targetFiles) {
         if (!ALLOWED_EVIDENCE_FILES.has(f)) {
-            die(`File "${f}" is not in the allowed evidence insertion set.\n  Allowed: ${[...ALLOWED_EVIDENCE_FILES].join(", ")}`);
+            die(
+                `File "${f}" is not in the allowed evidence insertion set.\n  Allowed: ${[
+                    ...ALLOWED_EVIDENCE_FILES,
+                ].join(", ")}`
+            );
         }
     }
 
-    // Check API key before any generation
     const apiKey = requireApiKey(provider);
 
-    // ── Read existing content ────────────────────────────────────────────
     const existingContent = {};
     for (const f of targetFiles) {
         const fp = path.join(motionDir, f);
-        if (await exists(fp)) {
-            existingContent[f] = await readText(fp);
-        } else {
-            existingContent[f] = "";
-        }
+        existingContent[f] = (await exists(fp)) ? await readText(fp) : "";
     }
 
-    // Read original intent from motion.yaml
     const motionYamlPath = path.join(motionDir, "motion.yaml");
     let originalIntent = "(unknown)";
     if (await exists(motionYamlPath)) {
@@ -1441,10 +1661,8 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
         if (motionObj?.title) originalIntent = String(motionObj.title).trim();
     }
 
-    // Gather context
     const context = await buildContext(repoRoot, originalIntent);
 
-    // ── Generate evidence-updated content (all-or-nothing) ───────────────
     log(`Inserting evidence into ${targetFiles.length} file(s) for ${motionId}...`);
     log(`Evidence file: ${evidenceFilePath} (${evidenceText.length} chars)`);
 
@@ -1468,7 +1686,6 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
         return;
     }
 
-    // Validate we got content for ALL targeted files (all-or-nothing)
     const missingFiles = targetFiles.filter((f) => !updatedPayload[f]);
     if (missingFiles.length > 0) {
         log(`⚠  API did not return content for: ${missingFiles.join(", ")}`);
@@ -1477,12 +1694,10 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
         return;
     }
 
-    // ── Atomic write: all files together ─────────────────────────────────
     for (const f of targetFiles) {
         await fs.writeFile(path.join(motionDir, f), updatedPayload[f], "utf8");
     }
 
-    // ── Stdout summary ───────────────────────────────────────────────────
     log(`Evidence insertion complete for ${motionId}`);
     log(`─────────────────────────────────────────`);
     log(`Motion ID:       ${motionId}`);
@@ -1502,7 +1717,7 @@ async function evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorN
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Main
+// Usage / main
 // ──────────────────────────────────────────────────────────────────────────────
 
 function usage() {
@@ -1511,9 +1726,10 @@ MOTION-FACTORY ${SCRIPT_VERSION}
 
 Usage:
   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
-  node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api]
-  node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2]
-  node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2]
+  node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic]
+  node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic]
+  node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic]
+  node portal/scripts/motion-factory.mjs status   [--json]
 
 Commands:
   context    Gather and display repo-native motion context for inspection.
@@ -1521,7 +1737,7 @@ Commands:
 
   draft      Create a 9-file motion package in DRAFT state.
              Structural files remain deterministic.
-             Narrative files are placeholders (--no-api) or OpenAI-generated.
+             Narrative files are placeholders (--no-api) or provider-generated.
 
   revise     Revise narrative files in an existing draft from human notes.
              Narrower than draft: only touches narrative files.
@@ -1532,9 +1748,12 @@ Commands:
              Evidence-fed only: model organizes provided evidence, never invents results.
              Atomic: all-or-nothing write. If any step fails, no files change.
 
+  status     Show live factory configuration and readiness state.
+             No files written. No API calls. No arguments required.
+
 Flags:
   --intent         (required for context/draft) Human intent prompt.
-  --json           (context only) Output as a stable JSON object.
+  --json           (context/status only) Output as a stable JSON object.
   --no-api         (draft only) Skip API generation; use placeholder scaffolds.
   --provider       (draft/revise/evidence) Provider: openai (default) or anthropic.
   --motion         (revise/evidence) Target motion ID (e.g., motion-0058).
@@ -1585,7 +1804,7 @@ async function main() {
         const intent = args.intent ? String(args.intent) : null;
         if (!intent) {
             die(
-                `Missing --intent. Motion Factory requires human intent to operate.\n  Usage: node portal/scripts/motion-factory.mjs draft --intent "..." [--no-api]`
+                `Missing --intent. Motion Factory requires human intent to operate.\n  Usage: node portal/scripts/motion-factory.mjs draft --intent "..." [--no-api] [--provider openai|anthropic]`
             );
         }
 
@@ -1598,12 +1817,16 @@ async function main() {
     if (cmd === "revise") {
         const motionId = args.motion ? String(args.motion) : null;
         if (!motionId) {
-            die(`Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..."`);
+            die(
+                `Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic]`
+            );
         }
 
         const notes = args.notes ? String(args.notes) : null;
         if (!notes) {
-            die(`Missing --notes.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..."`);
+            die(
+                `Missing --notes.\n  Usage: node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic]`
+            );
         }
 
         const requestedFiles = args.files
@@ -1618,22 +1841,38 @@ async function main() {
     if (cmd === "evidence") {
         const motionId = args.motion ? String(args.motion) : null;
         if (!motionId) {
-            die(`Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path`);
+            die(
+                `Missing --motion.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic]`
+            );
         }
 
         const evidenceFilePath = args["evidence-file"] ? String(args["evidence-file"]) : null;
         if (!evidenceFilePath) {
-            die(`Missing --evidence-file.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path`);
+            die(
+                `Missing --evidence-file.\n  Usage: node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic]`
+            );
         }
 
         const operatorNotes = args.notes ? String(args.notes) : null;
-
         const requestedFiles = args.files
             ? String(args.files).split(",").map((f) => f.trim()).filter(Boolean)
             : [];
 
         const provider = resolveProvider(args);
-        await evidenceCommand({ repoRoot, motionId, evidenceFilePath, operatorNotes, requestedFiles, provider });
+        await evidenceCommand({
+            repoRoot,
+            motionId,
+            evidenceFilePath,
+            operatorNotes,
+            requestedFiles,
+            provider,
+        });
+        return;
+    }
+
+    if (cmd === "status") {
+        const jsonOutput = args.json === true;
+        await statusCommand({ repoRoot, jsonOutput });
         return;
     }
 
