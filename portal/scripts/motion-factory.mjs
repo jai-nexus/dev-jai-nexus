@@ -363,7 +363,7 @@ async function enumerateMotions(repoRoot) {
 
     const entries = await fs.readdir(motionsDir, { withFileTypes: true });
     return entries
-        .filter((e) => e.isDirectory() && /^motion-\d+$/.test(e.name))
+        .filter((e) => e.isDirectory() && MOTION_DIR_RE.test(e.name))
         .map((e) => e.name)
         .sort((a, b) => {
             const na = parseInt(a.replace("motion-", ""), 10);
@@ -372,15 +372,55 @@ async function enumerateMotions(repoRoot) {
         });
 }
 
+const MOTION_DIR_RE = /^motion-(\d+)$/;
+
+function formatMotionId(num) {
+    return `motion-${String(num).padStart(4, "0")}`;
+}
+
 function motionIdToNumber(id) {
-    return parseInt(id.replace("motion-", ""), 10);
+    const match = MOTION_DIR_RE.exec(String(id).trim());
+    if (!match) return null;
+    return parseInt(match[1], 10);
+}
+
+function buildMotionInventory(motionDirs) {
+    const numbers = motionDirs
+        .map((id) => motionIdToNumber(id))
+        .filter((n) => Number.isInteger(n))
+        .sort((a, b) => a - b);
+
+    const existingMotionDirectoryCount = numbers.length;
+    const highestDiscoveredMotionNumber =
+        numbers.length > 0 ? numbers[numbers.length - 1] : 0;
+    const highestDiscoveredMotionId =
+        highestDiscoveredMotionNumber > 0
+            ? formatMotionId(highestDiscoveredMotionNumber)
+            : null;
+
+    const seen = new Set(numbers);
+    const missingMotionIds = [];
+    for (let n = 1; n <= highestDiscoveredMotionNumber; n++) {
+        if (!seen.has(n)) missingMotionIds.push(formatMotionId(n));
+    }
+
+    const nextMotionNumber =
+        highestDiscoveredMotionNumber > 0
+            ? highestDiscoveredMotionNumber + 1
+            : 1;
+
+    return {
+        existing_motion_directory_count: existingMotionDirectoryCount,
+        highest_discovered_motion_number: highestDiscoveredMotionNumber,
+        highest_discovered_motion_id: highestDiscoveredMotionId,
+        next_motion_id: formatMotionId(nextMotionNumber),
+        missing_motion_ids: missingMotionIds,
+        has_gaps: missingMotionIds.length > 0,
+    };
 }
 
 function nextMotionId(motionDirs) {
-    if (motionDirs.length === 0) return "motion-0001";
-    const last = motionDirs[motionDirs.length - 1];
-    const num = motionIdToNumber(last) + 1;
-    return `motion-${String(num).padStart(4, "0")}`;
+    return buildMotionInventory(motionDirs).next_motion_id;
 }
 
 async function readRecentMotions(repoRoot, motionDirs, window) {
@@ -497,7 +537,8 @@ async function buildContext(repoRoot, intent) {
     const headCommit = git(repoRoot, ["rev-parse", "--short", "HEAD"]);
 
     const motionDirs = await enumerateMotions(repoRoot);
-    const nextId = nextMotionId(motionDirs);
+    const motionInventory = buildMotionInventory(motionDirs);
+    const nextId = motionInventory.next_motion_id;
     const recentMotions = await readRecentMotions(repoRoot, motionDirs, RECENT_MOTION_WINDOW);
 
     const staffingSummary = await readStaffingSummary(repoRoot);
@@ -510,7 +551,7 @@ async function buildContext(repoRoot, intent) {
         next_motion_id: nextId,
         branch,
         head_commit: headCommit,
-        total_motions: motionDirs.length,
+        total_motions: motionInventory.existing_motion_directory_count,
         recent_motions: recentMotions,
         staffing_summary: staffingSummary,
         panel_summary: panelSummary,
@@ -575,20 +616,30 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
 // Status command
 // ──────────────────────────────────────────────────────────────────────────────
 
-async function statusCommand({ repoRoot, jsonOutput }) {
-    const branch = git(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]);
-    const motionDirs = await enumerateMotions(repoRoot);
-    const nextId = nextMotionId(motionDirs);
-
+function buildStatusSnapshot({ repoRoot, branch, motionInventory }) {
     const openaiKeyPresent = !!process.env.OPENAI_API_KEY;
     const anthropicKeyPresent = !!process.env.ANTHROPIC_API_KEY;
 
-    const status = {
+    return {
         version: SCRIPT_VERSION,
         repo_root: repoRoot,
         branch,
-        next_motion_id: nextId,
-        total_motions: motionDirs.length,
+        next_motion_id: motionInventory.next_motion_id,
+
+        // Backward-compatible alias for existing consumers.
+        total_motions: motionInventory.existing_motion_directory_count,
+
+        motion_inventory: {
+            existing_motion_directory_count:
+                motionInventory.existing_motion_directory_count,
+            highest_discovered_motion_number:
+                motionInventory.highest_discovered_motion_number,
+            highest_discovered_motion_id:
+                motionInventory.highest_discovered_motion_id,
+            missing_motion_ids: [...motionInventory.missing_motion_ids],
+            has_gaps: motionInventory.has_gaps,
+        },
+
         commands: [...AVAILABLE_COMMANDS],
         providers: {
             default: DEFAULT_PROVIDER,
@@ -613,41 +664,67 @@ async function statusCommand({ repoRoot, jsonOutput }) {
                 "status = local factory readiness/configuration snapshot; context = motion-specific repo context for a given intent",
         },
     };
+}
+
+async function statusCommand({ repoRoot, jsonOutput }) {
+    const branch = git(repoRoot, ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const motionDirs = await enumerateMotions(repoRoot);
+    const motionInventory = buildMotionInventory(motionDirs);
+
+    const status = buildStatusSnapshot({
+        repoRoot,
+        branch,
+        motionInventory,
+    });
 
     if (jsonOutput) {
         console.log(JSON.stringify(status, null, 2));
         return;
     }
 
-    log(`Motion Factory v0 — Status`);
+    log(`Motion Factory v0 - Status`);
     log(`─────────────────────────────────────────`);
     log(`Script version:    ${status.version}`);
     log(`Repo root:         ${status.repo_root}`);
     log(`Branch:            ${status.branch}`);
     log(`Next motion ID:    ${status.next_motion_id}`);
-    log(`Total motions:     ${status.total_motions}`);
+    log(`Motion dirs:       ${status.motion_inventory.existing_motion_directory_count}`);
+    log(`Highest motion ID: ${status.motion_inventory.highest_discovered_motion_id ?? "(none)"}`);
+
+    if (status.motion_inventory.has_gaps) {
+        log(
+            `Missing motions:   ${status.motion_inventory.missing_motion_ids.join(", ")}`
+        );
+    } else {
+        log(`Missing motions:   (none)`);
+    }
+
     log(``);
     log(`Commands:`);
-    log(`  context   — inspect repo context for a given intent (no files, no API)`);
-    log(`  draft     — create a 9-file motion package`);
-    log(`  revise    — update narrative files from notes`);
-    log(`  evidence  — insert proof evidence into narrative files`);
-    log(`  status    — local factory readiness/configuration snapshot`);
+    log(`  context   - inspect repo context for a given intent (no files, no API)`);
+    log(`  draft     - create a 9-file motion package`);
+    log(`  revise    - update narrative files from notes`);
+    log(`  evidence  - insert proof evidence into narrative files`);
+    log(`  status    - local factory readiness/configuration snapshot`);
     log(``);
     log(`Providers:`);
-    log(`  Default:           ${DEFAULT_PROVIDER}`);
-    log(`  Supported:         ${[...SUPPORTED_PROVIDERS].join(", ")}`);
-    log(`  OPENAI_API_KEY:    ${openaiKeyPresent ? "present" : "missing"}`);
-    log(`  ANTHROPIC_API_KEY: ${anthropicKeyPresent ? "present" : "missing"}`);
+    log(`  Default:           ${status.providers.default}`);
+    log(`  Supported:         ${status.providers.supported.join(", ")}`);
+    log(
+        `  OPENAI_API_KEY:    ${status.providers.openai_key_present ? "present" : "missing"}`
+    );
+    log(
+        `  ANTHROPIC_API_KEY: ${status.providers.anthropic_key_present ? "present" : "missing"}`
+    );
     log(`  (Key presence is environmental only; does not validate`);
     log(`   correctness, funding, provider reachability, or live API readiness.)`);
     log(``);
     log(`File scopes:`);
-    log(`  Revise default:    ${[...DEFAULT_REVISE_FILES].join(", ")}`);
-    log(`  Revise allowed:    ${[...ALLOWED_REVISE_FILES].join(", ")}`);
-    log(`  Evidence default:  ${[...DEFAULT_EVIDENCE_FILES].join(", ")}`);
-    log(`  Evidence allowed:  ${[...ALLOWED_EVIDENCE_FILES].join(", ")}`);
-    log(`  Protected:         ${PROTECTED_FILES.join(", ")}`);
+    log(`  Revise default:    ${status.file_scopes.revise_default.join(", ")}`);
+    log(`  Revise allowed:    ${status.file_scopes.revise_allowed.join(", ")}`);
+    log(`  Evidence default:  ${status.file_scopes.evidence_default.join(", ")}`);
+    log(`  Evidence allowed:  ${status.file_scopes.evidence_allowed.join(", ")}`);
+    log(`  Protected:         ${status.file_scopes.protected.join(", ")}`);
     log(``);
     log(`Workflow:`);
     log(`  Placeholder-first: every motion starts with draft`);
