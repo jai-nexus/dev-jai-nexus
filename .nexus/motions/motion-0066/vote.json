@@ -1,0 +1,46 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0066",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Implements the bounded prep-artifact emission slice without expanding scope.",
+            "ts": "2026-03-19T22:45:00.000Z"
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "Preserves separation between prep artifacts and formal motion space.",
+            "ts": "2026-03-19T22:45:00.000Z"
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Scope matches implemented behavior and leaves validation and promotion deferred.",
+            "ts": "2026-03-19T22:45:00.000Z"
+        }
+    ],
+    "protocol_version": "council.config.v0",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "APPROVED",
+        "reasons": [
+            "Unanimous consent satisfied for bounded candidate.motion prep artifact emission."
+        ],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-19T22:45:00.000Z"
+}

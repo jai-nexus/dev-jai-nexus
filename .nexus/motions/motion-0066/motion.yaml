@@ -1,0 +1,50 @@
+motion_id: "motion-0066"
+title: "candidate.motion prep artifact emission in Motion Factory draft flow"
+
+status: "proposed"
+created_at: "2026-03-19T17:55:01.000Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Emit candidate.motion as a real prep-layer artifact during Motion Factory
+  draft flow, store it in prep space under .nexus/candidates, and surface
+  candidate identity in draft and preview output without changing formal
+  motion semantics.
+
+problem: >
+  Candidate Motion is canonically representable upstream, but Motion Factory
+  draft flow did not yet emit a durable prep artifact before or alongside
+  formal draft scaffolding. That left prep state implicit instead of
+  represented as a first-class artifact.
+
+proposal:
+  - "Generate a candidateId during Motion Factory draft flow."
+  - "Emit candidate.motion.json into .nexus/candidates/<candidate-id>/."
+  - "Keep candidate artifacts separate from .nexus/motions formal motion space."
+  - "Surface candidate identity and candidate artifact path in apply and preview output."
+  - "Preserve existing formal motion draft generation behavior."
+
+non_goals:
+  - "Do not add jai-format validation in this motion."
+  - "Do not define promotion into formal Motion Factory draft creation yet."
+  - "Do not add Waves or UI consumption in this motion."
+  - "Do not redefine candidate.motion semantics locally."
+  - "Do not change Council voting or ratification semantics."
+
+success_criteria:
+  - "draft emits candidate.motion.json as a real prep artifact."
+  - "candidate.motion.json is stored under .nexus/candidates/<candidate-id>/."
+  - "apply output shows candidateId and candidate artifact path."
+  - "preview output shows provisional candidateId and candidate artifact path."
+  - "formal motion package generation remains intact."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

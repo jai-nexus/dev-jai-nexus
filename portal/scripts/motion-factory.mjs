@@ -105,6 +105,9 @@ const PROTECTED_FILES = [
     "verify.json",
 ];
 
+const CANDIDATES_DIRNAME = "candidates";
+const CANDIDATE_FILENAME = "candidate.motion.json";
+
 const MOTION_YAML_STRUCTURAL_FIELDS = new Set([
     "motion_id",
     "title",
@@ -229,6 +232,20 @@ function requireApiKey(provider) {
 
 function utcNow() {
     return new Date().toISOString().replace(/\.\d{3}Z$/, ".000Z");
+}
+
+function makeCandidateId() {
+    const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "");
+    const rand = Math.random().toString(36).slice(2, 8);
+    return `candidate-${stamp}-${rand}`;
+}
+
+function candidateDirPath(repoRoot, candidateId) {
+    return path.join(repoRoot, ".nexus", CANDIDATES_DIRNAME, candidateId);
+}
+
+function candidateFilePath(repoRoot, candidateId) {
+    return path.join(candidateDirPath(repoRoot, candidateId), CANDIDATE_FILENAME);
 }
 
 function stableJson(obj) {
@@ -998,6 +1015,53 @@ Draft scaffold — execution plan pending.
 `;
 }
 
+function generateCandidateMotionJson({
+    candidateId,
+    intent,
+    owner,
+    domain,
+    repo,
+    narrative,
+}) {
+    const summary = narrative?.summary || "Draft scaffold — summary pending.";
+    const problem = narrative?.problem || "Draft scaffold — problem statement pending.";
+    const proposal =
+        Array.isArray(narrative?.proposal) && narrative.proposal.length > 0
+            ? narrative.proposal
+            : ["Draft scaffold — proposal pending."];
+    const nonGoals =
+        Array.isArray(narrative?.non_goals) && narrative.non_goals.length > 0
+            ? narrative.non_goals
+            : ["Draft scaffold — non-goals pending."];
+    const successCriteria =
+        Array.isArray(narrative?.success_criteria) && narrative.success_criteria.length > 0
+            ? narrative.success_criteria
+            : ["Draft scaffold — success criteria pending."];
+
+    return stableJson({
+        kind: "candidate.motion",
+        version: "0.1",
+        candidateId,
+        status: "draft",
+        created_at: utcNow(),
+        owner,
+        target: {
+            domain,
+            repo,
+        },
+        title: intent,
+        summary,
+        problem,
+        proposal,
+        non_goals: nonGoals,
+        success_criteria: successCriteria,
+        promotion: {
+            status: "unpromoted",
+            target_motion_id: null,
+        },
+    });
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Draft narrative generation
 // ──────────────────────────────────────────────────────────────────────────────
@@ -1527,6 +1591,7 @@ async function callAnthropicEvidence({
 async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
     const context = await buildContext(repoRoot, intent);
     const motionId = context.next_motion_id;
+    const candidateId = makeCandidateId();
     const governanceSummary = context.governance_summary;
 
     const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
@@ -1562,6 +1627,15 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
             warning = err?.message || String(err);
         }
     }
+
+    const candidateJson = generateCandidateMotionJson({
+        candidateId,
+        intent,
+        owner,
+        domain,
+        repo,
+        narrative: narrative?.motion_yaml,
+    });
 
     const files = [
         {
@@ -1619,6 +1693,8 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
             headerLines: [
                 `Intent:        ${intent}`,
                 `Motion ID:     ${motionId} (provisional, not reserved)`,
+                `Candidate ID:  ${candidateId} (provisional, not reserved)`,
+                `Candidate:     .nexus/candidates/${candidateId}/${CANDIDATE_FILENAME}`,
                 `Narrative:     ${narrativeMode}`,
                 ...(warning ? [`Warning:       ${warning}`] : []),
                 `Directory:     not created in preview mode`,
@@ -1635,16 +1711,22 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
 
     await fs.mkdir(motionDir, { recursive: true });
 
+    const candidateDir = candidateDirPath(repoRoot, candidateId);
+    await fs.mkdir(candidateDir, { recursive: true });
+    await fs.writeFile(candidateFilePath(repoRoot, candidateId), candidateJson, "utf8");
+
     for (const f of files) {
         await fs.writeFile(path.join(motionDir, f.name), f.content, "utf8");
     }
 
     log(`Draft scaffold created for ${motionId}`);
     log(`─────────────────────────────────────────`);
-    log(`Motion ID:  ${motionId}`);
-    log(`Path:       .nexus/motions/${motionId}/`);
-    log(`Intent:     ${intent}`);
-    log(`Narrative:  ${narrativeMode}`);
+    log(`Motion ID:     ${motionId}`);
+    log(`Path:          .nexus/motions/${motionId}/`);
+    log(`Candidate ID:  ${candidateId}`);
+    log(`Candidate:     .nexus/candidates/${candidateId}/${CANDIDATE_FILENAME}`);
+    log(`Intent:        ${intent}`);
+    log(`Narrative:     ${narrativeMode}`);
     if (warning) {
         log(`Warning:    ${warning}`);
     }

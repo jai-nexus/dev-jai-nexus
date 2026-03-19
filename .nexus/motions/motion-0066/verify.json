@@ -1,0 +1,26 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0066",
+    "latest": {
+        "candidate_motion_emission": {
+            "status": "PASS",
+            "updated_at": "2026-03-19T22:45:00.000Z",
+            "notes": "draft writes candidate.motion.json into .nexus/candidates/<candidate-id>/."
+        },
+        "candidate_motion_apply_surface": {
+            "status": "PASS",
+            "updated_at": "2026-03-19T22:45:00.000Z",
+            "notes": "apply output prints candidateId and candidate artifact path."
+        },
+        "candidate_motion_preview_surface": {
+            "status": "PASS",
+            "updated_at": "2026-03-19T22:45:00.000Z",
+            "notes": "preview output prints provisional candidateId and candidate artifact path without writing files."
+        }
+    },
+    "summary": {
+        "required_ok": true,
+        "last_updated": "2026-03-19T22:45:00.000Z",
+        "notes": "Bounded candidate.motion prep artifact emission landed. Validation, promotion linkage, and Waves/UI consumption remain deferred."
+    }
+}
