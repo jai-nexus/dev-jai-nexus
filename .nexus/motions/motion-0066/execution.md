@@ -1,49 +1,96 @@
 # Execution Plan - motion-0066
 
 ## Goal
-Consume canonical `candidate.motion` artifacts in `dev-jai-nexus` and define the bounded promotion path from Candidate Motion into Motion Factory draft creation.
+Emit candidate.motion.json as a local, repo-tracked prep-layer artifact
+during Motion Factory draft flow, atomic with formal draft creation.
 
 ## Plan
-1. Inspect current Waves types, agent planning flow, and Motion Factory integration points.
-2. Introduce local types/helpers needed to consume canonical `candidate.motion` artifacts without redefining the upstream contract.
-3. Define how a wave session can store or attach one or more Candidate Motions.
-4. Update Waves UI to render Candidate Motion as a first-class planning artifact.
-5. Define a narrow mapping from agent planner output into Candidate Motion-shaped data.
-6. Define promotion from Candidate Motion into Motion Factory draft creation, including lineage fields.
-7. Preserve clear separation between:
-   - WaveTask
-   - Candidate Motion
-   - formal Motion
-8. Defer broad execution/runtime changes to later motions.
+1. Add candidateId generation to draftCommand
+   - generate ID from timestamp + intent slug
+   - format: cm-YYYYMMDD-HHmmss-<slug>
+   - slug: lowercase, hyphens, truncated to ~40 chars
 
-## Files touched
-Draft scope likely includes:
-- `portal/src/lib/waves/types.ts`
-- `portal/src/lib/waves/agentPlanner.ts`
-- `portal/src/app/operator/waves/page.tsx`
-- `portal/src/app/operator/waves/[sessionId]/page.tsx`
-- any bounded Candidate Motion helper/storage files
-- any bounded Motion Factory promotion surface required for draft creation
+2. Add candidateId collision check
+   - if .nexus/candidates/<candidateId>.json already exists, fail with
+     clear error before any writes
+   - same fail-before-write posture as motion directory collision
 
-## Files explicitly not touched
-- broad terminal-backed execution runtime
-- Council vote semantics
-- ratification policy surfaces
-- autonomous apply flows
-- formal Motion contract design in `jai-format`
-- unrestricted agent shell access
+3. Add candidate.motion.json emission to draftCommand (apply mode)
+   - create .nexus/candidates/ directory if it does not exist
+   - write .nexus/candidates/<candidateId>.json
+   - canonical upstream fields: candidateId, title, status, source, createdAt
+   - local emission metadata: version, targetMotionId, provider, noApi
+   - emit BEFORE formal motion directory creation
+   - if candidate emission fails, abort draft — do not create motion directory
+
+4. Add cleanup on formal draft failure
+   - if formal motion generation fails after candidate was written,
+     delete the candidate file
+   - ensures atomicity: both exist or neither
+
+5. Add candidate identity to draft apply output
+   - print candidateId and candidate artifact path in stdout
+
+6. Add provisional candidate identity to draft preview output
+   - print provisional candidateId in preview header
+   - explicitly note no candidate artifact written
+
+7. Validate
+   - draft apply: confirm candidate.motion.json emitted in .nexus/candidates/
+   - draft apply: confirm formal 9-file package still generated
+   - draft apply: confirm both artifacts exist after success
+   - draft apply: confirm canonical field names match upstream contract
+   - draft preview: confirm provisional candidateId shown, no files written
+   - draft --no-api: confirm candidate emitted with provider=placeholder
+   - draft --provider anthropic: confirm candidate emitted with
+     provider=anthropic
+   - candidateId collision: confirm clear error, no files written
+   - revise: confirm no changes
+   - evidence: confirm no changes
+   - status: confirm no changes
+   - clean up test artifacts
+
+## Repo-tracking note
+`.nexus/candidates/` and its contents are repo-tracked. Emitted candidate
+artifacts should be committed to git alongside their corresponding formal
+motion packages.
+
+## Files changed
+- portal/scripts/motion-factory.mjs (EDIT — draftCommand only)
+
+## Files created at runtime
+- .nexus/candidates/<candidateId>.json (emitted by draft apply, repo-tracked)
+
+## Files explicitly not changed
+- portal/scripts/council-run.mjs
+- portal/scripts/panel-run.mjs
+- portal/scripts/panel-select.mjs
+- .nexus/agent-panels.yaml
+- .nexus/model-slots-phase1.yaml
+- .nexus/council.config.yaml
+- .nexus/docs/motion-factory-playbook.md
+- .vscode/ (not in scope)
 
 ## Rollback plan
-If Candidate Motion consumption introduces confusion or excessive complexity, revert the Candidate Motion integration layer and preserve the current Waves planning flow. Because this motion is bounded to prep-layer consumption and promotion, rollback should not affect existing ratified motions or work-run history.
+- Revert draftCommand changes in motion-factory.mjs
+- Delete .nexus/candidates/ if created during testing
 
 ## Acceptance criteria
-- `dev-jai-nexus` can consume canonical `candidate.motion` artifacts without redefining their semantics.
-- A Waves session can attach or represent one or more Candidate Motions.
-- Waves UI renders Candidate Motion distinctly from generic tasks.
-- Agent planning output can be mapped into Candidate Motion-shaped artifacts in a bounded way.
-- Promotion from Candidate Motion to Motion Factory draft is explicitly defined.
-- Candidate Motion remains distinct from formal Motion and WaveTask.
-- Existing Council and ratification semantics remain unchanged.
+- candidate.motion.json emitted during draft apply
+- candidate stored under .nexus/candidates/, repo-tracked
+- canonical upstream field names preserved exactly
+- local emission metadata fields clearly distinguished
+- candidate emission atomic with draft apply (both or neither)
+- candidateId collision produces clear pre-write error
+- candidateId and path shown in apply output
+- provisional candidateId shown in preview output
+- no candidate file written in preview mode
+- formal 9-file package unchanged
+- other commands unchanged
+- --no-api draft emits candidate with provider=placeholder
 
 ## Done means
-`dev-jai-nexus` becomes a real downstream consumer of canonical Candidate Motion, allowing Waves and Motion Factory to work together through a governed prep-layer artifact while preserving formal motion integrity.
+- Motion Factory draft flow emits a local candidate.motion prep artifact,
+- emission is atomic with formal draft creation,
+- prep state is explicit, durable, and repo-tracked with its own identity,
+- and formal motion generation is unaffected.
