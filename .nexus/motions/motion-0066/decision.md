@@ -1,16 +1,20 @@
 # Decision - motion-0066
 
 ## Status
-RATIFIED
+RATIFIED - unanimous consent recorded.
 
 ## Summary
-Motion Factory draft flow now emits `candidate.motion.json` as a real prep-layer
-artifact in `.nexus/candidates/<candidate-id>/` and surfaces candidate identity
-in apply and preview output.
+Motion ratified to add candidate prep artifact emission to Motion Factory draft flow. The change emits a bounded candidate artifact under `.nexus/candidates/` during draft apply, surfaces candidate identity in output, and preserves the boundary between WaveTask, Candidate Motion, and formal Motion.
 
 ## Outcome
-Approved as a bounded implementation slice. Validation, promotion linkage, and
-Waves/UI consumption remain deferred.
+Approved by proposer, challenger, and arbiter.
 
 ## Notes
-This motion is intentionally scoped to Candidate Motion consumption and promotion only. It does not expand broad terminal-backed agent execution, does not redefine `candidate.motion` locally, and does not collapse Candidate Motion into either WaveTask or formal Motion.
+Local verification confirmed:
+- `node -c portal/scripts/motion-factory.mjs` passed
+- `draft --no-api --preview` showed provisional candidate identity and wrote nothing
+- `draft --no-api` emitted a candidate artifact under `.nexus/candidates/`
+- formal draft creation remained atomic with candidate emission
+- no Waves, planner, Work UI, or broad execution expansion was introduced in this slice
+
+Human review remains the ratification authority; this decision records that ratification has now been granted.
