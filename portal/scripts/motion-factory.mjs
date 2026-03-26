@@ -354,8 +354,54 @@ function printPreviewFiles({
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Motion enumeration
+// Candidate enumeration
 // ──────────────────────────────────────────────────────────────────────────────
+
+async function enumerateCandidates(repoRoot) {
+    const candidatesDir = path.join(repoRoot, ".nexus", "candidates");
+    if (!(await exists(candidatesDir))) {
+        return { candidates: [], skipped_malformed: 0 };
+    }
+
+    const entries = await fs.readdir(candidatesDir, { withFileTypes: true });
+    const jsonFiles = entries
+        .filter((e) => e.isFile() && e.name.endsWith(".json"))
+        .map((e) => e.name);
+
+    const candidates = [];
+    let skipped_malformed = 0;
+
+    for (const filename of jsonFiles) {
+        const fp = path.join(candidatesDir, filename);
+        try {
+            const raw = await readText(fp);
+            const obj = JSON.parse(raw);
+            if (!obj.candidateId || !obj.intent) {
+                console.error(`[MOTION-FACTORY] Warning: skipping malformed candidate file (missing candidateId or intent): ${filename}`);
+                skipped_malformed++;
+                continue;
+            }
+            candidates.push({
+                candidateId: String(obj.candidateId),
+                intent: String(obj.intent),
+                status: String(obj.status || "unknown"),
+                createdAt: String(obj.createdAt || ""),
+                targetMotionId: String(obj.targetMotionId || ""),
+                source: String(obj.source || ""),
+                provider: String(obj.provider || ""),
+                noApi: !!obj.noApi,
+                version: String(obj.version || ""),
+            });
+        } catch (err) {
+            console.error(`[MOTION-FACTORY] Warning: skipping malformed candidate file: ${filename} (${err.message})`);
+            skipped_malformed++;
+        }
+    }
+
+    candidates.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+
+    return { candidates, skipped_malformed };
+}
 
 async function enumerateMotions(repoRoot) {
     const motionsDir = path.join(repoRoot, ".nexus", "motions");
@@ -545,6 +591,9 @@ async function buildContext(repoRoot, intent) {
     const panelSummary = await readPanelSummary(repoRoot);
     const governanceSummary = await readGovernanceSummary(repoRoot);
 
+    const candidateDiscovery = await enumerateCandidates(repoRoot);
+    const recentCandidates = candidateDiscovery.candidates.slice(0, RECENT_MOTION_WINDOW);
+
     return {
         version: SCRIPT_VERSION,
         intent,
@@ -553,6 +602,14 @@ async function buildContext(repoRoot, intent) {
         head_commit: headCommit,
         total_motions: motionInventory.existing_motion_directory_count,
         recent_motions: recentMotions,
+        recent_candidates: recentCandidates.map((c) => ({
+            candidateId: c.candidateId,
+            intent: c.intent,
+            status: c.status,
+            createdAt: c.createdAt,
+            targetMotionId: c.targetMotionId,
+        })),
+        candidates_skipped_malformed: candidateDiscovery.skipped_malformed,
         staffing_summary: staffingSummary,
         panel_summary: panelSummary,
         governance_summary: governanceSummary,
@@ -578,6 +635,18 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
     log(`Recent motions:`);
     for (const m of context.recent_motions) {
         log(`  ${m.motion_id}: ${m.title} [${m.status}]`);
+    }
+    log(``);
+    log(`Recent candidates:`);
+    if (context.recent_candidates.length > 0) {
+        for (const c of context.recent_candidates) {
+            log(`  ${c.candidateId}: ${c.intent} [${c.status}] → ${c.targetMotionId}`);
+        }
+    } else {
+        log(`  (none)`);
+    }
+    if (context.candidates_skipped_malformed > 0) {
+        log(`  (${context.candidates_skipped_malformed} malformed candidate file(s) skipped)`);
     }
     log(``);
     log(`Governance:`);
@@ -616,7 +685,7 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
 // Status command
 // ──────────────────────────────────────────────────────────────────────────────
 
-function buildStatusSnapshot({ repoRoot, branch, motionInventory }) {
+function buildStatusSnapshot({ repoRoot, branch, motionInventory, candidateDiscovery }) {
     const openaiKeyPresent = !!process.env.OPENAI_API_KEY;
     const anthropicKeyPresent = !!process.env.ANTHROPIC_API_KEY;
 
@@ -656,6 +725,20 @@ function buildStatusSnapshot({ repoRoot, branch, motionInventory }) {
             evidence_allowed: [...ALLOWED_EVIDENCE_FILES],
             protected: [...PROTECTED_FILES],
         },
+        candidates: {
+            directory: ".nexus/candidates/",
+            count: candidateDiscovery.candidates.length,
+            skipped_malformed: candidateDiscovery.skipped_malformed,
+            most_recent: candidateDiscovery.candidates.length > 0
+                ? {
+                    candidateId: candidateDiscovery.candidates[0].candidateId,
+                    intent: candidateDiscovery.candidates[0].intent,
+                    status: candidateDiscovery.candidates[0].status,
+                    createdAt: candidateDiscovery.candidates[0].createdAt,
+                    targetMotionId: candidateDiscovery.candidates[0].targetMotionId,
+                }
+                : null,
+        },
         workflow: {
             placeholder_first: true,
             structural_files_deterministic: true,
@@ -671,10 +754,13 @@ async function statusCommand({ repoRoot, jsonOutput }) {
     const motionDirs = await enumerateMotions(repoRoot);
     const motionInventory = buildMotionInventory(motionDirs);
 
+    const candidateDiscovery = await enumerateCandidates(repoRoot);
+
     const status = buildStatusSnapshot({
         repoRoot,
         branch,
         motionInventory,
+        candidateDiscovery,
     });
 
     if (jsonOutput) {
@@ -725,6 +811,16 @@ async function statusCommand({ repoRoot, jsonOutput }) {
     log(`  Evidence default:  ${status.file_scopes.evidence_default.join(", ")}`);
     log(`  Evidence allowed:  ${status.file_scopes.evidence_allowed.join(", ")}`);
     log(`  Protected:         ${status.file_scopes.protected.join(", ")}`);
+    log(``);
+    log(`Candidates:`);
+    log(`  Directory:       .nexus/candidates/`);
+    log(`  Count:           ${status.candidates.count}`);
+    log(`  Skipped:         ${status.candidates.skipped_malformed} malformed`);
+    if (status.candidates.most_recent) {
+        log(`  Most recent:     ${status.candidates.most_recent.candidateId}`);
+    } else {
+        log(`  Most recent:     (none)`);
+    }
     log(``);
     log(`Workflow:`);
     log(`  Placeholder-first: every motion starts with draft`);

@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0067",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Candidate discovery works correctly in status and context. Status reports count, skipped_malformed, and most recent candidate. Context reports recent candidates windowed alongside recent motions. --json output is lightweight with no unbounded list. Discovery reads only emitted fields (candidateId, intent, status, createdAt, targetMotionId). No writes during discovery."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "Read-only discovery with graceful degradation. Missing directory returns count 0. Malformed files are skipped and counted. status --json uses most_recent only, not an unbounded all list. Discovery uses intent (not title), matching the canonical emitted field name from motion-0066. No changes to draft, revise, or evidence commands."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The emission/discovery loop from motion-0066 is now complete. Motion Factory can emit candidate prep artifacts and discover them. The candidate storage surface is validated as usable for real consumption. This is the correct foundation before promotion or Waves integration."
+        }
+    ],
+    "protocol_version": "council.config.v0",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-26T00:00:00.000Z"
+}
