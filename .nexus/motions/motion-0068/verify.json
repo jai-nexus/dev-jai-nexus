@@ -1,10 +1,21 @@
 {
     "version": "0.2",
     "motion_id": "motion-0068",
-    "latest": {},
+    "latest": {
+        "validate_motion": {
+            "status": "PASS",
+            "updated_at": "2026-03-27T00:00:00.000Z",
+            "notes": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0068/motion.yaml --verbose"
+        },
+        "validate_agency": {
+            "status": "PENDING",
+            "updated_at": "2026-03-27T00:00:00.000Z",
+            "notes": "No validate_agency evidence recorded yet in this chat."
+        }
+    },
     "summary": {
         "required_ok": false,
-        "last_updated": "2026-03-26T00:00:00.000Z",
-        "notes": "Gates not yet executed. Run council-run.mjs to populate."
+        "last_updated": "2026-03-27T00:00:00.000Z",
+        "notes": "Motion implemented and unanimously approved, but required gates are not yet fully evidenced."
     }
 }
