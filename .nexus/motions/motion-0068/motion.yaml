@@ -1,0 +1,70 @@
+motion_id: "motion-0068"
+title: "bounded candidate promotion to Motion Factory draft"
+
+status: "proposed"
+created_at: "2026-03-26T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add a promote command to Motion Factory that creates a numbered formal
+  motion draft from an existing candidate artifact. Promotion is
+  operator-initiated, records durable lineage via promotion.json, and
+  updates the candidate status to promoted. If candidate write-back fails
+  after formal draft creation, promotion is considered complete and
+  reconciliation is surfaced.
+
+problem: >
+  Motion Factory can emit candidate prep artifacts (motion-0066) and
+  discover them (motion-0067), but there is no governed path to turn a
+  discovered candidate into a numbered formal motion draft. The operator
+  must manually copy the candidate intent into a draft command, losing
+  lineage between the prep artifact and the resulting motion.
+
+proposal:
+  - "Add a promote command that reads a candidate artifact and creates a formal motion draft."
+  - "promote consumes a candidateId, reads the candidate from .nexus/candidates/, and uses its intent as draft input."
+  - "promote creates the standard draft motion package through a shared package-construction path used by draft, while explicitly skipping candidate emission."
+  - "promote records durable lineage in promotion.json inside the resulting motion directory."
+  - "promote updates the candidate artifact status from emitted to promoted and records the targetMotionId."
+  - "promotion.json is the source of truth for completed promotion. If candidate write-back fails after formal draft + promotion.json are written, promotion is complete and reconciliation is surfaced."
+  - "promote skips candidate emission (the candidate already exists)."
+  - "promote is operator-initiated. No automatic promotion."
+  - "promote supports --no-api, --provider, and --preview consistent with draft."
+
+non_goals:
+  - "Do not add automatic or scheduled promotion."
+  - "Do not add broad candidate lifecycle or state machine beyond emitted → promoted."
+  - "Do not add Waves UI consumption or rendering."
+  - "Do not add planner-output mapping."
+  - "Do not add transport or SoT dependencies."
+  - "Do not add Work UI changes."
+  - "Do not change Council vote or ratification semantics."
+  - "Do not collapse Candidate Motion into formal Motion."
+  - "Do not modify .vscode/ or any editor config."
+  - "Do not add a standalone candidate creation command in this motion."
+
+success_criteria:
+  - "promote --candidate <candidateId> creates a numbered formal motion draft."
+  - "The resulting draft uses the candidate's intent field as --intent."
+  - "promotion.json is created in the formal motion directory with lineage fields."
+  - "promotion.json is the durable source of truth for completed promotion."
+  - "Candidate artifact write-back (status: promoted, targetMotionId) is intended and succeeds in the normal case."
+  - "If candidate write-back fails after formal draft + promotion.json are written, promotion is considered complete and a reconciliation warning is surfaced."
+  - "promote skips candidate emission during draft (no duplicate candidate)."
+  - "promote --preview shows proposed output without writing files or updating candidate status."
+  - "promote --no-api creates a placeholder draft from the candidate."
+  - "promote --provider anthropic uses Anthropic for narrative generation."
+  - "Missing or malformed candidate produces a clear error before any writes."
+  - "Already-promoted candidate produces a clear error before any writes."
+  - "draft, revise, evidence, context, status commands are unchanged."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
