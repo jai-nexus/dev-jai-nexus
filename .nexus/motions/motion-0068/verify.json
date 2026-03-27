@@ -10,7 +10,7 @@
         "validate_agency": {
             "status": "PENDING",
             "updated_at": "2026-03-27T00:00:00.000Z",
-            "notes": "No validate_agency evidence recorded yet in this chat."
+            "notes": "No validate_agency evidence recorded yet."
         }
     },
     "summary": {
