@@ -2,23 +2,47 @@
  * scopeValidator.ts
  * portal/src/lib/scopeValidator.ts
  *
- * Fix: strip any "org/" prefix on BOTH sides before comparing.
- * agency.yaml stays as-is (bare names are intentional — they're portable).
+ * Goal:
+ * - Treat repo scope entries canonically.
+ * - Allow these to compare equal:
+ *   - "repo:dev-jai-nexus"
+ *   - "dev-jai-nexus"
+ *   - "jai-nexus/dev-jai-nexus"
+ * - Ignore non-repo scope entries such as:
+ *   - "paths:..."
+ *   - "deny:..."
+ *   - "actions:..."
  */
 
 import { getAgentByNhId } from "./agencyConfig";
 
-/**
- * Strip an optional "org/" prefix so we always compare bare repo names.
- * Also trims + lowercases to avoid casing/whitespace mismatch.
- *   "jai-nexus/dev-jai-nexus"  →  "dev-jai-nexus"
- *   "dev-jai-nexus"            →  "dev-jai-nexus"
- */
-function bareRepo(ref: string): string {
-    const s = String(ref ?? "").trim();
+function normalizeRepoRef(input: string): string {
+    let s = String(input ?? "").trim().toLowerCase();
+    if (!s) return "";
+
+    if (s.startsWith("repo:")) {
+        s = s.slice("repo:".length).trim();
+    }
+
     const slash = s.lastIndexOf("/");
-    const bare = slash === -1 ? s : s.slice(slash + 1);
-    return bare.toLowerCase();
+    if (slash !== -1) {
+        s = s.slice(slash + 1);
+    }
+
+    return s.trim();
+}
+
+function extractRepoScopeEntries(scope: unknown): string[] {
+    if (!Array.isArray(scope)) return [];
+
+    return scope
+        .filter((entry): entry is string => typeof entry === "string")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .filter((entry) => {
+            const lowered = entry.toLowerCase();
+            return lowered.startsWith("repo:") || !lowered.includes(":");
+        });
 }
 
 export type ScopeValidationResult =
@@ -26,14 +50,14 @@ export type ScopeValidationResult =
     | {
         valid: false;
         error: string;
-        invalidRepos: string[]; // repos that failed (as submitted, not normalised)
-        allowedScope: string[]; // bare names from agency.yaml (as declared)
+        invalidRepos: string[];
+        allowedScope: string[];
         agent: { nh_id: string; agent_key: string; label: string };
     };
 
 export function validateReposAgainstAgentScope(
     agentNhId: string,
-    repos: string[]
+    repos: string[],
 ): ScopeValidationResult {
     const agent = getAgentByNhId(agentNhId);
 
@@ -47,18 +71,28 @@ export function validateReposAgainstAgentScope(
         };
     }
 
-    const scopeList = Array.isArray(agent.scope) ? agent.scope : [];
-    const allowedSet = new Set(scopeList.map(bareRepo));
+    const repoScopeEntries = extractRepoScopeEntries(agent.scope);
+    const allowedSet = new Set(
+        repoScopeEntries
+            .map((entry) => normalizeRepoRef(entry))
+            .filter(Boolean),
+    );
 
-    const invalidRepos = (repos ?? []).filter((r) => !allowedSet.has(bareRepo(r)));
+    const invalidRepos = (repos ?? []).filter((repo) => {
+        const normalized = normalizeRepoRef(repo);
+        if (!normalized) return true;
+        return !allowedSet.has(normalized);
+    });
 
-    if (invalidRepos.length === 0) return { valid: true };
+    if (invalidRepos.length === 0) {
+        return { valid: true };
+    }
 
     return {
         valid: false,
         error: `Repos outside agent scope: ${invalidRepos.join(", ")}`,
         invalidRepos,
-        allowedScope: scopeList, // as declared in YAML
+        allowedScope: repoScopeEntries,
         agent: {
             nh_id: agent.nh_id,
             agent_key: agent.agent_key ?? "",

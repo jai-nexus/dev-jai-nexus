@@ -1,0 +1,14 @@
+{
+  "schema": "context-bundle-0.1",
+  "generated_at": "2026-03-13T19:28:05.050Z",
+  "repo": "dev-jai-nexus",
+  "branch": "sprint/q1m3-council-pivot-polyrepo-coverage",
+  "head_commit": "981771a",
+  "motion": "motion-0033",
+  "output_dir": "surfaces/chat-context",
+  "files": [
+    "2026-03-13_motion-snapshots.txt",
+    "2026-03-13_repo-capsule.txt",
+    "2026-03-13_active-path-pack.txt"
+  ]
+}

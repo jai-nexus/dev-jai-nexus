@@ -1,0 +1,41 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0063",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "vote": "yes",
+      "rationale": "Preview mode works correctly for revise. Proposed content is printed with clear per-file begin/end markers. No files are written. Preview output is explicitly labeled as proposed-only. Normal apply mode remains atomic and unchanged. Same pipeline, different final step."
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "vote": "yes",
+      "rationale": "Preview mode shares the full validation and generation pipeline with apply mode. The only difference is the terminal action: print vs write. Preview output does not use misleading success wording. The implementation is narrow and reviewable. Evidence preview trust boundaries are preserved by design since the same system prompt applies."
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "vote": "yes",
+      "rationale": "Motion Factory v0 now has a preview safety layer for overwrite commands. Operators can inspect proposed changes before committing. This is a meaningful trust improvement that adds no complexity to the apply path. The factory remains bounded and operator-controlled."
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-17T00:00:00.000Z"
+}

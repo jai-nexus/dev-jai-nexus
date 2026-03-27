@@ -1,0 +1,59 @@
+motion_id: "motion-0049"
+title: "Phase 1 executor panel scaffold parity proof (all 5 panels)"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Validate that all 5 Phase 1 executor panels scaffold cleanly under the
+  reconciled panel structure from motion-0048. This is a proof motion with
+  no code changes. It confirms that the Phase 1 staffing canon, the loadSlots
+  overlay from motion-0047, and the 2-candidate panel structure from motion-0048
+  work correctly across the full executor surface.
+
+problem: >
+  Motions 0046 through 0048 ratified the Phase 1 staffing canon, wired the
+  first consumer, and reconciled panel structure. But only Librarian and Builder
+  scaffolds were explicitly validated during those motions. The remaining three
+  panels (Architect, Verifier, Operator) have not been formally proved under
+  the reconciled structure. Without explicit validation across all 5 panels,
+  there is no governed confirmation that the full Phase 1 executor surface
+  operates as intended.
+
+proposal:
+  - "Run scaffold for all 5 executor panels under motion-0049 and confirm each emits exactly 2 candidate files."
+  - "Confirm Phase 1 slot overlay resolves correctly for all panels."
+  - "Confirm selectors remain deferred and non-activated."
+  - "Record scaffold results as the proof artifact for this motion."
+  - "No code changes unless validation reveals a defect."
+
+non_goals:
+  - "Do not activate selector slots or multi-candidate scoring."
+  - "Do not introduce agent orchestration or execution loops."
+  - "Do not change council voting mechanics."
+  - "Do not modify .nexus/agent-panels.yaml."
+  - "Do not modify .nexus/model-slots-phase1.yaml."
+  - "Do not modify portal/scripts/panel-run.mjs."
+  - "Do not broaden into routing or runtime redesign."
+
+success_criteria:
+  - "JAI_DEV_BUILDER_PANEL_V0 scaffold: candidates/2 files, overlay merged."
+  - "JAI_DEV_ARCHITECT_PANEL_V0 scaffold: candidates/2 files, overlay merged."
+  - "JAI_DEV_VERIFIER_PANEL_V0 scaffold: candidates/2 files, overlay merged."
+  - "JAI_DEV_LIBRARIAN_PANEL_V0 scaffold: candidates/2 files, overlay merged."
+  - "JAI_DEV_OPERATOR_PANEL_V0 scaffold: candidates/2 files, overlay merged."
+  - "No scaffold errors across any panel."
+  - "Selectors remain deferred."
+  - "No code changes required."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

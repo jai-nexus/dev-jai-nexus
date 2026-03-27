@@ -1,0 +1,185 @@
+version: "model.slots.phase1.v0"
+generated: "2026-03-17"
+motion_ref: "motion-0046"
+canonical_for_phase: true
+phase_label: "phase-1"
+description: >
+  Canonical Phase 1 staffing manifest for JAI NEXUS council.
+  Anthropic + OpenAI only. 10 live executor slots across 5 panels.
+  Selector slots are deferred pending evaluation harness maturity.
+  Voting roles use dedicated model assignments.
+
+providers:
+  allowlist:
+    - anthropic
+    - openai
+  catalog:
+    anthropic:
+      models:
+        - "claude-sonnet-4-6"
+        - "claude-haiku-4-5"
+    openai:
+      models:
+        - "gpt-5.4"
+        - "gpt-5-mini"
+
+slots:
+  SLOT_ARCHITECT_01:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    role: "architect"
+    rank: "primary"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_ARCHITECT_02:
+    provider: "openai"
+    model: "gpt-5.4"
+    role: "architect"
+    rank: "alternate"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_BUILDER_01:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    role: "builder"
+    rank: "primary"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_BUILDER_02:
+    provider: "openai"
+    model: "gpt-5.4"
+    role: "builder"
+    rank: "alternate"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_VERIFIER_01:
+    provider: "openai"
+    model: "gpt-5.4"
+    role: "verifier"
+    rank: "primary"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_VERIFIER_02:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    role: "verifier"
+    rank: "alternate"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_OPERATOR_01:
+    provider: "openai"
+    model: "gpt-5-mini"
+    role: "operator"
+    rank: "primary"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_OPERATOR_02:
+    provider: "anthropic"
+    model: "claude-haiku-4-5"
+    role: "operator"
+    rank: "alternate"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_LIBRARIAN_01:
+    provider: "anthropic"
+    model: "claude-haiku-4-5"
+    role: "librarian"
+    rank: "primary"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+  SLOT_LIBRARIAN_02:
+    provider: "openai"
+    model: "gpt-5-mini"
+    role: "librarian"
+    rank: "alternate"
+    phase: "phase-1"
+    status: "live"
+    live: true
+
+deferred_slots:
+  SLOT_ARCHITECT_SELECTOR:
+    slot_type: "selector"
+    panel: "architect"
+    phase: "phase-1"
+    status: "deferred"
+    live: false
+    reason: "Pending evaluation harness and multi-candidate scoring pipeline"
+
+  SLOT_BUILDER_SELECTOR:
+    slot_type: "selector"
+    panel: "builder"
+    phase: "phase-1"
+    status: "deferred"
+    live: false
+    reason: "Pending evaluation harness and multi-candidate scoring pipeline"
+
+  SLOT_VERIFIER_SELECTOR:
+    slot_type: "selector"
+    panel: "verifier"
+    phase: "phase-1"
+    status: "deferred"
+    live: false
+    reason: "Pending evaluation harness and multi-candidate scoring pipeline"
+
+  SLOT_OPERATOR_SELECTOR:
+    slot_type: "selector"
+    panel: "operator"
+    phase: "phase-1"
+    status: "deferred"
+    live: false
+    reason: "Pending evaluation harness and multi-candidate scoring pipeline"
+
+  SLOT_LIBRARIAN_SELECTOR:
+    slot_type: "selector"
+    panel: "librarian"
+    phase: "phase-1"
+    status: "deferred"
+    live: false
+    reason: "Pending evaluation harness and multi-candidate scoring pipeline"
+
+voting:
+  proposer:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    notes: "Drafts proposals and amendments"
+
+  challenger:
+    provider: "openai"
+    model: "gpt-5.4"
+    notes: "Cross-examines proposals; provider diversity supports adversarial independence"
+
+  arbiter:
+    provider: "anthropic"
+    model: "claude-sonnet-4-6"
+    notes: "Final decision authority; resolves deadlocks"
+
+summary:
+  live_executor_slots: 10
+  deferred_selector_slots: 5
+  voting_roles: 3
+  providers_active:
+    - "anthropic"
+    - "openai"
+  models_active:
+    - "claude-sonnet-4-6"
+    - "claude-haiku-4-5"
+    - "gpt-5.4"
+    - "gpt-5-mini"

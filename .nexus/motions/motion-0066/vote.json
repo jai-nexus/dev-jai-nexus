@@ -1,0 +1,48 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0066",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "reason": "Bounded Motion Factory slice landed cleanly and emits candidate prep artifacts during draft flow without expanding planner, Waves, or execution scope.",
+            "voted_at": "2026-03-25T19:44:25.000Z"
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "reason": "The change preserves the boundary between WaveTask, Candidate Motion, and formal Motion while keeping candidate emission atomic with draft apply.",
+            "voted_at": "2026-03-25T19:44:25.000Z"
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "reason": "Required gates are satisfied and the implementation evidence supports ratification of this narrow prep-artifact emission slice.",
+            "voted_at": "2026-03-25T19:44:25.000Z"
+        }
+    ],
+    "protocol_version": "council.config.v0",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "RATIFIED",
+        "reasons": [
+            "Unanimous consent recorded across proposer, challenger, and arbiter.",
+            "Motion Factory draft flow now emits a candidate prep artifact under .nexus/candidates/.",
+            "Preview remains non-writing and apply mode now writes candidate + formal draft atomically."
+        ],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-25T19:44:25.000Z"
+}

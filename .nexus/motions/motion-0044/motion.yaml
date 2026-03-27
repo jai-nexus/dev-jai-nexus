@@ -1,0 +1,53 @@
+motion_id: "motion-0044"
+title: "Validation Presets v0: reusable local check profiles for Claude code-edit sessions"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add a first reusable validation-preset layer so Claude code-edit sessions in
+  dev-jai-nexus can begin with explicit, repeatable local check profiles instead
+  of manually restating validation expectations for each bounded task.
+
+problem: >
+  Motions 0040 through 0043 proved that explicit validation expectations matter
+  during live Claude code-edit sessions, but dev-jai-nexus still lacks a governed
+  way to package those validation expectations into reusable profiles. Without
+  validation presets, the workflow remains more repetitive and more dependent on
+  ad hoc operator restatement than necessary.
+
+proposal:
+  - "Add a governed validation-preset layer for recurring local checks."
+  - "Define a small set of reusable validation profiles for common dev-jai-nexus task types."
+  - "Keep the presets compact, explicit, and easy to reference from future Claude sessions."
+  - "Preserve the distinction between validation guidance and canonical source truth."
+  - "Keep the first version text-first and operator-friendly."
+
+non_goals:
+  - "Do not automate validation execution in this motion."
+  - "Do not redesign the Claude bootstrap or task-code-pack generators."
+  - "Do not expand into CI orchestration or remote execution."
+  - "Do not attempt to cover every possible repo workflow in v0."
+  - "Do not replace motion-specific judgment with fixed presets."
+
+success_criteria:
+  - "A governed validation-preset artifact set exists."
+  - "At least a small set of reusable validation profiles is defined for common Claude code-edit session types."
+  - "The presets are compact and practical enough to reuse in future sessions."
+  - "The preset layer clearly explains when profiles should and should not be used."
+  - "The preset layer aligns with the live-usage lessons from motions 0040 through 0043."
+  - "A local proof demonstrates that the presets are readable and usable as session guidance."
+  - "portal typecheck passes if any code surfaces are touched."
+  - "The resulting preset layer is a practical stopping-point artifact for future reuse."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

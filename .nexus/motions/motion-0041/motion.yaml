@@ -1,0 +1,52 @@
+motion_id: "motion-0041"
+title: "Claude Second Live Usage v0: code-heavy bounded task + setup stress test"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Prove the Claude setup stack against a real code-heavy bounded task in
+  dev-jai-nexus and record whether the validated workflow, generated bootstrap
+  pack, and motion-local context remain sufficient under implementation pressure.
+
+problem: >
+  Motion-0040 proved the first real Claude usage path for setup and bounded
+  workflow validation, but it did not yet test the stack against a code-heavy
+  task. Without that proof, the Claude operating layer remains operationally
+  promising but not yet validated for real implementation work.
+
+proposal:
+  - "Use the governed Claude setup workflow for one real code-heavy bounded task."
+  - "Start the session using the generated Claude bootstrap pack and validated setup routine."
+  - "Record what repo/code context was sufficient and what still required manual explanation."
+  - "Record whether motion-local generated context was enough for implementation work."
+  - "Produce a code-focused validation artifact and passalong artifact."
+
+non_goals:
+  - "Do not redesign the Claude bootstrap generator in this motion."
+  - "Do not benchmark Claude across many unrelated tasks."
+  - "Do not expand into multi-provider orchestration."
+  - "Do not require a large or risky implementation task."
+  - "Do not replace canonical motion or repo artifacts with session notes."
+
+success_criteria:
+  - "One real code-heavy bounded dev-jai-nexus task is attempted through the validated Claude workflow."
+  - "The generated Claude bootstrap pack is actually used in the setup path."
+  - "The active motion package and relevant local code surfaces are used together coherently."
+  - "A validation artifact records what code context was sufficient, what was missing, and what still required manual explanation."
+  - "A passalong artifact exists for repeating future code-heavy Claude sessions."
+  - "If code changes occur, relevant local validation is run and recorded."
+  - "The result clearly distinguishes canonical artifacts from generated/session artifacts."
+  - "A live proof demonstrates whether setup friction stays acceptably low during real implementation work."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

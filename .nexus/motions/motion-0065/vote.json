@@ -1,0 +1,48 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0065",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "vote": "yes",
+      "reason": "Bounded status hardening motion. Implementation and local verification evidence support ratification.",
+      "voted_at": "2026-03-18T22:30:37.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "vote": "yes",
+      "reason": "Scope remained constrained to status/context inventory reporting and preserved draft, revise, and evidence semantics.",
+      "voted_at": "2026-03-18T22:30:37.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "vote": "yes",
+      "reason": "Required gates are satisfied and the motion package is internally consistent with the implementation evidence.",
+      "voted_at": "2026-03-18T22:30:37.000Z"
+    }
+  ],
+  "protocol_version": "council.config.v0",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "RATIFIED",
+    "reasons": [
+      "Unanimous consent recorded across proposer, challenger, and arbiter.",
+      "Motion Factory status and status --json now derive from shared snapshot logic.",
+      "Motion inventory reporting is explicit and locally verified."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-18T22:30:37.000Z"
+}

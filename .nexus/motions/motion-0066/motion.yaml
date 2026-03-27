@@ -1,0 +1,66 @@
+motion_id: "motion-0066"
+title: "candidate.motion prep artifact emission in Motion Factory draft flow"
+
+status: "proposed"
+created_at: "2026-03-19T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Emit candidate.motion.json as a local prep-layer artifact during Motion
+  Factory draft flow. Store it under .nexus/candidates/ as a repo-tracked
+  artifact. Surface candidate identity in draft apply and preview output.
+  Candidate emission is atomic with draft apply: both succeed or neither
+  is written. Formal motion semantics are unchanged.
+
+problem: >
+  Candidate Motion is canonically representable upstream, but Motion Factory
+  draft flow does not yet emit a durable local prep artifact before or
+  alongside formal draft scaffolding. Prep state remains implicit rather
+  than represented as a first-class artifact with its own identity and
+  storage location.
+
+proposal:
+  - "Generate a candidateId during Motion Factory draft flow."
+  - "Emit candidate.motion.json into .nexus/candidates/<candidateId>.json as a repo-tracked artifact."
+  - "Keep candidate artifacts in .nexus/candidates/, separate from .nexus/motions/."
+  - "Candidate emission is atomic with draft apply: if emission fails, draft apply fails. Both artifacts exist or neither."
+  - "If .nexus/candidates/<candidateId>.json already exists, draft fails with a clear error before writing anything."
+  - "Emitted artifact uses canonical upstream field names where applicable; local emission metadata fields are clearly distinguished."
+  - "Surface candidateId and candidate path in draft apply output."
+  - "Surface provisional candidateId in draft preview output (no file written)."
+  - "Preserve existing formal motion 9-file package generation unchanged."
+  - "No changes to revise, evidence, context, or status commands."
+
+non_goals:
+  - "Do not define or claim authority over the canonical candidate.motion contract."
+  - "Do not add promotion from candidate to formal motion."
+  - "Do not add Waves UI consumption or rendering."
+  - "Do not add planner-output mapping."
+  - "Do not add autonomous promotion or apply flows."
+  - "Do not add jai-format validation of the emitted artifact."
+  - "Do not change Council vote or ratification semantics."
+  - "Do not collapse Candidate Motion into WaveTask or formal Motion."
+  - "Do not modify .vscode/ or any editor config."
+
+success_criteria:
+  - "draft apply emits candidate.motion.json into .nexus/candidates/<candidateId>.json."
+  - "Emitted artifact distinguishes canonical upstream fields (candidateId, title, status, source, createdAt) from local emission metadata (targetMotionId, provider, noApi)."
+  - "Candidate emission is atomic with draft apply: if emission fails, no motion directory is created."
+  - "If candidateId collision occurs (file already exists), draft fails with clear error before any writes."
+  - ".nexus/candidates/ is repo-tracked and separate from .nexus/motions/."
+  - "Draft apply output shows candidateId and candidate artifact path."
+  - "Draft preview output shows provisional candidateId but writes no files."
+  - "Formal motion 9-file package generation remains unchanged."
+  - "revise, evidence, context, status commands are not modified."
+  - "--no-api draft still emits a candidate artifact."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

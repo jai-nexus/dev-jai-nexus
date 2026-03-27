@@ -1,0 +1,61 @@
+motion_id: "motion-0048"
+title: "Reconcile agent-panels.yaml with Phase 1 staffing canon (5→2 candidates per panel)"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Bring .nexus/agent-panels.yaml into alignment with the ratified Phase 1
+  staffing canon. Reduce each executor panel from 5 candidates to 2 (matching
+  the live slots in model-slots-phase1.yaml), mark selector slots as deferred,
+  and relax the hardcoded candidate-count check in panel-run.mjs. Fixes a
+  pre-existing YAML structure bug in the Operator panel rubric.
+
+problem: >
+  After motion-0047, loadSlots correctly overlays Phase 1 slots, but
+  agent-panels.yaml still declares 5 candidate slots per panel and panel-run.mjs
+  enforces exactly 5 candidates. This means scaffold still emits 5 candidate
+  files per panel even though only 2 live slots exist in the Phase 1 manifest.
+  The mismatch produces 3 phantom candidate files per panel that reference
+  legacy placeholder slots. Additionally, the Operator panel has a YAML
+  indentation bug where rubric entries are nested under selector instead of
+  being a sibling key.
+
+proposal:
+  - "Edit .nexus/agent-panels.yaml: reduce each panel's candidates list from 5 to 2, keeping only the Phase 1 slot names."
+  - "Edit .nexus/agent-panels.yaml: mark each selector as status: deferred to match Phase 1 canon."
+  - "Edit .nexus/agent-panels.yaml: fix Operator panel YAML structure (move rubric out from under selector)."
+  - "Edit portal/scripts/panel-run.mjs: relax the candidates.length !== 5 check on line 348 to accept 2 or more candidates."
+  - "Preserve all existing rubrics unchanged."
+  - "Do not activate selector logic."
+
+non_goals:
+  - "Do not change rubric weights or criteria."
+  - "Do not activate selector slots or multi-candidate scoring."
+  - "Do not modify .nexus/model-slots-phase1.yaml."
+  - "Do not modify .nexus/model-slots.yaml."
+  - "Do not modify .nexus/model-routing.yaml."
+  - "Do not change council voting mechanics."
+  - "Do not introduce agent orchestration or execution loops."
+  - "Do not change loadSlots overlay logic from motion-0047."
+
+success_criteria:
+  - "Each panel in agent-panels.yaml lists exactly 2 candidates matching Phase 1 slot names."
+  - "Each selector in agent-panels.yaml includes status: deferred."
+  - "Operator panel rubric is correctly structured as a sibling of selector, not nested under it."
+  - "panel-run.mjs scaffold accepts 2-candidate panels without error."
+  - "Scaffold for any panel now emits 2 candidate files instead of 5."
+  - "All rubrics remain unchanged."
+  - "loadSlots overlay from motion-0047 continues to work."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

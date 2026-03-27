@@ -1,0 +1,54 @@
+motion_id: "motion-0042"
+title: "Task-Local Code Surface Pack v0: bounded file-context generator for code-heavy Claude sessions"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add a deterministic task-local code surface pack generator so code-heavy Claude
+  sessions can begin from a compact, bounded set of relevant source-file context
+  instead of manual file gathering or broad repo dumping.
+
+problem: >
+  Motion-0041 proved that the Claude setup stack remains useful under code-heavy
+  conditions, but relevant file selection still depends heavily on manual operator
+  judgment. JAI NEXUS now needs a bounded task-local code pack so real code sessions
+  can start from a generated file-context layer rather than repeated ad hoc file
+  collection.
+
+proposal:
+  - "Add a generator for dated task-local code surface packs."
+  - "Support motion-aware and explicit path-aware file selection."
+  - "Emit bounded source excerpts with stable ordering and canonical path references."
+  - "Keep the pack compact, code-heavy, and optimized for Claude implementation sessions."
+  - "Add a manifest sidecar describing selected files and generation inputs."
+  - "Optionally add a package script for easier invocation."
+
+non_goals:
+  - "Do not dump the whole repository."
+  - "Do not replace canonical source files with generated code packs."
+  - "Do not build semantic retrieval or embeddings in this motion."
+  - "Do not infer perfect file relevance automatically."
+  - "Do not expand into multi-provider code-pack generation."
+
+success_criteria:
+  - "A dated task-local code surface pack can be generated deterministically."
+  - "The generator supports selecting files from a motion and/or explicit path inputs."
+  - "The generated pack contains bounded file excerpts and canonical file paths."
+  - "A manifest sidecar is emitted describing the generation inputs and selected files."
+  - "The pack remains compact enough for practical code-heavy Claude setup."
+  - "Re-running the generator without meaningful input changes yields stable markdown/text output."
+  - "A package script exists if useful for day-to-day invocation."
+  - "A local smoke proof demonstrates the code surface pack helping a code-heavy Claude setup flow."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

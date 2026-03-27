@@ -1,0 +1,53 @@
+motion_id: "motion-0043"
+title: "Claude Third Live Usage v0: task-code-pack-assisted code edit + local validation proof"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Prove the first real Claude code-edit workflow that uses the validated setup
+  stack together with the new task-local code surface pack, and record whether
+  this reduces file-selection friction while still supporting successful local
+  validation.
+
+problem: >
+  Motion-0042 added a bounded task-local code surface pack generator, but the new
+  layer has not yet been proven in a live Claude implementation session. Without
+  that proof, dev-jai-nexus still lacks evidence that the code-pack layer actually
+  improves real code-edit workflow and local validation readiness.
+
+proposal:
+  - "Use the validated Claude workflow plus the task-local code surface pack for one real bounded code edit."
+  - "Start the session using the generated Claude bootstrap pack and generated task-local code pack."
+  - "Attempt one real repo-local implementation change with a clear validation step."
+  - "Record what setup inputs were sufficient, what still required manual explanation, and whether the code pack reduced file-selection friction."
+  - "Produce a third live usage report and passalong artifact."
+
+non_goals:
+  - "Do not redesign the task-local code surface pack generator in this motion."
+  - "Do not attempt a broad or risky refactor."
+  - "Do not expand into multi-provider orchestration."
+  - "Do not benchmark many tasks at once."
+  - "Do not replace canonical source truth with generated code/context packs."
+
+success_criteria:
+  - "One real bounded code-edit task is attempted through the Claude workflow."
+  - "The generated Claude bootstrap pack is used."
+  - "The generated task-local code surface pack is used."
+  - "A local validation step is run and recorded if code changes occur."
+  - "A live-usage report records what worked, what was missing, and whether the code pack reduced setup friction."
+  - "A passalong artifact exists for repeating future code-edit sessions."
+  - "Canonical artifacts remain clearly distinguished from generated/session artifacts."
+  - "A live proof demonstrates whether the full setup stack supports real implementation work with acceptable friction."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

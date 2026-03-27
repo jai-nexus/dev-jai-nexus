@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0059",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "All 7 provider-backed command tests passed: draft, revise, and evidence with both OpenAI and Anthropic, plus default-provider confirmation. Structural governance files are deterministically generated and unaffected by provider choice. Stdout correctly identifies the provider in each case. Both missing-key error paths confirmed to fail before writes."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "Functional parity is confirmed across the full provider surface. The proof correctly distinguishes functional parity from output-quality equivalence — both providers execute successfully and preserve trust boundaries, but narrative output quality is not compared or ranked. Error paths and structural preservation are validated."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Provider parity is governed and recorded. Both Phase 1 providers are formally validated across all factory commands. Neither provider introduces governance artifact drift. The Motion Factory v0 dual-provider surface is complete and proven."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

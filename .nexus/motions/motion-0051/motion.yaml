@@ -1,0 +1,58 @@
+motion_id: "motion-0051"
+title: "Differentiated-score ranking behavior proof on 2-candidate executor panels"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Validate that nonzero differentiated breakdown scores produce the expected
+  ranking and winner determination behavior on the 2-candidate Phase 1 executor
+  panel shape. This is a behavior-proof motion with no code changes. It extends
+  the proof chain from motion-0050 (zero-score behavior) to differentiated-score
+  ranking with pre-calculated expected totals.
+
+problem: >
+  motion-0050 proved that the selection/scoring path behaves correctly on the
+  2-candidate shape with zero scores. However, zero-score testing does not
+  exercise the weighted scoring math, total computation, ranking order, or
+  winner determination under realistic differentiated input. Without explicit
+  proof that nonzero differentiated scores produce the expected totals and
+  winner, there is no governed confirmation that the scoring path produces
+  correct results under real-world conditions.
+
+proposal:
+  - "Populate a scaffolded 2-candidate selection.json with nonzero differentiated breakdown scores where the expected winner is unambiguous."
+  - "Run panel-run.mjs score and confirm recomputed totals match pre-calculated expectations."
+  - "Run panel-select.mjs and confirm ranking order and winner match the highest-scoring candidate."
+  - "Record pre-calculated expectations, actual results, and comparison as the proof artifact."
+  - "No code changes unless validation reveals a defect."
+
+non_goals:
+  - "Do not activate selector slots."
+  - "Do not introduce agent orchestration or execution loops."
+  - "Do not change council voting mechanics."
+  - "Do not modify .nexus/agent-panels.yaml."
+  - "Do not modify .nexus/model-slots-phase1.yaml."
+  - "Do not modify portal/scripts/panel-run.mjs."
+  - "Do not modify portal/scripts/panel-select.mjs."
+  - "Do not modify portal/src/lib/panels/panelSelectCore.mjs."
+  - "Do not broaden into routing or runtime redesign."
+
+success_criteria:
+  - "panel-run.mjs score recomputes totals that match pre-calculated expectations."
+  - "panel-select.mjs correctly ranks the higher-scoring candidate first."
+  - "panel-select.mjs correctly selects the higher-scoring candidate as winner."
+  - "Totals match the deterministic formula: total = sum(score × weight) × 10."
+  - "No code changes required."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

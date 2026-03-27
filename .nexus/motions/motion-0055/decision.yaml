@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0055
+status: RATIFIED
+ratified_by: manual:proposer
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-03-17T21:28:33.689Z"
+notes: "RATIFIED: vote_mode=unanimous_consent"

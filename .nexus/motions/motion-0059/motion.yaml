@@ -1,0 +1,73 @@
+motion_id: "motion-0059"
+title: "Motion Factory v0 — provider parity proof"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Validate that both OpenAI and Anthropic function correctly across all
+  provider-backed Motion Factory v0 commands (draft, revise, evidence).
+  This is a proof motion with no code changes. Parity means both providers
+  successfully execute the existing commands, preserve the same trust
+  boundaries and write guarantees, and do not introduce governance artifact
+  drift. This motion does not claim equal prose quality or identical
+  narrative output between providers.
+
+problem: >
+  motion-0058 added Anthropic as an operator-selected provider and validated
+  draft generation with both providers. However, revise and evidence have
+  not been formally proved with Anthropic, and no governed motion has
+  validated the full provider surface (draft + revise + evidence) for both
+  providers together with recorded execution evidence. Without a governed
+  functional parity proof, the Anthropic provider lane remains partially
+  validated.
+
+proposal:
+  - "Execute draft, revise, and evidence commands with both --provider openai and --provider anthropic."
+  - "Validate default behavior (no --provider) continues to use OpenAI."
+  - "Validate provider-specific missing-key errors occur before any file writes."
+  - "Validate that structural governance files remain deterministically generated and are unaffected by provider-specific narrative generation."
+  - "Validate that revise remains narrative-only under both providers."
+  - "Validate that evidence remains source-fed and non-inventing under both providers."
+  - "Validate that stdout identifies the provider used in each case."
+  - "Record all execution evidence in proposal.md before ratification."
+  - "No code changes unless validation reveals a defect."
+
+non_goals:
+  - "Do not add new commands to motion-factory.mjs."
+  - "Do not add auto-provider routing or selection."
+  - "Do not add provider scoring or prose-quality comparison."
+  - "Do not claim identical narrative output between providers."
+  - "Do not change staffing canon or routing policy."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not modify governance config files."
+
+success_criteria:
+  - "draft --provider openai generates narrative successfully."
+  - "draft --provider anthropic generates narrative successfully."
+  - "draft without --provider uses OpenAI (default unchanged)."
+  - "revise --provider openai revises narrative files successfully."
+  - "revise --provider anthropic revises narrative files successfully."
+  - "evidence --provider openai inserts evidence successfully."
+  - "evidence --provider anthropic inserts evidence successfully."
+  - "Structural governance files (policy.yaml, decision.yaml, decision.md, vote.json, verify.json) remain deterministically generated and are unaffected by provider choice."
+  - "Neither provider modifies structural governance artifacts beyond the existing deterministic generation paths."
+  - "Stdout identifies provider used in each command."
+  - "Missing OPENAI_API_KEY with --provider openai produces a clear error before any file writes."
+  - "Missing ANTHROPIC_API_KEY with --provider anthropic produces a clear error before any file writes."
+  - "proposal.md contains completed execution evidence before ratification."
+  - "No code changes required (unless a defect is found)."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

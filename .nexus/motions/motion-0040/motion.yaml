@@ -1,0 +1,54 @@
+motion_id: "motion-0040"
+title: "Claude First Live Usage v0: real project session proof + passalong artifact validation"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Prove the first real Claude project/session workflow for dev-jai-nexus by using
+  the validated setup routine on one bounded live task and recording whether the
+  generated bootstrap pack and handoff routine materially reduced manual
+  recontextualization.
+
+problem: >
+  Motions 0036 through 0039 established the Claude-facing repo artifacts, the
+  generated bootstrap pack, the package script, and the validated setup workflow,
+  but the system has not yet been proven against a real live Claude working session.
+  Without that proof, the setup remains structurally complete but operationally
+  unverified.
+
+proposal:
+  - "Use the validated Claude setup routine for one real dev-jai-nexus task."
+  - "Start the session using the generated Claude bootstrap pack and governed upload/read order."
+  - "Record what context was sufficient, what was missing, and what still required manual explanation."
+  - "Produce a passalong-oriented validation artifact for future repeated use."
+  - "Keep the first proof bounded to one real session and one scoped task."
+
+non_goals:
+  - "Do not redesign the Claude bootstrap generator in this motion."
+  - "Do not expand into multi-provider or multi-model runtime orchestration."
+  - "Do not attempt broad productivity benchmarking across many tasks."
+  - "Do not require a perfect session; the goal is operational proof and learning."
+  - "Do not replace canonical repo governance artifacts with session notes."
+
+success_criteria:
+  - "One real Claude project or chat is started using the governed setup workflow."
+  - "The generated Claude bootstrap pack is actually used in that setup."
+  - "One bounded dev-jai-nexus task is attempted through the workflow."
+  - "A validation artifact records what worked, what was missing, and what should be improved."
+  - "A passalong-oriented artifact exists for repeating the workflow in future sessions."
+  - "The result clearly distinguishes canonical artifacts from generated/session artifacts."
+  - "portal typecheck passes if code surfaces are touched."
+  - "A live proof demonstrates whether setup friction was reduced in practice."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

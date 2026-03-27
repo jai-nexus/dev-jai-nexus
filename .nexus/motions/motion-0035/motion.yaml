@@ -1,0 +1,55 @@
+motion_id: "motion-0035"
+title: "Context Substrate Foundation v0: project constitution + repo capsule schema + motion packet schema + slot policy + scoring rubric"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Establish the first canonical context substrate for JAI NEXUS by defining
+  durable constitutional and schema-level artifacts for project identity,
+  repo capsules, motion/decision packets, slot policy, and scoring/rubric logic.
+
+problem: >
+  Motion-0033 proved that dev-jai-nexus can generate reusable context bundles,
+  but the system still lacks a formally governed substrate describing what those
+  bundles are supposed to mean. Without canonical substrate artifacts, context
+  portability remains useful but under-specified, and future councils, slot
+  orchestration, and cross-chat continuity may drift in structure or semantics.
+
+proposal:
+  - "Add a canonical project constitution artifact for JAI NEXUS."
+  - "Add a governed repo capsule schema defining the expected structure of repo-level memory packets."
+  - "Add a governed motion/decision packet schema defining the bounded object a council reasons over."
+  - "Add a slot policy artifact describing executor-role slot purposes, diversity rules, and assignment intent."
+  - "Add a scoring rubric artifact defining how candidate outputs and decisions are evaluated."
+  - "Keep the first version repo-local, text-first, and governance-oriented rather than retrieval-oriented."
+
+non_goals:
+  - "Do not build embeddings, vector search, or semantic retrieval in this motion."
+  - "Do not fully automate constitution sync across all repos in this motion."
+  - "Do not fully staff multi-provider slot pools in this motion."
+  - "Do not redesign the full council runtime in this motion."
+  - "Do not replace existing motion artifacts as the canonical governance record."
+
+success_criteria:
+  - "A governed project constitution artifact exists and captures stable JAI NEXUS identity and principles."
+  - "A governed repo capsule schema exists and defines the expected fields for repo memory packets."
+  - "A governed motion/decision packet schema exists and defines the bounded object a council evaluates."
+  - "A governed slot policy artifact exists and defines role-specialized slot purposes and constraints."
+  - "A governed scoring rubric artifact exists and defines reusable evaluation dimensions for code and decision quality."
+  - "The five substrate artifacts are internally coherent and mutually consistent."
+  - "The substrate artifacts are stored in a durable governed location within dev-jai-nexus."
+  - "portal typecheck passes if any code surfaces are touched."
+  - "A local proof shows the artifacts can be read together as a compact constitutional context pack."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

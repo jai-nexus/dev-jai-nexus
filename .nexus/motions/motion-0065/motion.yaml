@@ -1,0 +1,47 @@
+motion_id: "motion-0065"
+title: "status parity and motion inventory hardening"
+
+status: "proposed"
+created_at: "2026-03-18T14:42:24.000Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Harden Motion Factory v0 local status reporting so human and JSON status are
+  derived from the same snapshot logic and motion inventory is reported
+  accurately when gaps or stray directories exist.
+
+problem: >
+  Current local status reporting shows drift between human and JSON output and
+  does not clearly distinguish between highest discovered motion id, existing
+  motion count, and missing motion ids. This weakens trust in Motion Factory's
+  governance-facing readiness surface.
+
+proposal:
+  - "Unify status and status --json behind one shared snapshot builder."
+  - "Report motion inventory explicitly, including highest id, next id, existing directory count, and missing ids when present."
+  - "Ignore or filter non-motion directories found under .nexus/motions."
+  - "Preserve current semantics for draft, revise, evidence, and all existing preview behavior."
+
+non_goals:
+  - "Do not alter draft preview, revise preview, or evidence preview semantics."
+  - "Do not backfill or recreate missing historical motion directories."
+  - "Do not change structural-file trust boundaries or ratification policy."
+  - "Do not add new Motion Factory commands in this motion."
+
+success_criteria:
+  - "Human status output and JSON status output agree on file-scope defaults and protected file lists."
+  - "Status reporting distinguishes next motion id from existing motion directory count."
+  - "Status reporting can surface missing motion ids when inventory gaps exist."
+  - "Non-motion directories under .nexus/motions are not counted as motions."
+  - "Existing command behavior outside status remains unchanged."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

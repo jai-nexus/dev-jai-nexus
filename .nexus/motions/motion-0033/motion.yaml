@@ -1,0 +1,51 @@
+motion_id: "motion-0033"
+title: "Context Bundle Generator v0: motion snapshots + repo capsule + active path pack"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add deterministic text-first context bundle generation so the machine can emit
+  dated motion snapshots, a compact repo capsule, and a task-local active path pack
+  for reuse across chats, councils, and multi-model workflows.
+
+problem: >
+  Motion history and repo state are currently being hand-assembled into manual
+  snapshots. That is slow, inconsistent, bulky, and easy to drift. JAI NEXUS needs
+  a governed way to compile reusable memory artifacts so project context can be
+  uploaded into new chats without repeatedly narrating the whole repo.
+
+proposal:
+  - "Add a motion snapshot generator that compiles motion history into a dated text artifact."
+  - "Add a repo capsule generator that compiles current repo structure, commands, and architecture into a bounded text artifact."
+  - "Add an active path pack generator for current motion / touched-file / task-local context."
+  - "Add a bundle command that emits all context artifacts together plus a manifest sidecar."
+  - "Keep the first version text-first, deterministic, and optimized for upload into model chats."
+
+non_goals:
+  - "Do not build a full semantic retrieval system in this motion."
+  - "Do not dump the entire repository verbatim."
+  - "Do not index binary assets or build artifacts."
+  - "Do not replace formal motion artifacts as the canonical source of truth."
+
+success_criteria:
+  - "A dated motion snapshot file is generated deterministically."
+  - "A dated repo capsule file is generated deterministically."
+  - "A dated active path pack file is generated for a selected motion or path set."
+  - "A manifest sidecar is generated listing branch, commit, files emitted, and generation metadata."
+  - "Generated outputs exclude junk/build paths and remain upload-friendly."
+  - "Re-running the generator without repo changes yields stable output ordering."
+  - "portal typecheck passes."
+  - "A live smoke run proves the generator emits the expected dated files."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

@@ -1,0 +1,21 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0065",
+  "latest": {
+    "validate_motion": {
+      "status": "PASS",
+      "checked_at": "2026-03-18T22:30:37.000Z",
+      "details": "motion-0065 narrative, scope, and implementation align to status parity and motion inventory hardening."
+    },
+    "validate_agency": {
+      "status": "PASS",
+      "checked_at": "2026-03-18T22:30:37.000Z",
+      "details": "Change remained bounded to Motion Factory status/context inventory reporting and preserved draft, revise, and evidence command semantics."
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-18T22:30:37.000Z",
+    "notes": "Required gates satisfied. Local verification confirmed node --check passed, status and status --json align, next_motion_id is motion-0066, highest_discovered_motion_id is motion-0065, and evidence_default is [\"proposal.md\", \"execution.md\"]."
+  }
+}

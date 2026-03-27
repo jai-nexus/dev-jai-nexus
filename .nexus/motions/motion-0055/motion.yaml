@@ -1,0 +1,68 @@
+motion_id: "motion-0055"
+title: "Motion Factory v0 — revision command"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs with a revise command that updates
+  selected narrative files in an existing motion draft from human notes. The
+  command calls the OpenAI API with the existing draft content, context payload,
+  and human revision notes to regenerate targeted narrative files. Structural
+  governance files are not revised by default. Output remains DRAFT-only.
+
+problem: >
+  motion-0054 completed the core draft path for Motion Factory v0, but after
+  initial generation the human must manually edit narrative files to incorporate
+  feedback, tighten scope, or correct issues. This revision overhead is the
+  next bottleneck. A bounded revise command that re-generates selected narrative
+  files from human notes would reduce iteration time without broadening factory
+  authority.
+
+proposal:
+  - "Extend portal/scripts/motion-factory.mjs with a revise command."
+  - "Require --motion and --notes as CLI arguments."
+  - "Default revise scope: proposal.md, challenge.md, execution.md."
+  - "Optional --files flag to narrow or expand within the allowed narrative set (proposal.md, challenge.md, execution.md, motion.yaml)."
+  - "Read the existing draft files, context payload, and human revision notes as prompt input."
+  - "Call the OpenAI API to regenerate the targeted narrative files."
+  - "Never revise by default: policy.yaml, decision.yaml, decision.md, vote.json, verify.json."
+  - "Refuse requests to revise files outside the allowed narrative set."
+  - "Print a summary of revised files and a reminder that human review is required."
+  - "Never generate evidence tables, PASS/FAIL claims, vote entries, or ratification claims."
+
+non_goals:
+  - "Do not revise structural governance files (policy.yaml, decision.yaml, decision.md, vote.json, verify.json) by default."
+  - "Do not implement evidence insertion."
+  - "Do not generate trace.json or transcript.jsonl."
+  - "Do not write outside the target motion directory."
+  - "Do not modify governance config files."
+  - "Do not auto-ratify."
+  - "Do not fill votes."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not add Anthropic or multi-provider support in this motion."
+
+success_criteria:
+  - "revise command with --motion and --notes regenerates default narrative files (proposal.md, challenge.md, execution.md)."
+  - "revise with --files narrows or selects within the allowed set."
+  - "revise with a file outside the allowed set produces a clear error."
+  - "Structural files (policy.yaml, decision.yaml, decision.md, vote.json, verify.json) are not modified."
+  - "Missing --motion or --notes produces a clear error."
+  - "Missing target motion directory produces a clear error."
+  - "Missing OPENAI_API_KEY produces a clear error."
+  - "Revised content contains no evidence tables, PASS/FAIL claims, vote entries, or ratification claims."
+  - "Stdout prints revised files list and human-review reminder."
+  - "No files written outside the target motion directory."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

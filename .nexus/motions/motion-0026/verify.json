@@ -1,0 +1,56 @@
+{
+  "motion_id": "motion-0026",
+  "status": "PENDING",
+  "checks": {
+    "validate_agency": "PENDING",
+    "typecheck": "PENDING",
+    "dct_replay_check": "PENDING"
+  },
+  "required_ok": false,
+  "eligible_to_vote": false,
+  "recommended_vote": "pending",
+  "blocking_reasons": [],
+  "warnings": [],
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-10T22:39:05.358Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0026\\motion.yaml",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-10T22:39:05.713Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
+    },
+    "dct_replay_check": {
+      "gate": "dct_replay_check",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-10T22:39:07.097Z",
+      "command": "cmd.exe /c pnpm tsx scripts/dct-replay-check.ts --file scripts/fixtures/dct-test-fixture.json",
+      "cwd": "portal",
+      "required": false
+    },
+    "typecheck": {
+      "gate": "typecheck",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-10T22:45:38.069Z",
+      "command": "pnpm -C portal typecheck",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-10T22:45:38.070Z"
+  }
+}

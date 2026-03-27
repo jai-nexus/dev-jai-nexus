@@ -1,0 +1,42 @@
+{
+  "version": "panel.meta.v0",
+  "panel_id": "JAI_DEV_ARCHITECT_PANEL_V0",
+  "role_id": "JAI::DEV::ARCHITECT",
+  "candidates": [
+    "SLOT_ARCHITECT_01",
+    "SLOT_ARCHITECT_02"
+  ],
+  "selector": "SLOT_ARCHITECT_SELECTOR",
+  "rubric": [
+    {
+      "id": "correctness",
+      "weight": 0.25,
+      "description": "Matches goal/constraints and solves the right problem."
+    },
+    {
+      "id": "coherence",
+      "weight": 0.2,
+      "description": "Internally consistent design with clear interfaces and boundaries."
+    },
+    {
+      "id": "feasibility",
+      "weight": 0.2,
+      "description": "Implementable within current repo constraints and time."
+    },
+    {
+      "id": "minimal_diff",
+      "weight": 0.1,
+      "description": "Avoids unnecessary churn; smallest viable architecture change."
+    },
+    {
+      "id": "evidence_plan_quality",
+      "weight": 0.15,
+      "description": "Clear verification steps and acceptance criteria."
+    },
+    {
+      "id": "risk_awareness",
+      "weight": 0.1,
+      "description": "Identifies edge cases, security, governance, rollout risks."
+    }
+  ]
+}

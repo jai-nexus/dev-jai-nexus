@@ -1,0 +1,47 @@
+{
+    "motion_id": "motion-0029",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "This motion makes execution eligibility explicit in agency configuration and removes the semantic leak where governance agents could appear in governed execution assignment flows.",
+            "ts": "2026-03-11T00:10:00.000Z"
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "The change is appropriately scoped to config plus operator work surfaces, preserves backward compatibility, and surfaces invalid legacy role-assignee combinations instead of silently treating them as valid.",
+            "ts": "2026-03-11T00:11:00.000Z"
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "tier": 1,
+            "vote": "yes",
+            "rationale": "Unanimous consent satisfied. Governance and execution are now explicitly separated at the configuration layer, which is the right foundation before live autonomous runner rollout.",
+            "ts": "2026-03-11T00:12:00.000Z"
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "vote_mode": "unanimous_consent",
+    "version": "0.2",
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-11T00:12:30.000Z"
+}

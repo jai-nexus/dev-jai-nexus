@@ -1,0 +1,38 @@
+{
+  "version": "panel.selection.v0",
+  "panel_id": "JAI_DEV_BUILDER_PANEL_V0",
+  "motion_id": "motion-0049",
+  "task": "UNKNOWN",
+  "winner": "UNKNOWN",
+  "scores": {
+    "SLOT_BUILDER_01": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    },
+    "SLOT_BUILDER_02": {
+      "total": 0,
+      "breakdown": {
+        "correctness": 0,
+        "compilable": 0,
+        "minimal_diff": 0,
+        "maintainability": 0,
+        "evidence_plan_quality": 0,
+        "risk_awareness": 0
+      }
+    }
+  },
+  "winner_rationale": [],
+  "reservations": [],
+  "evidence_plan": {
+    "commands": [],
+    "expected": []
+  },
+  "files": []
+}

@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0035",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0035 successfully established the first formal context substrate for dev-jai-nexus. The project constitution, repo capsule schema, motion packet schema, slot policy, and scoring rubric now exist as governed substrate artifacts for future context bundles, councils, and slot orchestration."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion remained appropriately scoped. It formalized durable local substrate artifacts without drifting into retrieval systems, provider staffing, or cross-repo federation. The five artifacts are distinct, compact, and aligned with current dev-jai-nexus workflow."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and strategically useful. The substrate artifacts define stable constitutional and schema-level expectations that future generated context bundles and council reasoning can rely on, raising the structural floor of JAI NEXUS."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T20:25:00.000Z"
+}

@@ -1,0 +1,108 @@
+version: "0.1"
+artifact: "repo-capsule-schema"
+kind: "schema"
+name: "repo-capsule"
+
+description: >
+  Defines the expected structure of a repo-level context packet used for chat bootstrap,
+  council continuity, and reusable local memory packaging.
+
+required_sections:
+  - "identity"
+  - "state"
+  - "purpose"
+  - "key_paths"
+  - "commands"
+  - "work_front"
+
+fields:
+  identity:
+    required: true
+    fields:
+      repo_name:
+        type: "string"
+        required: true
+      domain:
+        type: "string"
+        required: true
+      repo_scope:
+        type: "string"
+        required: true
+
+  state:
+    required: true
+    fields:
+      branch:
+        type: "string"
+        required: true
+      head_commit:
+        type: "string"
+        required: true
+      dirty_status:
+        type: "string"
+        required: true
+        allowed:
+          - "CLEAN"
+          - "DIRTY"
+
+  purpose:
+    required: true
+    type: "list[string]"
+    min_items: 1
+
+  key_paths:
+    required: true
+    type: "list[object]"
+    item_fields:
+      path:
+        type: "string"
+        required: true
+      exists:
+        type: "boolean"
+        required: true
+      note:
+        type: "string"
+        required: false
+
+  commands:
+    required: true
+    type: "list[string]"
+    min_items: 1
+
+  work_front:
+    required: true
+    fields:
+      latest_motion:
+        type: "string"
+        required: false
+      current_focus:
+        type: "string"
+        required: true
+      likely_next_work:
+        type: "string"
+        required: false
+      tensions:
+        type: "list[string]"
+        required: false
+
+optional_sections:
+  - "directory_tree"
+  - "recent_proofs"
+  - "artifact_outputs"
+  - "notes"
+
+constraints:
+  - "Capsule should be compact enough for chat/bootstrap reuse."
+  - "Directory trees should be bounded and filtered."
+  - "Generated capsules should not include build/vendor junk."
+  - "Repo capsule instances should preserve stable section ordering."
+
+ignore_defaults:
+  - ".git"
+  - "node_modules"
+  - ".next"
+  - "dist"
+  - "tmp"
+  - ".vercel"
+  - ".turbo"
+  - "surfaces/chat-context"

@@ -1,0 +1,45 @@
+{
+  "version": "panel.meta.v0",
+  "panel_id": "JAI_DEV_VERIFIER_PANEL_V0",
+  "role_id": "JAI::DEV::VERIFIER",
+  "candidates": [
+    "SLOT_VERIFIER_01",
+    "SLOT_VERIFIER_02",
+    "SLOT_VERIFIER_03",
+    "SLOT_VERIFIER_04",
+    "SLOT_VERIFIER_05"
+  ],
+  "selector": "SLOT_VERIFIER_SELECTOR",
+  "rubric": [
+    {
+      "id": "correctness",
+      "weight": 0.25,
+      "description": "Finds real issues; avoids false positives."
+    },
+    {
+      "id": "coverage",
+      "weight": 0.2,
+      "description": "Checks the right surfaces (types, runtime, edge cases)."
+    },
+    {
+      "id": "actionability",
+      "weight": 0.2,
+      "description": "Produces concrete fixes / repro steps / exact commands."
+    },
+    {
+      "id": "minimal_diff",
+      "weight": 0.1,
+      "description": "Suggests minimal safe fixes."
+    },
+    {
+      "id": "evidence_plan_quality",
+      "weight": 0.15,
+      "description": "Commands + expected outputs that prove the fix."
+    },
+    {
+      "id": "risk_awareness",
+      "weight": 0.1,
+      "description": "Catches security/regression/governance risks."
+    }
+  ]
+}

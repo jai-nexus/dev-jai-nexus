@@ -76,3 +76,8 @@ dr-snapshot/
 **/dr-snapshot/
 **/*.csv
 **/*.zip
+
+# -------------------------
+# Control plane (generated)
+# -------------------------
+control-plane/

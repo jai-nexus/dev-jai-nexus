@@ -1,0 +1,21 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0066",
+    "latest": {
+        "validate_motion": {
+            "status": "PASS",
+            "checked_at": "2026-03-25T19:44:25.000Z",
+            "details": "motion-0066 remains narrowly scoped to candidate prep artifact emission in Motion Factory draft flow and preserves prep-layer/formal-motion boundaries."
+        },
+        "validate_agency": {
+            "status": "PASS",
+            "checked_at": "2026-03-25T19:44:25.000Z",
+            "details": "Change remained bounded to portal/scripts/motion-factory.mjs and did not expand into Waves, planner integration, Work UI, or terminal-backed execution."
+        }
+    },
+    "summary": {
+        "required_ok": true,
+        "last_updated": "2026-03-25T19:44:25.000Z",
+        "notes": "Required gates satisfied. Local verification confirmed syntax check passed, preview showed provisional candidate identity without writes, apply emitted .nexus/candidates/<candidateId>.json, and formal draft creation remained atomic with candidate emission."
+    }
+}

@@ -1,0 +1,72 @@
+motion_id: "motion-0053"
+title: "Motion Factory v0 — deterministic package scaffold"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs with a draft command that creates
+  the standard 9-file motion package in DRAFT state using deterministic
+  scaffolding only. No model API is called. Structural files are generated
+  from templates and the context payload established in motion-0052. Narrative
+  files are clearly marked placeholder scaffolds that require human or
+  model-assisted completion before the package is ratifiable.
+
+problem: >
+  motion-0052 established the inspectable context substrate for Motion Factory
+  v0, but the factory cannot yet create motion files. The next manual step in
+  every motion is creating 9 files with correct motion ID, protocol version,
+  vote structure, and directory layout. This is deterministic work that can be
+  templated. Before adding model-assisted narrative generation, the factory
+  should be able to emit a structurally correct package that a human or model
+  can then fill in.
+
+proposal:
+  - "Extend portal/scripts/motion-factory.mjs with a draft command."
+  - "The draft command reuses the context-gathering logic from motion-0052 to determine next motion ID, governance defaults, and repo state."
+  - "The draft command creates .nexus/motions/motion-NNNN/ and writes 9 files."
+  - "Structural files (policy.yaml, decision.yaml, vote.json, verify.json) are generated deterministically from governance config."
+  - "motion.yaml is generated with motion ID, intent as title, status proposed, created_at, owner, target, and placeholder sections with explicit 'Draft scaffold — pending' markers."
+  - "Narrative files (proposal.md, challenge.md, execution.md, decision.md) are clearly marked placeholder scaffolds with explicit draft markers and the original intent."
+  - "The draft command refuses to create if the target motion directory already exists and stops with a clear error."
+  - "The draft command prints a summary including created files and a reminder that the package requires narrative completion before ratification."
+  - "No model API is called."
+
+non_goals:
+  - "Do not call any model API."
+  - "Do not generate narrative-rich content by inference."
+  - "Do not implement the revise command."
+  - "Do not implement overwrite or force behavior."
+  - "Do not generate trace.json or transcript.jsonl."
+  - "Do not write outside .nexus/motions/motion-NNNN/."
+  - "Do not modify governance config files."
+  - "Do not auto-ratify."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not fill vote entries or evidence tables."
+
+success_criteria:
+  - "draft command creates .nexus/motions/motion-NNNN/ with 9 files."
+  - "motion.yaml contains correct motion_id, title from intent, status proposed, created_at, owner, target, and placeholder sections with explicit 'Draft scaffold — pending' markers."
+  - "policy.yaml contains correct protocol_version, vote_mode, required_voters, and risk defaults from governance config."
+  - "decision.yaml is DRAFT with ratified_by null."
+  - "vote.json is PENDING with empty votes and all required roles missing."
+  - "verify.json is pending with required_ok false."
+  - "proposal.md, challenge.md, execution.md, decision.md are placeholder scaffolds with explicit draft markers and the original intent where appropriate."
+  - "Existing motion directory causes a hard error (no overwrite behavior)."
+  - "stdout prints created motion ID, path, file list, and a reminder that narrative completion is required before ratification."
+  - "No model API is called."
+  - "No files written outside the motion directory."
+  - "Generated packages are structurally complete but narratively incomplete by design and are not expected to be immediately ratifiable."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

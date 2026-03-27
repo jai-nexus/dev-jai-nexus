@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0062",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Help text updated with PowerShell-ready copy-paste examples for all five commands, consistent provider flag descriptions, status vs context distinction, and file scope documentation. Playbook drift found and corrected: status command section added. No behavioral changes confirmed via status and draft --no-api verification."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "Changes are strictly operator-facing strings. No command routing, provider semantics, file scopes, write behavior, or atomicity were modified. The playbook update was conditional on actual drift (status command missing) and correctly bounded to that gap. Examples use motion-NNNN placeholders consistently."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 is now fully discoverable: five commands, dual-provider, documented, inspectable, and polished. The help text and playbook are in exact parity with the real CLI surface. This closes the v0 polish cycle."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

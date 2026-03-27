@@ -1,0 +1,45 @@
+{
+  "version": "panel.meta.v0",
+  "panel_id": "JAI_DEV_OPERATOR_PANEL_V0",
+  "role_id": "JAI::DEV::OPERATOR",
+  "candidates": [
+    "SLOT_OPERATOR_01",
+    "SLOT_OPERATOR_02",
+    "SLOT_OPERATOR_03",
+    "SLOT_OPERATOR_04",
+    "SLOT_OPERATOR_05"
+  ],
+  "selector": "SLOT_OPERATOR_SELECTOR",
+  "rubric": [
+    {
+      "id": "correctness",
+      "weight": 0.25,
+      "description": "Proposed actions do what they claim."
+    },
+    {
+      "id": "safety",
+      "weight": 0.2,
+      "description": "Avoids destructive steps; uses checks before writes."
+    },
+    {
+      "id": "idempotence",
+      "weight": 0.15,
+      "description": "Can be re-run safely; minimal side effects."
+    },
+    {
+      "id": "minimal_diff",
+      "weight": 0.1,
+      "description": "Smallest set of commands/changes to reach goal."
+    },
+    {
+      "id": "evidence_plan_quality",
+      "weight": 0.2,
+      "description": "Clear commands + expected outputs for verification."
+    },
+    {
+      "id": "risk_awareness",
+      "weight": 0.1,
+      "description": "Calls out dependencies, prerequisites, and failure modes."
+    }
+  ]
+}

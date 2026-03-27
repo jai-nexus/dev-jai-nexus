@@ -31,8 +31,6 @@ function scalar(v: unknown): JsonScalar {
   if (typeof v === "number") return Number.isFinite(v) ? v : "(nan)";
   if (typeof v === "boolean") return v;
 
-  // Try to keep it stable-ish for objects without exploding payload size.
-  // (We don't want deep JSON stringify in a diff helper.)
   try {
     return JSON.stringify(v);
   } catch {
@@ -81,10 +79,17 @@ export type WorkPacketSotKind =
   | "WORK_PACKET_CREATED"
   | "WORK_PACKET_UPDATED"
   | "WORK_PACKET_STATUS_CHANGED"
-  | "WORK_DELEGATED";
+  | "WORK_DELEGATED"
+  | "WORK_CLAIMED"
+  | "WORK_COMPLETED"
+  | "WORK_FAILED"
+  | "WORK_REQUEUED"
+  | "WORK_ROUTED"
+  | "WORK_REVIEW_REQUESTED"
+  | "WORK_APPROVED";
 
 export type EmitWorkPacketSotEventArgs = {
-  db?: DbLike; // prisma or tx
+  db?: DbLike;
   ts?: Date;
 
   source?: string;
@@ -105,7 +110,6 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
   const db = args.db ?? prisma;
   const ts = args.ts ?? new Date();
 
-  // Work-packet specific payload (your internal schema)
   const workPayload: Prisma.InputJsonValue = {
     schema: "work-packet-sot-0.1",
     mutationId: args.mutationId,
@@ -117,7 +121,6 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
     data: args.data ?? {},
   };
 
-  // ✅ SoT v0.1 envelope (locked contract)
   const sotEvent = {
     version: "0.1" as const,
     ts: ts.toISOString(),
@@ -130,12 +133,10 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
     payload: workPayload,
   };
 
-  // throws in dev, warns in prod (per your validator)
   assertSotEventV01(sotEvent);
 
   await db.sotEvent.create({
     data: {
-      // stable distinct event id
       eventId: args.mutationId,
       ts,
       source: sotEvent.source,
@@ -144,8 +145,6 @@ export async function emitWorkPacketSotEvent(args: EmitWorkPacketSotEventArgs) {
       summary: sotEvent.summary ?? null,
       payload: sotEvent as Prisma.InputJsonValue,
       repoId: args.repoId ?? null,
-
-      // stable anchor for streams
       workPacketId: args.workPacket.id,
     },
   });

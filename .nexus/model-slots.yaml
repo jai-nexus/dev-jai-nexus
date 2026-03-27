@@ -1,0 +1,165 @@
+version: "model.slots.v0"
+
+# Named model variables. Swap providers/models over time without changing role identity.
+# Do NOT store secrets here.
+
+slots:
+  # --- BUILDER candidate set (5 variables) ---
+  SLOT_BUILDER_01:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best coding model #1 (primary)"
+
+  SLOT_BUILDER_02:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best coding model #2 (alt)"
+
+  SLOT_BUILDER_03:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best coding model #3 (alt)"
+
+  SLOT_BUILDER_04:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best coding model #4 (alt)"
+
+  SLOT_BUILDER_05:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best coding model #5 (alt)"
+
+  # --- BUILDER selector slot (scores candidates + picks winner) ---
+  SLOT_BUILDER_SELECTOR:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Selector model for Builder panel (scores candidates + picks winner)"
+
+  # --- ARCHITECT candidate set (5 variables) ---
+  SLOT_ARCHITECT_01:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best architecture/plan model #1 (primary)"
+
+  SLOT_ARCHITECT_02:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best architecture/plan model #2 (alt)"
+
+  SLOT_ARCHITECT_03:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best architecture/plan model #3 (alt)"
+
+  SLOT_ARCHITECT_04:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best architecture/plan model #4 (alt)"
+
+  SLOT_ARCHITECT_05:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best architecture/plan model #5 (alt)"
+
+  # --- ARCHITECT selector slot (scores candidates + picks winner) ---
+  SLOT_ARCHITECT_SELECTOR:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Selector model for Architect panel (scores candidates + picks winner)"
+
+  # --- VERIFIER candidate set (5 variables) ---
+  SLOT_VERIFIER_01:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best verification/review model #1 (primary)"
+
+  SLOT_VERIFIER_02:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best verification/review model #2 (alt)"
+
+  SLOT_VERIFIER_03:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best verification/review model #3 (alt)"
+
+  SLOT_VERIFIER_04:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best verification/review model #4 (alt)"
+
+  SLOT_VERIFIER_05:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best verification/review model #5 (alt)"
+
+  # --- VERIFIER selector slot (scores candidates + picks winner) ---
+  SLOT_VERIFIER_SELECTOR:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Selector model for Verifier panel (scores candidates + picks winner)"
+
+  # --- LIBRARIAN candidate set (5 variables) ---
+  SLOT_LIBRARIAN_01:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best docs/summarization model #1 (primary)"
+
+  SLOT_LIBRARIAN_02:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best docs/summarization model #2 (alt)"
+
+  SLOT_LIBRARIAN_03:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best docs/summarization model #3 (alt)"
+
+  SLOT_LIBRARIAN_04:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best docs/summarization model #4 (alt)"
+
+  SLOT_LIBRARIAN_05:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best docs/summarization model #5 (alt)"
+
+  # --- LIBRARIAN selector slot (scores candidates + picks winner) ---
+  SLOT_LIBRARIAN_SELECTOR:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Selector model for Librarian panel (scores candidates + picks winner)"
+
+  # --- OPERATOR candidate set (5 variables) ---
+  SLOT_OPERATOR_01:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best operator/execution model #1 (primary)"
+
+  SLOT_OPERATOR_02:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best operator/execution model #2 (alt)"
+
+  SLOT_OPERATOR_03:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best operator/execution model #3 (alt)"
+
+  SLOT_OPERATOR_04:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best operator/execution model #4 (alt)"
+
+  SLOT_OPERATOR_05:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Best operator/execution model #5 (alt)"
+
+  # --- OPERATOR selector slot (scores candidates + picks winner) ---
+  SLOT_OPERATOR_SELECTOR:
+    provider: "openai"
+    model: "gpt-5"
+    notes: "Selector model for Operator panel (scores candidates + picks winner)"

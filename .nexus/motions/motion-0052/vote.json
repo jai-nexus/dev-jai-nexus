@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0052",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion Factory v0 context command works correctly. Human-readable and JSON output both include all expected fields: intent, next_motion_id, branch, head_commit, recent_motions, staffing_summary, panel_summary, governance_summary. Missing --intent fails hard with a clear error. No files written, no API called. The context payload contract is stable and ready for future draft/revise consumers."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The script is one file, one command, bounded reads only. It reuses proven repo patterns (repo root discovery, safeYamlLoad, git helpers) without introducing new abstractions. The --json output establishes a machine-readable contract for future factory steps. The hard-fail on missing intent enforces the human-intent governance boundary. Minor observation: Librarian panel candidates field missing in JSON — worth investigating but not a blocking defect for the context-gathering proof."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The first inspectable Motion Factory surface is proven. Context gathering is deterministic, bounded, and produces useful output for both human inspection and future machine consumption. This establishes the context substrate that later draft and revise commands will build on. The bootstrap sequence is on track."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-17T00:00:00.000Z"
+}

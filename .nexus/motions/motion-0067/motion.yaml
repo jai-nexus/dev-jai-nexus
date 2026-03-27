@@ -1,0 +1,61 @@
+motion_id: "motion-0067"
+title: "candidate artifact discovery in Motion Factory status and context"
+
+status: "proposed"
+created_at: "2026-03-25T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Teach Motion Factory status and context commands to discover and report
+  candidate prep artifacts emitted under .nexus/candidates/. Read-only:
+  no writes, no promotion, no lifecycle changes. Completes the
+  emission/discovery loop opened by motion-0066.
+
+problem: >
+  motion-0066 added candidate prep artifact emission during draft flow.
+  But the status and context commands have no awareness of emitted
+  candidates. The operator cannot use the factory to see what candidates
+  exist without manually inspecting the .nexus/candidates/ directory.
+
+proposal:
+  - "Add an enumerateCandidates helper that discovers .nexus/candidates/*.json files."
+  - "Teach status to report: candidate count, candidates directory path, most recent candidate."
+  - "Teach context to report: recent candidates alongside recent motions."
+  - "Include candidate discovery data in --json output for both commands."
+  - "Read-only: no writes, no promotion, no lifecycle changes."
+  - "Treat .nexus/candidates/ as a durable governance-prep surface, not a temp cache."
+  - "Report skipped malformed files as a lightweight count, not a fatal error."
+
+non_goals:
+  - "Do not add candidate promotion or lifecycle transitions."
+  - "Do not add Waves UI consumption or rendering."
+  - "Do not add planner-output mapping."
+  - "Do not add transport or SoT dependencies."
+  - "Do not add Work UI changes."
+  - "Do not change Council vote or ratification semantics."
+  - "Do not anticipate promotion fields not yet emitted."
+  - "Do not modify candidate artifact shape."
+  - "Do not modify draft, revise, or evidence commands."
+
+success_criteria:
+  - "status reports candidate count and most recent candidate."
+  - "context reports recent candidates alongside recent motions."
+  - "Both commands include candidate data in --json output."
+  - "Discovery reads only fields already present in emitted artifacts (candidateId, intent, status, createdAt, targetMotionId)."
+  - "No writes occur during discovery."
+  - "No candidate artifact shape changes."
+  - "draft, revise, evidence commands are unchanged."
+  - ".nexus/candidates/ is treated as a durable surface."
+  - "status --json does not include an unbounded full candidate list."
+  - "Malformed candidate files are skipped with a lightweight skipped_malformed count."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

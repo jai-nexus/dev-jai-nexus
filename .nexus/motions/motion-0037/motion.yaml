@@ -1,0 +1,51 @@
+motion_id: "motion-0037"
+title: "Claude Bootstrap Generator v0: substrate-aware setup pack + dated project handoff"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add a deterministic Claude bootstrap generator that compiles the repo-root Claude
+  guidance, formal substrate artifacts, and current generated context into a compact,
+  dated setup pack for immediate Claude project or chat bootstrap.
+
+problem: >
+  Motion-0036 established the Claude-facing operating artifacts, but setup still
+  requires manually gathering files across multiple governed locations. JAI NEXUS now
+  needs a generated Claude bootstrap pack so Claude project setup can begin from a
+  stable, compact, reusable handoff instead of manual file selection.
+
+proposal:
+  - "Add a script that generates a dated Claude bootstrap pack."
+  - "Compile repo-root CLAUDE.md, Claude project artifacts, substrate references, and current generated context into one governed output set."
+  - "Keep the first version deterministic, compact, and optimized for immediate project/chat setup."
+  - "Add a small manifest describing the generated Claude bootstrap contents."
+  - "Optionally add a package script for repeatable generation."
+
+non_goals:
+  - "Do not automate Claude account creation or project creation."
+  - "Do not implement provider routing or model staffing in this motion."
+  - "Do not replace canonical substrate or motion artifacts with generated Claude packs."
+  - "Do not expand into multi-provider bootstrap generation in this motion."
+
+success_criteria:
+  - "A dated Claude bootstrap pack is generated deterministically."
+  - "The generated pack includes repo-local Claude guidance plus references to the formal substrate."
+  - "The generated pack includes enough current context to start a practical Claude project/chat."
+  - "A manifest sidecar describes the bootstrap output."
+  - "The generated pack remains compact and reusable."
+  - "Re-running the generator without meaningful repo changes yields stable output ordering."
+  - "portal typecheck passes if any code surfaces are touched."
+  - "A local smoke proof demonstrates that the pack can be used as a single Claude setup handoff."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

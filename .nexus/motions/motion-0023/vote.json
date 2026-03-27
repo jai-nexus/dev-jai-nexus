@@ -1,0 +1,47 @@
+{
+  "motion_id": "motion-0023",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Hydration mismatch overlays reduce operator usability; hardening SSR output and form controls improves stability without changing governance semantics.",
+      "ts": "2026-03-10T00:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Scope is bounded to UI hardening + stable timestamp rendering; low risk and improves reliability in dev.",
+      "ts": "2026-03-10T00:01:00.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Unanimous consent satisfied. Change is isolated and reversible; improves operator experience and reduces false-negative error noise.",
+      "ts": "2026-03-10T00:02:00.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "vote_mode": "unanimous_consent",
+  "version": "0.2",
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-10T19:48:46.631Z"
+}

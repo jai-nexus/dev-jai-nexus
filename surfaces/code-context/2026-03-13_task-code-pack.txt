@@ -1,0 +1,195 @@
+# Task-Local Code Surface Pack
+generated_for_date: 2026-03-13
+repo: dev-jai-nexus
+branch: sprint/q1m3-council-pivot-polyrepo-coverage
+head_commit: f2efabb
+motion: motion-0042
+selected_files_count: 2
+
+## Purpose
+This is a generated task-local code surface pack for code-heavy Claude sessions. It is a bounded file-context layer meant to reduce manual file gathering. Canonical truth remains in the actual repo source files.
+
+## Current Repo State
+- latest_commit_subject: feat(claude): add second live usage proof for code-heavy setup
+- motion: motion-0042
+- branch: sprint/q1m3-council-pivot-polyrepo-coverage
+- head_commit: f2efabb
+
+## Generation Inputs
+### Explicit Paths
+- none
+
+### Motion-Derived Paths
+- portal/scripts/generate-task-code-pack.mjs
+
+### Git-Modified Paths Considered
+- package.json
+- portal/scripts/generate-task-code-pack.mjs
+
+## Selected Files
+- package.json
+- portal/scripts/generate-task-code-pack.mjs
+
+## package.json
+Path is canonical. Use the actual repo file as source of truth.
+
+~~~json
+1 | {
+   2 |   "name": "dev-jai-nexus",
+   3 |   "private": true,
+   4 |   "packageManager": "pnpm@10.26.0",
+   5 |   "scripts": {
+   6 |     "dev": "pnpm -C portal dev",
+   7 |     "build": "pnpm -C portal build",
+   8 |     "start": "pnpm -C portal start",
+   9 |     "lint": "pnpm -C portal lint",
+  10 |     "seed": "pnpm -C portal db:seed",
+  11 |     "db:seed": "pnpm -C portal db:seed",
+  12 |     "prisma:generate": "pnpm -C portal prisma:generate",
+  13 |     "prisma:migrate:local": "pnpm -C portal prisma:migrate:local",
+  14 |     "prisma:studio:local": "pnpm -C portal prisma:studio:local",
+  15 |     "typecheck": "pnpm -C portal typecheck",
+  16 |     "dct:replay-check": "pnpm -C portal dct:replay-check",
+  17 |     "dct:verify": "pnpm typecheck && pnpm dct:replay-check",
+  18 |     "dct:extract": "pnpm -C portal dct:extract",
+  19 |     "council:run": "node portal/scripts/council-run.mjs",
+  20 |     "claude:bootstrap": "node portal/scripts/generate-claude-bootstrap.mjs",
+  21 |     "code:pack": "node portal/scripts/generate-task-code-pack.mjs"
+  22 |   },
+  23 |   "pnpm": {
+  24 |     "onlyBuiltDependencies": [
+  25 |       "@prisma/engines",
+  26 |       "prisma",
+  27 |       "esbuild",
+  28 |       "sharp",
+  29 |       "unrs-resolver"
+  30 |     ]
+  31 |   }
+  32 | }
+~~~
+
+## portal/scripts/generate-task-code-pack.mjs
+Path is canonical. Use the actual repo file as source of truth.
+
+~~~js
+1 | #!/usr/bin/env node
+   2 | import fs from "node:fs/promises";
+   3 | import path from "node:path";
+   4 | import { fileURLToPath } from "node:url";
+   5 | import { execFileSync } from "node:child_process";
+   6 | 
+   7 | const __filename = fileURLToPath(import.meta.url);
+   8 | const __dirname = path.dirname(__filename);
+   9 | const REPO_ROOT = path.resolve(__dirname, "../..");
+  10 | const OUTPUT_DIR = path.join(REPO_ROOT, "surfaces", "code-context");
+  11 | 
+  12 | const EXCLUDED_PREFIXES = [
+  13 |     ".git/",
+  14 |     ".git\\",
+  15 |     "node_modules/",
+  16 |     "node_modules\\",
+  17 |     ".next/",
+  18 |     ".next\\",
+  19 |     "dist/",
+  20 |     "dist\\",
+  21 |     "tmp/",
+  22 |     "tmp\\",
+  23 |     ".vercel/",
+  24 |     ".vercel\\",
+  25 |     ".turbo/",
+  26 |     ".turbo\\",
+  27 |     "surfaces/",
+  28 |     "surfaces\\",
+  29 | ];
+  30 | 
+  31 | const CODE_EXTENSIONS = new Set([
+  32 |     ".ts",
+  33 |     ".tsx",
+  34 |     ".js",
+  35 |     ".jsx",
+  36 |     ".mjs",
+  37 |     ".cjs",
+  38 |     ".json",
+  39 |     ".yaml",
+  40 |     ".yml",
+  41 |     ".sql",
+  42 |     ".css",
+  43 |     ".prisma",
+  44 |     ".sh",
+  45 |     ".ps1",
+  46 | ]);
+  47 | 
+  48 | const SPECIAL_CODE_FILENAMES = new Set([
+  49 |     "package.json",
+  50 |     "pnpm-workspace.yaml",
+  51 |     "pnpm-lock.yaml",
+  52 |     "tsconfig.json",
+  53 |     "next.config.ts",
+  54 |     "next.config.js",
+  55 | ]);
+  56 | 
+  57 | function todayStamp() {
+  58 |     return new Date().toISOString().slice(0, 10);
+  59 | }
+  60 | 
+  61 | function utcNow() {
+  62 |     return new Date().toISOString();
+  63 | }
+  64 | 
+  65 | function git(args) {
+  66 |     try {
+  67 |         return execFileSync("git", args, {
+  68 |             cwd: REPO_ROOT,
+  69 |             encoding: "utf8",
+  70 |             stdio: ["ignore", "pipe", "ignore"],
+  71 |         }).trimEnd();
+  72 |     } catch {
+  73 |         return "";
+  74 |     }
+  75 | }
+  76 | 
+  77 | function normalizePath(relPath) {
+  78 |     return String(relPath ?? "").replace(/\\/g, "/").trim();
+  79 | }
+  80 | 
+  81 | function getArgValue(flag) {
+  82 |     const idx = process.argv.indexOf(flag);
+  83 |     if (idx === -1) return null;
+  84 |     return process.argv[idx + 1] ?? null;
+  85 | }
+  86 | 
+  87 | function getArgValues(flag) {
+  88 |     const values = [];
+  89 |     for (let i = 0; i < process.argv.length; i += 1) {
+  90 |         if (process.argv[i] === flag && process.argv[i + 1]) {
+  91 |             values.push(process.argv[i + 1]);
+  92 |         }
+  93 |     }
+  94 |     return values;
+  95 | }
+  96 | 
+  97 | function isExcludedPath(relPath) {
+  98 |     const p = normalizePath(relPath);
+  99 |     return EXCLUDED_PREFIXES.some((prefix) =>
+ 100 |         p.startsWith(normalizePath(prefix)),
+ 101 |     );
+ 102 | }
+ 103 | 
+ 104 | function isLikelyCodeSurfacePath(relPath) {
+ 105 |     const p = normalizePath(relPath);
+ 106 |     if (!p || isExcludedPath(p)) return false;
+ 107 | 
+ 108 |     const base = path.basename(p);
+ 109 |     if (SPECIAL_CODE_FILENAMES.has(base)) return true;
+ 110 | 
+ 111 |     const ext = path.extname(p).toLowerCase();
+ 112 |     return CODE_EXTENSIONS.has(ext);
+ 113 | }
+ 114 | 
+ 115 | async function exists(relPath) {
+ 116 |     try {
+ 117 |         await fs.access(path.join(REPO_ROOT, relPath));
+ 118 |         return true;
+ 119 |     } catch {
+ 120 |         return false;
+~~~

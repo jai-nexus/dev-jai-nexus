@@ -1,0 +1,65 @@
+motion_id: "motion-0063"
+title: "Motion Factory v0 — preview mode for revise and evidence"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend portal/scripts/motion-factory.mjs with a --preview flag for the
+  revise and evidence commands. Preview mode uses the same validation,
+  provider-generation, and trust-boundary pipeline as apply mode. Only the
+  final step differs: proposed content is printed to stdout with clear
+  per-file markers instead of writing files. No files are written in
+  preview mode under any success or failure path.
+
+problem: >
+  The revise and evidence commands are atomic on success, which is good.
+  But they overwrite files immediately with no way for the operator to
+  inspect proposed changes before they are applied. A preview mode would
+  let the operator see what would change, verify no drift or unwanted
+  claims, and then decide whether to apply.
+
+proposal:
+  - "Add a --preview flag to the revise and evidence commands."
+  - "Preview mode uses the same validation, provider-generation, and trust-boundary pipeline as apply mode."
+  - "Only the final step differs: print proposed content to stdout instead of writing files."
+  - "Preview output uses clear per-file begin/end markers and is explicitly labeled as proposed-only / not applied."
+  - "No files are written in preview mode under any success or failure path."
+  - "Normal non-preview behavior remains atomic and unchanged."
+  - "Evidence preview preserves the same non-invention and ambiguity-preservation rules as evidence apply mode."
+
+non_goals:
+  - "Do not add preview mode for the draft command in this motion."
+  - "Do not add a file diff engine."
+  - "Do not add new top-level commands."
+  - "Do not add provider routing logic."
+  - "Do not change apply-mode write semantics or atomicity."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not change governance config or staffing canon."
+
+success_criteria:
+  - "revise --preview generates proposed content and prints it to stdout without writing files."
+  - "evidence --preview generates proposed content and prints it to stdout without writing files."
+  - "Preview mode uses the same validation path as apply mode."
+  - "Preview mode uses the same provider-generation path as apply mode."
+  - "Preview mode uses the same trust-boundary rules as apply mode."
+  - "Preview output is clearly labeled as proposed-only and not applied."
+  - "Preview output uses clear per-file begin/end markers."
+  - "No file writes occur in preview mode under any success or failure path."
+  - "All existing validation applies in preview mode: missing args, disallowed files, missing motion, missing evidence file, missing API key."
+  - "Evidence preview preserves the same non-invention and ambiguity-preservation rules as evidence apply mode. Preview is not a looser interpretation lane."
+  - "Normal apply mode (without --preview) remains atomic and unchanged."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

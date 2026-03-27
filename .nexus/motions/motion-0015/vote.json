@@ -1,0 +1,47 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0015",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Deterministic local-only panel selection runner is low-risk and completes the operational loop (scores → totals → winner) without network calls or new SoT surfaces.",
+      "ts": "2026-03-05T00:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Bounded filesystem reads/writes under .nexus; safe-id validation + dry-run default; improves repeatability and auditability.",
+      "ts": "2026-03-05T00:00:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Unanimous consent satisfied; proceed to ratify. Winner remains UNKNOWN until scores are nonzero, preserving safety and intent.",
+      "ts": "2026-03-05T00:00:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-05T22:13:19.177Z"
+}

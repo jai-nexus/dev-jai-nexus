@@ -1,0 +1,16 @@
+title: "Canonical Boundaries v0: Agent Identity vs Role Behavior vs Council vs Panels vs Routing"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: false
+
+max_risk_score: 0.12
+
+checks_required:
+  - validate_agency
+
+checks_optional:
+  - dct_replay_check

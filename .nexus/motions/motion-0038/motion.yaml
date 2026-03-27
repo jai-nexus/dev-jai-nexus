@@ -1,0 +1,53 @@
+motion_id: "motion-0038"
+title: "Claude Bootstrap Polish v0: section extraction cleanup + package script + practical setup validation"
+
+status: "proposed"
+created_at: "2026-03-13T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Polish the generated Claude bootstrap pack by cleaning section extraction,
+  adding an easy invocation script, and validating that the output works as a
+  practical repo-centric setup handoff for real Claude project use.
+
+problem: >
+  Motion-0037 proved that dev-jai-nexus can generate a dated Claude bootstrap
+  handoff, but the output still has presentation rough edges and the workflow
+  is not yet fully operationalized. The generated sections still include extra
+  headings, invocation is more manual than necessary, and the setup pack has not
+  yet been validated as a polished day-to-day bootstrap path.
+
+proposal:
+  - "Improve section extraction so the generated Claude bootstrap pack reads cleanly."
+  - "Add a package script for easy Claude bootstrap generation."
+  - "Tighten the bootstrap markdown layout for practical readability."
+  - "Validate the generated pack as a real setup handoff for Claude project use."
+  - "Keep the motion focused on polish and operationalization, not new provider features."
+
+non_goals:
+  - "Do not redesign the Claude bootstrap generator from scratch."
+  - "Do not expand into multi-provider bootstrap generation."
+  - "Do not automate Claude account or project creation."
+  - "Do not replace canonical substrate artifacts with generated bootstrap output."
+  - "Do not expand into general UI or operator work unrelated to Claude bootstrap polish."
+
+success_criteria:
+  - "The generated Claude bootstrap pack no longer shows awkward duplicated section headings in extracted summaries."
+  - "A package script exists for convenient Claude bootstrap generation."
+  - "The generated markdown pack remains deterministic across identical reruns."
+  - "The manifest remains valid and complete."
+  - "The polished pack is readable enough to use directly as a repo-centric Claude setup handoff."
+  - "A practical validation step confirms the pack can be used as a real bootstrap packet."
+  - "portal typecheck passes if any code surfaces are touched."
+  - "A live smoke proof demonstrates the polished pack and script working together."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

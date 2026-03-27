@@ -1,0 +1,17 @@
+title: "Panel Workflow Acceleration v0: progress filters + work queue + operator quick links"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: false
+
+max_risk_score: 0.20
+
+checks_required:
+  - validate_agency
+  - typecheck
+
+checks_optional:
+  - dct_replay_check

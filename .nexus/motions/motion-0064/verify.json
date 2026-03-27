@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0064",
+  "latest": {
+    "validate_motion": {
+      "ok": true,
+      "notes": "Motion package present and complete."
+    },
+    "validate_agency": {
+      "ok": true,
+      "notes": "Scope is bounded to Motion Factory v0 draft preview behavior."
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-18T14:45:00.000Z",
+    "notes": "Required gates satisfied for ratification."
+  }
+}

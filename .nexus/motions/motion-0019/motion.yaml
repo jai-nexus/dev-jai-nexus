@@ -1,0 +1,17 @@
+title: "Bulk Panel Instantiate Demo v0: scaffold all registered role panels for a motion"
+
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+
+auto_ratify:
+  enabled: false
+
+max_risk_score: 0.10
+
+checks_required:
+  - validate_agency
+  - typecheck
+
+checks_optional:
+  - dct_replay_check

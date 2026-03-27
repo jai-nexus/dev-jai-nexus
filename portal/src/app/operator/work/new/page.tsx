@@ -1,4 +1,3 @@
-// portal/src/app/operator/work/new/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
@@ -7,28 +6,32 @@ import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
-import { getAgencyConfig } from "@/lib/agencyConfig";
+import {
+  EXECUTION_ROLES,
+  getAgentByNhId,
+  getExecutionAgents,
+  isAgentEligibleForExecutionRole,
+  type AgencyAgent,
+  type ExecutionRole,
+} from "@/lib/agencyConfig";
 import { InboxItemStatus, WorkPacketStatus, type Prisma } from "@prisma/client";
 import { validateReposAgainstAgentScope } from "@/lib/scopeValidator";
+import { syncAgentQueueItemForPacket } from "@/lib/work/workPacketQueue";
+import { buildInboxTags, sanitizeNhLike } from "@/lib/work/workPacketContract";
 
 type SearchParamValue = string | string[] | undefined;
 
 type Props = {
   searchParams?: Promise<{
-    // legacy + new param names (accept both)
-    assignee?: SearchParamValue; // legacy
-    assigneeNhId?: SearchParamValue; // new
-
-    // optional prefill
+    assignee?: SearchParamValue;
+    assigneeNhId?: SearchParamValue;
+    requestedRole?: SearchParamValue;
     nhId?: SearchParamValue;
     title?: SearchParamValue;
-
-    // delegate hints (prefill only; not trusted for governance)
     agentKey?: SearchParamValue;
     scope?: SearchParamValue;
-    labels?: SearchParamValue; // legacy
-    githubLabels?: SearchParamValue; // new
-
+    labels?: SearchParamValue;
+    githubLabels?: SearchParamValue;
     error?: SearchParamValue;
   }>;
 };
@@ -46,18 +49,35 @@ function splitCsv(v: string | undefined): string[] {
 }
 
 function sanitizeNh(v: string | undefined): string | null {
-  const s = String(v ?? "").trim();
-  if (!s) return null;
-  if (!/^\d+(\.\d+)*$/.test(s)) return null;
-  return s;
+  return sanitizeNhLike(v) ?? null;
 }
 
-function safeRedirectWithError(baseAssignee: string | null, message: string): never {
+function sanitizeRequestedRole(v: string | undefined): ExecutionRole | null {
+  const raw = String(v ?? "").trim().toUpperCase();
+  if (!raw) return null;
+  return EXECUTION_ROLES.includes(raw as ExecutionRole) ? (raw as ExecutionRole) : null;
+}
+
+function buildRouteTags(role: ExecutionRole | null): string[] {
+  return role ? [`route:${role}`] : [];
+}
+
+function sortAgents(list: AgencyAgent[]): AgencyAgent[] {
+  return [...list].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
+}
+
+function safeRedirectWithError(
+  baseAssignee: string | null,
+  requestedRole: ExecutionRole | null,
+  message: string,
+): never {
   const qs = new URLSearchParams();
-  // keep both names so either UI version can read it
   if (baseAssignee) {
     qs.set("assigneeNhId", baseAssignee);
     qs.set("assignee", baseAssignee);
+  }
+  if (requestedRole) {
+    qs.set("requestedRole", requestedRole);
   }
   qs.set("error", message);
   redirect(`/operator/work/new?${qs.toString()}`);
@@ -76,43 +96,71 @@ async function createPacket(formData: FormData) {
   const plan = String(formData.get("plan") ?? "");
 
   const assigneeNhId = sanitizeNh(String(formData.get("assigneeNhId") ?? ""));
+  const requestedRole = sanitizeRequestedRole(String(formData.get("requestedRole") ?? ""));
 
-  // Repo.id is a NUMBER in Prisma
   const repoIdRaw = String(formData.get("repoId") ?? "").trim();
   const repoId = repoIdRaw ? Number(repoIdRaw) : null;
 
   if (repoIdRaw && (!Number.isFinite(repoId) || Number.isNaN(repoId))) {
-    safeRedirectWithError(assigneeNhId, `Invalid repoId: ${repoIdRaw}`);
+    safeRedirectWithError(assigneeNhId, requestedRole, `Invalid repoId: ${repoIdRaw}`);
   }
 
-  if (!nhId || !title) redirect("/operator/work/new");
+  if (!nhId || !title) {
+    redirect("/operator/work/new");
+  }
 
-  // If assigned, repo MUST be chosen (otherwise scope enforcement is meaningless)
-  if (assigneeNhId && repoId == null) {
+  if (!requestedRole) {
     safeRedirectWithError(
       assigneeNhId,
-      `Scope enforcement: assigned work requires a repo. Choose a repo within the assignee scope.`
+      requestedRole,
+      "Execution role is required for governed work packets.",
     );
   }
 
-  // Derive agent info from agency.yaml (do NOT trust query params)
-  const agency = getAgencyConfig();
-  const agent = assigneeNhId
-    ? agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null
-    : null;
+  if (assigneeNhId && repoId == null) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      "Scope enforcement: assigned work requires a repo. Choose a repo within the assignee scope.",
+    );
+  }
+
+  const agent = assigneeNhId ? getAgentByNhId(assigneeNhId) : null;
 
   if (assigneeNhId && !agent) {
     safeRedirectWithError(
       assigneeNhId,
-      `Agent not found for assignee NH: ${assigneeNhId}`
+      requestedRole,
+      `Agent not found for assignee NH: ${assigneeNhId}`,
+    );
+  }
+
+  if (assigneeNhId && agent && !agent.execution_capable) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      `Agent ${agent.nh_id} (${agent.agent_key}) is governance-only and not eligible for execution assignment.`,
+    );
+  }
+
+  if (
+    assigneeNhId &&
+    agent &&
+    requestedRole &&
+    !isAgentEligibleForExecutionRole(agent, requestedRole)
+  ) {
+    safeRedirectWithError(
+      assigneeNhId,
+      requestedRole,
+      `Agent ${agent.nh_id} (${agent.agent_key}) is not eligible for execution role '${requestedRole}'. Allowed roles: ${agent.execution_roles.join(", ") || "—"}`,
     );
   }
 
   const mutationId = crypto.randomUUID();
 
   const created = await prisma.$transaction(async (tx) => {
-    // If repo chosen AND assigned, enforce repo ∈ agent.scope (single-repo MVP)
-    // Keep this inside the transaction so validate + create + emit are atomic.
+    let selectedRepoName: string | null = null;
+
     if (assigneeNhId && repoId != null) {
       const repo = await tx.repo.findUnique({
         where: { id: repoId },
@@ -120,18 +168,22 @@ async function createPacket(formData: FormData) {
       });
 
       if (!repo) {
-        safeRedirectWithError(assigneeNhId, `Unknown repoId: ${repoId}`);
+        safeRedirectWithError(
+          assigneeNhId,
+          requestedRole,
+          `Unknown repoId: ${repoId}`,
+        );
       }
 
-      // Centralized scope validation (normalizes org/repo vs bare repo names)
+      selectedRepoName = repo.name;
+
       const res = validateReposAgainstAgentScope(assigneeNhId, [repo.name]);
 
       if (!res.valid) {
         safeRedirectWithError(
           assigneeNhId,
-          `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(
-            ", "
-          )}`
+          requestedRole,
+          `Scope violation. Agent ${res.agent.nh_id} (${res.agent.agent_key}) cannot work in repo '${repo.name}'. Allowed: ${res.allowedScope.join(", ")}`,
         );
       }
     }
@@ -147,8 +199,10 @@ async function createPacket(formData: FormData) {
       },
     });
 
-    const tags: string[] = [];
-    if (assigneeNhId) tags.push(`assignee:${assigneeNhId}`);
+    const tags = [
+      ...buildInboxTags(assigneeNhId),
+      ...buildRouteTags(requestedRole),
+    ];
 
     const inbox = await tx.agentInboxItem.create({
       data: {
@@ -160,11 +214,22 @@ async function createPacket(formData: FormData) {
       select: { id: true, status: true, priority: true, tags: true },
     });
 
+    if (assigneeNhId) {
+      await syncAgentQueueItemForPacket(tx, {
+        workPacketId: created.id,
+        assigneeNhId,
+        repoScope: selectedRepoName ? [selectedRepoName] : [],
+      });
+    }
+
     const createdPayload: Prisma.InputJsonValue = {
+      contract_version: "work-packet-0.1",
       workPacketId: created.id,
       nhId: created.nhId,
       title: created.title,
       status: created.status,
+      requestedRole,
+      requiresOperatorApproval: true,
       ...(created.repoId != null ? { repoId: created.repoId } : {}),
       ...(assigneeNhId ? { assigneeNhId } : {}),
       inbox: {
@@ -173,6 +238,13 @@ async function createPacket(formData: FormData) {
         priority: inbox.priority,
         tags: inbox.tags,
       },
+      queue: assigneeNhId
+        ? {
+          agentNhId: assigneeNhId,
+          repoScope: selectedRepoName ? [selectedRepoName] : [],
+          status: "PENDING",
+        }
+        : null,
     };
 
     await emitWorkPacketSotEvent({
@@ -187,32 +259,28 @@ async function createPacket(formData: FormData) {
       data: createdPayload,
     });
 
-    // Emit delegation SoT event (only if assigned)
-    if (assigneeNhId) {
-      const toAgent =
-        agency.agents.find((a) => a.nh_id === assigneeNhId) ?? null;
-
-      const derivedAgentKey = toAgent?.agent_key ?? "";
-      const derivedLabels: string[] = toAgent?.github_labels ?? [];
-      const derivedScope: string[] = toAgent?.scope ?? [];
-
+    if (assigneeNhId && agent) {
       await emitWorkPacketSotEvent({
         db: tx,
         kind: "WORK_DELEGATED",
         nhId: created.nhId,
         repoId: created.repoId ?? null,
         summary: `Work delegated: ${created.nhId} → ${assigneeNhId}`,
-        mutationId: crypto.randomUUID(), // distinct event id
+        mutationId: crypto.randomUUID(),
         workPacket: { id: created.id, nhId: created.nhId },
         actor: { email: user.email ?? null, name: user.name ?? null },
         data: {
+          contract_version: "work-packet-0.1",
           workPacketId: created.id,
           fromAgent: { nhId: "1.0", agentKey: "JAI::OPERATOR" },
           toAgentNhId: assigneeNhId,
-          toAgentKey: derivedAgentKey,
+          toAgentKey: agent.agent_key,
+          requestedRole,
+          executionRoles: agent.execution_roles,
           repoId: created.repoId ?? null,
-          allowedScope: derivedScope,
-          githubLabels: derivedLabels,
+          allowedScope: agent.scope,
+          githubLabels: agent.github_labels,
+          requiresOperatorApproval: true,
         } satisfies Prisma.InputJsonValue,
       });
     }
@@ -233,46 +301,45 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
   const prefillTitle = firstParam(sp?.title);
   const errorMsg = firstParam(sp?.error);
 
-  const agency = getAgencyConfig();
-  const agents = [...agency.agents].sort((a, b) => a.nh_id.localeCompare(b.nh_id));
+  const requestedRoleFromQuery = sanitizeRequestedRole(firstParam(sp?.requestedRole));
+  const allExecutionAgents = sortAgents(getExecutionAgents(null));
+  const eligibleAgents = sortAgents(getExecutionAgents(requestedRoleFromQuery));
 
-  // Accept assigneeNhId (new) OR assignee (legacy)
   const assigneeFromQuery = sanitizeNh(
-    firstParam(sp?.assigneeNhId) ?? firstParam(sp?.assignee)
+    firstParam(sp?.assigneeNhId) ?? firstParam(sp?.assignee),
   );
 
   const assigneeIsValid =
-    !!assigneeFromQuery && agents.some((a) => a.nh_id === assigneeFromQuery);
+    !!assigneeFromQuery &&
+    allExecutionAgents.some((a) => a.nh_id === assigneeFromQuery);
 
   const defaultAssignee = assigneeIsValid ? assigneeFromQuery : "";
 
-  // Optional query prefill hints (NOT trusted for governance; only for display)
   const requestedScope = splitCsv(firstParam(sp?.scope));
   const requestedLabels = splitCsv(
-    firstParam(sp?.githubLabels) ?? firstParam(sp?.labels)
+    firstParam(sp?.githubLabels) ?? firstParam(sp?.labels),
   );
 
-  // Load repos for dropdown (Repo.id is number)
   const repos = await prisma.repo.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" },
   });
 
-  // Derive scope+labels for display (truth from config)
   const selectedAgent = defaultAssignee
-    ? agents.find((a) => a.nh_id === defaultAssignee) ?? null
+    ? allExecutionAgents.find((a) => a.nh_id === defaultAssignee) ?? null
     : null;
 
-  const agentKey = selectedAgent?.agent_key ?? "";
-  const agentScope: string[] = selectedAgent?.scope ?? [];
-  const agentLabels: string[] = selectedAgent?.github_labels ?? [];
+  const selectedAgentEligible =
+    selectedAgent && requestedRoleFromQuery
+      ? isAgentEligibleForExecutionRole(selectedAgent, requestedRoleFromQuery)
+      : true;
 
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">New Work Packet</h1>
         <p className="text-sm text-gray-400 mt-1">
-          Minimum: NH + Title. AC/Plan recommended. Optional: assign to an agent.
+          Execution role is the canonical lane. Assignee is the optional execution-capable carrier selected from the explicit execution pool.
         </p>
       </header>
 
@@ -281,6 +348,50 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
           {errorMsg}
         </div>
       ) : null}
+
+      <section className="mb-6 max-w-4xl rounded-md border border-gray-800 bg-zinc-950 p-4">
+        <h2 className="text-sm font-semibold text-gray-200">Role-Scoped Assignee Filter</h2>
+        <p className="mt-1 text-sm text-gray-400">
+          Choose an execution role first to narrow the assignee pool to eligible execution agents.
+        </p>
+
+        <form method="get" className="mt-4 flex flex-wrap items-end gap-3">
+          <div className="min-w-[240px]">
+            <label className="block text-xs text-gray-300 mb-1">Execution Role</label>
+            <select
+              name="requestedRole"
+              defaultValue={requestedRoleFromQuery ?? ""}
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— Select role —</option>
+              {EXECUTION_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
+          >
+            Apply role filter
+          </button>
+
+          <a
+            href="/operator/work/new"
+            className="rounded-md border border-gray-700 bg-black px-3 py-2 text-sm text-gray-200 hover:bg-zinc-900"
+          >
+            Reset
+          </a>
+        </form>
+
+        <div className="mt-3 text-xs text-gray-500">
+          Eligible assignees:{" "}
+          <span className="font-mono text-gray-300">{eligibleAgents.length}</span>
+        </div>
+      </section>
 
       <form action={createPacket} className="max-w-4xl space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -296,14 +407,58 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
           </div>
 
           <div className="space-y-1">
+            <label className="block text-xs text-gray-300">Execution Role</label>
+            <select
+              name="requestedRole"
+              defaultValue={requestedRoleFromQuery ?? ""}
+              required
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— Select role —</option>
+              {EXECUTION_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+            </select>
+
+            <p className="text-[11px] text-gray-500">
+              This is the canonical governed lane for the packet.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="space-y-1 md:col-span-2">
+            <label className="block text-xs text-gray-300">Repo</label>
+            <select
+              name="repoId"
+              defaultValue=""
+              className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
+            >
+              <option value="">— None —</option>
+              {repos.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-gray-500">
+              If you assign an agent, you must choose a repo, and it must be within that agent’s scope.
+            </p>
+          </div>
+
+          <div className="space-y-1">
             <label className="block text-xs text-gray-300">Assignee</label>
             <select
               name="assigneeNhId"
               defaultValue={defaultAssignee}
               className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
             >
-              <option value="">— Unassigned —</option>
-              {agents.map((a) => (
+              <option value="">
+                {requestedRoleFromQuery ? "— Unassigned —" : "— Select role first —"}
+              </option>
+              {eligibleAgents.map((a) => (
                 <option key={a.nh_id} value={a.nh_id}>
                   {a.nh_id} · {a.label}
                 </option>
@@ -311,33 +466,55 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             </select>
 
             <p className="text-[11px] text-gray-500">
-              Delegation is recorded as an inbox tag{" "}
-              <span className="font-mono">assignee:&lt;nh&gt;</span> + included in the
-              SoT event payload.
+              Only execution-capable agents eligible for the selected role are shown here.
             </p>
 
             {selectedAgent ? (
               <div className="mt-2 space-y-1 text-[11px] text-gray-400">
                 <div>
                   <span className="text-gray-500">agent_key:</span>{" "}
-                  <span className="font-mono">{agentKey || "—"}</span>
+                  <span className="font-mono">{selectedAgent.agent_key || "—"}</span>
                 </div>
 
                 <div>
-                  <span className="text-gray-500">allowed scope (from agency.yaml):</span>{" "}
+                  <span className="text-gray-500">execution roles:</span>{" "}
                   <span className="font-mono">
-                    {agentScope.length ? agentScope.join(", ") : "—"}
+                    {selectedAgent.execution_roles.length
+                      ? selectedAgent.execution_roles.join(", ")
+                      : "—"}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-gray-500">labels (from agency.yaml):</span>{" "}
+                  <span className="text-gray-500">governance only:</span>{" "}
                   <span className="font-mono">
-                    {agentLabels.length ? agentLabels.join(", ") : "—"}
+                    {selectedAgent.governance_only ? "true" : "false"}
                   </span>
                 </div>
 
-                {(requestedScope.length || requestedLabels.length) ? (
+                <div>
+                  <span className="text-gray-500">allowed scope:</span>{" "}
+                  <span className="font-mono">
+                    {selectedAgent.scope.length ? selectedAgent.scope.join(", ") : "—"}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">labels:</span>{" "}
+                  <span className="font-mono">
+                    {selectedAgent.github_labels.length
+                      ? selectedAgent.github_labels.join(", ")
+                      : "—"}
+                  </span>
+                </div>
+
+                {!selectedAgentEligible ? (
+                  <div className="pt-1 text-red-300">
+                    Selected assignee is not eligible for the currently requested execution role.
+                  </div>
+                ) : null}
+
+                {requestedScope.length || requestedLabels.length ? (
                   <div className="pt-1 text-[11px] text-gray-500">
                     <div>
                       <span className="text-gray-600">prefill scope (query):</span>{" "}
@@ -352,33 +529,13 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
                       </span>
                     </div>
                     <div className="text-gray-600">
-                      (query prefill is informational only; enforcement uses agency.yaml)
+                      (query prefill is informational only; execution eligibility comes from agency.yaml)
                     </div>
                   </div>
                 ) : null}
               </div>
             ) : null}
           </div>
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-xs text-gray-300">Repo</label>
-          <select
-            name="repoId"
-            defaultValue=""
-            className="w-full rounded-md border border-gray-700 bg-black px-3 py-2 text-sm"
-          >
-            <option value="">— None —</option>
-            {repos.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-          <p className="text-[11px] text-gray-500">
-            If you assign an agent, you must choose a repo, and it must be within the
-            agent’s scope.
-          </p>
         </div>
 
         <div className="space-y-1">

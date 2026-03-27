@@ -1,0 +1,29 @@
+{
+  "schema": "claude-bootstrap-0.1",
+  "generated_at": "2026-03-13T22:04:57.491Z",
+  "repo": "dev-jai-nexus",
+  "branch": "sprint/q1m3-council-pivot-polyrepo-coverage",
+  "head_commit": "d93b1cd",
+  "motion": "motion-0038",
+  "output_dir": "surfaces/claude",
+  "files": [
+    "2026-03-13_claude-bootstrap.md"
+  ],
+  "canonical_inputs": [
+    "CLAUDE.md",
+    ".nexus/claude/project-context-pack.md",
+    ".nexus/claude/bootstrap-set.yaml",
+    ".nexus/claude/operating-workflow.md",
+    ".nexus/context/project-constitution.yaml",
+    ".nexus/context/repo-capsule.schema.yaml",
+    ".nexus/context/motion-packet.schema.json",
+    ".nexus/context/slot-policy.yaml",
+    ".nexus/context/scoring-rubric.yaml"
+  ],
+  "context_inputs": [
+    "surfaces/chat-context/2026-03-13_motion-snapshots.txt",
+    "surfaces/chat-context/2026-03-13_repo-capsule.txt",
+    "surfaces/chat-context/2026-03-13_active-path-pack.txt",
+    "surfaces/chat-context/2026-03-13_context-bundle_manifest.json"
+  ]
+}

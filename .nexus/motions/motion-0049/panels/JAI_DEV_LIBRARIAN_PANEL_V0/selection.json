@@ -1,0 +1,38 @@
+{
+  "version": "panel.selection.v0",
+  "panel_id": "JAI_DEV_LIBRARIAN_PANEL_V0",
+  "motion_id": "motion-0049",
+  "task": "UNKNOWN",
+  "winner": "UNKNOWN",
+  "scores": {
+    "SLOT_LIBRARIAN_01": {
+      "total": 70.5,
+      "breakdown": {
+        "fidelity": 8,
+        "clarity": 7,
+        "canon_alignment": 6,
+        "completeness": 7,
+        "minimal_diff": 8,
+        "risk_awareness": 6
+      }
+    },
+    "SLOT_LIBRARIAN_02": {
+      "total": 51,
+      "breakdown": {
+        "fidelity": 5,
+        "clarity": 6,
+        "canon_alignment": 4,
+        "completeness": 5,
+        "minimal_diff": 6,
+        "risk_awareness": 5
+      }
+    }
+  },
+  "winner_rationale": [],
+  "reservations": [],
+  "evidence_plan": {
+    "commands": [],
+    "expected": []
+  },
+  "files": []
+}

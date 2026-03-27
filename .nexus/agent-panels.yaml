@@ -1,0 +1,211 @@
+version: "agent.panels.v0"
+
+# Panels define: role -> candidate model slots + selector (deferred) + rubric.
+# Reconciled to Phase 1 staffing canon (motion-0048).
+# Candidate counts match .nexus/model-slots-phase1.yaml (2 live slots per panel).
+# Selector slots remain deferred pending evaluation harness.
+#
+# Notes:
+# - Panel IDs are manifest-gated; panel-run instantiate/scaffold will only create panels listed here.
+# - Rubric weights must sum to 1.00.
+
+panels:
+  # ---------------------------------------------------------------------------
+  # BUILDER
+  # ---------------------------------------------------------------------------
+  JAI_DEV_BUILDER_PANEL_V0:
+    role_id: "JAI::DEV::BUILDER"
+
+    candidates:
+      - SLOT_BUILDER_01
+      - SLOT_BUILDER_02
+
+    selector:
+      slot: SLOT_BUILDER_SELECTOR
+      method: "rubric_score"
+      status: deferred
+
+    rubric:
+      - id: "correctness"
+        weight: 0.30
+        description: "Likely to be correct and match the requested change."
+
+      - id: "compilable"
+        weight: 0.20
+        description: "Type-safe, minimal TS errors, aligns with project conventions."
+
+      - id: "minimal_diff"
+        weight: 0.15
+        description: "Smallest patch that solves the problem."
+
+      - id: "maintainability"
+        weight: 0.15
+        description: "Readable, consistent patterns, low future risk."
+
+      - id: "evidence_plan_quality"
+        weight: 0.10
+        description: "Clear commands + expected outputs for verification."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Anticipates edge cases, security, governance constraints."
+
+  # ---------------------------------------------------------------------------
+  # ARCHITECT
+  # ---------------------------------------------------------------------------
+  JAI_DEV_ARCHITECT_PANEL_V0:
+    role_id: "JAI::DEV::ARCHITECT"
+
+    candidates:
+      - SLOT_ARCHITECT_01
+      - SLOT_ARCHITECT_02
+
+    selector:
+      slot: SLOT_ARCHITECT_SELECTOR
+      method: "rubric_score"
+      status: deferred
+
+    rubric:
+      - id: "correctness"
+        weight: 0.25
+        description: "Matches goal/constraints and solves the right problem."
+
+      - id: "coherence"
+        weight: 0.20
+        description: "Internally consistent design with clear interfaces and boundaries."
+
+      - id: "feasibility"
+        weight: 0.20
+        description: "Implementable within current repo constraints and time."
+
+      - id: "minimal_diff"
+        weight: 0.10
+        description: "Avoids unnecessary churn; smallest viable architecture change."
+
+      - id: "evidence_plan_quality"
+        weight: 0.15
+        description: "Clear verification steps and acceptance criteria."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Identifies edge cases, security, governance, rollout risks."
+
+  # ---------------------------------------------------------------------------
+  # VERIFIER
+  # ---------------------------------------------------------------------------
+  JAI_DEV_VERIFIER_PANEL_V0:
+    role_id: "JAI::DEV::VERIFIER"
+
+    candidates:
+      - SLOT_VERIFIER_01
+      - SLOT_VERIFIER_02
+
+    selector:
+      slot: SLOT_VERIFIER_SELECTOR
+      method: "rubric_score"
+      status: deferred
+
+    rubric:
+      - id: "correctness"
+        weight: 0.25
+        description: "Finds real issues; avoids false positives."
+
+      - id: "coverage"
+        weight: 0.20
+        description: "Checks the right surfaces (types, runtime, edge cases)."
+
+      - id: "actionability"
+        weight: 0.20
+        description: "Produces concrete fixes / repro steps / exact commands."
+
+      - id: "minimal_diff"
+        weight: 0.10
+        description: "Suggests minimal safe fixes."
+
+      - id: "evidence_plan_quality"
+        weight: 0.15
+        description: "Commands + expected outputs that prove the fix."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Catches security/regression/governance risks."
+
+  # ---------------------------------------------------------------------------
+  # LIBRARIAN
+  # ---------------------------------------------------------------------------
+  JAI_DEV_LIBRARIAN_PANEL_V0:
+    role_id: "JAI::DEV::LIBRARIAN"
+
+    candidates:
+      - SLOT_LIBRARIAN_01
+      - SLOT_LIBRARIAN_02
+
+    selector:
+      slot: SLOT_LIBRARIAN_SELECTOR
+      method: "rubric_score"
+      status: deferred
+
+    rubric:
+      - id: "fidelity"
+        weight: 0.25
+        description: "Accurate to sources; no invented details."
+
+      - id: "clarity"
+        weight: 0.20
+        description: "Readable, structured, and easy to scan."
+
+      - id: "canon_alignment"
+        weight: 0.20
+        description: "Matches repo templates, terms, and governance style."
+
+      - id: "completeness"
+        weight: 0.15
+        description: "Captures key decisions, steps, and edge cases."
+
+      - id: "minimal_diff"
+        weight: 0.10
+        description: "Avoids unnecessary churn; small targeted edits."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Notes ambiguity, missing info, or verification needs."
+
+  # ---------------------------------------------------------------------------
+  # OPERATOR
+  # ---------------------------------------------------------------------------
+  JAI_DEV_OPERATOR_PANEL_V0:
+    role_id: "JAI::DEV::OPERATOR"
+
+    candidates:
+      - SLOT_OPERATOR_01
+      - SLOT_OPERATOR_02
+
+    selector:
+      slot: SLOT_OPERATOR_SELECTOR
+      method: "rubric_score"
+      status: deferred
+
+    rubric:
+      - id: "correctness"
+        weight: 0.25
+        description: "Proposed actions do what they claim."
+
+      - id: "safety"
+        weight: 0.20
+        description: "Avoids destructive steps; uses checks before writes."
+
+      - id: "idempotence"
+        weight: 0.15
+        description: "Can be re-run safely; minimal side effects."
+
+      - id: "minimal_diff"
+        weight: 0.10
+        description: "Smallest set of commands/changes to reach goal."
+
+      - id: "evidence_plan_quality"
+        weight: 0.20
+        description: "Clear commands + expected outputs for verification."
+
+      - id: "risk_awareness"
+        weight: 0.10
+        description: "Calls out dependencies, prerequisites, and failure modes."

@@ -1,0 +1,35 @@
+version: "repo-card.v0"
+repo: "jai-format"
+domains:
+  primary: "framework.nexus"
+  secondary: ["jai.nexus"]
+engine: "backend"
+apply: true
+
+purpose: "UNKNOWN"
+entrypoints: ["UNKNOWN"]
+how_to_run:
+  dev: "UNKNOWN"
+  build: "UNKNOWN"
+  test: "UNKNOWN"
+
+gates:
+  required: ["validate_motion", "validate_agency"]
+  optional: ["typecheck"]
+
+dependencies:
+  repos: []
+  services: []
+
+owner_agents:
+  proposer: "nhid_2_framework_nexus_jai-format_proposer_001"
+  executor: "nhid_2_framework_nexus_jai-format_executor_001"
+  challenger: "nhid_2_framework_nexus_jai-format_challenger_001"
+  arbiter: "nhid_2_framework_nexus_jai-format_arbiter_001"
+
+last_health:
+  ts: null
+  summary: "UNKNOWN"
+
+tags: ["coverage", "repocard"]
+notes: []

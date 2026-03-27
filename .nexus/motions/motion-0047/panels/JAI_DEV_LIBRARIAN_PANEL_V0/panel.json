@@ -1,0 +1,45 @@
+{
+  "version": "panel.meta.v0",
+  "panel_id": "JAI_DEV_LIBRARIAN_PANEL_V0",
+  "role_id": "JAI::DEV::LIBRARIAN",
+  "candidates": [
+    "SLOT_LIBRARIAN_01",
+    "SLOT_LIBRARIAN_02",
+    "SLOT_LIBRARIAN_03",
+    "SLOT_LIBRARIAN_04",
+    "SLOT_LIBRARIAN_05"
+  ],
+  "selector": "SLOT_LIBRARIAN_SELECTOR",
+  "rubric": [
+    {
+      "id": "fidelity",
+      "weight": 0.25,
+      "description": "Accurate to sources; no invented details."
+    },
+    {
+      "id": "clarity",
+      "weight": 0.2,
+      "description": "Readable, structured, and easy to scan."
+    },
+    {
+      "id": "canon_alignment",
+      "weight": 0.2,
+      "description": "Matches repo templates, terms, and governance style."
+    },
+    {
+      "id": "completeness",
+      "weight": 0.15,
+      "description": "Captures key decisions, steps, and edge cases."
+    },
+    {
+      "id": "minimal_diff",
+      "weight": 0.1,
+      "description": "Avoids unnecessary churn; small targeted edits."
+    },
+    {
+      "id": "risk_awareness",
+      "weight": 0.1,
+      "description": "Notes ambiguity, missing info, or verification needs."
+    }
+  ]
+}

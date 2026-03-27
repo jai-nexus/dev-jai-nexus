@@ -1,0 +1,41 @@
+{
+    "version": "0.2",
+    "motion_id": "motion-0033",
+    "votes": [
+        {
+            "voter_id": "manual:proposer",
+            "role": "proposer",
+            "vote": "yes",
+            "rationale": "Motion-0033 successfully added a working context bundle generator. The system now emits dated motion snapshots, a repo capsule, an active path pack, and a manifest sidecar for reusable chat bootstrap context."
+        },
+        {
+            "voter_id": "manual:challenger",
+            "role": "challenger",
+            "vote": "yes",
+            "rationale": "The motion stayed properly scoped. It shipped a text-first deterministic artifact generator rather than drifting into full retrieval or indexing, and rerun checks showed the three text artifacts remained stable across identical executions."
+        },
+        {
+            "voter_id": "manual:arbiter",
+            "role": "arbiter",
+            "vote": "yes",
+            "rationale": "The implementation is coherent and proven. The bundle generator emits the expected files under surfaces/chat-context, excludes recursive output pollution after cleanup, and produces stable upload-friendly text artifacts suitable for future council and chat bootstrapping."
+        }
+    ],
+    "protocol_version": "0.3.8",
+    "vote_mode": "unanimous_consent",
+    "required_roles": [
+        "proposer",
+        "challenger",
+        "arbiter"
+    ],
+    "outcome": {
+        "yes": 3,
+        "no": 0,
+        "abstain": 0,
+        "yes_with_reservations": 0,
+        "result": "PASS",
+        "reasons": [],
+        "missing_required_roles": []
+    },
+    "last_updated": "2026-03-13T19:30:00.000Z"
+}

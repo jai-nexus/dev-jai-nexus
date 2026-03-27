@@ -1,0 +1,10 @@
+protocol_version: "council.config.v0"
+motion_id: motion-0066
+status: RATIFIED
+ratified_by: manual
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "<RATIFIED_AT_UTC>"
+notes: "RATIFIED: Motion Factory draft flow now emits candidate prep artifacts under .nexus/candidates/ while preserving narrow scope and atomic apply behavior."

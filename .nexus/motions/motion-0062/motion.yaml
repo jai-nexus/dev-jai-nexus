@@ -1,0 +1,60 @@
+motion_id: "motion-0062"
+title: "Motion Factory v0 — discoverability and copy-paste example cleanup"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Improve discoverability and operator-facing clarity for Motion Factory v0
+  by tightening help text, adding PowerShell-ready copy-paste examples,
+  ensuring provider flag consistency, and updating the playbook only if
+  actual CLI drift is found. No behavioral changes of any kind.
+
+problem: >
+  Motion Factory v0 is fully capable but its help text and playbook were
+  written incrementally across motions 0052–0061. Some command descriptions
+  lack copy-paste examples, provider flag documentation is inconsistent
+  across commands, and the playbook may not match the exact current CLI
+  surface after the status command was added in motion-0061.
+
+proposal:
+  - "Tighten usage/help text in portal/scripts/motion-factory.mjs for clarity and consistency."
+  - "Add PowerShell-ready copy-paste examples for all five commands in the help text."
+  - "Ensure --provider flag is described consistently across draft, revise, and evidence."
+  - "Make the status vs context distinction explicit in help text."
+  - "Update .nexus/docs/motion-factory-playbook.md only if actual CLI/help-text drift is found; leave untouched if it already matches."
+  - "Preserve all current behavior. No behavioral changes of any kind."
+
+non_goals:
+  - "Do not add new commands."
+  - "Do not add dry-run or preview behavior."
+  - "Do not add provider routing logic."
+  - "Do not change write semantics or atomicity behavior."
+  - "Do not change command routing or provider selection semantics."
+  - "Do not change file scopes."
+  - "Do not activate selectors."
+  - "Do not introduce orchestration or runtime behavior."
+  - "Do not broaden into Motion Factory v1 planning."
+  - "Do not change governance config or staffing canon."
+
+success_criteria:
+  - "Help text reflects the exact current 5-command surface."
+  - "Copy-paste examples present for: context, draft (default), draft (anthropic), draft (no-api), revise, revise (anthropic), evidence, evidence (anthropic), status, status --json."
+  - "All examples are copy-paste ready for the normal PowerShell operator environment."
+  - "Provider flag described consistently across draft, revise, and evidence."
+  - "Status vs context distinction explicit in help text."
+  - "Playbook updated only if actual CLI drift is found; left untouched if already matching."
+  - "Trust boundary wording preserved in all operator-facing text."
+  - "No behavioral changes: no command routing changes, no provider selection semantic changes, no file-scope changes, no write behavior changes, no atomicity changes."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

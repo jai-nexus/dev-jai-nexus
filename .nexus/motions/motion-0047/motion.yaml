@@ -1,0 +1,61 @@
+motion_id: "motion-0047"
+title: "Wire Librarian slot resolution to Phase 1 staffing canon"
+
+status: "proposed"
+created_at: "2026-03-17T00:00:00Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Connect the existing Librarian slot-resolution surface to
+  .nexus/model-slots-phase1.yaml as the first live consumer of the ratified
+  Phase 1 staffing canon. This motion is limited to slot resolution for the
+  Librarian panel in the current panel/viewer path. It does not activate
+  selector logic, change panel structure, or introduce broad multi-agent
+  runtime behavior.
+
+problem: >
+  motion-0046 ratified .nexus/model-slots-phase1.yaml as the canonical Phase 1
+  staffing artifact, but no existing consumer uses it yet. The current repo has
+  a slot-binding resolution path built around .nexus/model-slots.yaml, and
+  .nexus/agent-panels.yaml still reflects the older 5-candidate panel structure.
+  Until at least one real consumer resolves values from the Phase 1 manifest,
+  the staffing canon remains governance-only. The Librarian panel is the safest
+  first lane because it is low-cost, documentation-oriented, and has the lowest
+  operational blast radius.
+
+proposal:
+  - "Extend the existing slot-resolution logic so the Librarian panel resolves SLOT_LIBRARIAN_01 and SLOT_LIBRARIAN_02 from .nexus/model-slots-phase1.yaml."
+  - "Keep this motion limited to the existing panel/viewer slot-binding surface; do not broaden into council-runner-wide or runtime-wide routing changes."
+  - "Preserve current panel structure in .nexus/agent-panels.yaml; do not rewrite candidate sets in this motion."
+  - "Validate that Librarian primary resolves to anthropic / claude-haiku-4-5 and Librarian alternate resolves to openai / gpt-5-mini."
+  - "Leave all non-Librarian panels on their current resolution path."
+  - "Do not activate selector logic; selector handling remains unchanged."
+
+non_goals:
+  - "Do not wire Architect, Builder, Verifier, or Operator in this motion."
+  - "Do not activate selector slots or multi-candidate scoring."
+  - "Do not rewrite .nexus/agent-panels.yaml."
+  - "Do not deprecate or delete .nexus/model-slots.yaml."
+  - "Do not change .nexus/model-routing.yaml."
+  - "Do not introduce runtime agent orchestration or execution loops."
+  - "Do not change council voting mechanics."
+
+success_criteria:
+  - "The existing Librarian slot-resolution surface reads .nexus/model-slots-phase1.yaml for SLOT_LIBRARIAN_01 and SLOT_LIBRARIAN_02."
+  - "Resolved primary is anthropic / claude-haiku-4-5."
+  - "Resolved alternate is openai / gpt-5-mini."
+  - "No other panel's slot resolution changes."
+  - "No selector logic is activated."
+  - "Existing panel structure remains unchanged."
+  - "A simple validation path proves correct Librarian resolution."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
