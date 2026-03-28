@@ -1,0 +1,63 @@
+motion_id: "motion-0069"
+title: "bounded post-ratification execution handoff and receipt artifacts"
+
+status: "proposed"
+created_at: "2026-03-28T22:33:55.000Z"
+owner: "Jerry Ingram"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add the smallest honest post-ratification boundary in dev-jai-nexus by
+  introducing durable execution handoff and execution receipt artifacts.
+  A ratified motion may authorize a bounded repo-local execution handoff,
+  but ratification must not imply execution completion. The new artifacts
+  must distinguish authorization, handoff, in-progress execution, completion,
+  blockage, failure, and reversion.
+
+problem: >
+  dev-jai-nexus now supports a real governed chain through candidate,
+  draft, vote, and ratification. But the system currently stops at
+  ratification. There is no durable motion-local artifact that records
+  whether execution was handed off, acknowledged, started, completed,
+  blocked, failed, or reverted. This creates a semantic gap between
+  governance authority and execution authority and risks vague "it ran"
+  assumptions.
+
+proposal:
+  - "Add a durable execution handoff artifact for ratified motions."
+  - "Add a durable execution receipt artifact that records actual execution state."
+  - "Restrict the first slice to bounded repo-local handoff and receipt semantics only."
+  - "Require that execution handoff can only be issued for a ratified motion."
+  - "Ensure receipt state is distinct from ratification state."
+  - "Define explicit execution states such as ISSUED, ACKNOWLEDGED, STARTED, COMPLETED, BLOCKED, FAILED, and REVERTED."
+  - "Keep governance artifacts and execution artifacts separate."
+  - "Do not imply execution completion from ratification alone."
+  - "Prefer explicit durable artifacts over trace-only or implied state."
+
+non_goals:
+  - "Do not add automatic code execution."
+  - "Do not add patch apply automation."
+  - "Do not add cross-repo execution."
+  - "Do not merge governance state and execution state into one field."
+  - "Do not reopen motion-0068 for unrelated expansion."
+  - "Do not widen into Waves, planner, or autonomy."
+  - "Do not treat execution.md as execution proof."
+
+success_criteria:
+  - "A ratified motion can produce a durable execution handoff artifact."
+  - "A non-ratified motion cannot produce an execution handoff artifact."
+  - "A durable execution receipt artifact can record actual execution status."
+  - "The system can distinguish ratified but not handed off, handed off but not completed, completed, blocked, failed, and reverted."
+  - "Execution completion is never implied without a receipt."
+  - "The first slice remains bounded to repo-local handoff and receipt semantics."
+  - "Governance artifacts and execution artifacts remain clearly distinguishable."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
