@@ -1,21 +1,29 @@
 {
-    "version": "0.2",
-    "motion_id": "motion-0068",
-    "latest": {
-        "validate_motion": {
-            "status": "PASS",
-            "updated_at": "2026-03-27T00:00:00.000Z",
-            "notes": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0068/motion.yaml --verbose"
-        },
-        "validate_agency": {
-            "status": "PENDING",
-            "updated_at": "2026-03-27T00:00:00.000Z",
-            "notes": "No validate_agency evidence recorded yet."
-        }
+  "version": "0.2",
+  "motion_id": "motion-0068",
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-28T22:14:53.093Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0068\\motion.yaml",
+      "cwd": ".",
+      "required": true
     },
-    "summary": {
-        "required_ok": false,
-        "last_updated": "2026-03-27T00:00:00.000Z",
-        "notes": "Motion implemented and unanimously approved, but required gates are not yet fully evidenced."
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-28T22:14:54.132Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
     }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-28T22:14:54.133Z",
+    "notes": "All required gates satisfied via council-run."
+  }
 }

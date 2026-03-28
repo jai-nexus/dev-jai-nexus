@@ -1,6 +1,6 @@
-protocol_version: "council.config.v0"
+protocol_version: "0.3.8"
 motion_id: motion-0068
-evaluated_at: "2026-03-26T00:00:00.000Z"
+evaluated_at: "2026-03-28T22:14:54.144Z"
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
@@ -15,5 +15,4 @@ required_ok: true
 eligible_to_vote: true
 recommended_vote: "yes"
 blocking_reasons: []
-warnings:
-  - "First write-back mutation to candidate artifacts. Bounded to two fields (status, targetMotionId)."
+warnings: []
