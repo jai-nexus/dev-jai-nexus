@@ -1,0 +1,103 @@
+motion_id: "motion-0071"
+title: "bounded governed loop activation — motion to execution to receipt"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "umbrella"
+program: "q2-loop-activation"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Define and decompose the Q2 program to make the JAI NEXUS governed loop
+  come to life end-to-end inside dev-jai-nexus. A ratified motion should be
+  able to produce a motion-linked work packet, run through the
+  architect/builder/verifier execution lane using the motion's governed
+  context, and close with an execution receipt that traces back to the
+  original council decision. Operator surfaces should reflect the live state
+  of both loops coherently. This umbrella motion defines the program
+  structure, success conditions, and workstream sequence. Implementation
+  happens through short-lived child branches — not through this motion
+  directly.
+
+problem: >
+  dev-jai-nexus has two loops that currently exist in isolation. The
+  governance loop (motion proposal, council evaluation, ratification,
+  execution handoff, receipt) operates entirely through file-based artifacts
+  under .nexus/. The execution loop (work packets, agent runtimes, SoT
+  events, operator UI) operates entirely through the database and portal
+  application. There is no code path that connects them. Ratification does
+  not produce a work packet. Work packet completion does not close a receipt.
+  Agent runtimes have no awareness of the motion governing their work.
+  Operators viewing the work surface see no governance context. The loop
+  exists on paper but is not alive.
+
+proposal:
+  - "WS-1 (motion-to-packet bridge): Add a motion tag convention to the work
+    packet contract and a script that creates a motion-linked work packet from
+    a RATIFIED motion with an issued execution handoff. This is the foundational
+    connector. All other workstreams depend on it."
+  - "WS-2 (agent runtime motion context binding): Given a work packet tagged
+    with a motion identity, architect and builder runtimes should load the
+    motion's execution.md and context bundle as their plan input rather than
+    producing a hardcoded stub artifact."
+  - "WS-3 (operator motion state surface): Add a read-only operator view that
+    shows a motion's council decision state, execution.handoff.json status, and
+    execution.receipt.json status in one coherent surface. The operator should
+    be able to see live loop state without cross-referencing .nexus/ files
+    manually."
+  - "WS-4 (receipt closure from operator approval): When an operator approves
+    a motion-linked work packet, surface an explicit path to record
+    execution.receipt.json as COMPLETED, closing the governed loop with a
+    durable receipt artifact."
+  - "WS-5 (loop coherence gate): Add a validation script that checks the full
+    chain for a given motion: RATIFIED decision, ISSUED handoff, linked work
+    packet, COMPLETED receipt. Provides a single pass/fail judgment on loop
+    completeness."
+
+non_goals:
+  - "Do not redesign council-run.mjs or the motion artifact schema."
+  - "Do not extract additional council seam helpers unless a new materially
+    worthwhile pure semantic cluster is identified."
+  - "Do not widen into snapshot generation, panel orchestration, or Motion
+    Factory unless directly required to close the loop."
+  - "Do not force a database schema migration in the early workstreams. Use
+    the existing AgentInboxItem.tags system for motion identity."
+  - "Do not implement autonomous code-application behavior. Agent runtimes
+    record governed artifacts; they do not apply patches automatically."
+  - "Do not make this umbrella motion a broad implementation permission. Each
+    workstream requires its own bounded child motion or ratified slice."
+  - "Do not create a second truth system. dev-jai-nexus remains the single
+    owner of live governance, repo-native gates, artifact writes, and
+    execution-adjacent control-plane behavior."
+  - "Do not treat a motion-linked work packet as a replacement for motion
+    governance. The motion artifact set remains the canonical record."
+
+success_criteria:
+  - "A RATIFIED motion with an issued handoff can produce a work packet with
+    traceable motion identity via the tag convention."
+  - "An architect runtime pass executed against a motion-linked packet reads
+    the motion's execution.md as its plan input."
+  - "An operator can view a motion's council decision, handoff state, and
+    receipt state from a single operator surface without reading .nexus/ files
+    directly."
+  - "Operator approval of a motion-linked work packet results in a durable
+    execution receipt recorded as COMPLETED."
+  - "A loop coherence gate can confirm the full chain for a given motion:
+    ratified, issued, executed, receipted."
+  - "All workstream implementations are individually motion-governed or
+    ratified as bounded child slices."
+  - "dev-jai-nexus remains the owner of all artifact writes, gate execution,
+    and execution-adjacent control-plane behavior throughout."
+  - "No database schema migration is required to complete WS-1 through WS-3."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
