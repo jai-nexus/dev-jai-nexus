@@ -1,0 +1,88 @@
+motion_id: "motion-0073"
+title: "bounded motion-linked work packet creation"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-1"
+phase: "phase-2"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Extend the dry-run activation bridge from WS-1 phase 1 into a real,
+  bounded creation path. When a motion passes all activatability checks,
+  activate-motion.mjs --create creates a motion-linked WorkPacket and
+  AgentInboxItem in the database using the canonical motion tag and an
+  initial ARCHITECT route tag. Duplicate creation is refused idempotently:
+  if a live motion-tagged packet already exists for the motion, creation is
+  rejected and the existing packet identity is printed. No schema migration.
+  No agent runtime changes. No operator UI changes.
+
+problem: >
+  The dry-run bridge from WS-1 phase 1 verifies activatability and derives
+  the correct packet shape but performs no database writes. There is no
+  governed script path from a RATIFIED motion with an ISSUED handoff to a
+  live work packet in the execution system. The governance loop and
+  execution loop remain disconnected at the database layer.
+
+proposal:
+  - "Extend portal/scripts/activate-motion.mjs with a --create flag that,
+    after all existing activatability checks pass, creates a real WorkPacket
+    and AgentInboxItem in the database."
+  - "Idempotency rule: refuse creation if any AgentInboxItem exists with
+    tags containing motion:<motionId> and status not in {DONE, CANCELED}.
+    Print the existing inboxItemId and workPacketId and exit 1."
+  - "Created WorkPacket shape: nhId=motionId, title=[motionId] motionTitle,
+    ac='', plan='', status=DRAFT. No repoId (optional field, deferred to
+    operator routing step)."
+  - "Created AgentInboxItem shape: status=QUEUED, priority=60,
+    tags=[motion:motionId, route:ARCHITECT]. No assignee tag (unassigned
+    at creation; assignment is a separate operator or routing step)."
+  - "No new Prisma schema fields. Motion identity is carried entirely via
+    the existing AgentInboxItem.tags array using the motion: prefix
+    established in phase 1."
+  - "dotenv is loaded from portal/.env.local if DATABASE_URL is not
+    already set in the environment. If DATABASE_URL is still not available
+    after dotenv load, the script fails with a clear message."
+
+non_goals:
+  - "Do not rewire agent runtimes (WS-2)."
+  - "Do not add operator UI changes (WS-3)."
+  - "Do not add receipt closure behavior (WS-4)."
+  - "Do not add the coherence gate (WS-5)."
+  - "Do not add a Prisma schema migration."
+  - "Do not add a motionId foreign key to WorkPacket."
+  - "Do not create a parallel work packet creation system."
+  - "Do not add speculative metadata fields."
+  - "Do not look up or wire repoId at creation time."
+  - "Do not emit SoT events in this slice (deferred to a future WS-1 patch)."
+  - "Do not modify workPacketActions.ts or agentRuntime.ts."
+  - "Do not modify council-run.mjs or any governance artifact writer."
+
+success_criteria:
+  - "activate-motion.mjs --motion <activatable> --create creates a WorkPacket
+    and AgentInboxItem, prints the created packet identity, and exits 0."
+  - "Running --create a second time for the same motion refuses creation,
+    prints the existing inboxItemId and workPacketId, and exits 1."
+  - "The created AgentInboxItem.tags contains motion:<motionId> and
+    route:ARCHITECT."
+  - "Running --create without the --create flag still behaves as dry-run
+    (no database writes, exits 0 or 1 per activatability)."
+  - "activate-motion.mjs --motion <non-ratified> --create exits 1 at the
+    same pre-check that dry-run mode would fail."
+  - "node --check portal/scripts/activate-motion.mjs passes."
+  - "pnpm -C portal typecheck passes."
+  - "No files outside portal/scripts/activate-motion.mjs are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

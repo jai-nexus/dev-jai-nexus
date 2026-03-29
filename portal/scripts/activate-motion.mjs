@@ -2,21 +2,21 @@
 /**
  * activate-motion.mjs
  *
- * DRY-RUN ONLY. Reads a RATIFIED motion's governance artifacts and
- * derives the intended work-packet activation payload.
- *
- * Does NOT write to the database, mutate work packets, create inbox rows,
- * or change any motion artifact.
+ * Reads a RATIFIED motion's governance artifacts and either:
+ *   - (default) derives the work-packet activation intent as a dry-run
+ *   - (--create) creates a real motion-linked work packet in the database
  *
  * Usage:
- *   node portal/scripts/activate-motion.mjs --motion motion-0072
+ *   node portal/scripts/activate-motion.mjs --motion motion-0073
+ *   node portal/scripts/activate-motion.mjs --motion motion-0073 --create
  *
  * Exit codes:
- *   0 = Motion is activatable (dry-run intent printed)
- *   1 = Motion is not activatable (failing check identified)
- *   2 = Unexpected error
+ *   0 = success (dry-run activatable, or packet created)
+ *   1 = not activatable / duplicate refused / precondition failed
+ *   2 = unexpected error
  *
- * Part of: motion-0072 / Q2 WS-1 loop activation program
+ * Part of: motion-0073 / Q2 WS-1 loop activation program (phase 2)
+ * Extends: motion-0072 (phase 1 — dry-run bridge)
  */
 
 import fs from "node:fs";
@@ -29,11 +29,13 @@ import yaml from "js-yaml";
 // --------------------------------------------------
 
 function parseArgs(argv) {
-    const args = { motion: null };
+    const args = { motion: null, create: false };
     for (let i = 2; i < argv.length; i++) {
         const a = argv[i];
         if (a === "--motion" && argv[i + 1]) {
             args.motion = argv[++i];
+        } else if (a === "--create") {
+            args.create = true;
         }
     }
     return args;
@@ -108,24 +110,118 @@ function findRepoRoot(startDir) {
     return null;
 }
 
+// Mirrors portal/src/lib/work/workPacketContract.ts:buildMotionTag exactly.
+// Cannot import the .ts source directly from a .mjs script; this must stay
+// in sync with the canonical helper if the prefix ever changes.
+const MOTION_TAG_PREFIX = "motion:";
+function buildMotionTag(motionId) {
+    return `${MOTION_TAG_PREFIX}${motionId}`;
+}
+
+// --------------------------------------------------
+// create mode
+// --------------------------------------------------
+
+async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoRoot }) {
+    if (!process.env.DATABASE_URL) {
+        const envPath = path.join(repoRoot, "portal", ".env.local");
+        if (exists(envPath)) {
+            const { default: dotenv } = await import("dotenv");
+            dotenv.config({ path: envPath, override: false });
+        }
+    }
+    if (!process.env.DATABASE_URL) {
+        console.error(`[ACTIVATE-MOTION] ERROR: DATABASE_URL is not set.`);
+        console.error(`[ACTIVATE-MOTION] Set it in the environment or in portal/.env.local`);
+        process.exit(1);
+    }
+
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+
+    try {
+        // Idempotency check: refuse if a live motion-tagged packet exists
+        const existingInbox = await prisma.agentInboxItem.findFirst({
+            where: {
+                tags: { has: activationTag },
+                status: { notIn: ["DONE", "CANCELED"] },
+            },
+            select: { id: true, workPacketId: true, status: true },
+        });
+
+        if (existingInbox) {
+            console.error(`[ACTIVATE-MOTION] REFUSE: Live packet already exists for ${motionId}`);
+            console.error(`[ACTIVATE-MOTION] Existing inbox item ID:   ${existingInbox.id}`);
+            console.error(`[ACTIVATE-MOTION] Existing work packet ID:  ${existingInbox.workPacketId}`);
+            console.error(`[ACTIVATE-MOTION] Existing status:          ${existingInbox.status}`);
+            console.error(`[ACTIVATE-MOTION] Resolve or close the existing packet before re-activating.`);
+            process.exit(1);
+        }
+
+        // Create WorkPacket + AgentInboxItem
+        const result = await prisma.$transaction(async (tx) => {
+            const packet = await tx.workPacket.create({
+                data: {
+                    nhId: motionId,
+                    title: packetTitle,
+                    ac: "",
+                    plan: "",
+                    status: "DRAFT",
+                },
+            });
+
+            const inbox = await tx.agentInboxItem.create({
+                data: {
+                    workPacketId: packet.id,
+                    status: "QUEUED",
+                    priority: 60,
+                    tags: [activationTag, routeTag],
+                },
+                select: { id: true, status: true, priority: true, tags: true },
+            });
+
+            return { packet, inbox };
+        });
+
+        console.log();
+        console.log(`[ACTIVATE-MOTION] --- Work packet created ---`);
+        console.log(`[ACTIVATE-MOTION] WorkPacket ID:   ${result.packet.id}`);
+        console.log(`[ACTIVATE-MOTION] nhId:            ${result.packet.nhId}`);
+        console.log(`[ACTIVATE-MOTION] Title:           ${result.packet.title}`);
+        console.log(`[ACTIVATE-MOTION] Status:          ${result.packet.status}`);
+        console.log(`[ACTIVATE-MOTION] InboxItem ID:    ${result.inbox.id}`);
+        console.log(`[ACTIVATE-MOTION] Inbox status:    ${result.inbox.status}`);
+        console.log(`[ACTIVATE-MOTION] Inbox priority:  ${result.inbox.priority}`);
+        console.log(`[ACTIVATE-MOTION] Tags:            ${JSON.stringify(result.inbox.tags)}`);
+        console.log();
+        console.log(`[ACTIVATE-MOTION] Motion ${motionId} is now LIVE in the execution system.`);
+        console.log();
+
+        process.exit(0);
+    } finally {
+        await prisma.$disconnect();
+    }
+}
+
 // --------------------------------------------------
 // main
 // --------------------------------------------------
 
-(function main() {
+async function main() {
     const args = parseArgs(process.argv);
 
     if (!args.motion) {
         console.error(
-            `Usage: node portal/scripts/activate-motion.mjs --motion <motionId>\n` +
-            `Example: node portal/scripts/activate-motion.mjs --motion motion-0072`
+            `Usage: node portal/scripts/activate-motion.mjs --motion <motionId> [--create]\n` +
+            `Example: node portal/scripts/activate-motion.mjs --motion motion-0073\n` +
+            `         node portal/scripts/activate-motion.mjs --motion motion-0073 --create`
         );
         process.exit(1);
     }
 
     try {
         const repoRoot = findRepoRoot(process.cwd());
-        if (!repoRoot) die(`Could not locate repo root (no .nexus directory found).`);
+        if (!repoRoot) die(`Could not locate repo root (no .nexus directory found.).`);
 
         const motionId = String(args.motion).trim();
 
@@ -214,30 +310,45 @@ function findRepoRoot(startDir) {
         }
 
         // --------------------------------------------------
-        // Activation intent (dry-run)
+        // Derived activation params
         // --------------------------------------------------
-        const activationTag = `motion:${motionId}`;
+        const activationTag = buildMotionTag(motionId);
         const routeTag      = `route:ARCHITECT`;
         const packetTitle   = `[${motionId}] ${motionTitle}`;
 
-        console.log();
-        console.log(`[ACTIVATE-MOTION] --- Activation intent (dry-run) ---`);
-        console.log(`[ACTIVATE-MOTION] Activation tag:   ${activationTag}`);
-        console.log(`[ACTIVATE-MOTION] Route tag:        ${routeTag}`);
-        console.log(`[ACTIVATE-MOTION] Handoff ID:       ${handoffId}`);
-        console.log(`[ACTIVATE-MOTION] Target repo:      ${targetRepo}`);
-        console.log(`[ACTIVATE-MOTION] Packet title:     ${packetTitle}`);
-        console.log(`[ACTIVATE-MOTION] Tags:             ["${activationTag}", "${routeTag}"]`);
-        console.log(`[ACTIVATE-MOTION] execution.md:     ${executionMdPresent ? "PRESENT" : "ABSENT"}`);
-        console.log();
-        console.log(`[ACTIVATE-MOTION] This motion is ACTIVATABLE.`);
-        console.log(`[ACTIVATE-MOTION] DRY-RUN ONLY — no database writes performed.`);
-        console.log();
+        if (args.create) {
+            // Real creation path (WS-1 phase 2)
+            console.log();
+            console.log(`[ACTIVATE-MOTION] All preconditions passed. Creating work packet...`);
+            await runCreate({ motionId, activationTag, routeTag, packetTitle, repoRoot });
+        } else {
+            // Dry-run output (WS-1 phase 1 behavior — unchanged)
+            console.log();
+            console.log(`[ACTIVATE-MOTION] --- Activation intent (dry-run) ---`);
+            console.log(`[ACTIVATE-MOTION] Activation tag:   ${activationTag}`);
+            console.log(`[ACTIVATE-MOTION] Route tag:        ${routeTag}`);
+            console.log(`[ACTIVATE-MOTION] Handoff ID:       ${handoffId}`);
+            console.log(`[ACTIVATE-MOTION] Target repo:      ${targetRepo}`);
+            console.log(`[ACTIVATE-MOTION] Packet title:     ${packetTitle}`);
+            console.log(`[ACTIVATE-MOTION] Tags:             ["${activationTag}", "${routeTag}"]`);
+            console.log(`[ACTIVATE-MOTION] execution.md:     ${executionMdPresent ? "PRESENT" : "ABSENT"}`);
+            console.log();
+            console.log(`[ACTIVATE-MOTION] This motion is ACTIVATABLE.`);
+            console.log(`[ACTIVATE-MOTION] DRY-RUN ONLY — no database writes performed.`);
+            console.log(`[ACTIVATE-MOTION] To create the packet: add --create`);
+            console.log();
 
-        process.exit(0);
+            process.exit(0);
+        }
     } catch (err) {
         console.error(`[ACTIVATE-MOTION] Unexpected error`);
         console.error(err?.stack || err?.message || String(err));
         process.exit(2);
     }
-})();
+}
+
+main().catch((err) => {
+    console.error(`[ACTIVATE-MOTION] Unexpected error`);
+    console.error(err?.stack || err?.message || String(err));
+    process.exit(2);
+});
