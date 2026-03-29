@@ -82,6 +82,7 @@ import {
     evaluateVotes,
 } from "../src/lib/council/councilVoteKernel.mjs";
 import { deriveCouncilDecisionOutcome } from "../src/lib/council/councilDecisionKernel.mjs";
+import { deriveCouncilPolicyOutcome } from "../src/lib/council/councilPolicyKernel.mjs";
 
 const PROTOCOL_VERSION = "0.3.8";
 
@@ -788,18 +789,19 @@ const optional_gates = optionalGateList();
 const failed_required_gates = required_gates.filter((g) => !gates[g] || gates[g].ok === false).sort();
 const failed_optional_gates = optional_gates.filter((g) => !gates[g] || gates[g].ok === false).sort();
 
-const required_ok = failed_required_gates.length === 0;
-const eligible_to_vote = required_ok;
-
-const low_risk = riskScore <= maxRiskScore;
-const recommended_vote = eligible_to_vote && low_risk ? "yes" : "no";
-
-const blocking_reasons = [];
-if (!required_ok) blocking_reasons.push(`Missing/Failed required gates: ${failed_required_gates.join(", ")}`);
-if (!low_risk) blocking_reasons.push(`Risk score ${riskScore.toFixed(2)} exceeds threshold ${maxRiskScore.toFixed(2)}`);
-
-const warnings = [];
-if (failed_optional_gates.length > 0) warnings.push(`Optional gates failed: ${failed_optional_gates.join(", ")}`);
+const {
+    required_ok,
+    eligible_to_vote,
+    low_risk,
+    recommended_vote,
+    blocking_reasons,
+    warnings,
+} = deriveCouncilPolicyOutcome({
+    failedRequiredGates: failed_required_gates,
+    failedOptionalGates: failed_optional_gates,
+    riskScore,
+    maxRiskScore,
+});
 
 const policyTemplate = `protocol_version: "${PROTOCOL_VERSION}"
 motion_id: ${motionId}
