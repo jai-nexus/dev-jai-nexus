@@ -1,0 +1,83 @@
+motion_id: "motion-0072"
+title: "bounded motion-to-packet bridge activation"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-1"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Establish the first governed bridge between the motion loop and the
+  execution loop by adding a motion tag convention to the work packet
+  contract and a dry-run activation script. The tag convention defines
+  how a work packet carries its governing motion identity. The dry-run
+  script reads a RATIFIED motion's artifacts and outputs the exact
+  activation intent without performing any database writes. This is
+  WS-1 phase 1 of the Q2 loop activation program.
+
+problem: >
+  A ratified motion with an issued execution handoff has no path into
+  the execution system. There is no tag convention for work packets to
+  carry motion identity, no script that reads a ratified motion's
+  artifacts and derives what a motion-linked work packet should look
+  like, and no safe way to inspect activatability without risking live
+  DB writes. The two loops cannot be correlated because the identity
+  link between them does not exist.
+
+proposal:
+  - "Add buildMotionTag(motionId) and getMotionFromTags(tags) helpers to
+    portal/src/lib/work/workPacketContract.ts following the same pattern
+    as the existing assignee: tag convention."
+  - "Define the canonical motion tag format as motion:motion-XXXX."
+  - "Add portal/scripts/activate-motion.mjs as a dry-run only script that
+    reads a RATIFIED motion's artifacts (motion.yaml, decision.yaml,
+    execution.handoff.json, execution.md) and outputs the exact activation
+    intent for a motion-linked work packet."
+  - "The script derives: motionId, title, target repo, activation tag,
+    route tag, handoff ID, suggested work packet title, and WS-2
+    readiness signal (execution.md present)."
+  - "The script exits 0 if the motion is activatable, 1 if not, with a
+    clear per-check report."
+  - "No database writes, no work packet mutations, no inbox row creation."
+
+non_goals:
+  - "Do not perform live database writes in this slice."
+  - "Do not add a Prisma schema migration."
+  - "Do not add a motionId foreign key to WorkPacket."
+  - "Do not wire agent runtimes to motion context (WS-2)."
+  - "Do not add operator UI changes (WS-3)."
+  - "Do not add receipt closure behavior (WS-4)."
+  - "Do not add the coherence gate (WS-5)."
+  - "Do not modify workPacketActions.ts or agentRuntime.ts."
+  - "Do not modify council-run.mjs or any governance artifact writer."
+
+success_criteria:
+  - "buildMotionTag('motion-0072') returns 'motion:motion-0072'."
+  - "getMotionFromTags(['assignee:1.2', 'motion:motion-0072', 'route:ARCHITECT'])
+    returns 'motion-0072'."
+  - "getMotionFromTags(['assignee:1.2']) returns null."
+  - "activate-motion.mjs --motion <ratified-motion-with-handoff> exits 0 and
+    prints a dry-run activation intent including motionId, title, target
+    repo, activation tag, route tag, handoff ID, and execution.md presence."
+  - "activate-motion.mjs --motion <non-ratified-motion> exits 1 with a clear
+    reason."
+  - "activate-motion.mjs --motion <ratified-motion-without-handoff> exits 1
+    with a clear reason."
+  - "node --check portal/scripts/activate-motion.mjs passes."
+  - "pnpm -C portal typecheck passes."
+  - "No files outside portal/src/lib/work/workPacketContract.ts and
+    portal/scripts/activate-motion.mjs are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

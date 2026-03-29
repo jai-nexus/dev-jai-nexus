@@ -31,6 +31,19 @@ export function buildInboxTags(assigneeNhId?: string | null): string[] {
     return tags;
 }
 
+const MOTION_TAG_PREFIX = "motion:";
+
+export function buildMotionTag(motionId: string): string {
+    return `${MOTION_TAG_PREFIX}${motionId}`;
+}
+
+export function getMotionFromTags(tags: string[]): string | null {
+    const hit = tags.find((t) => typeof t === "string" && t.startsWith(MOTION_TAG_PREFIX));
+    if (!hit) return null;
+    const motionId = hit.slice(MOTION_TAG_PREFIX.length).trim();
+    return motionId || null;
+}
+
 export function deriveRequestedRoleFromAgentKey(agentKey?: string | null): RequestedRole | null {
     const raw = String(agentKey ?? "").toUpperCase();
     if (!raw) return null;
