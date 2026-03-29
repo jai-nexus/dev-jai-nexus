@@ -1,0 +1,81 @@
+motion_id: "motion-0075"
+title: "bounded architect motion context binding"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-2"
+phase: "phase-1"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Make the architect runtime motion-context-aware for motion-linked work
+  packets. When a packet carries a canonical motion tag, the architect
+  runtime reads the governing motion's execution.md and motion.yaml title,
+  and produces a motion-grounded debug.plan artifact instead of a generic
+  stub. Non-motion-linked packets preserve existing behavior unchanged.
+  No builder, verifier, or operator UI changes. No schema migration.
+
+problem: >
+  The WS-1 bridge creates a motion-linked work packet and routes it to the
+  ARCHITECT lane. But the architect runtime has no awareness of the governing
+  motion. It produces a generic stub plan regardless of whether the packet
+  is motion-linked. The governed context (execution.md, motion identity,
+  success criteria) is never consulted. The architecture evidence is not
+  grounded in the motion that authorized the work.
+
+proposal:
+  - "Import getMotionFromTags from workPacketContract into architectRuntime.ts."
+  - "Add a loadMotionContext(inboxTags) function that reads motion.yaml (title
+    only) and execution.md from .nexus/motions/<motionId>/."
+  - "Call loadMotionContext inside execute() after loadWorkPacketContext returns,
+    within the existing transaction block."
+  - "Update buildArchitectPlan to accept an optional MotionContext argument."
+  - "When motionContext is present: produce a motion-grounded plan with objective
+    referencing the motionId, executionPlan carrying the execution.md text, and
+    checkpoints specific to the governed motion."
+  - "When motionContext is absent (non-motion-linked packet): preserve the
+    existing generic plan behavior exactly."
+  - "When motionId is in tags but execution.md is absent: log a warning, set
+    executionPlan to empty string, continue (do not fail)."
+  - "When repo root cannot be found: log a warning, return null motion context,
+    fall back to generic plan (do not fail)."
+
+non_goals:
+  - "Do not change builder runtime."
+  - "Do not change verifier runtime."
+  - "Do not change agentRuntime.ts base class."
+  - "Do not change operator UI."
+  - "Do not add schema migration."
+  - "Do not add receipt closure."
+  - "Do not redesign the debug artifact shape or add new SoT event kinds."
+  - "Do not add a broad motion context subsystem."
+  - "Do not read the full motion package (policy.yaml, vote.json, etc.)."
+  - "Do not add async filesystem reads (sync is sufficient for small motion files)."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "buildArchitectPlan with a valid MotionContext produces a plan.objective
+    that references the motionId and a plan.executionPlan field with the
+    execution.md content."
+  - "buildArchitectPlan with null motionContext produces the existing generic
+    plan (regression-free)."
+  - "getMotionFromTags(['motion:motion-0070', 'route:ARCHITECT']) returns
+    'motion-0070' (existing helper, no change needed)."
+  - "loadMotionContext with non-motion-linked tags returns null."
+  - "loadMotionContext with motion-linked tags and absent execution.md logs a
+    warning and returns a MotionContext with executionPlan=''."
+  - "No files outside portal/src/lib/work/architectRuntime.ts are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
