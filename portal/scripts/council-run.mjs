@@ -81,6 +81,7 @@ import {
     pickLatestByRole,
     evaluateVotes,
 } from "../src/lib/council/councilVoteKernel.mjs";
+import { deriveCouncilDecisionOutcome } from "../src/lib/council/councilDecisionKernel.mjs";
 
 const PROTOCOL_VERSION = "0.3.8";
 
@@ -945,52 +946,25 @@ let currentNotes = getYamlScalar(decisionYaml, "notes");
 let currentRatifiedBy = getYamlScalar(decisionYaml, "ratified_by");
 if (currentRatifiedBy === "null") currentRatifiedBy = null;
 
-function computeDecisionOutcome() {
-    let nextStatus = currentStatus;
+const preferredRatifiedBy =
+    Array.isArray(voteData?.votes)
+        ? voteData.votes.find((v) => normalizeVoteValue(v?.vote) === "yes")?.voter_id ?? null
+        : null;
 
-    const voteBlocking = [];
-    if (voteResult === "FAIL") voteBlocking.push("Vote failed.");
-    if (voteResult === "PENDING") voteBlocking.push("Vote pending.");
-    if (voteReasons.length > 0) voteBlocking.push(...voteReasons.map((r) => `Vote: ${r}`));
-    if (missingRequiredRoles.length > 0)
-        voteBlocking.push(`Missing required role votes: ${missingRequiredRoles.join(", ")}`);
-
-    const canRatify = voteResult === "PASS" && eligible_to_vote;
-
-    if (canRatify) nextStatus = "RATIFIED";
-    else if (blocking_reasons.length > 0 || voteResult === "FAIL") nextStatus = "BLOCKED";
-    else if (currentStatus === "RATIFIED" || currentStatus === "BLOCKED") nextStatus = "PROPOSED";
-
-    let nextNotes;
-    if (nextStatus === "RATIFIED") {
-        const extras = [];
-        if (warnings.length > 0) extras.push(`WARN: ${warnings.join("; ")}`);
-        if (voteMode !== "majority") extras.push(`vote_mode=${voteMode}`);
-        nextNotes = extras.length ? `RATIFIED: ${extras.join(" | ")}` : "RATIFIED: policy PASS + vote PASS";
-    } else if (nextStatus === "BLOCKED") {
-        const why = [...blocking_reasons, ...voteBlocking].filter(Boolean);
-        nextNotes = why.length ? `BLOCKED: ${why.join("; ")}` : "BLOCKED";
-    } else if (voteResult === "PENDING") {
-        nextNotes = "PENDING: awaiting vote";
-    } else {
-        nextNotes = currentNotes ?? `Outcome determined by council-run.mjs v${PROTOCOL_VERSION}`;
-    }
-
-    let nextRatifiedBy = currentRatifiedBy;
-    if (nextStatus === "RATIFIED") {
-        // Prefer a YES voter id if present; fall back to existing.
-        const rawVoteData = safeReadJsonFile(votePath, null);
-        const vts = Array.isArray(rawVoteData?.votes) ? rawVoteData.votes : [];
-        const yesVoter = vts.find((v) => normalizeVoteValue(v?.vote) === "yes")?.voter_id;
-        nextRatifiedBy = yesVoter || nextRatifiedBy || "voter";
-    } else {
-        nextRatifiedBy = nextRatifiedBy ?? null;
-    }
-
-    return { nextStatus, nextRatifiedBy, nextNotes };
-}
-
-const { nextStatus, nextRatifiedBy, nextNotes } = computeDecisionOutcome();
+const { nextStatus, nextRatifiedBy, nextNotes } = deriveCouncilDecisionOutcome({
+    currentStatus,
+    currentNotes,
+    currentRatifiedBy,
+    voteResult,
+    voteReasons,
+    missingRequiredRoles,
+    eligibleToVote: eligible_to_vote,
+    blockingReasons: blocking_reasons,
+    warnings,
+    voteMode,
+    preferredRatifiedBy,
+    protocolVersion: PROTOCOL_VERSION,
+});
 
 const decisionTemplate = (st, ratBy, note) => `protocol_version: "${PROTOCOL_VERSION}"
 motion_id: ${motionId}
