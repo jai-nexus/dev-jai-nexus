@@ -5,6 +5,7 @@
  * Commands:
  *   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
  *   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic] [--preview]
+ *   node portal/scripts/motion-factory.mjs promote  --candidate <candidateId> [--no-api] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic] [--preview]
  *   node portal/scripts/motion-factory.mjs status   [--json]
@@ -22,6 +23,13 @@
  *   - --preview uses the same validation and provider-generation path as apply mode,
  *     but prints the full proposed 9-file package instead of writing files.
  *   - Preview creates no directory and does not reserve motion numbering.
+ *
+ * promote:
+ *   Creates a numbered formal motion draft from an existing candidate artifact.
+ *   - Reuses the same draft package-construction path as draft.
+ *   - Skips candidate emission because the candidate already exists.
+ *   - Writes promotion.json for durable lineage.
+ *   - --preview prints the proposed package and promotion.json without writing files.
  *
  * revise:
  *   Updates selected narrative files in an existing motion draft from human notes.
@@ -71,7 +79,19 @@ const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 const SUPPORTED_PROVIDERS = new Set(["openai", "anthropic"]);
 const DEFAULT_PROVIDER = "openai";
 
-const AVAILABLE_COMMANDS = ["context", "draft", "revise", "evidence", "status"];
+const STANDARD_MOTION_FILES = [
+    "motion.yaml",
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+    "policy.yaml",
+    "decision.yaml",
+    "decision.md",
+    "vote.json",
+    "verify.json",
+];
+
+const AVAILABLE_COMMANDS = ["context", "draft", "promote", "revise", "evidence", "status"];
 
 const ALLOWED_REVISE_FILES = new Set([
     "proposal.md",
@@ -789,6 +809,7 @@ async function statusCommand({ repoRoot, jsonOutput }) {
     log(`Commands:`);
     log(`  context   - inspect repo context for a given intent (no files, no API)`);
     log(`  draft     - create a 9-file motion package`);
+    log(`  promote   - create a draft motion package from an existing candidate`);
     log(`  revise    - update narrative files from notes`);
     log(`  evidence  - insert proof evidence into narrative files`);
     log(`  status    - local factory readiness/configuration snapshot`);
@@ -994,7 +1015,7 @@ function generateVoteJson({ motionId, governance }) {
         votes: [],
         protocol_version: version,
         vote_mode: voteMode,
-        required_roles: roles,
+        required_roles: [...roles],
         outcome: {
             yes: 0,
             no: 0,
@@ -1646,34 +1667,86 @@ function generateCandidateArtifact({ candidateId, intent, targetMotionId, provid
     });
 }
 
+async function readCandidateArtifact(repoRoot, candidateId) {
+    const candidatesDir = path.join(repoRoot, ".nexus", "candidates");
+    const candidatePath = path.join(candidatesDir, `${candidateId}.json`);
+
+    if (!(await exists(candidatePath))) {
+        die(`Candidate artifact not found: .nexus/candidates/${candidateId}.json`);
+    }
+
+    let obj;
+    try {
+        obj = JSON.parse(await readText(candidatePath));
+    } catch (err) {
+        die(`Failed to parse candidate artifact ${candidateId}: ${err.message}`);
+    }
+
+    if (!obj || typeof obj !== "object") {
+        die(`Malformed candidate artifact ${candidateId}: root must be an object.`);
+    }
+
+    if (!obj.candidateId || String(obj.candidateId).trim() !== candidateId) {
+        die(`Malformed candidate artifact ${candidateId}: candidateId missing or mismatched.`);
+    }
+
+    if (!obj.intent || !String(obj.intent).trim()) {
+        die(`Malformed candidate artifact ${candidateId}: intent is required.`);
+    }
+
+    return {
+        candidatePath,
+        candidate: obj,
+    };
+}
+
+function validatePromotableCandidate(candidate) {
+    if (String(candidate.status || "").trim() === "promoted") {
+        die(`Candidate ${candidate.candidateId} is already marked promoted.`);
+    }
+}
+
+function generatePromotionArtifact({ candidate, targetMotionId }) {
+    return stableJson({
+        version: "0.1",
+        source: "motion-factory:promote",
+        candidateId: String(candidate.candidateId),
+        targetMotionId,
+        promotedAt: utcNow(),
+        promotedBy: "operator",
+        candidateStatusAtRead: String(candidate.status || "unknown"),
+    });
+}
+
+async function writeMotionPackage(motionDir, files) {
+    await fs.mkdir(motionDir, { recursive: true });
+    for (const f of files) {
+        await fs.writeFile(path.join(motionDir, f.name), f.content, "utf8");
+    }
+}
+
+async function writeCandidatePromotionBackfill(candidatePath, candidate, targetMotionId) {
+    const updated = {
+        ...candidate,
+        status: "promoted",
+        targetMotionId,
+    };
+    await fs.writeFile(candidatePath, stableJson(updated), "utf8");
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Draft command
 // ──────────────────────────────────────────────────────────────────────────────
 
-async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
+async function buildDraftPackage({
+    repoRoot,
+    motionId,
+    intent,
+    noApi,
+    provider,
+}) {
     const context = await buildContext(repoRoot, intent);
-    const motionId = context.next_motion_id;
     const governanceSummary = context.governance_summary;
-
-    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
-    if (!preview && (await exists(motionDir))) {
-        die(
-            `Motion directory already exists: .nexus/motions/${motionId}\nDelete it manually before running draft again.`
-        );
-    }
-
-    if (!noApi) {
-        requireApiKey(provider);
-    }
-
-    // ── Generate candidateId and check for collision ─────────────────────
-    const candidateId = generateCandidateId(intent);
-    const candidatesDir = path.join(repoRoot, ".nexus", "candidates");
-    const candidatePath = path.join(candidatesDir, `${candidateId}.json`);
-
-    if (!preview && await exists(candidatePath)) {
-        die(`Candidate artifact already exists: .nexus/candidates/${candidateId}.json\nResolve the collision before running draft again.`);
-    }
 
     const owner = "Jerry Ingram";
     const domain = "dev.jai.nexus";
@@ -1703,7 +1776,11 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
             name: "motion.yaml",
             content: narrative
                 ? generateMotionYamlFromNarrative({
-                    motionId, intent, owner, domain, repo,
+                    motionId,
+                    intent,
+                    owner,
+                    domain,
+                    repo,
                     narrative: narrative.motion_yaml,
                 })
                 : generateMotionYaml({ motionId, intent, owner, domain, repo }),
@@ -1718,7 +1795,45 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
         { name: "verify.json", content: generateVerifyJson({ motionId }) },
     ];
 
-    // ── Preview mode: print everything, write nothing ────────────────────
+    return {
+        context,
+        files,
+        narrativeMode,
+        warning,
+    };
+}
+
+async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
+    const context = await buildContext(repoRoot, intent);
+    const motionId = context.next_motion_id;
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+
+    if (!preview && (await exists(motionDir))) {
+        die(
+            `Motion directory already exists: .nexus/motions/${motionId}\nDelete it manually before running draft again.`
+        );
+    }
+
+    if (!noApi) {
+        requireApiKey(provider);
+    }
+
+    const candidateId = generateCandidateId(intent);
+    const candidatesDir = path.join(repoRoot, ".nexus", "candidates");
+    const candidatePath = path.join(candidatesDir, `${candidateId}.json`);
+
+    if (!preview && await exists(candidatePath)) {
+        die(`Candidate artifact already exists: .nexus/candidates/${candidateId}.json\nResolve the collision before running draft again.`);
+    }
+
+    const { files, narrativeMode, warning } = await buildDraftPackage({
+        repoRoot,
+        motionId,
+        intent,
+        noApi,
+        provider,
+    });
+
     if (preview) {
         const contentsByFile = Object.fromEntries(files.map((f) => [f.name, f.content]));
         printPreviewFiles({
@@ -1742,30 +1857,28 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
         return;
     }
 
-    // ── Apply mode: emit candidate THEN formal draft (atomic) ────────────
     await fs.mkdir(candidatesDir, { recursive: true });
     try {
         const candidateContent = generateCandidateArtifact({
-            candidateId, intent, targetMotionId: motionId, provider, noApi,
+            candidateId,
+            intent,
+            targetMotionId: motionId,
+            provider,
+            noApi,
         });
         await fs.writeFile(candidatePath, candidateContent, "utf8");
     } catch (err) {
         die(`Failed to emit candidate artifact: ${err.message}\nNo motion directory was created.`);
     }
 
-    await fs.mkdir(motionDir, { recursive: true });
     try {
-        for (const f of files) {
-            await fs.writeFile(path.join(motionDir, f.name), f.content, "utf8");
-        }
+        await writeMotionPackage(motionDir, files);
     } catch (err) {
-        // Atomicity cleanup: remove candidate if formal draft fails
-        try { await fs.unlink(candidatePath); } catch { /* best effort */ }
-        try { await fs.rm(motionDir, { recursive: true, force: true }); } catch { /* best effort */ }
+        try { await fs.unlink(candidatePath); } catch { }
+        try { await fs.rm(motionDir, { recursive: true, force: true }); } catch { }
         die(`Failed to write formal motion package: ${err.message}\nCandidate artifact cleaned up. No partial artifacts remain.`);
     }
 
-    // ── Apply stdout ─────────────────────────────────────────────────────
     log(`Draft scaffold created for ${motionId}`);
     log(`─────────────────────────────────────────`);
     log(`Motion ID:      ${motionId}`);
@@ -1787,6 +1900,94 @@ async function draftCommand({ repoRoot, intent, noApi, provider, preview }) {
         log(`⚠  Narrative content is placeholder scaffold content.`);
     } else {
         log(`⚠  Narrative content is ${narrativeMode} draft content, not evidence-backed content.`);
+    }
+    log(`─────────────────────────────────────────`);
+}
+
+async function promoteCommand({ repoRoot, candidateId, noApi, provider, preview }) {
+    const { candidatePath, candidate } = await readCandidateArtifact(repoRoot, candidateId);
+    validatePromotableCandidate(candidate);
+
+    const motionDirs = await enumerateMotions(repoRoot);
+    const motionId = nextMotionId(motionDirs);
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+
+    if (!noApi) {
+        requireApiKey(provider);
+    }
+
+    const { files, narrativeMode, warning } = await buildDraftPackage({
+        repoRoot,
+        motionId,
+        intent: String(candidate.intent),
+        noApi,
+        provider,
+    });
+
+    const promotionJson = generatePromotionArtifact({
+        candidate,
+        targetMotionId: motionId,
+    });
+
+    if (preview) {
+        const contentsByFile = Object.fromEntries(files.map((f) => [f.name, f.content]));
+        contentsByFile["promotion.json"] = promotionJson;
+
+        printPreviewFiles({
+            motionId,
+            operation: "promote",
+            headerLines: [
+                `Candidate ID:   ${candidateId}`,
+                `Intent:         ${candidate.intent}`,
+                `Motion ID:      ${motionId} (provisional, not reserved)`,
+                `Narrative:      ${narrativeMode}`,
+                ...(warning ? [`Warning:        ${warning}`] : []),
+            ],
+            targetFiles: [...STANDARD_MOTION_FILES, "promotion.json"],
+            contentsByFile,
+            footerLines: [
+                `   No directory was created. Candidate status was not updated.`,
+                `   Motion ID ${motionId} is provisional and not reserved.`,
+            ],
+        });
+        return;
+    }
+
+    if (await exists(motionDir)) {
+        die(`Motion directory already exists: .nexus/motions/${motionId}`);
+    }
+
+    try {
+        await writeMotionPackage(motionDir, files);
+        await fs.writeFile(path.join(motionDir, "promotion.json"), promotionJson, "utf8");
+    } catch (err) {
+        try { await fs.rm(motionDir, { recursive: true, force: true }); } catch { }
+        die(`Failed to write promoted motion package: ${err.message}`);
+    }
+
+    let reconciliationWarning = null;
+    try {
+        await writeCandidatePromotionBackfill(candidatePath, candidate, motionId);
+    } catch (err) {
+        reconciliationWarning = err?.message || String(err);
+    }
+
+    log(`Candidate promoted to draft motion ${motionId}`);
+    log(`─────────────────────────────────────────`);
+    log(`Candidate ID:   ${candidateId}`);
+    log(`Motion ID:      ${motionId}`);
+    log(`Path:           .nexus/motions/${motionId}/`);
+    log(`Narrative:      ${narrativeMode}`);
+    if (warning) {
+        log(`Warning:        ${warning}`);
+    }
+    if (reconciliationWarning) {
+        log(`Reconciliation: candidate write-back failed after promotion completed`);
+        log(`Warning:        ${reconciliationWarning}`);
+    }
+    log(`Files created:`);
+    for (const name of [...STANDARD_MOTION_FILES, "promotion.json"]) {
+        log(`  - ${name}`);
     }
     log(`─────────────────────────────────────────`);
 }
@@ -2036,6 +2237,7 @@ MOTION-FACTORY ${SCRIPT_VERSION}
 Usage:
   node portal/scripts/motion-factory.mjs context  --intent "..." [--json]
   node portal/scripts/motion-factory.mjs draft    --intent "..." [--no-api] [--provider openai|anthropic] [--preview]
+  node portal/scripts/motion-factory.mjs promote  --candidate <candidateId> [--no-api] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs revise   --motion motion-NNNN --notes "..." [--files f1,f2] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs status   [--json]
@@ -2049,6 +2251,12 @@ Commands:
              Narrative files are placeholders (--no-api) or provider-generated.
              Provider: openai (default) or anthropic via --provider.
              Use --preview to print the proposed 9-file package without writing files.
+
+  promote    Create a formal draft motion from an existing candidate artifact.
+             Reuses the draft package-construction path but skips candidate emission.
+             Writes promotion.json for durable lineage.
+             Provider: openai (default) or anthropic via --provider.
+             Use --preview to print the proposed package without writing files.
 
   revise     Revise narrative files in an existing draft from human notes.
              Narrower than draft: only touches narrative files.
@@ -2070,10 +2278,11 @@ Commands:
 
 Flags:
   --intent         (required for context/draft) Human intent prompt.
+  --candidate      (promote only) Existing candidate ID under .nexus/candidates/.
   --json           (context/status) Output as a stable JSON object.
-  --no-api         (draft only) Skip API generation; use placeholder scaffolds.
-  --provider       (draft/revise/evidence) Provider: openai (default) or anthropic.
-  --preview        (draft/revise/evidence) Preview proposed output without writing files.
+  --no-api         (draft/promote) Skip API generation; use placeholder scaffolds.
+  --provider       (draft/promote/revise/evidence) Provider: openai (default) or anthropic.
+  --preview        (draft/promote/revise/evidence) Preview proposed output without writing files.
   --motion         (revise/evidence) Target motion ID (e.g., motion-NNNN).
   --notes          (revise: required, evidence: optional) Human notes.
   --files          (revise/evidence) Comma-separated list of files to update.
@@ -2096,6 +2305,9 @@ Examples (PowerShell-ready):
   node portal/scripts/motion-factory.mjs draft --intent "Quick scaffold" --no-api
   node portal/scripts/motion-factory.mjs draft --intent "Preview scaffold" --no-api --preview
   node portal/scripts/motion-factory.mjs draft --intent "Preview with Anthropic" --provider anthropic --preview
+  node portal/scripts/motion-factory.mjs promote --candidate cm-20260327-000001-bounded-candidate-promotion --no-api --preview
+  node portal/scripts/motion-factory.mjs promote --candidate cm-20260327-000001-bounded-candidate-promotion --no-api
+  node portal/scripts/motion-factory.mjs promote --candidate cm-20260327-000001-bounded-candidate-promotion --provider anthropic --preview
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Tighten scope"
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Rewrite" --provider anthropic
   node portal/scripts/motion-factory.mjs revise --motion motion-NNNN --notes "Preview rewrite" --preview
@@ -2146,6 +2358,21 @@ async function main() {
         const provider = resolveProvider(args);
         const preview = args.preview === true;
         await draftCommand({ repoRoot, intent, noApi, provider, preview });
+        return;
+    }
+
+    if (cmd === "promote") {
+        const candidateId = args.candidate ? String(args.candidate) : null;
+        if (!candidateId) {
+            die(
+                `Missing --candidate.\n  Usage: node portal/scripts/motion-factory.mjs promote --candidate <candidateId> [--no-api] [--provider openai|anthropic] [--preview]`
+            );
+        }
+
+        const noApi = args["no-api"] === true;
+        const provider = resolveProvider(args);
+        const preview = args.preview === true;
+        await promoteCommand({ repoRoot, candidateId, noApi, provider, preview });
         return;
     }
 
