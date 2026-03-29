@@ -1,0 +1,77 @@
+motion_id: "motion-0074"
+title: "bounded motion activation happy-path proof"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-1"
+phase: "phase-3"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Prove the happy path for one real governed motion activation end-to-end
+  in repo conditions. Choose one existing RATIFIED motion as the activation
+  proof candidate, ensure its handoff state exists, exercise the
+  activate-motion.mjs --create path, verify the resulting work packet and
+  inbox item are coherent and motion-linked, and prove duplicate prevention
+  blocks a second activation attempt. No runtime behavior is changed.
+  No operator UI is changed. No schema migration.
+
+problem: >
+  WS-1 phase 2 (motion-0073) added the --create flag to activate-motion.mjs
+  and proved idempotency at the script level. The bridge exists but has not
+  been exercised end-to-end against a real ratified motion in a live repo
+  environment. There is no artifact that records which motion was chosen
+  as the proof candidate, why, and what the exact commands and outputs were.
+  Phase 3 closes this gap by executing the proof and recording the evidence.
+
+proposal:
+  - "Choose motion-0070 as the proof candidate: RATIFIED, bounded scope, has
+    verify.json and execution.md, no pre-existing handoff, does not involve
+    Motion Factory or handoff/receipt semantics themselves."
+  - "Issue a handoff for motion-0070 using issue-execution-handoff.mjs."
+  - "Run activate-motion.mjs --motion motion-0070 in dry-run mode to confirm
+    all activatability checks pass."
+  - "Run activate-motion.mjs --motion motion-0070 --create to create the
+    motion-linked WorkPacket and AgentInboxItem."
+  - "Confirm the created packet carries motion:motion-0070 and route:ARCHITECT
+    tags and the correct title."
+  - "Run activate-motion.mjs --motion motion-0070 --create a second time to
+    confirm duplicate prevention refuses creation and prints the existing IDs."
+  - "Record exact command outputs as evidence in this motion's execution.md."
+
+non_goals:
+  - "Do not change runtime behavior."
+  - "Do not change operator UI."
+  - "Do not redesign handoff or receipt semantics."
+  - "Do not add a schema migration."
+  - "Do not wire agent runtimes to motion context (WS-2)."
+  - "Do not close a receipt for the proof candidate (WS-4)."
+  - "Do not add a coherence gate (WS-5)."
+  - "Do not run council for this motion."
+  - "Do not create policy.yaml, verify.json, or vote.json for motion-0074."
+
+success_criteria:
+  - "motion-0070 has an execution.handoff.json with status=ISSUED."
+  - "activate-motion.mjs --motion motion-0070 exits 0 in dry-run mode."
+  - "activate-motion.mjs --motion motion-0070 --create exits 0 and prints
+    WorkPacket ID, InboxItem ID, and tags."
+  - "The created AgentInboxItem.tags contains motion:motion-0070 and route:ARCHITECT."
+  - "activate-motion.mjs --motion motion-0070 --create run a second time exits 1
+    and prints the existing packet/inbox IDs."
+  - "node --check portal/scripts/activate-motion.mjs passes."
+  - "pnpm -C portal typecheck passes."
+  - "No script or source files are changed. Only .nexus/motions/ artifacts are added."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

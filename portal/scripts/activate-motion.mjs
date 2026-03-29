@@ -136,8 +136,15 @@ async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoR
         process.exit(1);
     }
 
+    // Prisma v7 requires the PrismaPg adapter for PostgreSQL connections.
+    // Use DIRECT_URL first (bypasses transaction pooler), fall back to DATABASE_URL.
+    const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
     const { PrismaClient } = await import("@prisma/client");
-    const prisma = new PrismaClient();
+    const { PrismaPg } = await import("@prisma/adapter-pg");
+    const { default: pg } = await import("pg");
+    const pool = new pg.Pool({ connectionString });
+    const adapter = new PrismaPg(pool);
+    const prisma = new PrismaClient({ adapter });
 
     try {
         // Idempotency check: refuse if a live motion-tagged packet exists
@@ -200,6 +207,7 @@ async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoR
         process.exit(0);
     } finally {
         await prisma.$disconnect();
+        await pool.end();
     }
 }
 
