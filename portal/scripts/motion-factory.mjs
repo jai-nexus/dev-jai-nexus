@@ -374,6 +374,68 @@ function printPreviewFiles({
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Execution surface reader (read-only, derived display state)
+// ──────────────────────────────────────────────────────────────────────────────
+
+async function safeJsonRead(filePath) {
+    if (!(await exists(filePath))) return { data: null, error: null };
+    try {
+        const raw = await readText(filePath);
+        const obj = JSON.parse(raw);
+        if (!obj || typeof obj !== "object") return { data: null, error: "parsed value is not an object" };
+        return { data: obj, error: null };
+    } catch (err) {
+        return { data: null, error: err.message || String(err) };
+    }
+}
+
+async function readExecutionSurface(motionDir) {
+    const decisionPath = path.join(motionDir, "decision.yaml");
+    let governance_status = null;
+    if (await exists(decisionPath)) {
+        const dec = safeYamlLoad(await readText(decisionPath), "decision.yaml");
+        if (dec?.status) governance_status = String(dec.status).trim();
+    }
+
+    const handoff = await safeJsonRead(path.join(motionDir, "execution.handoff.json"));
+    const handoff_exists = handoff.data !== null || handoff.error !== null;
+    const handoff_status = handoff.data?.status ? String(handoff.data.status) : null;
+    const handoff_id = handoff.data?.handoff_id ? String(handoff.data.handoff_id) : null;
+    const issued_at = handoff.data?.issued_at ? String(handoff.data.issued_at) : null;
+    const handoff_error = handoff.error || null;
+
+    const receipt = await safeJsonRead(path.join(motionDir, "execution.receipt.json"));
+    const receipt_exists = receipt.data !== null || receipt.error !== null;
+    const receipt_status = receipt.data?.status ? String(receipt.data.status) : null;
+    const receipt_id = receipt.data?.receipt_id ? String(receipt.data.receipt_id) : null;
+    const actor = receipt.data?.actor ? String(receipt.data.actor) : null;
+    const acknowledged_at = receipt.data?.acknowledged_at ? String(receipt.data.acknowledged_at) : null;
+    const started_at = receipt.data?.started_at ? String(receipt.data.started_at) : null;
+    const finished_at = receipt.data?.finished_at ? String(receipt.data.finished_at) : null;
+    const receipt_error = receipt.error || null;
+
+    let execution_summary;
+    if (handoff_error || receipt_error) {
+        execution_summary = "INVALID_EXECUTION_ARTIFACT";
+    } else if (receipt_exists && receipt_status) {
+        execution_summary = `RECEIPT_${receipt_status.toUpperCase()}`;
+    } else if (handoff_exists && handoff_status) {
+        execution_summary = `HANDOFF_${handoff_status.toUpperCase()}`;
+    } else if (governance_status && governance_status.toUpperCase() === "RATIFIED") {
+        execution_summary = "RATIFIED_NO_HANDOFF";
+    } else {
+        execution_summary = "NO_EXECUTION_STATE";
+    }
+
+    return {
+        governance_status,
+        handoff_exists, handoff_status, handoff_id, issued_at, handoff_error,
+        receipt_exists, receipt_status, receipt_id, actor, acknowledged_at, started_at, finished_at, receipt_error,
+        execution_summary,
+    };
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Candidate enumeration
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -511,7 +573,10 @@ async function readRecentMotions(repoRoot, motionDirs, window) {
             if (dec?.status) status = String(dec.status).trim();
         }
 
-        results.push({ motion_id: dir, title, status });
+        const execution = await readExecutionSurface(
+            path.join(repoRoot, ".nexus", "motions", dir)
+        );
+        results.push({ motion_id: dir, title, status, execution });
     }
 
     return results;
@@ -654,7 +719,31 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
     log(``);
     log(`Recent motions:`);
     for (const m of context.recent_motions) {
-        log(`  ${m.motion_id}: ${m.title} [${m.status}]`);
+        const exec = m.execution?.execution_summary || "NO_EXECUTION_STATE";
+        log(`  ${m.motion_id}: ${m.title} [${m.status}] -> ${exec}`);
+
+        if (m.execution?.handoff_exists) {
+            log(
+                `    handoff: ${m.execution.handoff_status || "(unknown)"} ` +
+                `${m.execution.handoff_id ? `[${m.execution.handoff_id}]` : ""}`
+            );
+        }
+
+        if (m.execution?.receipt_exists) {
+            log(
+                `    receipt: ${m.execution.receipt_status || "(unknown)"} ` +
+                `${m.execution.receipt_id ? `[${m.execution.receipt_id}]` : ""}` +
+                `${m.execution.actor ? ` actor=${m.execution.actor}` : ""}`
+            );
+        }
+
+        if (m.execution?.handoff_error) {
+            log(`    handoff_error: ${m.execution.handoff_error}`);
+        }
+
+        if (m.execution?.receipt_error) {
+            log(`    receipt_error: ${m.execution.receipt_error}`);
+        }
     }
     log(``);
     log(`Recent candidates:`);
@@ -705,7 +794,7 @@ async function contextCommand({ repoRoot, intent, jsonOutput }) {
 // Status command
 // ──────────────────────────────────────────────────────────────────────────────
 
-function buildStatusSnapshot({ repoRoot, branch, motionInventory, candidateDiscovery }) {
+function buildStatusSnapshot({ repoRoot, branch, motionInventory, candidateDiscovery, executionSummary }) {
     const openaiKeyPresent = !!process.env.OPENAI_API_KEY;
     const anthropicKeyPresent = !!process.env.ANTHROPIC_API_KEY;
 
@@ -759,6 +848,9 @@ function buildStatusSnapshot({ repoRoot, branch, motionInventory, candidateDisco
                 }
                 : null,
         },
+        post_ratification_execution: executionSummary || {
+            ratified_count: 0, handoff_count: 0, receipt_count: 0, invalid_count: 0, recent: [],
+        },
         workflow: {
             placeholder_first: true,
             structural_files_deterministic: true,
@@ -776,11 +868,27 @@ async function statusCommand({ repoRoot, jsonOutput }) {
 
     const candidateDiscovery = await enumerateCandidates(repoRoot);
 
+    const recentMotions = await readRecentMotions(repoRoot, motionDirs, RECENT_MOTION_WINDOW);
+    const executionSummary = {
+        ratified_count: recentMotions.filter((m) => m.status?.toUpperCase() === "RATIFIED").length,
+        handoff_count: recentMotions.filter((m) => m.execution?.handoff_exists).length,
+        receipt_count: recentMotions.filter((m) => m.execution?.receipt_exists).length,
+        invalid_count: recentMotions.filter((m) => m.execution?.execution_summary === "INVALID_EXECUTION_ARTIFACT").length,
+        recent: recentMotions
+            .filter((m) => m.execution?.execution_summary && m.execution.execution_summary !== "NO_EXECUTION_STATE")
+            .map((m) => ({
+                motion_id: m.motion_id,
+                governance_status: m.execution?.governance_status || m.status,
+                execution_summary: m.execution?.execution_summary,
+            })),
+    };
+
     const status = buildStatusSnapshot({
         repoRoot,
         branch,
         motionInventory,
         candidateDiscovery,
+        executionSummary,
     });
 
     if (jsonOutput) {
@@ -841,6 +949,18 @@ async function statusCommand({ repoRoot, jsonOutput }) {
         log(`  Most recent:     ${status.candidates.most_recent.candidateId}`);
     } else {
         log(`  Most recent:     (none)`);
+    }
+    log(``);
+    log(`Post-ratification execution:`);
+    if (status.post_ratification_execution.recent.length > 0) {
+        for (const m of status.post_ratification_execution.recent) {
+            log(`  ${m.motion_id}: ${m.governance_status} → ${m.execution_summary}`);
+        }
+    } else {
+        log(`  (no execution state in recent motions)`);
+    }
+    if (status.post_ratification_execution.invalid_count > 0) {
+        log(`  ⚠  ${status.post_ratification_execution.invalid_count} motion(s) have malformed execution artifacts`);
     }
     log(``);
     log(`Workflow:`);
