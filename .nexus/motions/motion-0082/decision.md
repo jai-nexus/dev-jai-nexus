@@ -1,43 +1,22 @@
-# Decision: bounded loop coherence gate
+# Decision - motion-0082
 
-**Motion:** motion-0082
-**Status:** DRAFT
-**Date:** 2026-03-30
+## Status
+RATIFIED
 
 ## Summary
+Motion `motion-0082` is ratified.
 
-Motion `motion-0082` is a DRAFT WS-5 phase-1 implementation slice.
-
-`portal/src/app/operator/work/[id]/page.tsx` is modified to compute and
-surface a loop coherence verdict for motion-linked packets. The verdict
-(COHERENT / PROGRESSING / INCOHERENT / NOT_GOVERNED) is shown as a chip
-with reasons in the existing Governing Motion section.
-
-## Outcome
-
-For packet 880 / motion-0070 at `/operator/work/<id>`, the Governing Motion
-section now shows a coherence verdict of COHERENT (emerald) — confirming the
-first fully closed governed loop in dev-jai-nexus.
+The loop coherence gate is accepted as a bounded WS-5 phase-1 implementation:
+- `computeLoopCoherence` inline function added to operator work detail page
+- Five coherence conditions checked: motion identity, RATIFIED decision, ISSUED handoff,
+  execution evidence (architect/builder/verifier), and terminal closure (WORK_APPROVED + COMPLETED receipt)
+- Coherence row added to existing Governing Motion section with verdict chip and reasons
+- For packet 880 / motion-0070: verdict = COHERENT (all 5 conditions met)
 
 ## Evidence
-
-- `portal/src/app/operator/work/[id]/page.tsx` modified per motion-0082 proposal
+- Commit `8bfbb43 feat(loop): add loop coherence gate (#41)`
+- Governing Motion section shows verdict=COHERENT for packet 880
 - `pnpm -C portal typecheck` PASS
-- Coherence row rendered in Governing Motion section for motion-linked packets
-- Non-motion-linked packets unchanged
-
-## Constraints honored
-
-- Only `portal/src/app/operator/work/[id]/page.tsx` changed
-- No schema migration
-- No new DB queries
-- No new file reads
-- No enforcement — gate is observational only
-- No new page routes
-- No shared utility file (inline pattern)
-- No agent runtime changes
 
 ## Notes
-
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Closes WS-5. The Q2 governed loop activation arc is fully implemented and self-consistent.
