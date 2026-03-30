@@ -1,26 +1,81 @@
-import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
 import {
     BaseAgentRuntime,
     type AgentQueueItem,
     type WorkPacketRuntimeContext,
 } from "@/lib/agentRuntime";
 import { applyPacketRouteAction } from "@/lib/work/workPacketActions";
+import { getMotionFromTags } from "@/lib/work/workPacketContract";
 
-function compactText(input: string, max: number): string {
-    const s = String(input ?? "").trim().replace(/\s+/g, " ");
-    return s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1))}…`;
+type MotionContext = {
+    motionId: string;
+    title: string;
+    executionPlan: string;
+};
+
+function findRepoRoot(startDir: string): string | null {
+    let cur = startDir;
+    for (let i = 0; i < 8; i++) {
+        if (fs.existsSync(path.join(cur, ".nexus"))) return cur;
+        const parent = path.dirname(cur);
+        if (parent === cur) break;
+        cur = parent;
+    }
+    return null;
+}
+
+function loadMotionContext(inboxTags: string[]): MotionContext | null {
+    const motionId = getMotionFromTags(inboxTags);
+    if (!motionId) return null;
+
+    const repoRoot = findRepoRoot(process.cwd());
+    if (!repoRoot) {
+        console.warn(`[verifierRuntime] Cannot load motion context for ${motionId}: repo root not found`);
+        return null;
+    }
+
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+    const motionYamlPath = path.join(motionDir, "motion.yaml");
+    const executionMdPath = path.join(motionDir, "execution.md");
+
+    let title = motionId;
+    try {
+        if (fs.existsSync(motionYamlPath)) {
+            const raw = fs.readFileSync(motionYamlPath, "utf8");
+            const m = raw.match(/^title:\s*["']?(.+?)["']?\s*$/m);
+            if (m?.[1]) title = m[1].trim();
+        }
+    } catch {
+        // fallback: use motionId as title
+    }
+
+    let executionPlan = "";
+    try {
+        if (fs.existsSync(executionMdPath)) {
+            executionPlan = fs.readFileSync(executionMdPath, "utf8");
+        } else {
+            console.warn(`[verifierRuntime] execution.md absent for ${motionId} — verify context will be empty`);
+        }
+    } catch {
+        console.warn(`[verifierRuntime] Could not read execution.md for ${motionId}`);
+    }
+
+    return { motionId, title, executionPlan };
 }
 
 function packetLabel(packet: WorkPacketRuntimeContext): string {
     return packet.nhId ?? `workPacket#${packet.id}`;
 }
 
-function buildVerificationPayload(packet: WorkPacketRuntimeContext, agentNhId: string) {
-    return {
+function buildVerificationPayload(
+    packet: WorkPacketRuntimeContext,
+    agentNhId: string,
+    motionContext?: MotionContext | null,
+): Record<string, unknown> {
+    const base = {
         schema: "verifier-runtime-0.1",
         contract_version: "work-packet-0.1",
         artifactKind: "debug.verify",
@@ -30,6 +85,29 @@ function buildVerificationPayload(packet: WorkPacketRuntimeContext, agentNhId: s
         repoName: packet.repoName,
         requestedRole: packet.requestedRole,
         assigneeNhId: packet.assigneeNhId,
+    };
+
+    if (motionContext) {
+        return {
+            ...base,
+            motionId: motionContext.motionId,
+            motionTitle: motionContext.title,
+            executionPlan: motionContext.executionPlan || "(execution.md absent)",
+            verify: {
+                kind: "synthetic-verifier-proof",
+                summary: `Verifier evidence recorded for ${packetLabel(packet)} (governed by ${motionContext.motionId})`,
+                checks: [
+                    `Verifier runtime claimed a motion-linked packet (${motionContext.motionId}).`,
+                    "Verification evidence is governed by the motion's execution.md.",
+                    "Packet is now ready for operator review handoff.",
+                ],
+                handoffTarget: "OPERATOR_REVIEW",
+            },
+        };
+    }
+
+    return {
+        ...base,
         verify: {
             kind: "synthetic-verifier-proof",
             summary: `Verifier evidence recorded for ${packetLabel(packet)}`,
@@ -84,6 +162,8 @@ export class VerifierAgentRuntime extends BaseAgentRuntime {
                 );
             }
 
+            const motionContext = loadMotionContext(loaded.inboxTags);
+
             await this.emitDebugArtifact(
                 tx as Parameters<BaseAgentRuntime["emitDebugArtifact"]>[0],
                 {
@@ -92,7 +172,7 @@ export class VerifierAgentRuntime extends BaseAgentRuntime {
                     repoId: loaded.repoId,
                     workPacketId: loaded.id,
                     summary: `Verifier evidence recorded: ${packetLabel(loaded)}`,
-                    payload: buildVerificationPayload(loaded, this.nhId),
+                    payload: buildVerificationPayload(loaded, this.nhId, motionContext),
                 },
             );
 

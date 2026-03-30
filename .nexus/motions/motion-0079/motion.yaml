@@ -1,0 +1,92 @@
+motion_id: "motion-0079"
+title: "bounded verifier runtime readiness for motion-linked packets"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-2"
+phase: "phase-5"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Complete WS-2 in one bounded branch by making the verifier runtime
+  motion-context-aware and live-proof-ready. When a packet carries a
+  canonical motion tag, the verifier runtime reads the governing motion's
+  motion.yaml title and execution.md, and produces a motion-grounded
+  debug.verify artifact. A symmetric enqueue-verifier-packet.mjs script
+  bridges the same queue-deletion gap present in the BUILDER stage.
+  Non-motion-linked packets preserve existing behavior. No operator UI,
+  receipt closure, or schema changes.
+
+problem: >
+  The verifier runtime already uses the correct transaction pattern,
+  loadWorkPacketContext, emitDebugArtifact, and canClaimCandidate override
+  (established before this program). What is missing is motion-context
+  awareness: verifier has no loadMotionContext call and its
+  buildVerificationPayload produces a generic stub regardless of motion
+  linkage. Additionally, applyPacketRouteAction("ROUTE_VERIFIER",
+  clearAssignee=true) deletes the AgentQueueItem via
+  syncAgentQueueItemForPacket(null), leaving no queue row for claimNext()
+  to find. Packet 880 (motion-0070) is now at route:VERIFIER and exhibits
+  both gaps.
+
+proposal:
+  - "Add fs, path, getMotionFromTags imports to verifierRuntime.ts."
+  - "Add MotionContext type, findRepoRoot, and loadMotionContext functions
+    matching the architect/builder pattern exactly."
+  - "Update buildVerificationPayload to accept an optional MotionContext
+    argument and produce a motion-grounded verify payload when present."
+  - "Call loadMotionContext(loaded.inboxTags) inside execute() after
+    loadWorkPacketContext, before emitDebugArtifact."
+  - "Remove dead imports (crypto, Prisma, assertSotEventV01) and dead
+    compactText helper that were left in verifierRuntime.ts and are no
+    longer used."
+  - "Add portal/scripts/enqueue-verifier-packet.mjs as a symmetric
+    parallel of enqueue-builder-packet.mjs for the VERIFIER role."
+  - "Script validates motion is RATIFIED, finds live motion-tagged
+    AgentInboxItem, guards route:VERIFIER, auto-detects VERIFIER agent
+    (6.0.12), upserts AgentQueueItem with repoScope=[targetRepo]."
+
+non_goals:
+  - "Do not change architect or builder runtimes."
+  - "Do not change agentRuntime.ts base class."
+  - "Do not change operator UI."
+  - "Do not add schema migration."
+  - "Do not add receipt closure."
+  - "Do not redesign the debug artifact shape or add new SoT event kinds."
+  - "Do not add a broad motion context subsystem."
+  - "Do not read the full motion package (policy.yaml, vote.json, etc.)."
+  - "Do not change workPacketActions.ts or workPacketQueue.ts."
+  - "Do not change enqueue-motion-packet.mjs or enqueue-builder-packet.mjs."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "node --check portal/scripts/enqueue-verifier-packet.mjs passes."
+  - "loadMotionContext with non-motion-linked tags returns null."
+  - "loadMotionContext with motion-linked tags and absent execution.md logs a
+    warning and returns a MotionContext with executionPlan=''."
+  - "buildVerificationPayload with a valid MotionContext produces a payload
+    with motionId, motionTitle, and executionPlan fields."
+  - "buildVerificationPayload with null motionContext produces the existing
+    generic verify payload (regression-free)."
+  - "enqueue-verifier-packet.mjs --motion motion-0070 creates an
+    AgentQueueItem for agent 6.0.12 with repoScope=['dev-jai-nexus']."
+  - "pnpm -C portal exec tsx scripts/run-verifier-once.ts 6.0.12 claims and
+    processes the motion-0070 packet and exits 0."
+  - "The resulting debug.verify SoT event payload contains motionId,
+    motionTitle, and executionPlan fields."
+  - "No files outside portal/src/lib/work/verifierRuntime.ts and
+    portal/scripts/enqueue-verifier-packet.mjs are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
