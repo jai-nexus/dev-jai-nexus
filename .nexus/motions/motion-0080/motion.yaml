@@ -1,0 +1,84 @@
+motion_id: "motion-0080"
+title: "bounded operator motion state surface"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-3"
+phase: "phase-1"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Surface the minimum governed motion state on the existing operator work
+  packet detail page so the loop feels alive without manual .nexus/ file
+  inspection. A "Governing Motion" section is added to the detail page for
+  motion-linked packets, showing: motionId, motion title, council decision
+  status, handoff status, and receipt status. Non-motion-linked packets are
+  unaffected. No schema migration. No receipt closure actions. No operator
+  IA redesign.
+
+problem: >
+  WS-2 proved the full architect → builder → verifier execution chain on
+  packet 880 / motion-0070, which has now reached OPERATOR_REVIEW. The
+  operator can see the packet in /operator/work but the governing motion
+  context is not legible without manually reading .nexus/ files. The
+  motion tag is shown raw in the "tags" line of the Contract Summary card,
+  but the council decision state, handoff state, and receipt state are not
+  surfaced anywhere on the operator surface. The loop exists but does not
+  look alive.
+
+proposal:
+  - "Add import fs from 'node:fs' and import path from 'node:path' to the
+    detail page (already opts into nodejs runtime via export const runtime =
+    'nodejs')."
+  - "Add getMotionFromTags to the existing workPacketContract import in the
+    detail page."
+  - "Add findRepoRoot, GoverningMotionState type, and loadGoverningMotionState
+    helper function inline in the detail page, using the same pattern as the
+    runtime motion loaders."
+  - "Call loadGoverningMotionState(inboxTags) in the server component body
+    after inboxTags is derived from the latest inbox item."
+  - "Add a 'Governing Motion' section to the detail page JSX, rendered only
+    when governingMotion is non-null, showing: motionId, title, council
+    decision chip, handoff chip, receipt chip."
+  - "Use inline conditional Tailwind classes consistent with the existing page
+    chip patterns (emerald=RATIFIED/COMPLETED, sky=ISSUED, amber=other, slate=absent)."
+  - "All file reads are synchronous with try/catch; missing or unreadable
+    artifacts produce null for that field and the UI shows the fallback value."
+
+non_goals:
+  - "Do not add receipt closure actions."
+  - "Do not change the list page (/operator/work)."
+  - "Do not redesign the existing Contract Summary, Control State, or Lane
+    sections."
+  - "Do not create a new page route."
+  - "Do not add a shared utility file for motion context loading."
+  - "Do not change any runtime (architect/builder/verifier)."
+  - "Do not add schema migration."
+  - "Do not add new API routes."
+  - "Do not surface motion state on the list page in this slice."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "For packet 880 / motion-0070, the detail page renders a 'Governing Motion'
+    section showing motionId=motion-0070, title from motion.yaml, decision
+    status=RATIFIED (emerald chip), handoff status=ISSUED (sky chip), and
+    receipt status=pending (slate chip)."
+  - "For a non-motion-linked packet, the detail page renders no 'Governing
+    Motion' section and all existing content is unchanged."
+  - "Missing motion artifacts (no decision.yaml, no handoff file) produce
+    '—' for those fields, not a page error."
+  - "Only portal/src/app/operator/work/[id]/page.tsx is changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
