@@ -2,47 +2,68 @@ version: "0.1"
 artifact: "project-intake-schema"
 program: "q3-bootstrap-planning"
 workstream: "WS-A"
+motion: "motion-0085"
 
 # Schema for the minimum project intake object.
-# Every field marked "required" must be present before bootstrap decisions can be made.
-# Fields marked "optional" have defaults specified.
+# Classification tiers:
+#   required_at_intake  — must be present before WS-B/C/D planning can begin.
+#   optional            — has a sensible default; may be omitted for standard
+#                         greenfield projects.
+#   derived_by_planner  — not in the intake object; computed by a downstream
+#                         workstream. Listed in derived_fields for reference.
 
 fields:
   project_id:
     type: string
-    required: true
+    classification: required_at_intake
     format: "kebab-case"
     description: "Machine-safe project identifier. Used in NH IDs, artifact paths, and scope entries."
     example: "offbook-ai"
 
   project_name:
     type: string
-    required: true
+    classification: required_at_intake
     description: "Human-readable project name."
     example: "OffBook AI"
 
   domain:
     type: string
-    required: true
+    classification: required_at_intake
     format: "dns-like"
     description: "Canonical domain for this project. Used in target_domain fields across motions."
     example: "offbook.ai"
 
+  project_type:
+    type: enum
+    classification: required_at_intake
+    values: ["greenfield", "migration", "extension"]
+    description: >
+      greenfield: net-new project, no existing repos or NH root.
+      migration: existing project being brought under JAI NEXUS governance;
+        may have existing repos, code, and an existing NH root.
+      extension: new project that extends an existing JAI NEXUS project;
+        may share governance-resident infrastructure with a parent project.
+      WS-C uses project_type to determine entry wave.
+      WS-B uses project_type to determine whether an NH root must be assigned.
+
   topology:
     type: object
-    required: true
+    classification: required_at_intake
     fields:
       shape:
         type: enum
         values: ["monorepo", "polyrepo"]
-        required: true
+        classification: required_at_intake
         description: >
           Determines whether governance artifacts live in a single root or are
           distributed across repos with a designated governance-resident repo.
+          WS-C derives execution_profile.scope from this field:
+            monorepo → repo_local
+            polyrepo → cross_repo
 
       repos:
         type: array
-        required: true
+        classification: required_at_intake
         min_items: 1
         item_schema:
           name:
@@ -60,46 +81,39 @@ fields:
           governance_resident:
             type: boolean
             required: true
+            topology_note: >
+              monorepo: always true (implicit; only one repo exists).
+              polyrepo: must be explicitly true on exactly one repo.
             description: >
               If true, .nexus/ lives in this repo. Exactly one repo per project
-              should be governance_resident=true. For monorepo, always true.
+              must be governance_resident=true.
 
   execution_profile:
     type: object
-    required: true
+    classification: optional
     fields:
       class:
         type: enum
         values: ["artifact_only", "live_patch", "hybrid"]
-        required: true
+        classification: optional
+        default: "artifact_only"
         description: >
           artifact_only: agents emit durable artifacts but do not apply patches.
           live_patch: agents apply patches directly.
           hybrid: artifact_only for governance, live_patch for execution lanes.
-        default: "artifact_only"
-
-      scope:
-        type: enum
-        values: ["repo_local", "cross_repo"]
-        required: true
-        description: >
-          repo_local: motions and execution stay within a single repo.
-          cross_repo: motions may target multiple repos; governance-resident repo
-          coordinates.
-        default: "repo_local"
 
   required_roles:
     type: array
-    required: true
+    classification: required_at_intake
     values: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR", "LIBRARIAN"]
+    default: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR"]
     description: >
-      Execution roles that must be staffed for this project. At minimum,
-      ARCHITECT, BUILDER, VERIFIER, and OPERATOR are required for a full
-      governed execution loop.
+      Execution roles that must be staffed for this project. Default covers
+      the minimum viable governed execution loop.
 
   optional_roles:
     type: array
-    required: false
+    classification: optional
     default: []
     values: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR", "LIBRARIAN"]
     description: "Execution roles that are useful but not required for Wave 0."
@@ -107,36 +121,41 @@ fields:
   staffing_tier:
     type: enum
     values: ["minimum_viable", "expanded", "panel"]
-    required: true
+    classification: required_at_intake
+    default: "minimum_viable"
     description: >
       minimum_viable: 1 agent per required role. No multi-slot panels.
       expanded: role.min_slots per role (from slot-policy.yaml).
       panel: role.max_slots per role; full comparison panel active.
-    default: "minimum_viable"
 
   nh_root:
     type: string
-    required: false
+    classification: optional
     description: >
       NH identifier root for this project (e.g., "7.0" for a new project root).
-      If absent, must be assigned by the Agent Demand Planner (WS-B) before
+      If absent, must be assigned by WS-B (Agent Demand Planner) before
       agency.yaml can be generated.
+      For migration projects, this may be an existing root.
     example: "7.0"
-
-  bootstrap_wave:
-    type: integer
-    required: false
-    default: 0
-    description: "Which wave this project enters at. 0 for new projects."
-
-  governance_mode:
-    type: enum
-    values: ["motion_first"]
-    required: false
-    default: "motion_first"
-    description: "Always motion_first for JAI NEXUS projects."
 
   notes:
     type: string
-    required: false
+    classification: optional
     description: "Free-text notes about this project's specific constraints or context."
+
+# --- Derived fields (not in intake; computed by downstream workstreams) ---
+# Listed here for planner reference only. Do not include in intake objects.
+
+derived_fields:
+  execution_profile.scope:
+    derived_by: "WS-C (Topology and Wave Planner)"
+    rule: "monorepo → repo_local; polyrepo → cross_repo"
+
+  bootstrap_wave:
+    derived_by: "WS-C (Topology and Wave Planner)"
+    rule: "greenfield → 0; migration/extension → determined by existing governance state"
+
+  governance_mode:
+    platform_invariant: true
+    value: "motion_first"
+    note: "All JAI NEXUS projects use motion_first governance. Not a per-project decision."

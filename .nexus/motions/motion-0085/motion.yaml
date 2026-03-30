@@ -1,0 +1,65 @@
+motion_id: "motion-0085"
+title: "Bounded Project Intake Canon v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "planning-child"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-A"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  path: ".nexus/planning/project-intake.schema.yaml"
+
+summary: >
+  Refine the project-intake.schema.yaml draft produced under motion-0084 into
+  a tighter v0.1 canon. Classify every field as required-at-intake, optional,
+  or derived-by-planner. Remove fields that are invariants or computed outputs.
+  Add project_type (greenfield | migration | extension). Pressure-test the
+  result against the OffBook.ai example to confirm the schema is decision-useful.
+
+problem: >
+  The draft schema produced under motion-0084 includes fields that are either
+  platform invariants (governance_mode), always-constant for new projects
+  (bootstrap_wave=0), or computable from other fields (execution_profile.scope
+  from topology.shape). Including these in the intake object increases noise
+  and invites inconsistent values. The field classification is also implicit —
+  planners cannot tell at a glance which fields block demand planning and which
+  can be deferred.
+
+proposal:
+  - "Remove execution_profile.scope — derived from topology.shape by WS-C."
+  - "Remove bootstrap_wave — always 0 for greenfield; not a decision input."
+  - "Remove governance_mode — platform invariant (always motion_first); not
+    a per-project decision."
+  - "Add project_type (required): greenfield | migration | extension."
+  - "Classify every remaining field as: required_at_intake, optional, or
+    derived_by_planner."
+  - "Add explicit mono_specific and polyrepo_specific annotations where
+    topology shape changes field semantics."
+  - "Confirm OffBook.ai can be fully represented by the refined schema."
+  - "Update .nexus/planning/project-intake.schema.yaml to v0.1 canon."
+
+non_goals:
+  - "Do not implement any generator or tooling."
+  - "Do not define WS-B (agent demand) rules in this schema."
+  - "Do not start OffBook.ai implementation."
+  - "Do not change agent-demand-matrix.schema.yaml or offbook-ai-intake-example.yaml."
+
+success_criteria:
+  - "project-intake.schema.yaml v0.1 has no derived or invariant fields."
+  - "Every field is annotated with its classification tier."
+  - "OffBook.ai fits cleanly with no schema violations."
+  - "A planner reading only the intake object can determine: NH root need,
+    governance-resident repo, required agents, and execution profile class."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
