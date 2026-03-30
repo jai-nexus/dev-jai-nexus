@@ -1,0 +1,80 @@
+motion_id: "motion-0076"
+title: "bounded architect queue readiness for motion-linked packets"
+
+status: "proposed"
+created_at: "2026-03-29T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-2"
+phase: "phase-2"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Remove the two confirmed blockers that prevent architect runtime from
+  claiming a motion-linked work packet. Add a narrow
+  enqueue-motion-packet.mjs script that creates an AgentQueueItem for an
+  existing motion-linked packet, using the motion's target repo as the
+  repoScope value. After this slice the live architect runtime proof
+  (run-architect-once.ts) can be executed and produces a motion-grounded
+  debug.plan artifact.
+
+problem: >
+  The WS-1 bridge (motion-0073) creates WorkPacket + AgentInboxItem but no
+  AgentQueueItem. The architect runtime claimNext() queries AgentQueueItem
+  exclusively. Additionally, the created WorkPacket has repoId=null, which
+  causes claimNext() to fall through to a null repoName fallback and skip
+  the packet. Two separate blockers prevent the live architect proof that
+  motion-0075 deferred: no queue item, and no repo scope to validate against.
+
+proposal:
+  - "Add portal/scripts/enqueue-motion-packet.mjs that finds the existing
+    motion-linked AgentInboxItem and upserts an AgentQueueItem with the
+    correct agentNhId and repoScope=[targetRepo]."
+  - "Derive agentNhId by auto-detecting the first ARCHITECT-capable agent
+    from config/agency.yaml, or from --agent <nhId> override."
+  - "Derive targetRepo from the motion's decision.yaml target_repo field
+    or motion.yaml target.repo field."
+  - "Store repoScope=[targetRepo] on the queue item. This satisfies the
+    claimNext() scope validation without requiring repoId on the WorkPacket."
+  - "Use upsert semantics: if a queue item already exists for the packet,
+    reset it to PENDING with the correct agent and scope."
+  - "Validate that the motion is RATIFIED and the AgentInboxItem exists
+    before writing anything."
+  - "Print the resulting queue item ID and the exact command to run the
+    architect proof."
+
+non_goals:
+  - "Do not set repoId on the WorkPacket."
+  - "Do not change activate-motion.mjs."
+  - "Do not change architectRuntime.ts."
+  - "Do not change agentRuntime.ts."
+  - "Do not change workPacketQueue.ts or workPacketActions.ts."
+  - "Do not add schema migration."
+  - "Do not add builder or verifier queue readiness (this slice is ARCHITECT only)."
+  - "Do not add operator UI changes."
+  - "Do not add receipt closure."
+
+success_criteria:
+  - "node --check portal/scripts/enqueue-motion-packet.mjs passes."
+  - "pnpm -C portal typecheck passes."
+  - "enqueue-motion-packet.mjs --motion motion-0070 creates an AgentQueueItem
+    for agent 6.0.10 with repoScope=['dev-jai-nexus'] and exits 0."
+  - "Running enqueue-motion-packet.mjs --motion motion-0070 a second time
+    upserts the queue item and exits 0 (idempotent)."
+  - "pnpm -C portal exec tsx scripts/run-architect-once.ts 6.0.10 claims
+    and processes the motion-linked packet and exits 0."
+  - "The resulting debug.plan SoT event payload contains motionId,
+    motionTitle, and executionPlan fields (motion-grounded)."
+  - "No files outside portal/scripts/enqueue-motion-packet.mjs are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
