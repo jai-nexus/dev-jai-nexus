@@ -1,0 +1,103 @@
+{
+    "version": "0.1",
+    "artifact": "motion-packet-schema",
+    "name": "motion-packet",
+    "type": "object",
+    "required": [
+        "motion_id",
+        "title",
+        "target",
+        "problem",
+        "proposal",
+        "non_goals",
+        "success_criteria",
+        "decision_class"
+    ],
+    "properties": {
+        "motion_id": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "target": {
+            "type": "object",
+            "required": [
+                "domain",
+                "repo"
+            ],
+            "properties": {
+                "domain": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                }
+            }
+        },
+        "problem": {
+            "type": "string"
+        },
+        "proposal": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "non_goals": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "success_criteria": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "decision_class": {
+            "type": "string",
+            "enum": [
+                "local_patch",
+                "execution_flow",
+                "repo_architecture",
+                "governance",
+                "context_substrate",
+                "constitutional"
+            ]
+        },
+        "affected_surfaces": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "risks": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "dependencies": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "proof_plan": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "constraints": [
+        "A motion packet must remain bounded and evaluable by a council.",
+        "A motion packet must separate problem, proposal, and non-goals clearly.",
+        "Decision class should help determine evaluation depth and required roles.",
+        "Motion packets are not replacements for full motion folders; they are bounded reasoning objects."
+    ]
+}

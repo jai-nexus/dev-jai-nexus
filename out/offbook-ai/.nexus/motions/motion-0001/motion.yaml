@@ -1,0 +1,20 @@
+motion_id: motion-0001
+title: Inaugural Governance Motion — OffBook AI
+status: proposed
+created_at: 2026-03-30T18:44:45.847Z
+owner: offbook-ai
+kind: governance-inaugural
+program: offbook-ai-bootstrap
+target:
+  domain: offbook.ai
+  repo: offbook-core
+summary: "<!-- TODO: describe the inaugural governance scope and intent -->"
+proposal: []
+non_goals: []
+success_criteria: []
+vote:
+  mode: unanimous_consent
+  required_roles:
+    - proposer
+    - challenger
+    - arbiter

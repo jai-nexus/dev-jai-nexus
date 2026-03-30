@@ -1,0 +1,4 @@
+version: "0.1"
+description: Local manifest for council runner in offbook-ai
+notes:
+  - Currently used as an existence marker; content will be wired later.
