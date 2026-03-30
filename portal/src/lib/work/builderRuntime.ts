@@ -1,22 +1,122 @@
-import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import { assertSotEventV01 } from "@/lib/contracts/sotEventV01";
-import { BaseAgentRuntime, type AgentQueueItem } from "@/lib/agentRuntime";
+import {
+    BaseAgentRuntime,
+    type AgentQueueItem,
+    type WorkPacketRuntimeContext,
+} from "@/lib/agentRuntime";
 import { applyPacketRouteAction } from "@/lib/work/workPacketActions";
+import { getMotionFromTags } from "@/lib/work/workPacketContract";
 
-type PacketSnapshot = {
-    id: number;
-    nhId: string;
+type MotionContext = {
+    motionId: string;
     title: string;
-    repoId: number | null;
-    repo: { name: string } | null;
+    executionPlan: string;
 };
 
-function compactText(input: string, max: number): string {
-    const s = String(input ?? "").trim().replace(/\s+/g, " ");
-    return s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1))}…`;
+function findRepoRoot(startDir: string): string | null {
+    let cur = startDir;
+    for (let i = 0; i < 8; i++) {
+        if (fs.existsSync(path.join(cur, ".nexus"))) return cur;
+        const parent = path.dirname(cur);
+        if (parent === cur) break;
+        cur = parent;
+    }
+    return null;
+}
+
+function loadMotionContext(inboxTags: string[]): MotionContext | null {
+    const motionId = getMotionFromTags(inboxTags);
+    if (!motionId) return null;
+
+    const repoRoot = findRepoRoot(process.cwd());
+    if (!repoRoot) {
+        console.warn(`[builderRuntime] Cannot load motion context for ${motionId}: repo root not found`);
+        return null;
+    }
+
+    const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+    const motionYamlPath = path.join(motionDir, "motion.yaml");
+    const executionMdPath = path.join(motionDir, "execution.md");
+
+    let title = motionId;
+    try {
+        if (fs.existsSync(motionYamlPath)) {
+            const raw = fs.readFileSync(motionYamlPath, "utf8");
+            const m = raw.match(/^title:\s*["']?(.+?)["']?\s*$/m);
+            if (m?.[1]) title = m[1].trim();
+        }
+    } catch {
+        // fallback: use motionId as title
+    }
+
+    let executionPlan = "";
+    try {
+        if (fs.existsSync(executionMdPath)) {
+            executionPlan = fs.readFileSync(executionMdPath, "utf8");
+        } else {
+            console.warn(`[builderRuntime] execution.md absent for ${motionId} — patch context will be empty`);
+        }
+    } catch {
+        console.warn(`[builderRuntime] Could not read execution.md for ${motionId}`);
+    }
+
+    return { motionId, title, executionPlan };
+}
+
+function packetLabel(packet: WorkPacketRuntimeContext): string {
+    return packet.nhId ?? `workPacket#${packet.id}`;
+}
+
+function buildPatchPayload(
+    packet: WorkPacketRuntimeContext,
+    agentNhId: string,
+    item: AgentQueueItem,
+    motionContext?: MotionContext | null,
+): Record<string, unknown> {
+    const base = {
+        schema: "debug-loop-0.1",
+        contract_version: "work-packet-0.1",
+        artifactKind: "debug.patch",
+        agentNhId,
+        queueItemId: item.id,
+        workPacketId: packet.id,
+        nhId: packet.nhId,
+        repo: packet.repoName,
+    };
+
+    if (motionContext) {
+        return {
+            ...base,
+            motionId: motionContext.motionId,
+            motionTitle: motionContext.title,
+            executionPlan: motionContext.executionPlan || "(execution.md absent)",
+            patch: {
+                kind: "synthetic-builder-proof",
+                summary: `Builder patch recorded for ${packet.nhId} (governed by ${motionContext.motionId})`,
+                notes: [
+                    `Builder runtime claimed a motion-linked work packet (${motionContext.motionId}).`,
+                    "Patch evidence is governed by the motion's execution.md.",
+                    "Packet is now ready for verifier routing.",
+                ],
+            },
+        };
+    }
+
+    return {
+        ...base,
+        patch: {
+            kind: "synthetic-builder-proof",
+            summary: `Builder patch recorded for ${packet.nhId}`,
+            notes: [
+                "Builder runtime claimed a queue-backed work packet.",
+                "Patch evidence was emitted as debug.patch.",
+                "Packet is now ready for verifier routing.",
+            ],
+        },
+    };
 }
 
 export class BuilderAgentRuntime extends BaseAgentRuntime {
@@ -37,14 +137,59 @@ export class BuilderAgentRuntime extends BaseAgentRuntime {
         }
     }
 
+    protected override async canClaimCandidate(
+        tx: Parameters<BaseAgentRuntime["loadWorkPacketContext"]>[0],
+        candidate: {
+            id: string;
+            workPacketId: number;
+            agentNhId: string;
+            status: string;
+            claimedAt: Date | null;
+            leaseExpiry: Date | null;
+            repoScope: string[] | null;
+        },
+        packet: WorkPacketRuntimeContext,
+    ): Promise<boolean> {
+        const baseOk = await super.canClaimCandidate(tx, candidate, packet);
+        if (!baseOk) return false;
+        return packet.requestedRole === "BUILDER";
+    }
+
     override async execute(item: AgentQueueItem): Promise<void> {
-        const packet = await this.loadPacket(item.workPacketId);
+        const packet = await (prisma as unknown as { $transaction: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T> }).$transaction(
+            async (tx) => {
+                const loaded = await this.loadWorkPacketContext(
+                    tx as Parameters<BaseAgentRuntime["loadWorkPacketContext"]>[0],
+                    item.workPacketId,
+                );
 
-        if (!packet) {
-            throw new Error(`Builder runtime could not find WorkPacket ${item.workPacketId}`);
-        }
+                if (!loaded) {
+                    throw new Error(`Builder runtime could not find WorkPacket ${item.workPacketId}`);
+                }
 
-        await this.emitPatchArtifact(packet, item);
+                if (loaded.requestedRole !== "BUILDER") {
+                    throw new Error(
+                        `Builder runtime claimed non-builder packet ${packetLabel(loaded)} (role=${loaded.requestedRole ?? "null"})`,
+                    );
+                }
+
+                const motionContext = loadMotionContext(loaded.inboxTags);
+
+                await this.emitDebugArtifact(
+                    tx as Parameters<BaseAgentRuntime["emitDebugArtifact"]>[0],
+                    {
+                        kind: "debug.patch",
+                        nhId: loaded.nhId,
+                        repoId: loaded.repoId,
+                        workPacketId: loaded.id,
+                        summary: `Builder patch recorded: ${packetLabel(loaded)}`,
+                        payload: buildPatchPayload(loaded, this.nhId, item, motionContext),
+                    },
+                );
+
+                return loaded;
+            },
+        );
 
         await this.complete(item, {
             note: "Builder runtime recorded patch evidence",
@@ -60,84 +205,6 @@ export class BuilderAgentRuntime extends BaseAgentRuntime {
                 name: `builder-runtime:${this.nhId}`,
             },
             note: `Builder runtime completed packet ${packet.nhId} and routed it to verifier.`,
-        });
-    }
-
-    private async loadPacket(workPacketId: number): Promise<PacketSnapshot | null> {
-        const packet = await prisma.workPacket.findUnique({
-            where: { id: workPacketId },
-            select: {
-                id: true,
-                nhId: true,
-                title: true,
-                repoId: true,
-                repo: {
-                    select: { name: true },
-                },
-            },
-        });
-
-        if (!packet) return null;
-
-        return {
-            id: packet.id,
-            nhId: packet.nhId,
-            title: packet.title,
-            repoId: packet.repoId ?? null,
-            repo: packet.repo ? { name: packet.repo.name } : null,
-        };
-    }
-
-    private async emitPatchArtifact(packet: PacketSnapshot, item: AgentQueueItem): Promise<void> {
-        const ts = new Date();
-        const eventId = crypto.randomUUID();
-
-        const payload = {
-            schema: "debug-loop-0.1",
-            contract_version: "work-packet-0.1",
-            artifactKind: "debug.patch",
-            agentNhId: this.nhId,
-            queueItemId: item.id,
-            workPacketId: packet.id,
-            nhId: packet.nhId,
-            repo: packet.repo?.name ?? null,
-            patch: {
-                kind: "synthetic-builder-proof",
-                summary: `Builder patch recorded for ${packet.nhId}`,
-                notes: [
-                    "Builder runtime claimed a queue-backed work packet.",
-                    "Patch evidence was emitted as debug.patch.",
-                    "Packet is now ready for verifier routing.",
-                ],
-            },
-        } satisfies Prisma.InputJsonValue;
-
-        const sotEvent = {
-            version: "0.1" as const,
-            ts: ts.toISOString(),
-            source: "jai-builder-runtime",
-            kind: "debug.patch",
-            summary: `Builder patch recorded: ${packet.nhId}`,
-            nhId: packet.nhId,
-            repoName: null,
-            domainName: null,
-            payload,
-        };
-
-        assertSotEventV01(sotEvent);
-
-        await prisma.sotEvent.create({
-            data: {
-                eventId,
-                ts,
-                source: sotEvent.source,
-                kind: sotEvent.kind,
-                nhId: packet.nhId,
-                summary: compactText(sotEvent.summary, 240),
-                payload: sotEvent as Prisma.InputJsonValue,
-                repoId: packet.repoId,
-                workPacketId: packet.id,
-            },
         });
     }
 }
