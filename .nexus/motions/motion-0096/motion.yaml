@@ -1,0 +1,77 @@
+motion_id: "motion-0096"
+title: "Bounded Staged Workstream Dispatch Activation v0 — OffBook.ai"
+
+status: "proposed"
+created_at: "2026-03-30T09:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "staged-activation"
+program: "offbook-ai-bootstrap"
+related_motions:
+  - "motion-0091"
+  - "motion-0093"
+  - "motion-0095"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - "out/offbook-ai/coverage-declaration.yaml"
+    - "portal/scripts/activate-staged-project.mjs"
+
+summary: >
+  Implement the thinnest bounded seam that converts the staged OffBook.ai
+  Wave 0 planning/dispatch declaration into a motion-linked work packet
+  entering the existing dev-jai-nexus governed execution lane. One new
+  script reads the coverage-declaration, derives all 10 planner-owned
+  dispatch handle fields, and creates a work packet tagged with
+  project:offbook-ai so the staged project is visible in operator surfaces.
+  Reuses activate-motion lane and architect queue exactly as proven by
+  motion-0070.
+
+problem: >
+  The OffBook.ai Wave 0 bootstrap is complete (motion-0093/0095). The
+  dispatch-integration spec (motion-0091) defines the dispatch handle surface
+  and the coverage-declaration schema captures all required fields. No script
+  exists yet to bridge: coverage-declaration → motion-linked work packet →
+  architect queue. The existing activate-motion.mjs works for dev-jai-nexus
+  governance motions but does not read a staged coverage-declaration and does
+  not emit a project:<project_id> tag. Without project linkage, the operator
+  cannot distinguish staged-project work packets in the work surface.
+
+proposal:
+  - "Author out/offbook-ai/coverage-declaration.yaml (operator Wave 0 declaration
+    for OffBook.ai, conforming to WS-E schema from motion-0091)."
+  - "Implement portal/scripts/activate-staged-project.mjs: reads coverage-declaration,
+    derives 10 planner-owned dispatch handle fields, validates completeness, creates
+    WorkPacket + AgentInboxItem with tags [motion:<id>, project:<project_id>,
+    route:ARCHITECT]. Dry-run by default. Idempotent: refuses if live motion-tagged
+    packet exists."
+  - "Prove dry-run with coverage-declaration.yaml + motion-0096."
+  - "Document full activation command chain in execution.md."
+  - "No changes to existing scripts, runtime, or UI."
+
+non_goals:
+  - "Do not modify activate-motion.mjs or enqueue-motion-packet.mjs."
+  - "Do not add UI changes to operator work surfaces."
+  - "Do not activate Wave 1+."
+  - "Do not perform live repo promotion to offbook-core."
+  - "Do not start conductor, queue_binding, or auth_handle work."
+  - "Do not widen to other staged projects — OffBook.ai only."
+
+success_criteria:
+  - "out/offbook-ai/coverage-declaration.yaml exists and satisfies all 10
+    required dispatch handle fields."
+  - "activate-staged-project.mjs dry-run validates coverage-declaration and
+    prints the packet that would be created (tags, plan, ac)."
+  - "Rerunning dry-run is idempotent (no DB writes, deterministic output)."
+  - "Full activation path documented: --create → enqueue-motion-packet.mjs
+    → run-architect-once.ts 6.0.10."
+  - "node --check portal/scripts/activate-staged-project.mjs exits 0."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
