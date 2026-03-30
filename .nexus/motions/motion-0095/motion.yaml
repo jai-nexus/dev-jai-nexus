@@ -1,0 +1,71 @@
+motion_id: "motion-0095"
+title: "Bounded bootstrap-manifest.instance.yaml Emission"
+
+status: "proposed"
+created_at: "2026-03-30T08:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "generator-extension"
+program: "offbook-ai-bootstrap"
+parent_motion: "motion-0089"
+related_motions:
+  - "motion-0088"
+  - "motion-0093"
+  - "motion-0094"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - "portal/scripts/generate-bootstrap.mjs"
+    - "out/offbook-ai/.nexus/planning/bootstrap-manifest.instance.yaml"
+
+summary: >
+  Implement the single remaining Wave 0 generator gap: emit
+  bootstrap-manifest.instance.yaml after the 12 substrate artifacts.
+  This artifact was specified in bootstrap-generator.spec.md (motion-0088)
+  and documented as a known gap in motion-0089 and motion-0093. The
+  manifest records generation timestamp, input SHA-256 hash, artifact
+  list with per-artifact results, and totals. No new runtime systems.
+  No scope widening.
+
+problem: >
+  generate-bootstrap.mjs emits the 12 Wave 0 substrate artifacts correctly
+  but does not emit bootstrap-manifest.instance.yaml. This was a known
+  implementation gap since motion-0089, explicitly accepted in motion-0093,
+  and deferred to a separate bounded motion by motion-0094. This motion
+  closes that gap with the smallest possible diff.
+
+proposal:
+  - "Add buildBootstrapManifest() to generate-bootstrap.mjs."
+  - "Add a SHA-256 hash helper (node:crypto) for the intake input file."
+  - "Emit bootstrap-manifest.instance.yaml to <outputRoot>/.nexus/planning/
+    after the 12 substrate artifacts, using the existing writeFileIdempotent
+    helper (idempotency preserved)."
+  - "Re-run generation against out/offbook-ai/ with --force --yes to emit
+    the manifest for the staged OffBook.ai rollout."
+  - "Verify idempotency with a second run (no --force)."
+
+non_goals:
+  - "Do not add SHA-256 hashes for demand or topology inputs (not required
+    by spec for the minimal implementation)."
+  - "Do not change any of the 12 substrate artifact builders."
+  - "Do not add Wave 1+ artifacts."
+  - "Do not start promotion-to-live-repo work."
+  - "Do not add dispatch runtime or council seam work."
+  - "Do not reopen motion-0084 or motion-0093."
+
+success_criteria:
+  - "bootstrap-manifest.instance.yaml is emitted to out/offbook-ai/.nexus/planning/."
+  - "The manifest records project_id, governance_resident_repo, generated_at,
+    wave=0, input_hashes.intake (SHA-256), artifacts list (12 items), and totals."
+  - "Second run with no --force skips all 13 artifacts (idempotency preserved)."
+  - "No unrelated files are changed."
+  - "node --check portal/scripts/generate-bootstrap.mjs exits 0."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
