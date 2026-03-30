@@ -209,6 +209,85 @@ function loadGoverningMotionState(inboxTags: string[]): GoverningMotionState | n
   return { motionId, title, decisionStatus, handoffStatus, receiptStatus };
 }
 
+function writeReceiptArtifact(
+  motionId: string,
+  packetNhId: string,
+  action: "APPROVE" | "REQUEST_CHANGES" | "REQUEUE",
+  actor: { email: string | null; name: string | null },
+): void {
+  const repoRoot = findRepoRoot(process.cwd());
+  if (!repoRoot) {
+    console.warn("[receipt] repo root not found; skipping receipt write");
+    return;
+  }
+  const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+  try {
+    if (!fs.existsSync(motionDir)) {
+      console.warn(`[receipt] motion dir not found: ${motionDir}; skipping`);
+      return;
+    }
+    const outcome =
+      action === "APPROVE" ? "COMPLETED" :
+      action === "REQUEST_CHANGES" ? "CHANGES_REQUESTED" : "REQUEUED";
+    const closedBy = actor.email ? `operator:${actor.email}` : "operator:unknown";
+    const receipt = {
+      version: "0.1",
+      motion_id: motionId,
+      packet_nh_id: packetNhId,
+      receipt_id: `${motionId}-receipt-001`,
+      closed_at: new Date().toISOString(),
+      closed_by: closedBy,
+      outcome,
+      status: outcome,
+      operator_action: action,
+      notes: "Operator decision recorded via dev-jai-nexus operator surface.",
+    };
+    fs.writeFileSync(
+      path.join(motionDir, "execution.receipt.json"),
+      JSON.stringify(receipt, null, 2) + "\n",
+      "utf-8",
+    );
+  } catch (err) {
+    console.warn("[receipt] failed to write execution.receipt.json:", err);
+  }
+}
+
+async function runDecisionAction(
+  packetId: number,
+  action: "APPROVE" | "REQUEST_CHANGES" | "REQUEUE",
+) {
+  "use server";
+
+  const session = await getServerAuthSession();
+  const user = session?.user;
+  if (!user) redirect("/login");
+
+  const actor = { email: user.email ?? null, name: user.name ?? null };
+
+  const latestInboxForDecision = await prisma.agentInboxItem.findFirst({
+    where: { workPacketId: packetId },
+    orderBy: { id: "desc" },
+    select: { tags: true },
+  });
+  const decisionInboxTags = coerceStringArray(latestInboxForDecision?.tags);
+  const decisionMotionId = getMotionFromTags(decisionInboxTags);
+
+  const packetForReceipt = decisionMotionId
+    ? await prisma.workPacket.findUnique({
+        where: { id: packetId },
+        select: { nhId: true },
+      })
+    : null;
+
+  await applyPacketRouteAction({ packetId, action, actor });
+
+  if (decisionMotionId && packetForReceipt) {
+    writeReceiptArtifact(decisionMotionId, packetForReceipt.nhId, action, actor);
+  }
+
+  redirect(`/operator/work/${packetId}`);
+}
+
 async function updatePacket(id: number, formData: FormData) {
   "use server";
 
@@ -894,7 +973,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             </button>
           </form>
 
-          <form action={runRouteAction.bind(null, p.id, "REQUEST_CHANGES")}>
+          <form action={runDecisionAction.bind(null, p.id, "REQUEST_CHANGES")}>
             <button
               type="submit"
               disabled={!canResolveOperatorDecision}
@@ -904,7 +983,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             </button>
           </form>
 
-          <form action={runRouteAction.bind(null, p.id, "REQUEUE")}>
+          <form action={runDecisionAction.bind(null, p.id, "REQUEUE")}>
             <button
               type="submit"
               className="rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 text-sm text-gray-200 hover:bg-zinc-900"
@@ -913,7 +992,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             </button>
           </form>
 
-          <form action={runRouteAction.bind(null, p.id, "APPROVE")}>
+          <form action={runDecisionAction.bind(null, p.id, "APPROVE")}>
             <button
               type="submit"
               disabled={!canResolveOperatorDecision}
