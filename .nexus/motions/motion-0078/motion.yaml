@@ -1,0 +1,89 @@
+motion_id: "motion-0078"
+title: "bounded builder queue readiness for motion-linked packets"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-2"
+phase: "phase-4"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Remove the blocker that prevents builder runtime from claiming a
+  motion-linked work packet after architect completion. Add a narrow
+  enqueue-builder-packet.mjs script that creates an AgentQueueItem for an
+  existing builder-stage motion-linked packet, using the motion's target
+  repo as the repoScope value. After this slice the live builder runtime
+  proof (run-builder-once.ts) can be executed and produces a
+  motion-grounded debug.patch artifact.
+
+problem: >
+  The motion-0077 builder motion-context binding is complete at code level,
+  but the live builder proof is blocked. After architect runtime completes
+  and routes to BUILDER stage, applyPacketRouteAction("ROUTE_BUILDER")
+  updates the inbox tags to route:BUILDER but calls syncAgentQueueItemForPacket
+  with assigneeNhId=null (clearAssignee=true by default for route actions).
+  syncAgentQueueItemForPacket with a null assignee deletes the AgentQueueItem.
+  claimNext() queries AgentQueueItem exclusively. With no queue item, the
+  builder runtime finds nothing to claim. Additionally, the existing
+  enqueue-motion-packet.mjs is ARCHITECT-only: it detects only ARCHITECT
+  agents and guards against non-ARCHITECT route tags.
+
+proposal:
+  - "Add portal/scripts/enqueue-builder-packet.mjs that finds the existing
+    motion-linked AgentInboxItem at route:BUILDER stage and upserts an
+    AgentQueueItem with the correct agentNhId and repoScope=[targetRepo]."
+  - "Derive agentNhId by auto-detecting the first BUILDER-capable agent
+    from config/agency.yaml, or from --agent <nhId> override."
+  - "Derive targetRepo from the motion's decision.yaml target_repo field
+    or motion.yaml target.repo field."
+  - "Store repoScope=[targetRepo] on the queue item, satisfying the
+    claimNext() scope validation without requiring repoId on WorkPacket."
+  - "Use upsert semantics: if a queue item already exists for the packet,
+    reset it to PENDING with the correct agent and scope."
+  - "Validate that the motion is RATIFIED and the AgentInboxItem exists
+    and is at route:BUILDER before writing anything."
+  - "Refuse clearly if the packet is not at builder stage (route tag is
+    not BUILDER) rather than creating an unclaimable queue row."
+  - "Print the resulting queue item ID and the exact command to run the
+    builder proof."
+
+non_goals:
+  - "Do not set repoId on the WorkPacket."
+  - "Do not change activate-motion.mjs."
+  - "Do not change enqueue-motion-packet.mjs."
+  - "Do not change builderRuntime.ts."
+  - "Do not change agentRuntime.ts."
+  - "Do not change workPacketQueue.ts or workPacketActions.ts."
+  - "Do not add schema migration."
+  - "Do not add verifier queue readiness (this slice is BUILDER only)."
+  - "Do not add operator UI changes."
+  - "Do not add receipt closure."
+
+success_criteria:
+  - "node --check portal/scripts/enqueue-builder-packet.mjs passes."
+  - "pnpm -C portal typecheck passes."
+  - "enqueue-builder-packet.mjs --motion motion-0070 creates an AgentQueueItem
+    for agent 6.0.11 with repoScope=['dev-jai-nexus'] and exits 0."
+  - "Running enqueue-builder-packet.mjs --motion motion-0070 a second time
+    upserts the queue item and exits 0 (idempotent)."
+  - "enqueue-builder-packet.mjs --motion <motion-at-architect-stage> exits 1
+    with a clear refusal message."
+  - "pnpm -C portal exec tsx scripts/run-builder-once.ts 6.0.11 claims and
+    processes the motion-linked packet and exits 0."
+  - "The resulting debug.patch SoT event payload contains motionId,
+    motionTitle, and executionPlan fields (motion-grounded)."
+  - "No files outside portal/scripts/enqueue-builder-packet.mjs are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
