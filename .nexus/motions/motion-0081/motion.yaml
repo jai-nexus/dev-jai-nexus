@@ -1,0 +1,84 @@
+motion_id: "motion-0081"
+title: "bounded operator receipt closure"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-4"
+phase: "phase-1"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add durable receipt closure to the three operator decision actions
+  (APPROVE, REQUEST_CHANGES, REQUEUE) so that operator outcomes on
+  motion-linked work packets produce an execution.receipt.json artifact,
+  closing the governed loop with a traceable record. Non-motion-linked
+  packets are unaffected. No schema migration. No new page routes. Single
+  file changed.
+
+problem: >
+  WS-3 proved that the operator work detail page can read and display
+  execution.receipt.json from the motion directory. However, no code path
+  currently writes that artifact. When an operator presses Approve,
+  Request Changes, or Requeue on a motion-linked packet, the result is a
+  SoT event and a packet/inbox status mutation — but execution.receipt.json
+  remains absent and the Governing Motion section continues to show
+  "pending". The governed loop is visible but does not durably close.
+
+proposal:
+  - "Add writeReceiptArtifact(motionId, packetNhId, action, actor) inline
+    function to portal/src/app/operator/work/[id]/page.tsx. Uses the
+    existing findRepoRoot + fs.writeFileSync pattern. All try/catch; never
+    crashes the server action on write failure."
+  - "Add runDecisionAction(packetId, action) server action to the same page.
+    Loads inboxTags from the latest inbox item, extracts motionId via
+    getMotionFromTags, calls applyPacketRouteAction, then conditionally
+    calls writeReceiptArtifact if motionId is non-null."
+  - "Wire the three decision buttons (Approve, Request Changes, Requeue) to
+    runDecisionAction instead of runRouteAction. Pure route buttons
+    (ROUTE_ARCHITECT, ROUTE_BUILDER, ROUTE_VERIFIER, ROUTE_OPERATOR_REVIEW)
+    remain on runRouteAction."
+  - "execution.receipt.json written to .nexus/motions/<motionId>/ with
+    fields: version, motion_id, packet_nh_id, receipt_id, closed_at,
+    closed_by, outcome, status, operator_action, notes."
+  - "Outcome mapping: APPROVE -> COMPLETED, REQUEST_CHANGES ->
+    CHANGES_REQUESTED, REQUEUE -> REQUEUED."
+  - "The existing Governing Motion section (motion-0080) already reads and
+    displays execution.receipt.json status; no UI changes needed."
+
+non_goals:
+  - "Do not modify workPacketActions.ts or the shared applyPacketRouteAction."
+  - "Do not add schema migration."
+  - "Do not create a loop coherence gate (WS-5)."
+  - "Do not create a receipt browsing surface."
+  - "Do not change the list page."
+  - "Do not add new page routes."
+  - "Do not modify any agent runtime."
+  - "Do not create a receipt companion markdown artifact in this slice."
+  - "Do not change the council seam."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "For packet 880 / motion-0070: pressing Approve on the operator work
+    detail page writes .nexus/motions/motion-0070/execution.receipt.json
+    with status=COMPLETED."
+  - "The Governing Motion section on the detail page subsequently shows
+    receipt=COMPLETED (emerald chip) on next page load."
+  - "For a non-motion-linked packet: pressing Approve, Request Changes, or
+    Requeue produces the same behavior as before with no receipt write."
+  - "Missing motion directory or unwritable path: server action completes
+    normally (redirect happens), only a console.warn is emitted."
+  - "Only portal/src/app/operator/work/[id]/page.tsx is changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
