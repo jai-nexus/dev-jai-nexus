@@ -1,0 +1,65 @@
+motion_id: "motion-0089"
+title: "Bounded Bootstrap Artifact Generator Implementation v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "implementation"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-D"
+spec_motion: "motion-0088"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - "portal/scripts/generate-bootstrap.mjs"
+
+summary: >
+  Implement the Wave 0 bootstrap artifact generator defined by the WS-D spec
+  (motion-0088). The script reads a project intake instance (with optional
+  demand and topology instances), emits the 12 Wave 0 artifacts with correct
+  generated/copied/stubbed/manual-only classification, supports --dry-run and
+  idempotent write behavior, and enforces the hard prohibition on auto-authoring
+  governance prose.
+
+problem: >
+  The planning stack (WS-A through WS-D spec) is complete. A new JAI NEXUS
+  project can now be fully described on paper, but standing one up still
+  requires manually creating 12 governance substrate files with no tooling
+  support. The generator implementation closes this gap.
+
+proposal:
+  - "Implement portal/scripts/generate-bootstrap.mjs following the WS-D spec."
+  - "Accept --intake (required), --demand (optional), --topology (optional),
+    --output, --baseline, --dry-run, --force, --yes flags."
+  - "Derive demand from intake.derived_agents if --demand not provided."
+  - "Derive topology from intake.topology if --topology not provided."
+  - "Emit all 12 Wave 0 artifacts with classification labels in output."
+  - "Copy baseline files verbatim from --baseline (default: this repo root)."
+  - "Enforce manual-only: proposal.md shell contains headings + HTML comment
+    placeholders only — no governance prose."
+  - "Add bootstrap:gen command to root package.json."
+
+non_goals:
+  - "Do not implement Wave 1+ artifact emission."
+  - "Do not implement dispatch bridge or coverage declaration."
+  - "Do not wire model-slots or agent panels."
+  - "Do not touch runtime, UI, or app code."
+  - "Do not start OffBook.ai implementation."
+
+success_criteria:
+  - "node --check portal/scripts/generate-bootstrap.mjs passes."
+  - "Dry-run with OffBook.ai intake prints 12 expected artifacts with correct labels."
+  - "Generated agency.yaml for OffBook.ai contains 9 agents with correct NH IDs."
+  - "Generated proposal.md contains only headings and HTML comment placeholders."
+  - "Re-running generator without --force skips existing files."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
