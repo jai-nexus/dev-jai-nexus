@@ -1,23 +1,20 @@
 # Decision - motion-0073
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
-Motion `motion-0073` proposes WS-1 phase 2 of the Q2 loop activation
-program (parent: motion-0071). It extends the dry-run bridge established
-in `motion-0072` (phase 1) into a real, bounded creation path.
+Motion `motion-0073` is ratified.
 
-This slice adds `--create` mode to `activate-motion.mjs`:
-- Creates a WorkPacket and AgentInboxItem in the database when all
-  activatability preconditions hold
-- Refuses duplicate creation idempotently via the motion tag
-- Carries the canonical `motion:<motionId>` and `route:ARCHITECT` tags
-- No schema migration, no runtime changes, no operator UI changes
+The motion-linked work packet creation bridge is accepted as a bounded WS-1 phase-2 implementation:
+- `activate-motion.mjs` updated to create work packets with canonical `motion:<id>` tag
+- packet 880 created in dev-jai-nexus with `motion:motion-0070` tag
+- Motion tag convention established as the identity bridge between governance and execution loops
 
-## Required gates
-- validate_motion
-- validate_agency
+## Evidence
+- Commit `0a49312 feat(loop): add motion-linked work packet creation (#32)`
+- packet 880 exists in database with `motion:motion-0070` inbox tag
+- `pnpm -C portal typecheck` PASS
 
 ## Notes
-Pending vote and validation.
+Closes the WS-1 phase-2 packet creation slice. packet 880 is the canonical proof reference.

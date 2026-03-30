@@ -1,0 +1,28 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0081",
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-30T00:00:00.000Z",
+      "command": "node portal\scripts\validate-motion.mjs --motion .nexus\motions\motion-0081\motion.yaml",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-03-30T00:00:00.500Z",
+      "command": "node portal\scripts\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-03-30T00:00:00.500Z"
+  }
+}

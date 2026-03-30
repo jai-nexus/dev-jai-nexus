@@ -1,46 +1,20 @@
 # Decision - motion-0074
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
-Motion `motion-0074` is a DRAFT bounded operator-authorized proof slice.
+Motion `motion-0074` is ratified.
 
-WS-1 phase 3 happy-path proof is complete.
-
-## Proof candidate
-`motion-0070` - "bounded council policy seam extraction"
-
-Candidate selection rationale:
-- RATIFIED with full artifact coverage (`verify.json`, `execution.md`, `decision.yaml`)
-- No pre-existing handoff (clean starting state)
-- Does not involve Motion Factory (out of scope per program constraints)
-- Does not involve handoff/receipt semantics themselves (avoids circularity)
-- Smallest, most bounded available candidate
+The WS-1 happy-path proof is accepted as a bounded phase-3 proof slice:
+- packet 880 confirmed in the ARCHITECT lane with `motion:motion-0070` and `route:ARCHITECT` tags
+- Full WS-1 activation sequence verified: activate-motion → create packet → route to ARCHITECT
+- Motion tag identity traceable end-to-end through inbox tags
 
 ## Evidence
-- `node --check portal/scripts/activate-motion.mjs` PASS
+- Commit `1c2d082 feat(loop): prove motion activation happy path (#33)`
+- packet 880 at ARCHITECT lane with correct motion and route tags confirmed
 - `pnpm -C portal typecheck` PASS
-- `node portal/scripts/issue-execution-handoff.mjs --motion motion-0070` PASS
-- `node portal/scripts/activate-motion.mjs --motion motion-0070` PASS
-  - exit 0
-  - all 7 activation checks passed
-  - activation tag: `motion:motion-0070`
-- `node portal/scripts/activate-motion.mjs --motion motion-0070 --create` PASS
-  - exit 0
-  - WorkPacket ID: `880`
-  - WorkPacket nhId: `motion-0070`
-  - InboxItem ID: `9`
-  - Tags: `["motion:motion-0070", "route:ARCHITECT"]`
-  - Status: `DRAFT / QUEUED`
-- second `node portal/scripts/activate-motion.mjs --motion motion-0070 --create` refused as expected
-  - exit 1
-  - existing inbox item ID: `9`
-  - existing work packet ID: `880`
-
-## Pre-proof fix
-`portal/scripts/activate-motion.mjs` required a minimal fix to use the PrismaPg adapter for Prisma v7. Only the `runCreate` function changed. The dry-run path is unchanged.
 
 ## Notes
-Proof executed on 2026-03-29 against the dev environment.
-WorkPacket `880` and InboxItem `9` are live in the system tagged with `motion:motion-0070` and can be canceled via the operator work surface when no longer needed.
+Closes WS-1. Foundation for WS-2 agent runtime binding established.

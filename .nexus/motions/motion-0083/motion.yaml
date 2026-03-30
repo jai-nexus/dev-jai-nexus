@@ -1,0 +1,64 @@
+motion_id: "motion-0083"
+title: "bounded governed loop ratification sweep"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "governance"
+program: "q2-loop-activation"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Ratify motion-0072 through motion-0082 and close motion-0071 as the
+  umbrella program motion for the Q2 governed loop activation arc.
+  All twelve motions are materially complete with committed implementation
+  and durable proof artifacts. This sweep updates decision.yaml and
+  decision.md for each motion to reflect truthful RATIFIED status.
+  No new implementation. No new runtime features. No schema migration.
+
+problem: >
+  motion-0071 through motion-0082 remain in DRAFT status even though the
+  governed loop arc is complete end-to-end. packet 880 / motion-0070 is the
+  canonical completed reference path: RATIFIED decision → ISSUED handoff →
+  motion-linked packet created → architect/builder/verifier execution chain →
+  operator approval → COMPLETED receipt → COHERENT loop verdict. The DRAFT
+  status of the governing motions creates governance ambiguity about what is
+  actually finished.
+
+proposal:
+  - "Ratify motion-0072 through motion-0082 in workstream sequence order,
+    each with a RATIFIED decision.yaml and an updated decision.md that
+    cites the relevant commit and proof artifact."
+  - "Ratify motion-0071 last, as the umbrella program motion, once all
+    child motions are ratified."
+  - "Update only decision.yaml and decision.md for each motion. Do not
+    modify motion.yaml status fields, which are not part of the existing
+    ratification convention in this repo."
+  - "Ratification authority: manual:proposer, vote_mode: unanimous_consent,
+    consistent with the ratification format established by motion-0070."
+
+non_goals:
+  - "Do not start a new program track or planning motion."
+  - "Do not harden or generalize any existing implementation."
+  - "Do not change any application code."
+  - "Do not reopen council seam work."
+  - "Do not create policy/verify/vote artifacts for these motions."
+  - "Do not modify motion.yaml status fields."
+
+success_criteria:
+  - "motion-0072 through motion-0082 all have status: RATIFIED in decision.yaml."
+  - "motion-0071 has status: RATIFIED in decision.yaml."
+  - "Each decision.md accurately cites the relevant commit and implementation."
+  - "No application code is changed."
+  - "pnpm -C portal typecheck is NOT run (no app code touched)."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

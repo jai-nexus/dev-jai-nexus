@@ -1,25 +1,20 @@
 # Decision - motion-0072
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
-Motion `motion-0072` proposes the first governed bridge between the
-motion loop and the execution loop for `dev-jai-nexus` (WS-1 of
-motion-0071).
+Motion `motion-0072` is ratified.
 
-This slice adds:
-- `buildMotionTag` and `getMotionFromTags` helpers to `workPacketContract.ts`,
-  establishing the canonical `motion:motion-XXXX` tag convention
-- `activate-motion.mjs`, a dry-run activation script that reads a
-  RATIFIED motion's artifacts and outputs the exact activation intent
-  for a motion-linked work packet without performing any database writes
+The dry-run motion activation bridge is accepted as a bounded WS-1 phase-1 implementation:
+- `portal/scripts/activate-motion.mjs` created with `--dry-run` flag support
+- Script reads motion.yaml and execution.handoff.json without DB writes in dry-run mode
+- Dry-run activation proof executed cleanly for motion-0070
 
-No schema migration. No live DB writes. No agent runtime changes.
-
-## Required gates
-- validate_motion
-- validate_agency
+## Evidence
+- Commit `3061e0e feat(loop): add dry-run motion activation bridge (#31)`
+- `pnpm -C portal typecheck` PASS
+- Dry-run execution completed without errors
 
 ## Notes
-Pending vote and validation.
+Closes the WS-1 phase-1 activation bridge slice.

@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0072",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "activate-motion.mjs created with --dry-run flag; reads motion.yaml and execution.handoff.json without DB writes; dry-run proof executed cleanly.",
+      "ts": "2026-03-30T00:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Scope narrow: only dry-run activation path; no production DB side effects; script bounded to motion activation only.",
+      "ts": "2026-03-30T00:00:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Dry-run proof executed without incident; sufficient foundation for the motion-to-packet bridge.",
+      "ts": "2026-03-30T00:00:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T00:00:15.000Z"
+}

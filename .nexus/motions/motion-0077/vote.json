@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0077",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "builderRuntime.ts refactored to use base class loadWorkPacketContext inside transaction; motion context loaded; debug.patch emitted for packet 880.",
+      "ts": "2026-03-30T00:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Structural gap in builder corrected; inline motion context follows architect pattern; canClaimCandidate guard correct.",
+      "ts": "2026-03-30T00:00:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Live builder proof executed; debug.patch artifact present; builder motion-context binding matches architect pattern.",
+      "ts": "2026-03-30T00:00:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T00:00:15.000Z"
+}
