@@ -1,0 +1,62 @@
+version: "0.1"
+artifact: bootstrap-manifest-instance
+project_id: offbook-ai
+governance_resident_repo: offbook-core
+generated_at: 2026-03-30T21:24:21.042Z
+wave: 0
+input_hashes:
+  intake: 741db2ff15c643321c0e88c2f14c537df96336d4f041edc7e8f7d04a77dafbf7
+artifacts:
+  - id: agency-config
+    path: config/agency.yaml
+    classification: generated
+    result: wrote
+  - id: project-constitution
+    path: .nexus/context/project-constitution.yaml
+    classification: generated
+    result: wrote
+  - id: agent-manifest
+    path: .nexus/agent-manifest.yaml
+    classification: generated
+    result: wrote
+  - id: council-config
+    path: .nexus/council.config.yaml
+    classification: copied
+    result: copied
+  - id: council-deps
+    path: .nexus/council.deps.yaml
+    classification: copied
+    result: copied
+  - id: slot-policy
+    path: .nexus/context/slot-policy.yaml
+    classification: copied
+    result: copied
+  - id: scoring-rubric
+    path: .nexus/context/scoring-rubric.yaml
+    classification: copied
+    result: copied
+  - id: motion-packet-schema
+    path: .nexus/context/motion-packet.schema.json
+    classification: copied
+    result: copied
+  - id: repo-capsule-schema
+    path: .nexus/context/repo-capsule.schema.yaml
+    classification: copied
+    result: copied
+  - id: inaugural-motion-yaml
+    path: .nexus/motions/motion-0001/motion.yaml
+    classification: stubbed
+    result: wrote
+  - id: inaugural-motion-proposal
+    path: .nexus/motions/motion-0001/proposal.md
+    classification: manual-only
+    result: wrote
+  - id: claude-md
+    path: CLAUDE.md
+    classification: stubbed
+    result: wrote
+totals:
+  wrote: 12
+  skipped: 0
+  missing: 0
+  total: 12
