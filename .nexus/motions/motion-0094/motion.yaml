@@ -1,0 +1,62 @@
+motion_id: "motion-0094"
+title: "Bounded OffBook.ai Wave 0 Rollout Closeout Sweep"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "governance-closure"
+program: "offbook-ai-bootstrap"
+parent_motion: "motion-0093"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/motions/motion-0093/"
+
+summary: >
+  Perform a truthful governance closeout sweep for motion-0093 (first real
+  OffBook.ai Wave 0 bootstrap rollout). Inspect the motion package and
+  committed rollout artifacts, confirm all success criteria are met, and
+  produce the full ratification artifact set. Document whether
+  bootstrap-manifest.instance.yaml is a blocker or a separate follow-up.
+
+problem: >
+  motion-0093 was executed and committed with all 6 success criteria met,
+  a minimal generator fix applied, idempotency confirmed, and all challenges
+  resolved. The motion package remains DRAFT — no vote.json, verify.json, or
+  policy.yaml exists. This sweep closes the governance lifecycle for the
+  rollout, producing the truthful ratification artifact set.
+
+proposal:
+  - "Inspect motion-0093 package, rollout artifacts, and challenge resolution."
+  - "Confirm all success criteria are satisfied by committed evidence."
+  - "Decide whether bootstrap-manifest.instance.yaml is a ratification blocker
+    or a separate follow-up motion."
+  - "Run validate_motion and validate_agency gates for motion-0093."
+  - "Produce vote.json, verify.json, policy.yaml, decision.yaml (RATIFIED),
+    and decision.md (RATIFIED) for motion-0093 if justified."
+  - "Do not create execution.handoff.json or execution.receipt.json — this is
+    a planning/rollout motion with no executor handoff."
+
+non_goals:
+  - "Do not implement bootstrap-manifest.instance.yaml in this sweep."
+  - "Do not change any rollout artifacts in out/offbook-ai/."
+  - "Do not make any code changes in this sweep."
+  - "Do not start Wave 1+ work."
+  - "Do not widen beyond motion-0093 closeout."
+
+success_criteria:
+  - "motion-0093 has full closure artifact set: vote.json, verify.json,
+    policy.yaml, decision.yaml=RATIFIED, decision.md=RATIFIED."
+  - "Ratification is justified by committed rollout evidence, not manufactured."
+  - "bootstrap-manifest.instance.yaml disposition is explicitly documented."
+  - "validate_motion and validate_agency pass for motion-0093."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
