@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0093",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "motion-0093 rollout is complete: 12/12 Wave 0 artifacts emitted to out/offbook-ai/, real WS-A-conformant intake document committed, minimal repo_scope fix applied per spec (two lines, topology.governance_resident_repo), idempotency confirmed, all 6 success criteria met. out/offbook-ai/ is the committed Wave 0 substrate for offbook-core.",
+      "ts": "2026-03-30T07:00:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "All three challenges resolved cleanly. Staging location in dev-jai-nexus is correct for a pre-existing-repo bootstrap. The generator fix is minimal and matches the spec exactly. bootstrap-manifest.instance.yaml is a known future gap that does not block Wave 0 governance use — the 12 required Wave 0 artifacts are present.",
+      "ts": "2026-03-30T07:00:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Evidence is sufficient for truthful ratification. The generator defect exposed by the polyrepo rollout was correctly identified and minimally fixed. The known gap (manifest instance) is documented in challenge.md and decision.md and deferred appropriately to a follow-up motion.",
+      "ts": "2026-03-30T07:00:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T07:00:15.000Z"
+}

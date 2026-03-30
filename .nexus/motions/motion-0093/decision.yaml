@@ -1,10 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0093
-status: DRAFT
-ratified_by: null
+status: RATIFIED
+ratified_by: manual:proposer
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency]
-last_updated: "2026-03-30T00:00:00.000Z"
-notes: "DRAFT: first real OffBook.ai Wave 0 bootstrap rollout. 12/12 artifacts emitted. One minimal fix applied (repo_scope). Idempotency confirmed."
+last_updated: "2026-03-30T07:00:15.000Z"
+notes: "RATIFIED: vote_mode=unanimous_consent"
