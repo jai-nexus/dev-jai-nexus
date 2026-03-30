@@ -1,0 +1,60 @@
+version: "council.config.v0"
+
+# Council-wide configuration for decision mechanics.
+# This file is the repo-committed default. It may be overridden at runtime via env vars (see feature_flags).
+
+voting:
+  # Options:
+  # - majority
+  # - unanimous
+  # - unanimous_consent  (YES_WITH_RESERVATIONS allowed)
+  default_mode: "unanimous_consent"
+
+  # Semantics:
+  # - unanimous: required_roles must all vote YES; any NO blocks.
+  # - unanimous_consent: required_roles must all vote YES or YES_WITH_RESERVATIONS; any NO blocks.
+  # - majority: YES-ish votes > NO votes (role presence not required).
+
+  # Guardrails
+  allow_yes_with_reservations: true
+
+  # Maximum proposal amendment cycles before declaring DEADLOCK.
+  # DEADLOCK requires arbiter action (split / add evidence / request intel / escalate).
+  max_amendment_rounds: 2
+
+  # Which roles are required to vote for role-based modes (unanimous / unanimous_consent).
+  # Tip: start minimal for velocity; expand as role coverage improves.
+  required_roles:
+    - proposer
+    - challenger
+    - arbiter
+
+  # Optional roles can participate in intel and add reservations, but do not block ratification (for now).
+  optional_roles:
+    - librarian
+    - meta_analyst
+
+  # If true, any NO vote must include a blocker_packet object (enforced by council-run).
+  require_blocker_packet_on_no: true
+
+  # If true, any YES_WITH_RESERVATIONS vote must include a non-empty reservations[] array (enforced by council-run).
+  require_reservations_on_yes_with_reservations: true
+
+  # If true, any NO vote (even from optional_roles) blocks the motion.
+  # If false, only NO votes from required_roles block.
+  # Recommended: true for civilization-grade safety.
+  any_no_blocks: true
+
+  # If true, role-based vote modes require that every required role has a vote entry.
+  # If missing, the result becomes PENDING (not PASS/FAIL).
+  require_all_required_roles_present: true
+
+feature_flags:
+  council_vote_mode:
+    # Env var override for experiments / CI / hot toggles:
+    # - PowerShell: $env:JAI_COUNCIL_VOTE_MODE="unanimous_consent"
+    env_override: "JAI_COUNCIL_VOTE_MODE"
+    allowed_values:
+      - majority
+      - unanimous
+      - unanimous_consent

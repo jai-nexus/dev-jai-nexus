@@ -357,7 +357,7 @@ function buildAgencyYaml(intake, demand, topology) {
   });
 }
 
-function buildConstitution(intake, demand) {
+function buildConstitution(intake, demand, topology) {
   const requiredRoles = intake.required_roles ?? demand.execution_agents.map((e) => e.role);
   const optionalRoles = intake.optional_roles ?? [];
 
@@ -365,7 +365,7 @@ function buildConstitution(intake, demand) {
     version:    "0.1",
     artifact:   "project-constitution",
     project:    intake.project_name ?? intake.project_id,
-    repo_scope: intake.project_id,
+    repo_scope: topology.governance_resident_repo,
 
     identity: {
       summary: `${intake.project_name ?? intake.project_id} is a governed AI collaboration platform for ${intake.domain ?? intake.project_id}.`,
@@ -626,7 +626,7 @@ async function main() {
   // 2. .nexus/context/project-constitution.yaml [generated]
   rec("project-constitution", writeFileIdempotent(
     path.join(outputRoot, ".nexus", "context", "project-constitution.yaml"),
-    buildConstitution(intake, demand),
+    buildConstitution(intake, demand, topology),
     { ...opts, label: "generated" }
   ));
 

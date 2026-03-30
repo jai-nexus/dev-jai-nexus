@@ -1,0 +1,70 @@
+motion_id: "motion-0093"
+title: "Bounded First Real OffBook.ai Wave 0 Bootstrap Rollout"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "rollout"
+program: "offbook-ai-bootstrap"
+parent_motion: "motion-0084"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/planning/offbook-ai-intake.yaml"
+    - "out/offbook-ai/"
+
+summary: >
+  Execute the first real Wave 0 bootstrap rollout for OffBook.ai using the
+  closed motion-0084 planning baseline and the committed generate-bootstrap.mjs
+  generator. Produce a real, governance-tracked Wave 0 artifact set at
+  out/offbook-ai/ — the staging location for the offbook-core governance
+  substrate. Wave 0 only. No Wave 1+ scope.
+
+problem: >
+  The motion-0090 real-write proof validated the generator against a
+  disposable directory. The generator is ready. The next bounded step is to
+  apply it to the real OffBook.ai rollout target with a finalized intake
+  document (not the planning example), producing artifacts that will be
+  committed to dev-jai-nexus as the durable Wave 0 bootstrap record for
+  offbook-core.
+
+proposal:
+  - "Create .nexus/planning/offbook-ai-intake.yaml — the real intake instance
+    for OffBook.ai, conforming to the WS-A schema with project_type: greenfield
+    and nh_root: 7.0 as the confirmed assignment."
+  - "Run dry-run against the real intake to confirm 12/12 artifacts would be
+    emitted to out/offbook-ai/."
+  - "Run the real rollout: node portal/scripts/generate-bootstrap.mjs
+    --intake .nexus/planning/offbook-ai-intake.yaml
+    --output out/offbook-ai --yes"
+  - "Inspect all 12 emitted artifacts for correctness."
+  - "Confirm idempotency: second run skips all 12."
+  - "Apply only minimal hardening fixes if a concrete defect is found."
+  - "Document rollout evidence in execution.md."
+
+non_goals:
+  - "Do not emit Wave 1+ artifacts."
+  - "Do not author motion-0001 content (governance prose requires human judgment)."
+  - "Do not create or initialize the actual offbook-core or offbook-web repos."
+  - "Do not start any OffBook.ai implementation work."
+  - "Do not wire dispatch, conductor, or work-packet queues."
+  - "Do not redesign the generator."
+  - "Do not ratify motion-0001 — ratification requires human authorship of proposal.md."
+
+success_criteria:
+  - "out/offbook-ai/ contains all 12 Wave 0 artifacts."
+  - "Generated agency.yaml parses as valid YAML with 9 agent entries."
+  - "proposal.md contains structural headings and HTML comment placeholders only."
+  - "Second run skips all 12 (idempotency)."
+  - "All generated artifact content references offbook-ai / offbook-core correctly."
+  - "No dev-jai-nexus-specific paths bleed into generated artifacts."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

@@ -1,0 +1,247 @@
+schema_version: 0.1
+owner:
+  name: OffBook AI
+  handle: offbook
+  nh_root: "7.0"
+agency:
+  council_dir: .nexus
+  motion_dir: .nexus/motions
+agents:
+  - agent_key: offbook.council
+    id: JAI::OFFBOOK_AI::COUNCIL
+    nh_id: "7.0"
+    parent_nh_id: null
+    label: OffBook AI Council
+    tier: 2
+    role: council
+    function: council
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:govern
+    delegates_to: []
+    github_labels:
+      - council
+      - council
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+  - agent_key: offbook.proposer
+    id: JAI::OFFBOOK_AI::PROPOSER
+    nh_id: 7.0.1
+    parent_nh_id: "7.0"
+    label: OffBook AI Proposer
+    tier: 2
+    role: proposer
+    function: council
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:propose
+    delegates_to: []
+    github_labels:
+      - council
+      - proposer
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+  - agent_key: offbook.executor
+    id: JAI::OFFBOOK_AI::EXECUTOR
+    nh_id: 7.0.2
+    parent_nh_id: "7.0"
+    label: OffBook AI Executor
+    tier: 2
+    role: executor
+    function: council
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:stage_diff
+    delegates_to: []
+    github_labels:
+      - council
+      - executor
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+  - agent_key: offbook.challenger
+    id: JAI::OFFBOOK_AI::CHALLENGER
+    nh_id: 7.0.3
+    parent_nh_id: "7.0"
+    label: OffBook AI Challenger
+    tier: 2
+    role: challenger
+    function: council
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:critique
+      - actions:verify
+    delegates_to: []
+    github_labels:
+      - council
+      - challenger
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+  - agent_key: offbook.arbiter
+    id: JAI::OFFBOOK_AI::ARBITER
+    nh_id: 7.0.4
+    parent_nh_id: "7.0"
+    label: OffBook AI Arbiter
+    tier: 2
+    role: arbiter
+    function: council
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:ratify
+      - actions:escalate
+      - actions:ledger_write
+    delegates_to: []
+    github_labels:
+      - council
+      - arbiter
+    execution_capable: false
+    execution_roles: []
+    governance_only: true
+  - agent_key: offbook.architect
+    id: JAI::OFFBOOK_AI::ARCHITECT
+    nh_id: 7.0.10
+    parent_nh_id: "7.0"
+    label: OffBook AI Architect
+    tier: 2
+    role: architect
+    function: execution
+    scope:
+      - repo:offbook-core
+      - repo:offbook-web
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:plan
+      - actions:design
+    delegates_to: []
+    github_labels:
+      - execution
+      - architect
+    execution_capable: true
+    execution_roles:
+      - ARCHITECT
+    governance_only: false
+  - agent_key: offbook.builder
+    id: JAI::OFFBOOK_AI::BUILDER
+    nh_id: 7.0.11
+    parent_nh_id: "7.0"
+    label: OffBook AI Builder
+    tier: 2
+    role: builder
+    function: execution
+    scope:
+      - repo:offbook-core
+      - repo:offbook-web
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:patch
+      - actions:build
+    delegates_to: []
+    github_labels:
+      - execution
+      - builder
+    execution_capable: true
+    execution_roles:
+      - BUILDER
+    governance_only: false
+  - agent_key: offbook.verifier
+    id: JAI::OFFBOOK_AI::VERIFIER
+    nh_id: 7.0.12
+    parent_nh_id: "7.0"
+    label: OffBook AI Verifier
+    tier: 2
+    role: verifier
+    function: execution
+    scope:
+      - repo:offbook-core
+      - repo:offbook-web
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:verify
+      - actions:test
+    delegates_to: []
+    github_labels:
+      - execution
+      - verifier
+    execution_capable: true
+    execution_roles:
+      - VERIFIER
+    governance_only: false
+  - agent_key: offbook.operator
+    id: JAI::OFFBOOK_AI::OPERATOR
+    nh_id: 7.0.14
+    parent_nh_id: "7.0"
+    label: OffBook AI Operator
+    tier: 2
+    role: operator
+    function: execution
+    scope:
+      - repo:offbook-core
+      - paths:src/**
+      - paths:.nexus/**
+      - paths:config/**
+      - deny:**/.env*
+      - deny:**/*.env*
+      - deny:**/secrets/**
+      - actions:read
+      - actions:review
+      - actions:approve
+    delegates_to: []
+    github_labels:
+      - execution
+      - operator
+    execution_capable: true
+    execution_roles:
+      - OPERATOR
+    governance_only: false
