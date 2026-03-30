@@ -209,6 +209,55 @@ function loadGoverningMotionState(inboxTags: string[]): GoverningMotionState | n
   return { motionId, title, decisionStatus, handoffStatus, receiptStatus };
 }
 
+type LoopCoherenceVerdict = "COHERENT" | "PROGRESSING" | "INCOHERENT" | "NOT_GOVERNED";
+
+type LoopCoherenceState = {
+  verdict: LoopCoherenceVerdict;
+  reasons: string[];
+};
+
+function computeLoopCoherence(args: {
+  governingMotion: GoverningMotionState | null;
+  architectPresent: boolean;
+  builderPresent: boolean;
+  verifierPresent: boolean;
+  operatorDecisionKind: string | null;
+}): LoopCoherenceState {
+  if (!args.governingMotion) {
+    return { verdict: "NOT_GOVERNED", reasons: ["No motion tag — packet is not motion-linked."] };
+  }
+  const { decisionStatus, handoffStatus, receiptStatus } = args.governingMotion;
+  const reasons: string[] = [];
+
+  if (decisionStatus !== "RATIFIED") {
+    reasons.push(`Council decision is not RATIFIED (found: ${decisionStatus ?? "absent"}).`);
+  }
+  if (handoffStatus !== "ISSUED") {
+    reasons.push(`Execution handoff is not ISSUED (found: ${handoffStatus ?? "absent"}).`);
+  }
+  if (reasons.length > 0) {
+    return { verdict: "INCOHERENT", reasons };
+  }
+
+  if (!args.architectPresent) reasons.push("Architect evidence (debug.plan) is absent.");
+  if (!args.builderPresent) reasons.push("Builder evidence (debug.patch) is absent.");
+  if (!args.verifierPresent) reasons.push("Verifier evidence (debug.verify) is absent.");
+  if (args.operatorDecisionKind !== "WORK_APPROVED") {
+    reasons.push("Operator approval (WORK_APPROVED) not yet recorded.");
+  }
+  if (receiptStatus !== "COMPLETED") {
+    reasons.push(`Receipt is not COMPLETED (found: ${receiptStatus ?? "pending"}).`);
+  }
+  if (reasons.length > 0) {
+    return { verdict: "PROGRESSING", reasons };
+  }
+
+  return {
+    verdict: "COHERENT",
+    reasons: ["All governed conditions met: RATIFIED → ISSUED → executed → approved → COMPLETED."],
+  };
+}
+
 function writeReceiptArtifact(
   motionId: string,
   packetNhId: string,
@@ -676,6 +725,14 @@ export default async function WorkPacketDetailPage({ params }: Props) {
     operatorDecisionKind == null &&
     (baseLane.currentLane === "OPERATOR_REVIEW" || !!verifierEvt || !!p.verificationUrl);
 
+  const loopCoherence = computeLoopCoherence({
+    governingMotion,
+    architectPresent: !!architectEvt,
+    builderPresent: !!(builderEvt || p.githubPrUrl),
+    verifierPresent: !!(verifierEvt || p.verificationUrl),
+    operatorDecisionKind,
+  });
+
   return (
     <main className="min-h-screen bg-black text-gray-100 p-8">
       <header className="mb-6">
@@ -737,6 +794,21 @@ export default async function WorkPacketDetailPage({ params }: Props) {
                 {governingMotion.receiptStatus ?? "pending"}
               </div>
             </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-800 pt-3">
+            <div className="text-[11px] text-gray-500">loop coherence</div>
+            <div className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
+              loopCoherence.verdict === "COHERENT"
+                ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
+                : loopCoherence.verdict === "PROGRESSING"
+                  ? "bg-sky-900/50 text-sky-200 border-sky-800"
+                  : loopCoherence.verdict === "INCOHERENT"
+                    ? "bg-amber-900/40 text-amber-200 border-amber-800"
+                    : "bg-zinc-900 text-gray-400 border-gray-700"
+            }`}>
+              {loopCoherence.verdict}
+            </div>
+            <div className="text-xs text-gray-400">{loopCoherence.reasons.join(" · ")}</div>
           </div>
         </section>
       ) : null}

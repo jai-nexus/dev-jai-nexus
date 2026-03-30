@@ -1,0 +1,85 @@
+motion_id: "motion-0082"
+title: "bounded loop coherence gate"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-5"
+phase: "phase-1"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Add a bounded loop coherence gate that computes whether a motion-linked
+  work packet's governed chain is COHERENT, PROGRESSING, or INCOHERENT,
+  then surfaces the verdict inline in the existing Governing Motion section
+  on the operator work detail page. The gate checks five conditions: motion
+  identity, council ratification, handoff issuance, full execution evidence
+  (architect + builder + verifier), and terminal closure (operator approval
+  + COMPLETED receipt). Non-motion-linked packets are unaffected. Single
+  file changed.
+
+problem: >
+  WS-4 proved that operator approval writes execution.receipt.json and
+  closes the governed loop with a durable artifact. However, no code path
+  evaluates whether the full chain is coherent. An operator viewing packet
+  880 / motion-0070 can see individual states (RATIFIED, ISSUED, COMPLETED)
+  but cannot tell at a glance whether the entire governed chain is consistent.
+  A packet could have a COMPLETED receipt but no execution evidence, or
+  RATIFIED decision but no handoff, and nothing would flag the inconsistency.
+  The loop needs a single self-consistency verdict to feel trustworthy.
+
+proposal:
+  - "Add LoopCoherenceVerdict type (COHERENT | PROGRESSING | INCOHERENT |
+    NOT_GOVERNED) and LoopCoherenceState type inline in
+    portal/src/app/operator/work/[id]/page.tsx."
+  - "Add computeLoopCoherence({ governingMotion, architectPresent,
+    builderPresent, verifierPresent, operatorDecisionKind }) inline function
+    in the same file, using only data already computed in the page. No new
+    DB queries. No new file reads."
+  - "Call computeLoopCoherence in the page body after all evidence variables
+    are computed, producing loopCoherence = { verdict, reasons }."
+  - "Add a compact coherence row to the bottom of the existing Governing
+    Motion section JSX, rendered only when governingMotion is non-null.
+    Shows: verdict chip + reasons text."
+  - "Verdict chip colors: emerald=COHERENT, sky=PROGRESSING,
+    amber=INCOHERENT, slate=NOT_GOVERNED."
+  - "Coherence conditions: (1) motionId present, (2) decisionStatus=RATIFIED,
+    (3) handoffStatus=ISSUED, (4) architect+builder+verifier evidence present,
+    (5) operatorDecisionKind=WORK_APPROVED AND receiptStatus=COMPLETED."
+  - "Conditions 1-3 failing = INCOHERENT. Conditions 4-5 incomplete =
+    PROGRESSING. All 5 met = COHERENT."
+
+non_goals:
+  - "Do not add enforcement — the gate computes and surfaces; it does not block."
+  - "Do not add schema migration."
+  - "Do not create a loop coherence dashboard or browsing surface."
+  - "Do not change the list page."
+  - "Do not add new page routes."
+  - "Do not modify workPacketActions.ts, executionLane.ts, or workPacketLifecycle.ts."
+  - "Do not modify any agent runtime."
+  - "Do not change the council seam."
+  - "Do not add policy engine logic."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "For packet 880 / motion-0070 (RATIFIED, ISSUED, full execution chain,
+    WORK_APPROVED, receipt COMPLETED): coherence verdict = COHERENT (emerald)."
+  - "For a motion-linked packet with missing execution evidence: verdict =
+    PROGRESSING (sky) with descriptive reasons."
+  - "For a motion-linked packet with unratified decision: verdict = INCOHERENT
+    (amber) with descriptive reasons."
+  - "For a non-motion-linked packet: coherence row is not rendered."
+  - "Only portal/src/app/operator/work/[id]/page.tsx is changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
