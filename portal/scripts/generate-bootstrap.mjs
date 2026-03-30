@@ -30,6 +30,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import readline from "node:readline";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
@@ -563,6 +564,59 @@ function buildClaudeMd(intake, topology) {
   ].join("\n");
 }
 
+// ── Bootstrap manifest ────────────────────────────────────────────────────────
+
+function hashFile(filePath) {
+  const abs = path.resolve(process.cwd(), filePath);
+  if (!fs.existsSync(abs)) return null;
+  return createHash("sha256").update(fs.readFileSync(abs)).digest("hex");
+}
+
+// Static classification table for the 12 Wave 0 substrate artifacts.
+const WAVE0_ARTIFACT_META = [
+  { id: "agency-config",             path: "config/agency.yaml",                              classification: "generated"   },
+  { id: "project-constitution",      path: ".nexus/context/project-constitution.yaml",         classification: "generated"   },
+  { id: "agent-manifest",            path: ".nexus/agent-manifest.yaml",                       classification: "generated"   },
+  { id: "council-config",            path: ".nexus/council.config.yaml",                       classification: "copied"      },
+  { id: "council-deps",              path: ".nexus/council.deps.yaml",                         classification: "copied"      },
+  { id: "slot-policy",               path: ".nexus/context/slot-policy.yaml",                  classification: "copied"      },
+  { id: "scoring-rubric",            path: ".nexus/context/scoring-rubric.yaml",               classification: "copied"      },
+  { id: "motion-packet-schema",      path: ".nexus/context/motion-packet.schema.json",         classification: "copied"      },
+  { id: "repo-capsule-schema",       path: ".nexus/context/repo-capsule.schema.yaml",          classification: "copied"      },
+  { id: "inaugural-motion-yaml",     path: ".nexus/motions/motion-0001/motion.yaml",           classification: "stubbed"     },
+  { id: "inaugural-motion-proposal", path: ".nexus/motions/motion-0001/proposal.md",           classification: "manual-only" },
+  { id: "claude-md",                 path: "CLAUDE.md",                                        classification: "stubbed"     },
+];
+
+function buildBootstrapManifest(intake, topology, substrateResults, generatedAt, intakeHash) {
+  const resultMap = Object.fromEntries(substrateResults.map((r) => [r.id, r.result]));
+
+  const artifacts = WAVE0_ARTIFACT_META.map((meta) => ({
+    id:             meta.id,
+    path:           meta.path,
+    classification: meta.classification,
+    result:         resultMap[meta.id] ?? "unknown",
+  }));
+
+  const wrote   = substrateResults.filter((r) => ["wrote", "copied"].includes(r.result)).length;
+  const skipped = substrateResults.filter((r) => r.result === "skipped").length;
+  const missing = substrateResults.filter((r) => r.result === "missing").length;
+
+  return yaml.stringify({
+    version:                  "0.1",
+    artifact:                 "bootstrap-manifest-instance",
+    project_id:               intake.project_id,
+    governance_resident_repo: topology.governance_resident_repo,
+    generated_at:             generatedAt,
+    wave:                     0,
+    input_hashes: {
+      intake: intakeHash,
+    },
+    artifacts,
+    totals: { wrote, skipped, missing, total: artifacts.length },
+  });
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -610,6 +664,7 @@ async function main() {
     log(``);
   }
 
+  const generatedAt = new Date().toISOString();
   const opts = { dryRun: args.dryRun, force: args.force };
   const results = [];
   function rec(id, r) { results.push({ id, result: r }); }
@@ -702,6 +757,16 @@ async function main() {
     path.join(outputRoot, "CLAUDE.md"),
     buildClaudeMd(intake, topology),
     { ...opts, label: "stubbed" }
+  ));
+
+  // 13. .nexus/planning/bootstrap-manifest.instance.yaml [manifest]
+  //     Records generation event: timestamp, input hash, per-artifact results.
+  //     Written after substrate artifacts so results are accurate.
+  //     Spec: bootstrap-generator.spec.md (motion-0088), impl: motion-0095.
+  rec("bootstrap-manifest", writeFileIdempotent(
+    path.join(outputRoot, ".nexus", "planning", "bootstrap-manifest.instance.yaml"),
+    buildBootstrapManifest(intake, topology, results, generatedAt, hashFile(args.intake)),
+    { ...opts, label: "manifest" }
   ));
 
   // ── Summary ──
