@@ -1,0 +1,65 @@
+motion_id: "motion-0090"
+title: "Bounded Bootstrap Generator Real-Write Proof v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "proof"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-D"
+impl_motion: "motion-0089"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - "portal/scripts/generate-bootstrap.mjs"
+    - "out/bootstrap-proof/offbook-ai/"
+
+summary: >
+  Execute a bounded real-write proof of the Wave 0 bootstrap generator
+  (motion-0089) against a disposable output directory. Verify that all 12
+  Wave 0 artifacts are emitted with correct content and classification
+  behavior. Confirm idempotent skip on a second run. Apply only minimal
+  fixes if the proof exposes a concrete defect.
+
+problem: >
+  The dry-run proof (motion-0089) confirmed the artifact list and
+  classification labels. A real-write proof is required before the generator
+  can be considered a practical baseline tool: it validates that generated
+  YAML is parseable, copied files are intact, stubbed/manual-only boundaries
+  hold under actual file system writes, and idempotency works correctly.
+
+proposal:
+  - "Run real-write proof: node portal/scripts/generate-bootstrap.mjs
+    --intake .nexus/planning/offbook-ai-intake-example.yaml
+    --output out/bootstrap-proof/offbook-ai --yes"
+  - "Inspect emitted artifact set against WS-D manifest schema."
+  - "Verify generated agency.yaml is parseable YAML with 9 agents."
+  - "Verify proposal.md contains only headings + HTML comment placeholders."
+  - "Verify CLAUDE.md is stubbed with TODO placeholders."
+  - "Run a second pass to confirm idempotent skip behavior."
+  - "Apply minimal fixes only if a concrete defect is found."
+
+non_goals:
+  - "Do not write to a real project repo."
+  - "Do not implement WS-E planning."
+  - "Do not emit Wave 1+ artifacts."
+  - "Do not redesign the generator."
+  - "Do not start OffBook.ai implementation."
+
+success_criteria:
+  - "Real write completes with 12 artifacts emitted."
+  - "Generated agency.yaml parses as valid YAML with 9 agent entries."
+  - "proposal.md contains no governance prose — headings and HTML comments only."
+  - "Second run shows all 12 skipped (idempotent)."
+  - "Any fixes are tiny and clearly justified by proof output."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

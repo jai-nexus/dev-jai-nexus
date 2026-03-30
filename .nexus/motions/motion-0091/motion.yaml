@@ -1,0 +1,66 @@
+motion_id: "motion-0091"
+title: "Bounded Dispatch and Coverage Integration Spec v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "spec"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-E"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/planning/coverage-declaration.schema.yaml"
+    - ".nexus/planning/dispatch-integration.spec.md"
+
+summary: >
+  Define the two planning artifacts that close the motion-0084 bootstrap
+  program: a coverage-declaration schema capturing what a bootstrapped project
+  declares about its repo scope, agent coverage, and governance placement; and
+  a dispatch-integration spec defining the minimum handle surface a project
+  must expose for future routing. No runtime implementation.
+
+problem: >
+  After WS-D the generator can emit a Wave 0 substrate, but nothing yet
+  defines what a completed bootstrap declares about itself — and nothing
+  defines the minimum interface boundary between the planning system and any
+  future dispatch or routing layer. Without this spec, integrators have no
+  stable contract to work from, and it is unclear what planner-owned fields
+  vs implementation-owned wiring are in scope for Wave 1+.
+
+proposal:
+  - "Create coverage-declaration.schema.yaml — post-bootstrap declaration of
+    repo scope, agent roster, governance surface, and current wave state."
+  - "Create dispatch-integration.spec.md — dispatch handle surface, field
+    provenance (planner-owned vs implementation-owned), and integration boundary."
+  - "Pressure-test both artifacts against the OffBook.ai planning example."
+  - "Planning artifacts only. No conductor wiring, no queue bindings, no
+    runtime implementation."
+
+non_goals:
+  - "Do not implement dispatch routing."
+  - "Do not wire conductor or work-packet queues."
+  - "Do not touch portal runtime code."
+  - "Do not generate coverage-declaration files from the bootstrap generator
+    (that is Wave 1+ scope)."
+  - "Do not start any OffBook.ai implementation."
+
+success_criteria:
+  - "coverage-declaration.schema.yaml is a valid, self-contained schema with
+    clear field provenance annotations."
+  - "dispatch-integration.spec.md defines the handle surface, planner/impl
+    boundary, and integration contract without prescribing implementation."
+  - "OffBook.ai pressure test passes: all required handle fields are satisfiable
+    from the existing planning example."
+  - "Both artifacts are consistent with WS-A through WS-D schemas."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

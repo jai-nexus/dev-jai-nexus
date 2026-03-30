@@ -1,0 +1,72 @@
+motion_id: "motion-0088"
+title: "Bounded Bootstrap Artifact Generator Spec v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "planning-child"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-D"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/planning/bootstrap-manifest.schema.yaml"
+    - ".nexus/planning/bootstrap-generator.spec.md"
+
+summary: >
+  Define the exact Wave 0 artifact set and generation contract for bootstrapping
+  a new JAI NEXUS project. Produce bootstrap-manifest.schema.yaml (the per-project
+  manifest of artifacts to emit) and bootstrap-generator.spec.md (the behavioral
+  contract for a future generator script). This is a planning-only motion — the
+  generator implementation is a separate child motion.
+
+problem: >
+  WS-A through WS-C define what a project looks like, what agents it needs, and
+  how its topology and waves are structured. What is missing is a precise definition
+  of: (1) exactly which files must be emitted to stand up a new project at Wave 0,
+  (2) which are safe to auto-generate vs which require human authorship, and (3)
+  what a future generator is contractually permitted to do. Without this, the
+  generator cannot be safely implemented.
+
+proposal:
+  - "Define bootstrap-manifest.schema.yaml: per-project manifest listing every
+    Wave 0 artifact with path, classification (generated/copied/stubbed/manual-only),
+    source inputs, and human-completion flag."
+  - "Define bootstrap-generator.spec.md: behavioral contract for the future
+    generator — what it reads, what it emits, what it must never auto-author,
+    and what fields are safe to synthesize from structured inputs."
+  - "Ground Wave 0 artifact set in the dev-jai-nexus baseline (12 artifacts
+    across 4 classifications)."
+  - "Confirm that Wave 1+ artifacts (agent-panels.yaml, model-routing.yaml,
+    model-slots.yaml, claude/ operational guides, surfaces/) are out of scope
+    for Wave 0 emission."
+  - "Pressure-test OffBook.ai against the bootstrap manifest."
+
+non_goals:
+  - "Do not implement the generator script."
+  - "Do not implement any runtime, queue, or dispatch bridge."
+  - "Do not wire model-slots or agent panels."
+  - "Do not define WS-E (dispatch/coverage) rules."
+  - "Do not change intake, demand, topology, or wave schemas."
+  - "Do not start OffBook.ai implementation."
+
+success_criteria:
+  - "bootstrap-manifest.schema.yaml v0.1 defines all Wave 0 artifacts with
+    classifications grounded in the dev-jai-nexus baseline."
+  - "bootstrap-generator.spec.md defines the generator contract: inputs,
+    outputs, permitted operations, and hard prohibitions."
+  - "Every synthesized field has an explicit source traced to intake, demand,
+    or topology plan."
+  - "OffBook.ai can produce a complete Wave 0 manifest with no ambiguous entries."
+  - "The generator spec is implementable without further planning work."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

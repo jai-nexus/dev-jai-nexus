@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0091",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "WS-E deliverable complete: coverage-declaration.schema.yaml committed with full provenance annotations and OffBook.ai 9-agent example. dispatch-integration.spec.md committed with dispatch handle table, planner/implementation boundary diagram, integration contract, Wave 0 checklist. OffBook.ai pressure test: all 10 required handle fields satisfied from existing WS-A through WS-D artifacts.",
+      "ts": "2026-03-30T06:30:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Planner/implementation boundary is clearly drawn. No runtime code created. Coverage declaration serves a distinct purpose from agency.yaml (wave state, provenance, dispatch-facing aggregation). Both challenges resolved without blocking objections.",
+      "ts": "2026-03-30T06:30:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Planning program boundary holds. No new intake fields required by the OffBook.ai pressure test. Planning-only scope preserved throughout WS-E. Program is complete.",
+      "ts": "2026-03-30T06:30:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T06:30:15.000Z"
+}

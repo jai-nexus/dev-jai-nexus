@@ -1,0 +1,74 @@
+motion_id: "motion-0092"
+title: "Bounded Bootstrap Planning Ratification Sweep"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "governance-closure"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/motions/motion-0084/"
+    - ".nexus/motions/motion-0085/"
+    - ".nexus/motions/motion-0086/"
+    - ".nexus/motions/motion-0087/"
+    - ".nexus/motions/motion-0088/"
+    - ".nexus/motions/motion-0089/"
+    - ".nexus/motions/motion-0090/"
+    - ".nexus/motions/motion-0091/"
+
+summary: >
+  Perform a truthful governance closeout sweep for the completed motion-0084
+  bootstrap and agency planning program. Inspect each child motion (0085–0091)
+  and the umbrella (0084), determine which are genuinely complete, and produce
+  the full ratification artifact set (vote.json, verify.json, policy.yaml,
+  decision.yaml, decision.md) for each justified motion. Close child motions
+  first; close the umbrella last.
+
+problem: >
+  All planning and implementation work under the motion-0084 program is
+  committed on q4/bootstrap-agency-planning. Every child motion (WS-A through
+  WS-E) has a complete motion package with challenge resolved and execution
+  evidence, but all decision.yaml files remain DRAFT. The branch cannot be
+  reviewed or merged from a clean baseline until each motion is truthfully
+  closed with the repo-standard ratification artifact set.
+
+proposal:
+  - "Inspect motion-0084 through motion-0091 directly from the repo."
+  - "Determine closure order: child motions first, umbrella last."
+  - "Run validate_motion and validate_agency gates for each motion."
+  - "Produce vote.json, verify.json, policy.yaml, decision.yaml (RATIFIED),
+    and decision.md (RATIFIED) for each confirmed-complete motion."
+  - "Do not create execution.handoff.json or execution.receipt.json for
+    planning-only motions (no executor handoff involved)."
+  - "Do not touch motion.yaml status fields (repo convention: stays proposed)."
+  - "Ratify motion-0084 umbrella last, after all children are closed."
+
+non_goals:
+  - "Do not start new planning or implementation work."
+  - "Do not create new planning artifacts."
+  - "Do not touch portal runtime code."
+  - "Do not merge the branch."
+  - "Do not create handoff or receipt artifacts for planning motions."
+  - "Do not widen scope to any other program or motion series."
+
+success_criteria:
+  - "motion-0085 through motion-0091 each have vote.json, verify.json,
+    policy.yaml, decision.yaml=RATIFIED, decision.md=RATIFIED."
+  - "motion-0084 ratified after all children."
+  - "No motion is falsely ratified — each ratification is justified by
+    committed planning/implementation/proof artifacts."
+  - "validate_motion and validate_agency pass for all closed motions."
+  - "Branch is in a clean, fully closed baseline ready for review."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"

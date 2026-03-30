@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0089",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "WS-D implementation complete: portal/scripts/generate-bootstrap.mjs implemented as an ES module with full argument parsing, demand/topology fallback derivation, idempotency via existsSync, --dry-run/--force/--yes flags. package.json bootstrap:gen command added. OffBook.ai dry-run produces 12 artifacts with correct classifications.",
+      "ts": "2026-03-30T06:20:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Idempotency implemented correctly. Manual-only boundary enforced for proposal.md. OPERATOR agent scoped to governance-resident repo only. Dry-run proof sufficient for the implementation motion; real-write proof correctly delegated to motion-0090.",
+      "ts": "2026-03-30T06:20:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Generator implementation matches spec. Proof sequence is sound: dry-run (motion-0089) then real-write (motion-0090). No runtime artifacts touched.",
+      "ts": "2026-03-30T06:20:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T06:20:15.000Z"
+}

@@ -1,0 +1,205 @@
+version: "0.1"
+artifact: "wave-model-schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-C"
+motion: "motion-0087"
+
+# Schema for the bootstrap wave model produced by the Topology and Wave Planner.
+#
+# Input:  topology plan (topology-plan.schema.yaml v0.1)
+# Output: ordered wave sequence with proof gates, ready to inform
+#         bootstrap-manifest.schema.yaml (WS-D).
+#
+# Reference baseline: dev-jai-nexus Q2 governed loop activation arc
+#   (motion-0071 through motion-0083). The five-wave model is grounded in
+#   the sequence of work that proved the full loop end-to-end.
+
+advancement_rule:
+  type: "proof_based"
+  description: >
+    Wave N+1 may begin only after at least one completed proof from Wave N
+    exists. "At least one" means a single instance suffices — exhaustive
+    coverage is not required for wave advancement. Quality beyond the minimum
+    proof condition is a governance judgment, not a wave gate constraint.
+  not: "calendar_based"
+
+fields:
+  project_id:
+    type: string
+    required: true
+
+  topology_shape:
+    type: enum
+    values: ["monorepo", "polyrepo"]
+    required: true
+    description: "Echoed from topology plan. Influences Wave 2 proof gate."
+
+  governance_resident_repo:
+    type: string
+    required: true
+    description: "Echoed from topology plan. All wave proof artifacts land here."
+
+  entry_wave:
+    type: integer
+    required: true
+    description: >
+      Which wave this project enters at.
+        greenfield  → 0  (must prove all waves)
+        migration   → determined by existing governance state (WS-C decision)
+        extension   → determined by parent project wave level (WS-C decision)
+    default: 0
+
+  waves:
+    type: array
+    ordered: true
+    items:
+
+      # -----------------------------------------------------------------------
+      - wave: 0
+        name: "Governance Substrate"
+        description: >
+          Establish the minimum governance infrastructure. This wave produces
+          no runtime features — only durable governance artifacts.
+        artifact_categories:
+          auto_generated:
+            - "config/agency.yaml (from demand matrix)"
+            - ".nexus/context/project-constitution.yaml (from intake)"
+            - ".nexus/motions/motion-0001/motion.yaml (stub)"
+          manually_authored:
+            - ".nexus/motions/motion-0001/proposal.md (inaugural governance decision)"
+          copied_from_baseline:
+            - ".nexus/context/slot-policy.yaml"
+            - ".nexus/context/scoring-rubric.yaml"
+            - ".nexus/context/motion-packet.schema.json"
+          note: >
+            Specific file paths and generation rules are owned by WS-D
+            (bootstrap-manifest.schema.yaml). WS-C records categories only.
+        proof_gate:
+          minimum_conditions:
+            - "config/agency.yaml committed and parseable as valid YAML"
+            - "Council agent entry present in agency.yaml with governance_only: true"
+            - "Inaugural motion package committed: motion.yaml + proposal.md minimum"
+          topology_variants: null
+
+      # -----------------------------------------------------------------------
+      - wave: 1
+        name: "Planning Activation"
+        description: >
+          Prove that governed planning works: an architect agent can claim
+          a motion, a council run produces a decision, and a work packet
+          is issued and motion-tagged.
+        artifact_categories:
+          expected_outputs:
+            - "First ratified decision.yaml in a motion directory"
+            - "First work packet with motion:<motionId> tag"
+            - "Architect execution evidence in the packet"
+        proof_gate:
+          minimum_conditions:
+            - "At least one motion has decision.yaml with status: RATIFIED"
+            - "At least one AgentInboxItem (or equivalent work packet) exists
+               with a motion:<motionId> tag"
+          topology_variants: null
+
+      # -----------------------------------------------------------------------
+      - wave: 2
+        name: "Execution Activation"
+        description: >
+          Prove the full execution chain: ARCHITECT → BUILDER → VERIFIER
+          complete in a single motion-linked packet. Queue bridges operational.
+        artifact_categories:
+          expected_outputs:
+            - "Architect plan evidence (debug.plan or equivalent) in packet"
+            - "Builder patch evidence (debug.patch, PR, or patch artifact)"
+            - "Verifier validation evidence (debug.verify or equivalent)"
+        proof_gate:
+          minimum_conditions:
+            - "At least one packet has architect evidence AND builder evidence
+               AND verifier evidence — all three in the same motion-linked packet"
+          topology_variants:
+            polyrepo_addition: >
+              At least one builder or verifier evidence artifact must reference
+              a path in a secondary repo (not governance-resident repo only),
+              proving that cross-repo scope_repos is operational for the
+              execution agent.
+
+      # -----------------------------------------------------------------------
+      - wave: 3
+        name: "Operator Surface"
+        description: >
+          Prove operator-surface closure: the governing motion section is
+          visible, the operator takes an explicit decision action, and an
+          execution receipt is written as a durable artifact.
+        artifact_categories:
+          expected_outputs:
+            - "execution.receipt.json in .nexus/motions/<motionId>/"
+        proof_gate:
+          minimum_conditions:
+            - "At least one execution.receipt.json exists in a motion directory"
+            - "Receipt contains a valid status field (COMPLETED, CHANGES_REQUESTED,
+               or REQUEUED)"
+          topology_variants:
+            polyrepo_note: >
+              Receipt is written to governance_resident_repo/.nexus/motions/<id>/.
+              OPERATOR is scoped to governance-resident repo by WS-B default.
+
+      # -----------------------------------------------------------------------
+      - wave: 4
+        name: "Coherence and Coverage"
+        description: >
+          Prove the full governed loop is coherent end-to-end. Declare
+          coverage for the bootstrap sequence.
+        artifact_categories:
+          expected_outputs:
+            - "Loop coherence gate evaluation returning COHERENT verdict"
+            - "Coverage declaration artifact (optional; WS-E scope)"
+        proof_gate:
+          minimum_conditions:
+            - "At least one packet returns verdict: COHERENT from the loop
+               coherence gate"
+            - "Coherent verdict requires all five conditions: motion RATIFIED →
+               execution handoff ISSUED → architect/builder/verifier evidence
+               present → operator WORK_APPROVED → receipt status COMPLETED"
+          topology_variants: null
+
+# --- Monorepo vs polyrepo wave differences summary ---
+
+topology_wave_differences:
+  monorepo:
+    summary: "Waves 0–4 execute entirely within one repo. All proof is repo-local."
+    wave_0: "Governance substrate in single repo."
+    wave_2: "Execution chain is repo-local. No cross-repo proof required."
+    wave_3: "Receipt in single repo."
+
+  polyrepo:
+    summary: >
+      Wave 0 targets governance-resident repo only. Secondary repos receive
+      no Wave 0 artifacts. Wave 2 should include at least one cross-repo
+      execution proof to validate agent scope.
+    wave_0: >
+      agency.yaml and .nexus/ in governance-resident repo.
+      Secondary repos: no Wave 0 artifacts required.
+    wave_2: >
+      Execution chain nominally in governance-resident repo.
+      Polyrepo gate addition: at least one builder or verifier action must
+      touch a secondary repo path to prove cross-repo scope works.
+    wave_3: >
+      Receipt in governance-resident repo (OPERATOR is scoped there by default).
+    wave_1_and_4: "No topology-specific differences."
+
+# --- Wave entry points by project_type ---
+
+entry_wave_rules:
+  greenfield:
+    entry_wave: 0
+    description: "Must prove all waves from substrate up."
+  migration:
+    entry_wave: "WS-C decision based on existing governance state"
+    description: >
+      If agency.yaml and .nexus/ already exist: enter at Wave 1.
+      If first ratified motion already exists: enter at Wave 2.
+      Planner inspects existing state and sets entry_wave explicitly.
+  extension:
+    entry_wave: "WS-C decision based on parent project wave level"
+    description: >
+      If parent project is at Wave 4: extension may enter at Wave 1
+      (governance substrate inherited). Planner sets entry_wave explicitly.

@@ -1,22 +1,25 @@
-# Decision: Bounded Agent Demand Planner v0
+# Decision - motion-0086
 
-**Motion:** motion-0086
-**Status:** DRAFT
-**Date:** 2026-03-30
+## Status
+RATIFIED
 
 ## Summary
+Motion `motion-0086` is ratified.
 
-Motion `motion-0086` is a DRAFT WS-B child motion under the Q3 bootstrap
-and agency planning program (motion-0084).
+WS-B (Agent Demand Planner) is complete. `agent-demand-matrix.schema.yaml`
+v0.1 is committed with the NH-suffix convention corrected (council = nh_root,
+governance children = .1–.4, execution = .10–.14), `scope_actions` per-role
+field defined, `governance_resident_only` boolean with per-role defaults,
+and `staffing_tier_rules` (minimum_viable=1 slot, expanded, panel=6) documented.
+OffBook.ai pressure test produces 9 agents with correct NH IDs.
 
-## Scope
-
-Refines `agent-demand-matrix.schema.yaml` from the motion-0084 draft to v0.1
-canon: corrects NH-suffix convention, adds scope_actions and
-governance_resident_only fields, defines staffing-tier-to-slots mapping,
-and states monorepo vs polyrepo scope_repos rules explicitly.
+## Evidence
+- `.nexus/planning/agent-demand-matrix.schema.yaml` committed at v0.1
+- NH convention verified against `config/agency.yaml` baseline
+- OffBook.ai derived_agents: 9 agents (7.0, 7.0.1–7.0.4, 7.0.10–7.0.12, 7.0.14)
+- `validate_motion`: PASS
+- `validate_agency`: PASS
+- challenge.md: no blocking objections; NH convention fix and monorepo_vs_polyrepo challenge resolved
 
 ## Notes
-
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratified as part of the motion-0092 governance closure sweep.

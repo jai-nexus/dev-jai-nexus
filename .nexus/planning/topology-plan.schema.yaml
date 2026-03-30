@@ -1,0 +1,213 @@
+version: "0.1"
+artifact: "topology-plan-schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-C"
+motion: "motion-0087"
+
+# Schema for the topology plan produced by the Topology and Wave Planner.
+#
+# Input:  project intake canon (project-intake.schema.yaml v0.1)
+#         agent demand matrix  (agent-demand-matrix.schema.yaml v0.1)
+# Output: topology plan ready to inform wave-model.schema.yaml and
+#         bootstrap-manifest.schema.yaml (WS-D).
+#
+# WS-C derives fields from intake data — it does not re-collect them.
+# Fields marked "derived_from" are computed, not supplied by the operator.
+
+fields:
+  project_id:
+    type: string
+    required: true
+    description: "Must match intake.project_id."
+
+  project_type:
+    type: enum
+    values: ["greenfield", "migration", "extension"]
+    required: true
+    description: "Echoed from intake. Informs wave entry point."
+
+  shape:
+    type: enum
+    values: ["monorepo", "polyrepo"]
+    required: true
+    description: "Echoed from intake.topology.shape for downstream consumers."
+
+  execution_scope:
+    type: enum
+    values: ["repo_local", "cross_repo"]
+    required: true
+    derived_from: "intake.topology.shape"
+    rule: "monorepo → repo_local; polyrepo → cross_repo"
+    description: >
+      WS-C derives this field. It was intentionally excluded from the intake
+      canon (WS-A) because it is fully determined by topology.shape.
+
+  governance_resident_repo:
+    type: string
+    required: true
+    derived_from: "intake.topology.repos where governance_resident=true"
+    validation: "Exactly one repo in intake.topology.repos must have governance_resident=true."
+    description: >
+      Name of the single repo that hosts governance artifacts.
+      Operationally, this repo:
+        1. Hosts .nexus/ (motions/, context/, planning/)
+        2. Hosts config/agency.yaml
+        3. Is the scope target for all 5 governance agents
+        4. Is the scope target for OPERATOR and LIBRARIAN (WS-B default)
+        5. Receives all Wave 0 bootstrap artifacts
+      For monorepo: always the single repo (implicit).
+      For polyrepo: the repo where governance_resident=true.
+
+  total_repos:
+    type: integer
+    required: true
+    derived_from: "count(intake.topology.repos)"
+
+  repo_profiles:
+    type: array
+    required: true
+    min_items: 1
+    description: >
+      Enriched per-repo data derived from intake.topology.repos and
+      WS-B demand matrix. WS-D uses this to emit correct agency.yaml
+      scope entries.
+    item_schema:
+      name:
+        type: string
+        required: true
+        description: "Repo name. Must match intake.topology.repos[].name."
+
+      tier:
+        type: enum
+        values: ["primary", "secondary", "tertiary"]
+        required: true
+        description: "Echoed from intake."
+
+      domain_scope:
+        type: string
+        required: true
+        description: "Echoed from intake (e.g., 'api', 'frontend', 'infra')."
+
+      governance_resident:
+        type: boolean
+        required: true
+        description: "Echoed from intake."
+
+      agent_scope_paths:
+        type: array
+        required: true
+        populated_by: planner
+        description: >
+          Path patterns for agents scoped to this repo. Populated by the
+          planner (human or generator) based on the repo's actual directory
+          structure — NOT computed from intake data alone.
+          Format grounded in config/agency.yaml dev-jai-nexus baseline:
+            paths:<glob>      — include path
+            deny:<glob>       — exclude path
+          Example patterns:
+            paths:src/**          (primary source tree)
+            paths:portal/src/**   (named app source)
+            paths:.nexus/**       (governance artifacts; governance-resident only)
+            paths:config/**       (config files)
+            deny:**/.env*
+            deny:**/secrets/**
+          Note: governance-resident repo always includes paths:.nexus/**
+          and paths:config/**. Secondary repos do not.
+
+      roles_scoped_here:
+        type: array
+        required: true
+        derived_from: "WS-B execution_agents[].scope_repos + governance agents"
+        description: >
+          Which agent roles have this repo in their scope_repos.
+          For governance-resident repo: all 5 governance roles + all
+          required execution roles.
+          For secondary repos: execution roles where
+          governance_resident_only=false (ARCHITECT, BUILDER, VERIFIER).
+          OPERATOR and LIBRARIAN default to governance-resident only (WS-B).
+
+      is_primary_execution_surface:
+        type: boolean
+        required: false
+        default: false
+        description: >
+          True if this repo is the main target for builder/verifier
+          execution work. Used as a hint for WS-D path-scope generation.
+          Typically true for the repo with domain_scope 'api' or 'core'.
+
+  cross_repo_links:
+    type: array
+    required: false
+    topology_note: "polyrepo only; omit for monorepo"
+    description: >
+      Inter-repo dependency edges. Optional metadata used by WS-D for
+      scope-path generation and WS-E for dispatch bridge planning.
+      Does not affect wave sequencing.
+    item_schema:
+      from_repo:
+        type: string
+        required: true
+        description: "Repo that depends on or consumes from to_repo."
+
+      to_repo:
+        type: string
+        required: true
+        description: "Repo being depended on or consumed."
+
+      relationship:
+        type: enum
+        values: ["api_consumer", "shared_infra", "sibling"]
+        required: true
+        description: >
+          api_consumer: from_repo consumes an API surface exposed by to_repo.
+          shared_infra: repos share infrastructure (database, queue, auth
+            service, etc.).
+          sibling: repos are independently deployable but share governance
+            scope; no direct API or infra dependency.
+
+      notes:
+        type: string
+        required: false
+
+  governance_surface:
+    type: object
+    required: true
+    description: >
+      Canonical governance artifact locations for this project.
+      All paths are relative to governance_resident_repo root.
+    fields:
+      nexus_root:
+        value: ".nexus/"
+        description: "Governance root directory."
+      motions_dir:
+        value: ".nexus/motions/"
+      context_dir:
+        value: ".nexus/context/"
+      agency_config:
+        value: "config/agency.yaml"
+      resident_repo:
+        type: string
+        description: "Same as governance_resident_repo. Echoed here for clarity."
+
+# --- Monorepo vs polyrepo operational differences ---
+
+topology_operational_rules:
+  monorepo:
+    execution_scope: "repo_local"
+    governance_resident_repo: "The single repo (implicit)"
+    repo_profiles_count: 1
+    cross_repo_links: "omit"
+    agent_scope_repos_rule: >
+      All agents scoped to the single repo. governance_resident_only has no
+      practical effect.
+
+  polyrepo:
+    execution_scope: "cross_repo"
+    governance_resident_repo: "Must be explicitly set on exactly one repo"
+    repo_profiles_count: "count(intake.topology.repos)"
+    cross_repo_links: "optional; recommended when API or infra dependencies exist"
+    agent_scope_repos_rule: >
+      ARCHITECT, BUILDER, VERIFIER: scope_repos = all repos in topology.
+      OPERATOR, LIBRARIAN (default): scope_repos = [governance_resident_repo].
+      Override: set governance_resident_only=false for cross-repo operator
+      placement (WS-C decision, noted in topology plan).
