@@ -1,0 +1,69 @@
+motion_id: "motion-0087"
+title: "Bounded Topology and Wave Planner v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "planning-child"
+program: "q3-bootstrap-planning"
+parent_motion: "motion-0084"
+workstream: "WS-C"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/planning/topology-plan.schema.yaml"
+    - ".nexus/planning/wave-model.schema.yaml"
+
+summary: >
+  Define how JAI NEXUS derives project topology and proof-based wave
+  sequencing from the project intake canon and agent demand planner outputs.
+  Produce topology-plan.schema.yaml and wave-model.schema.yaml v0.1.
+  Derive execution_scope, governance-resident repo placement, per-repo agent
+  path patterns, and cross-repo links from intake data. Define five bootstrap
+  waves with explicit minimum proof gates. Pressure-test against OffBook.ai.
+
+problem: >
+  WS-A defines what a project looks like at intake time. WS-B defines which
+  agents are required. Neither defines how the project is structured for
+  bootstrap execution: which repo hosts governance artifacts, how agents are
+  path-scoped per repo, how waves sequence the bootstrap, or what proof
+  conditions must be met before advancing. WS-D (bootstrap artifact generator)
+  cannot define what to emit without this topology and wave model.
+
+proposal:
+  - "Define topology-plan.schema.yaml: input = intake + demand output; derives
+    execution_scope, governance_resident_repo, per-repo profiles with agent
+    path patterns, and optional cross-repo links."
+  - "Define wave-model.schema.yaml: five waves (0–4) with names, responsibilities,
+    and minimum proof gates. Proof-based advancement, not calendar-based."
+  - "State what WS-C derives vs what it inherits from WS-A intake data."
+  - "State how monorepo vs polyrepo changes topology output and wave gating."
+  - "Define governance-resident repo operationally in the planner context."
+  - "Pressure-test OffBook.ai against both schemas."
+
+non_goals:
+  - "Do not implement any generator, script, or runtime artifact."
+  - "Do not build runtime wave enforcement."
+  - "Do not define WS-D (bootstrap manifest) content."
+  - "Do not wire model-slots or queues."
+  - "Do not change intake, demand matrix, or OffBook.ai example files."
+  - "Do not start OffBook.ai implementation."
+
+success_criteria:
+  - "topology-plan.schema.yaml v0.1 is complete and grounded in agency.yaml
+    path conventions."
+  - "wave-model.schema.yaml v0.1 defines five waves with explicit proof gates."
+  - "execution_scope is stated as a WS-C output derived from topology.shape."
+  - "governance-resident repo is defined operationally."
+  - "Monorepo vs polyrepo wave differences are explicitly stated."
+  - "OffBook.ai can be cleanly represented by both schemas."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
