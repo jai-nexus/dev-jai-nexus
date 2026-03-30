@@ -1,0 +1,243 @@
+version: "0.1"
+artifact: "bootstrap-manifest-schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-D"
+motion: "motion-0088"
+
+# Schema for the per-project bootstrap manifest produced by the Bootstrap
+# Artifact Generator.
+#
+# The manifest is an instance document — one per project — that records
+# exactly which artifacts were emitted, their classifications, and their
+# source inputs. It is committed to the governance-resident repo as a
+# durable record of Wave 0 emission.
+#
+# Input:  project intake canon (WS-A)
+#         agent demand matrix  (WS-B)
+#         topology plan        (WS-C)
+# Output: bootstrap manifest instance + all emitted artifacts
+
+# --- Classification enum ---
+#
+# generated     — synthesized by the generator from structured inputs.
+#                 Every synthesized field has a declared source. No human
+#                 judgment encoded in the output.
+# copied        — taken verbatim from the dev-jai-nexus baseline.
+#                 No modification. Platform-stable governance artifacts.
+# stubbed       — generator emits a valid file with structural headings,
+#                 pre-filled deterministic fields, and command/path templates.
+#                 Human must complete non-deterministic sections.
+# manual-only   — generator emits structural headings and HTML comment
+#                 placeholders ONLY. Must not contain any prose that could
+#                 be read as governance content or decision rationale.
+#                 Human authors the full substantive content.
+
+fields:
+  project_id:
+    type: string
+    required: true
+
+  governance_resident_repo:
+    type: string
+    required: true
+    description: "All Wave 0 artifacts land in this repo."
+
+  generated_at:
+    type: string
+    format: iso8601
+    required: true
+
+  wave:
+    type: integer
+    value: 0
+    description: "This manifest covers Wave 0 emission."
+
+  artifacts:
+    type: array
+    required: true
+    description: "Ordered list of Wave 0 artifacts to emit."
+    items:
+
+      # 1 ────────────────────────────────────────────────────────────────────
+      - id: "agency-config"
+        path: "config/agency.yaml"
+        wave: 0
+        classification: generated
+        requires_human_completion: false
+        source:
+          demand_matrix: "governance_agents + execution_agents (NH IDs, agent keys, scope)"
+          topology_plan: "repo_profiles[].agent_scope_paths per repo"
+          intake: "project_id → owner.handle; nh_root → owner.nh_root"
+        notes: >
+          Full agency.yaml synthesized from the demand matrix. All agent
+          entries, NH IDs, scope_repos, scope_paths, scope_actions, and
+          governance/execution flags are deterministic from WS-B + WS-C output.
+
+      # 2 ────────────────────────────────────────────────────────────────────
+      - id: "project-constitution"
+        path: ".nexus/context/project-constitution.yaml"
+        wave: 0
+        classification: generated
+        requires_human_completion: false
+        source:
+          intake: "project_name, project_id, domain, project_type, required_roles"
+          topology_plan: "governance_resident_repo → repo_scope"
+          demand_matrix: "required_roles + optional_roles → roles.executor_roles"
+        notes: >
+          constitution.yaml synthesized from intake identity fields and role
+          demand. current_scope.focus is templated from project_id. Standard
+          principles and invariants copied from project-constitution baseline.
+
+      # 3 ────────────────────────────────────────────────────────────────────
+      - id: "agent-manifest"
+        path: ".nexus/agent-manifest.yaml"
+        wave: 0
+        classification: generated
+        requires_human_completion: false
+        source:
+          intake: "project_id"
+        notes: >
+          Existence marker for council runner. Wave 0 content is minimal
+          (version, description, project_id). Content is wired at Wave 1+.
+
+      # 4 ────────────────────────────────────────────────────────────────────
+      - id: "council-config"
+        path: ".nexus/council.config.yaml"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/council.config.yaml"
+        notes: >
+          Standard JAI NEXUS council governance defaults. required_roles uses
+          governance role identifiers (proposer, challenger, arbiter) which are
+          project-invariant. Human may modify post-generation for non-standard
+          council configurations.
+
+      # 5 ────────────────────────────────────────────────────────────────────
+      - id: "council-deps"
+        path: ".nexus/council.deps.yaml"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/council.deps.yaml"
+        notes: "Informational placeholder. Registry hint only; no functional content."
+
+      # 6 ────────────────────────────────────────────────────────────────────
+      - id: "slot-policy"
+        path: ".nexus/context/slot-policy.yaml"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/context/slot-policy.yaml"
+        notes: "Platform-stable. Role-first slot intent. No per-project variation."
+
+      # 7 ────────────────────────────────────────────────────────────────────
+      - id: "scoring-rubric"
+        path: ".nexus/context/scoring-rubric.yaml"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/context/scoring-rubric.yaml"
+        notes: "Platform-stable. Evaluation dimensions. No per-project variation."
+
+      # 8 ────────────────────────────────────────────────────────────────────
+      - id: "motion-packet-schema"
+        path: ".nexus/context/motion-packet.schema.json"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/context/motion-packet.schema.json"
+        notes: "Platform-stable. Motion packet structure schema."
+
+      # 9 ────────────────────────────────────────────────────────────────────
+      - id: "repo-capsule-schema"
+        path: ".nexus/context/repo-capsule.schema.yaml"
+        wave: 0
+        classification: copied
+        requires_human_completion: false
+        source:
+          baseline: "dev-jai-nexus:.nexus/context/repo-capsule.schema.yaml"
+        notes: >
+          Structural schema for repo capsule instances. Instances are generated
+          at Wave 1+; the schema is included in the Wave 0 context substrate.
+
+      # 10 ───────────────────────────────────────────────────────────────────
+      - id: "inaugural-motion-yaml"
+        path: ".nexus/motions/motion-0001/motion.yaml"
+        wave: 0
+        classification: stubbed
+        requires_human_completion: true
+        human_completion_fields:
+          - "title (may accept generator default)"
+          - "summary (must describe inaugural governance intent)"
+          - "proposal[] (must describe what the inaugural motion establishes)"
+        source:
+          intake: "project_id, domain → target.domain; project_name → title template"
+          topology_plan: "governance_resident_repo → target.repo"
+          generator: "motion_id=motion-0001, status=proposed, created_at=generation timestamp"
+        notes: >
+          Generator emits motion_id, status, created_at, target.domain,
+          target.repo, and a placeholder title. Human completes title, summary,
+          and proposal fields before Wave 0 proof gate.
+
+      # 11 ───────────────────────────────────────────────────────────────────
+      - id: "inaugural-motion-proposal"
+        path: ".nexus/motions/motion-0001/proposal.md"
+        wave: 0
+        classification: manual-only
+        requires_human_completion: true
+        human_completion_fields:
+          - "full body — all governance decision text"
+        source:
+          generator: "structural headings + HTML comment placeholders only"
+        notes: >
+          Generator emits headings (# Proposal, ## Context, ## Problem,
+          ## Proposal, ## Non-goals, ## Success criteria) with
+          <!-- TODO: author this section --> placeholders. Must not contain
+          any prose that could be read as governance content or decision
+          rationale. Human authors the full substantive body.
+
+      # 12 ───────────────────────────────────────────────────────────────────
+      - id: "claude-md"
+        path: "CLAUDE.md"
+        wave: 0
+        classification: stubbed
+        requires_human_completion: true
+        human_completion_fields:
+          - "## Purpose (project description and responsibilities)"
+          - "## High-sensitivity surfaces (project-specific paths)"
+          - "## How to work in this repo (project-specific workflow)"
+        source:
+          intake: "project_id → ## Repo heading"
+          topology_plan: "governance_resident_repo, governance_surface paths → ## Canonical governance surfaces"
+          generator: "## Core commands from baseline pnpm command templates"
+        notes: >
+          Generator emits ## Repo (repo name), ## Canonical governance surfaces
+          (from topology plan), and ## Core commands (baseline templates).
+          ## Purpose and project-specific sections use
+          [TODO: describe ...] placeholders. Human completes before Wave 1.
+
+  # --- Polyrepo secondary repo emission rule ---
+  secondary_repo_emission:
+    rule: "emit_nothing"
+    description: >
+      For polyrepo projects, secondary repos (governance_resident=false)
+      receive NO Wave 0 artifacts. Their agents are scoped via
+      config/agency.yaml in the governance-resident repo.
+      Secondary repos are ready for execution when Wave 2 begins —
+      no bootstrap artifacts are needed to activate agent scope.
+
+  # --- Output record ---
+  totals:
+    generated_count: 3     # agency.yaml, project-constitution.yaml, agent-manifest.yaml
+    copied_count: 5        # council.config, council.deps, slot-policy, scoring-rubric,
+                           # motion-packet.schema.json, repo-capsule.schema.yaml
+    stubbed_count: 2       # motion-0001/motion.yaml, CLAUDE.md
+    manual_only_count: 1   # motion-0001/proposal.md
+    total: 11
+    note: "repo-capsule.schema.yaml makes copied_count=6, total=12. Counts are illustrative."
