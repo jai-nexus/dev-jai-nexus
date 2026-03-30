@@ -1,23 +1,28 @@
-# Decision: Bounded Bootstrap Artifact Generator Spec v0
+# Decision - motion-0088
 
-**Motion:** motion-0088
-**Status:** DRAFT
-**Date:** 2026-03-30
+## Status
+RATIFIED
 
 ## Summary
+Motion `motion-0088` is ratified.
 
-Motion `motion-0088` is a DRAFT WS-D child motion under the Q3 bootstrap
-and agency planning program (motion-0084).
+WS-D spec (Bootstrap Artifact Generator Spec) is complete. Two planning
+artifacts are committed: `bootstrap-manifest.schema.yaml` enumerates 12
+Wave 0 artifacts with classification (generated=3, copied=6, stubbed=2,
+manual-only=1), source tracing, and human-completion flags. Secondary repo
+emission rule: emit_nothing (polyrepo Wave 0 only targets governance-resident
+repo). `bootstrap-generator.spec.md` defines the full behavioral contract:
+3-document input validation, field-by-field synthesis rules for generated
+artifacts, hard prohibitions, idempotency requirement, dry-run, and force
+semantics.
 
-## Scope
-
-Produces two new planning artifacts:
-- `bootstrap-manifest.schema.yaml` v0.1 — per-project manifest of Wave 0
-  artifacts with classifications, source tracing, and human-completion flags.
-- `bootstrap-generator.spec.md` v0.1 — behavioral contract for the future
-  generator: inputs, outputs, synthesis rules, and hard prohibitions.
+## Evidence
+- `.nexus/planning/bootstrap-manifest.schema.yaml` committed at v0.1
+- `.nexus/planning/bootstrap-generator.spec.md` committed at v0.1
+- 12 Wave 0 artifacts enumerated; classifications consistent with WS-D impl
+- `validate_motion`: PASS
+- `validate_agency`: PASS
+- challenge.md: no blocking objections; CLAUDE.md classification and manual-only boundary challenges resolved
 
 ## Notes
-
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratified as part of the motion-0092 governance closure sweep.

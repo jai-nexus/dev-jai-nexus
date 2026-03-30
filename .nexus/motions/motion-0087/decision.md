@@ -1,24 +1,27 @@
-# Decision: Bounded Topology and Wave Planner v0
+# Decision - motion-0087
 
-**Motion:** motion-0087
-**Status:** DRAFT
-**Date:** 2026-03-30
+## Status
+RATIFIED
 
 ## Summary
+Motion `motion-0087` is ratified.
 
-Motion `motion-0087` is a DRAFT WS-C child motion under the Q3 bootstrap
-and agency planning program (motion-0084).
+WS-C (Topology and Wave Planner) is complete. Two new planning schemas
+are committed: `topology-plan.schema.yaml` derives execution_scope
+(repo_local | cross_repo), governance_resident_repo, and agent scope paths
+from intake and demand matrix inputs. `wave-model.schema.yaml` defines five
+bootstrap waves (0–4) with proof gates and entry_wave rules by project_type
+(greenfield=0, migration=1, extension=2). Wave advancement is proof-based,
+not calendar-based.
 
-## Scope
-
-Produces two new planning schemas:
-- `topology-plan.schema.yaml` v0.1 — derives execution_scope, governance-resident
-  repo, per-repo agent path profiles, and optional cross-repo links from intake
-  and demand matrix outputs.
-- `wave-model.schema.yaml` v0.1 — defines five bootstrap waves (0–4) with
-  responsibilities and minimum proof gates. Proof-based advancement.
+## Evidence
+- `.nexus/planning/topology-plan.schema.yaml` committed at v0.1
+- `.nexus/planning/wave-model.schema.yaml` committed at v0.1
+- execution_scope derivation: polyrepo → cross_repo, monorepo → repo_local
+- Wave proof gate model consistent with WS-D bootstrap manifest
+- `validate_motion`: PASS
+- `validate_agency`: PASS
+- challenge.md: no blocking objections; both challenges (planner boundary, polyrepo Wave 2) resolved
 
 ## Notes
-
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratified as part of the motion-0092 governance closure sweep.

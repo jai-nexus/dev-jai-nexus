@@ -1,21 +1,23 @@
-# Decision: Bounded Project Intake Canon v0
+# Decision - motion-0085
 
-**Motion:** motion-0085
-**Status:** DRAFT
-**Date:** 2026-03-30
+## Status
+RATIFIED
 
 ## Summary
+Motion `motion-0085` is ratified.
 
-Motion `motion-0085` is a DRAFT WS-A child motion under the Q3 bootstrap
-and agency planning program (motion-0084).
+WS-A (Project Intake Canon) is complete. `project-intake.schema.yaml` v0.1
+is committed with field classification annotations, the `project_type` field
+(greenfield | migration | extension), invariant/derived fields removed, and
+a `derived_fields` section documenting WS-C outputs. The OffBook.ai example
+object is fully representable in the schema.
 
-## Scope
-
-Refines `project-intake.schema.yaml` from the motion-0084 draft to v0.1 canon:
-removes derived/invariant fields, adds `project_type`, and classifies all
-fields by planning tier.
+## Evidence
+- `.nexus/planning/project-intake.schema.yaml` committed at v0.1
+- `.nexus/planning/offbook-ai-intake-example.yaml` satisfies schema
+- `validate_motion`: PASS
+- `validate_agency`: PASS
+- challenge.md: no blocking objections; both challenges resolved
 
 ## Notes
-
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratified as part of the motion-0092 governance closure sweep.

@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0090",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "WS-D real-write proof complete: 12/12 Wave 0 artifacts emitted. One minimal fix applied (removed paths:portal/src/** from deriveTopology). Idempotency confirmed: second run skipped all 12. Generator validated as a practical baseline tool.",
+      "ts": "2026-03-30T06:25:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "Fix was minimal and directly justified by proof observation. Post-fix verification covers the corrected state. Write → observe → fix → re-write → verify sequence is the correct proof-and-fix flow. Both challenges (out/ directory safety, mid-proof fix) resolved without blocking objections.",
+      "ts": "2026-03-30T06:25:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "All classification boundaries held under real writes. Idempotency works correctly. The defect found (portal/src/** path bleeding into generated projects) was caught and fixed by the proof. Program is stronger for it.",
+      "ts": "2026-03-30T06:25:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-03-30T06:25:15.000Z"
+}

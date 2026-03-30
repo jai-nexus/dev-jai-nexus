@@ -1,10 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0088
-status: DRAFT
-ratified_by: null
+status: RATIFIED
+ratified_by: manual:proposer
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency]
-last_updated: "2026-03-30T00:00:00.000Z"
-notes: "DRAFT: WS-D child motion producing bootstrap-manifest.schema.yaml and bootstrap-generator.spec.md v0.1."
+last_updated: "2026-03-30T06:15:15.000Z"
+notes: "RATIFIED: vote_mode=unanimous_consent"
