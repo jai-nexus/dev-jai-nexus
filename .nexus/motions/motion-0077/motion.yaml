@@ -1,0 +1,86 @@
+motion_id: "motion-0077"
+title: "bounded builder motion-context binding"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+parent_motion: "motion-0071"
+program: "q2-loop-activation"
+workstream: "WS-2"
+phase: "phase-3"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Make the builder runtime motion-context-aware for motion-linked work
+  packets. When a packet carries a canonical motion tag, the builder
+  runtime reads the governing motion's motion.yaml title and execution.md,
+  and produces a motion-grounded debug.patch artifact instead of a generic
+  stub. Non-motion-linked packets preserve existing behavior unchanged.
+  No verifier, operator UI, or schema changes.
+
+problem: >
+  The WS-2 architect binding (motion-0075) and queue readiness proof
+  (motion-0076) established that the architect runtime is motion-context-
+  aware and routes completed packets to builder stage. But the builder
+  runtime has no awareness of the governing motion. It produces a generic
+  stub patch regardless of whether the packet is motion-linked. The builder
+  runtime uses a private loadPacket() method that does not load inbox tags,
+  so motion detection cannot occur with the current implementation. The
+  governed context (execution.md, motion identity) is never consulted
+  during builder execution.
+
+proposal:
+  - "Import getMotionFromTags from workPacketContract into builderRuntime.ts."
+  - "Add findRepoRoot and loadMotionContext functions matching the architect
+    pattern (motion.yaml title + execution.md, same fallback semantics)."
+  - "Add a canClaimCandidate override that restricts builder runtime to
+    packets with requestedRole BUILDER."
+  - "Refactor execute() to use loadWorkPacketContext (base class) inside a
+    transaction block, replacing the private loadPacket() method, to expose
+    inbox tags for motion detection."
+  - "Add buildPatchPayload helper that produces a motion-grounded patch
+    payload when motionContext is present, and the existing generic payload
+    when absent."
+  - "Emit the debug.patch SoT event via emitDebugArtifact (base class)
+    within the transaction, matching the architect pattern."
+  - "Preserve complete fallback: non-motion-linked packets produce existing
+    generic debug.patch behavior; incomplete motion context degrades
+    gracefully without crashing."
+
+non_goals:
+  - "Do not change verifier runtime."
+  - "Do not change agentRuntime.ts base class."
+  - "Do not change operator UI."
+  - "Do not add schema migration."
+  - "Do not add receipt closure."
+  - "Do not redesign the debug artifact shape or add new SoT event kinds."
+  - "Do not add a broad motion context subsystem."
+  - "Do not read the full motion package (policy.yaml, vote.json, etc.)."
+  - "Do not add async filesystem reads (sync is sufficient for small motion files)."
+  - "Do not change architect runtime."
+  - "Do not change workPacketContract.ts."
+  - "Do not add a builder-enqueue script in this slice."
+
+success_criteria:
+  - "pnpm -C portal typecheck passes with no errors."
+  - "BuilderAgentRuntime.canClaimCandidate returns false for non-BUILDER
+    requestedRole packets."
+  - "loadMotionContext with non-motion-linked tags returns null."
+  - "loadMotionContext with motion-linked tags and absent execution.md logs a
+    warning and returns a MotionContext with executionPlan=''."
+  - "buildPatchPayload with a valid MotionContext produces a payload with
+    motionId, motionTitle, and executionPlan fields."
+  - "buildPatchPayload with null motionContext produces the existing generic
+    patch payload (regression-free)."
+  - "No files outside portal/src/lib/work/builderRuntime.ts are changed."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
