@@ -1,0 +1,131 @@
+version: "0.1"
+artifact: "coverage-declaration"
+program: "offbook-ai-bootstrap"
+motion: "motion-0093"
+
+# OffBook.ai Wave 0 Coverage Declaration
+# Conforms to: .nexus/planning/coverage-declaration.schema.yaml (WS-E, motion-0091)
+# Derives from: .nexus/planning/offbook-ai-intake.yaml (WS-A)
+#               out/offbook-ai/config/agency.yaml (WS-D, motion-0093)
+#               out/offbook-ai/.nexus/planning/bootstrap-manifest.instance.yaml (motion-0095)
+
+# ---------------------------------------------------------------------------
+# Identity
+# ---------------------------------------------------------------------------
+
+project_id: offbook-ai
+project_name: OffBook AI
+domain: offbook.ai
+declaration_date: "2026-03-30"
+declared_by: "Jerry Ingram"
+
+# ---------------------------------------------------------------------------
+# Execution scope
+# ---------------------------------------------------------------------------
+
+execution_scope: cross_repo
+# polyrepo topology → cross_repo (WS-C derivation rule)
+
+# ---------------------------------------------------------------------------
+# Governance placement
+# ---------------------------------------------------------------------------
+
+governance:
+  governance_resident_repo: offbook-core
+  governance_surface:
+    nexus_root: ".nexus/"
+    motions_dir: ".nexus/motions/"
+    context_dir: ".nexus/context/"
+    agency_config: "config/agency.yaml"
+    council_config: ".nexus/council.config.yaml"
+    resident_repo: offbook-core
+
+# ---------------------------------------------------------------------------
+# Agent coverage (9 agents: 5 governance + 4 execution)
+# Source: out/offbook-ai/config/agency.yaml (motion-0093)
+# ---------------------------------------------------------------------------
+
+agent_coverage:
+  - nh_id: "7.0"
+    role: council
+    agent_key: offbook.council
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+  - nh_id: "7.0.1"
+    role: proposer
+    agent_key: offbook.proposer
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+  - nh_id: "7.0.2"
+    role: executor
+    agent_key: offbook.executor
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+  - nh_id: "7.0.3"
+    role: challenger
+    agent_key: offbook.challenger
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+  - nh_id: "7.0.4"
+    role: arbiter
+    agent_key: offbook.arbiter
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+  - nh_id: "7.0.10"
+    role: ARCHITECT
+    agent_key: offbook.architect
+    scope_repos: [offbook-core, offbook-web]
+    governance_resident_only: false
+
+  - nh_id: "7.0.11"
+    role: BUILDER
+    agent_key: offbook.builder
+    scope_repos: [offbook-core, offbook-web]
+    governance_resident_only: false
+
+  - nh_id: "7.0.12"
+    role: VERIFIER
+    agent_key: offbook.verifier
+    scope_repos: [offbook-core, offbook-web]
+    governance_resident_only: false
+
+  - nh_id: "7.0.14"
+    role: OPERATOR
+    agent_key: offbook.operator
+    scope_repos: [offbook-core]
+    governance_resident_only: true
+
+# LIBRARIAN (7.0.13) is optional and not included in minimum viable staffing.
+# Add when LIBRARIAN role is explicitly activated via a governed motion.
+
+# ---------------------------------------------------------------------------
+# Wave state
+# ---------------------------------------------------------------------------
+
+wave_state:
+  current_wave: 0
+  proof_gates_satisfied:
+    - "validate_motion (motion-0093)"
+    - "validate_agency (motion-0093)"
+    - "wave_0_substrate_12_artifacts (motion-0093)"
+    - "bootstrap_manifest_instance (motion-0095)"
+  next_gate: "wave_1_model_slot_assignment"
+  entry_wave: 0
+
+# ---------------------------------------------------------------------------
+# Dispatch readiness (Wave 0 close checklist — WS-E)
+# ---------------------------------------------------------------------------
+
+dispatch_readiness:
+  coverage_declaration_valid: true
+  agency_config_present: true           # out/offbook-ai/config/agency.yaml
+  council_nh_id_in_agency: true         # 7.0 (council = nh_root)
+  proposer_nh_id_in_agency: true        # 7.0.1 (nh_root + ".1")
+  wave_0_proof_gates_satisfied: true
+  # implementation-owned fields (conductor_endpoint, queue_binding, auth_handle)
+  # are NOT required at Wave 0 — explicitly deferred to Wave 1+ runtime wiring
