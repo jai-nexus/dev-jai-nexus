@@ -1,0 +1,142 @@
+version: "0.1"
+artifact: "project-intake-schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-A"
+
+# Schema for the minimum project intake object.
+# Every field marked "required" must be present before bootstrap decisions can be made.
+# Fields marked "optional" have defaults specified.
+
+fields:
+  project_id:
+    type: string
+    required: true
+    format: "kebab-case"
+    description: "Machine-safe project identifier. Used in NH IDs, artifact paths, and scope entries."
+    example: "offbook-ai"
+
+  project_name:
+    type: string
+    required: true
+    description: "Human-readable project name."
+    example: "OffBook AI"
+
+  domain:
+    type: string
+    required: true
+    format: "dns-like"
+    description: "Canonical domain for this project. Used in target_domain fields across motions."
+    example: "offbook.ai"
+
+  topology:
+    type: object
+    required: true
+    fields:
+      shape:
+        type: enum
+        values: ["monorepo", "polyrepo"]
+        required: true
+        description: >
+          Determines whether governance artifacts live in a single root or are
+          distributed across repos with a designated governance-resident repo.
+
+      repos:
+        type: array
+        required: true
+        min_items: 1
+        item_schema:
+          name:
+            type: string
+            required: true
+            description: "Repo name as it appears in scope entries."
+          domain_scope:
+            type: string
+            required: true
+            description: "What domain/layer this repo owns (e.g., 'api', 'frontend', 'infra')."
+          tier:
+            type: enum
+            values: ["primary", "secondary", "tertiary"]
+            required: true
+          governance_resident:
+            type: boolean
+            required: true
+            description: >
+              If true, .nexus/ lives in this repo. Exactly one repo per project
+              should be governance_resident=true. For monorepo, always true.
+
+  execution_profile:
+    type: object
+    required: true
+    fields:
+      class:
+        type: enum
+        values: ["artifact_only", "live_patch", "hybrid"]
+        required: true
+        description: >
+          artifact_only: agents emit durable artifacts but do not apply patches.
+          live_patch: agents apply patches directly.
+          hybrid: artifact_only for governance, live_patch for execution lanes.
+        default: "artifact_only"
+
+      scope:
+        type: enum
+        values: ["repo_local", "cross_repo"]
+        required: true
+        description: >
+          repo_local: motions and execution stay within a single repo.
+          cross_repo: motions may target multiple repos; governance-resident repo
+          coordinates.
+        default: "repo_local"
+
+  required_roles:
+    type: array
+    required: true
+    values: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR", "LIBRARIAN"]
+    description: >
+      Execution roles that must be staffed for this project. At minimum,
+      ARCHITECT, BUILDER, VERIFIER, and OPERATOR are required for a full
+      governed execution loop.
+
+  optional_roles:
+    type: array
+    required: false
+    default: []
+    values: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR", "LIBRARIAN"]
+    description: "Execution roles that are useful but not required for Wave 0."
+
+  staffing_tier:
+    type: enum
+    values: ["minimum_viable", "expanded", "panel"]
+    required: true
+    description: >
+      minimum_viable: 1 agent per required role. No multi-slot panels.
+      expanded: role.min_slots per role (from slot-policy.yaml).
+      panel: role.max_slots per role; full comparison panel active.
+    default: "minimum_viable"
+
+  nh_root:
+    type: string
+    required: false
+    description: >
+      NH identifier root for this project (e.g., "7.0" for a new project root).
+      If absent, must be assigned by the Agent Demand Planner (WS-B) before
+      agency.yaml can be generated.
+    example: "7.0"
+
+  bootstrap_wave:
+    type: integer
+    required: false
+    default: 0
+    description: "Which wave this project enters at. 0 for new projects."
+
+  governance_mode:
+    type: enum
+    values: ["motion_first"]
+    required: false
+    default: "motion_first"
+    description: "Always motion_first for JAI NEXUS projects."
+
+  notes:
+    type: string
+    required: false
+    description: "Free-text notes about this project's specific constraints or context."

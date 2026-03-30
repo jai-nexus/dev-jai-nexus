@@ -1,0 +1,117 @@
+version: "0.1"
+artifact: "agent-demand-matrix-schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-B"
+
+# Schema for the agent demand matrix produced by the Agent Demand Planner.
+# Input: project-intake object.
+# Output: per-role, per-repo agent specifications ready to populate config/agency.yaml.
+
+fields:
+  project_id:
+    type: string
+    required: true
+    description: "Must match the project_id from the intake object."
+
+  nh_root:
+    type: string
+    required: true
+    description: >
+      NH identifier root for this project. Convention for assignment:
+      - dev-jai-nexus uses 6.0
+      - New projects should use incrementing roots: 7.0, 8.0, etc.
+      - Or use a domain-hash scheme for deterministic assignment.
+      WS-B design decision: adopt sequential root assignment by default.
+
+  governance_agents:
+    type: array
+    description: >
+      Governance-only agents always assigned to the governance-resident repo.
+      These are fixed for every JAI NEXUS project regardless of topology.
+    items:
+      - role: "council"
+        nh_suffix: ".0"         # <nh_root>.0
+        agent_key_suffix: "council"
+        governance_only: true
+        execution_roles: []
+      - role: "proposer"
+        nh_suffix: ".0.1"
+        agent_key_suffix: "proposer"
+        governance_only: true
+        execution_roles: []
+      - role: "executor"
+        nh_suffix: ".0.2"
+        agent_key_suffix: "executor"
+        governance_only: true
+        execution_roles: []
+      - role: "challenger"
+        nh_suffix: ".0.3"
+        agent_key_suffix: "challenger"
+        governance_only: true
+        execution_roles: []
+      - role: "arbiter"
+        nh_suffix: ".0.4"
+        agent_key_suffix: "arbiter"
+        governance_only: true
+        execution_roles: []
+
+  execution_agent_nh_offsets:
+    type: map
+    description: >
+      Fixed NH suffix offsets for execution roles.
+      Matches dev-jai-nexus convention for consistency across projects.
+    values:
+      ARCHITECT: ".0.10"
+      BUILDER:   ".0.11"
+      VERIFIER:  ".0.12"
+      LIBRARIAN: ".0.13"
+      OPERATOR:  ".0.14"
+
+  execution_agents:
+    type: array
+    description: >
+      Execution agents computed from intake.required_roles + intake.staffing_tier.
+      For minimum_viable: one agent per required role.
+      For expanded/panel: see slot-policy.yaml for min/max slot counts.
+    item_schema:
+      role:
+        type: ExecutionRole
+        required: true
+      nh_id:
+        type: string
+        required: true
+        description: "<nh_root><execution_agent_nh_offsets[role]>"
+      agent_key:
+        type: string
+        required: true
+        description: "<project_id>.<role_lowercase>"
+        example: "offbook.architect"
+      scope_repos:
+        type: array
+        description: >
+          Repos this agent is scoped to. For most execution agents, this is
+          all repos in the project topology. Operators and librarians may be
+          scoped to the governance-resident repo only.
+      scope_paths:
+        type: array
+        description: "Path scope entries (same pattern as dev-jai-nexus agency.yaml)."
+      execution_roles:
+        type: array
+        description: "e.g., ['ARCHITECT']"
+      governance_only:
+        type: boolean
+        default: false
+      slots:
+        type: integer
+        description: >
+          Number of model slots for this role.
+          minimum_viable=1, expanded=role.min_slots, panel=role.max_slots.
+
+  total_agents:
+    type: integer
+    description: "Total agent count = 5 governance + sum(execution_agents)."
+
+  staffing_summary:
+    type: string
+    description: "Human-readable summary of the computed staffing."
+    example: "minimum_viable: 5 governance + 4 execution = 9 total agents"
