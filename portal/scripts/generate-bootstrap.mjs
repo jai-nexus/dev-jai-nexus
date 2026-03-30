@@ -159,7 +159,7 @@ function deriveTopology(intake) {
 
     const agentScopePaths = [srcPattern];
     if (isGov) {
-      agentScopePaths.push("paths:portal/src/**", "paths:.nexus/**", "paths:config/**");
+      agentScopePaths.push("paths:.nexus/**", "paths:config/**");
     }
     agentScopePaths.push("deny:**/.env*", "deny:**/*.env*", "deny:**/secrets/**");
 
