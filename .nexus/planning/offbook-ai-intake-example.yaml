@@ -1,0 +1,79 @@
+version: "0.1"
+artifact: "project-intake-example"
+program: "q3-bootstrap-planning"
+workstream: "WS-A"
+note: >
+  This is a planning example for OffBook.ai, used as a test case for the
+  project-intake.schema.yaml. It does not define OffBook.ai's architecture;
+  it demonstrates that any polyrepo project can be fully represented using
+  the WS-A schema. Values are illustrative.
+
+# --- OffBook.ai Project Intake Object ---
+
+project_id: "offbook-ai"
+project_name: "OffBook AI"
+domain: "offbook.ai"
+
+topology:
+  shape: "polyrepo"
+  repos:
+    - name: "offbook-core"
+      domain_scope: "api"
+      tier: "primary"
+      governance_resident: true
+      notes: "Core booking, availability, and pricing API. .nexus/ lives here."
+    - name: "offbook-web"
+      domain_scope: "frontend"
+      tier: "secondary"
+      governance_resident: false
+      notes: "Web and mobile client surfaces."
+
+execution_profile:
+  class: "artifact_only"
+  scope: "cross_repo"
+
+required_roles:
+  - ARCHITECT
+  - BUILDER
+  - VERIFIER
+  - OPERATOR
+
+optional_roles:
+  - LIBRARIAN
+
+staffing_tier: "minimum_viable"
+
+nh_root: "7.0"
+# Note: 7.0 is illustrative. Actual assignment is an WS-B design decision.
+# dev-jai-nexus uses 6.0; the next project root would be 7.0 under sequential convention.
+
+bootstrap_wave: 0
+
+governance_mode: "motion_first"
+
+notes: >
+  OffBook.ai is a polyrepo project. The governance-resident repo is offbook-core.
+  offbook-web agents should be scoped to paths:src/** in the web repo.
+  Minimum viable staffing initially; can upgrade to expanded when panel
+  execution is prioritized.
+
+# --- Derived demand (WS-B output, included here as illustration) ---
+derived_agents:
+  nh_root: "7.0"
+  governance:
+    - { role: council,    nh_id: "7.0",     agent_key: "offbook.council"    }
+    - { role: proposer,   nh_id: "7.0.1",   agent_key: "offbook.proposer"   }
+    - { role: executor,   nh_id: "7.0.2",   agent_key: "offbook.executor"   }
+    - { role: challenger, nh_id: "7.0.3",   agent_key: "offbook.challenger" }
+    - { role: arbiter,    nh_id: "7.0.4",   agent_key: "offbook.arbiter"    }
+  execution:
+    - { role: ARCHITECT, nh_id: "7.0.10", agent_key: "offbook.architect",
+        scope_repos: ["offbook-core", "offbook-web"], slots: 1 }
+    - { role: BUILDER,   nh_id: "7.0.11", agent_key: "offbook.builder",
+        scope_repos: ["offbook-core", "offbook-web"], slots: 1 }
+    - { role: VERIFIER,  nh_id: "7.0.12", agent_key: "offbook.verifier",
+        scope_repos: ["offbook-core", "offbook-web"], slots: 1 }
+    - { role: OPERATOR,  nh_id: "7.0.14", agent_key: "offbook.operator",
+        scope_repos: ["offbook-core"], slots: 1 }
+  total_agents: 9
+  staffing_summary: "minimum_viable: 5 governance + 4 execution = 9 total agents"

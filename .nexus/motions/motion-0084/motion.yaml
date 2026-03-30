@@ -1,0 +1,95 @@
+motion_id: "motion-0084"
+title: "Project Bootstrap and Agency Planning v0"
+
+status: "proposed"
+created_at: "2026-03-30T00:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "planning-umbrella"
+program: "q3-bootstrap-planning"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+
+summary: >
+  Define the planning framework that lets JAI NEXUS look at any new project —
+  including future polyrepo projects like OffBook.ai — and determine the
+  correct repo topology, required agents, wave order, and initial governed
+  artifact set. This umbrella motion defines five planning workstreams
+  (WS-A through WS-E) and the concrete schemas and templates each workstream
+  must produce. No new runtime features. No UI changes. Planning-first.
+
+problem: >
+  The Q2 governed loop activation arc (motion-0071, closed via motion-0083)
+  proved the full governed loop end-to-end for a single repo (dev-jai-nexus).
+  However, there is no reusable framework for asking: "what does a new
+  JAI NEXUS project need?" Starting a second project (e.g., OffBook.ai)
+  currently requires hand-crafting an agency config, choosing a topology,
+  deciding wave order, and bootstrapping governance artifacts from scratch
+  without a principled model. The baseline is proven but not yet generalizable.
+
+proposal:
+  - "WS-A (Project Intake Canon): Define the minimum project intake object
+    that captures everything needed to make bootstrap decisions: project
+    identity, topology shape, required domains, execution profile, role
+    requirements, and staffing tier."
+  - "WS-B (Agent Demand Planner): Define how to compute required vs optional
+    agents from an intake object, including NH assignment, per-repo scope,
+    governance-only vs execution agents, and minimum-viable vs expanded staffing."
+  - "WS-C (Topology and Wave Planner): Define how to determine mono vs polyrepo
+    shape, repo scope boundaries, and the correct bootstrap wave sequence for
+    a project of any shape."
+  - "WS-D (Bootstrap Artifact Generator): Define which governance artifacts
+    must be emitted in Wave 0 and what can be auto-generated vs must be
+    manually authored. Produce a bootstrap manifest schema and generator spec."
+  - "WS-E (Dispatch and Coverage Integration): Define how bootstrap output
+    wires into a running dev-jai-nexus governance loop for a new project.
+    Define coverage declarations and dispatch bridge spec."
+
+non_goals:
+  - "Do not implement any new runtime features in this planning umbrella."
+  - "Do not implement the generator script in this umbrella — that belongs to WS-D child motions."
+  - "Do not define OffBook.ai's architecture — only the framework for defining it."
+  - "Do not wire model-slots.yaml to runtimes in this program."
+  - "Do not generalize dev-jai-nexus internals — hardening belongs to a separate program."
+  - "Do not create cross-repo federation infrastructure."
+  - "Do not start OffBook.ai implementation."
+
+success_criteria:
+  - "project-intake.schema.yaml v0.1 committed and usable as a reference for any new project."
+  - "agent-demand-matrix.schema.yaml v0.1 committed with OffBook.ai example object."
+  - "wave-model.schema.yaml v0.1 committed with wave sequence and proof-gating rules."
+  - "bootstrap-manifest.schema.yaml v0.1 committed with Wave 0 artifact list."
+  - "An OffBook.ai intake example object can be fully represented using the WS-A schema."
+  - "A completed WS-A through WS-C would produce enough information to start a new project."
+  - "All planning artifacts committed to plan/q3-bootstrap-agency-planning."
+
+child_workstreams:
+  - id: "WS-A"
+    title: "Project Intake Canon"
+    deliverable: "project-intake.schema.yaml + OffBook.ai example"
+    motion: "TBD"
+  - id: "WS-B"
+    title: "Agent Demand Planner"
+    deliverable: "agent-demand-matrix.schema.yaml + OffBook.ai example"
+    motion: "TBD"
+  - id: "WS-C"
+    title: "Topology and Wave Planner"
+    deliverable: "topology-plan.schema.yaml + wave-model.schema.yaml"
+    motion: "TBD"
+  - id: "WS-D"
+    title: "Bootstrap Artifact Generator"
+    deliverable: "bootstrap-manifest.schema.yaml + generator script spec"
+    motion: "TBD"
+  - id: "WS-E"
+    title: "Dispatch and Coverage Integration"
+    deliverable: "coverage-declaration.schema.yaml + dispatch bridge spec"
+    motion: "TBD"
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
