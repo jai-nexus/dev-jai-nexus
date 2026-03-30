@@ -2,10 +2,23 @@ version: "0.1"
 artifact: "agent-demand-matrix-schema"
 program: "q3-bootstrap-planning"
 workstream: "WS-B"
+motion: "motion-0086"
 
 # Schema for the agent demand matrix produced by the Agent Demand Planner.
-# Input: project-intake object.
-# Output: per-role, per-repo agent specifications ready to populate config/agency.yaml.
+# Input:  project-intake canon (project-intake.schema.yaml v0.1)
+# Output: per-role, per-repo agent specifications ready to inform agency.yaml generation.
+#
+# NH convention (grounded in config/agency.yaml dev-jai-nexus baseline):
+#   council    = nh_root itself (no suffix)       e.g. 6.0
+#   proposer   = nh_root + ".1"                   e.g. 6.0.1
+#   executor   = nh_root + ".2"                   e.g. 6.0.2
+#   challenger = nh_root + ".3"                   e.g. 6.0.3
+#   arbiter    = nh_root + ".4"                   e.g. 6.0.4
+#   ARCHITECT  = nh_root + ".10"                  e.g. 6.0.10
+#   BUILDER    = nh_root + ".11"                  e.g. 6.0.11
+#   VERIFIER   = nh_root + ".12"                  e.g. 6.0.12
+#   LIBRARIAN  = nh_root + ".13"                  e.g. 6.0.13
+#   OPERATOR   = nh_root + ".14"                  e.g. 6.0.14
 
 fields:
   project_id:
@@ -17,101 +30,259 @@ fields:
     type: string
     required: true
     description: >
-      NH identifier root for this project. Convention for assignment:
-      - dev-jai-nexus uses 6.0
-      - New projects should use incrementing roots: 7.0, 8.0, etc.
-      - Or use a domain-hash scheme for deterministic assignment.
-      WS-B design decision: adopt sequential root assignment by default.
+      NH identifier root for this project.
+      For greenfield projects: assigned by the Agent Demand Planner (WS-B
+      design decision). Sequential convention: dev-jai-nexus uses 6.0;
+      next project uses 7.0, then 8.0, etc.
+      For migration projects: may be an existing root.
+      If intake.nh_root is present, use it. If absent, assign before
+      agency.yaml can be generated.
 
-  governance_agents:
-    type: array
+# --- Governance agents ---
+# Always 5. Always assigned to the governance-resident repo.
+# Fixed for every JAI NEXUS project regardless of topology.
+
+governance_nh_convention:
+  council:
+    no_suffix: true
     description: >
-      Governance-only agents always assigned to the governance-resident repo.
-      These are fixed for every JAI NEXUS project regardless of topology.
-    items:
-      - role: "council"
-        nh_suffix: ".0"         # <nh_root>.0
-        agent_key_suffix: "council"
-        governance_only: true
-        execution_roles: []
-      - role: "proposer"
-        nh_suffix: ".0.1"
-        agent_key_suffix: "proposer"
-        governance_only: true
-        execution_roles: []
-      - role: "executor"
-        nh_suffix: ".0.2"
-        agent_key_suffix: "executor"
-        governance_only: true
-        execution_roles: []
-      - role: "challenger"
-        nh_suffix: ".0.3"
-        agent_key_suffix: "challenger"
-        governance_only: true
-        execution_roles: []
-      - role: "arbiter"
-        nh_suffix: ".0.4"
-        agent_key_suffix: "arbiter"
-        governance_only: true
-        execution_roles: []
+      council nh_id = nh_root itself.
+      Do NOT append any suffix. e.g., nh_root="7.0" → nh_id="7.0".
+  proposer:
+    suffix: ".1"
+  executor:
+    suffix: ".2"
+  challenger:
+    suffix: ".3"
+  arbiter:
+    suffix: ".4"
 
-  execution_agent_nh_offsets:
-    type: map
+governance_agents:
+  type: array
+  count: 5
+  description: >
+    All 5 governance agents are always generated, regardless of
+    intake.required_roles or intake.staffing_tier.
+  items:
+    - role: "council"
+      nh_id: "<nh_root>"
+      agent_key: "<project_id>.council"
+      governance_only: true
+      scope_repos: ["<governance-resident repo>"]
+      scope_actions: ["govern"]
+    - role: "proposer"
+      nh_id: "<nh_root>.1"
+      agent_key: "<project_id>.proposer"
+      governance_only: true
+      scope_repos: ["<governance-resident repo>"]
+      scope_actions: ["read", "propose"]
+    - role: "executor"
+      nh_id: "<nh_root>.2"
+      agent_key: "<project_id>.executor"
+      governance_only: true
+      scope_repos: ["<governance-resident repo>"]
+      scope_actions: ["read", "stage_diff"]
+    - role: "challenger"
+      nh_id: "<nh_root>.3"
+      agent_key: "<project_id>.challenger"
+      governance_only: true
+      scope_repos: ["<governance-resident repo>"]
+      scope_actions: ["read", "critique", "verify"]
+    - role: "arbiter"
+      nh_id: "<nh_root>.4"
+      agent_key: "<project_id>.arbiter"
+      governance_only: true
+      scope_repos: ["<governance-resident repo>"]
+      scope_actions: ["read", "ratify", "escalate", "ledger_write"]
+
+# --- Execution agent NH offsets ---
+# Fixed offsets appended to nh_root. Same convention as dev-jai-nexus.
+
+execution_nh_offsets:
+  ARCHITECT: ".10"
+  BUILDER:   ".11"
+  VERIFIER:  ".12"
+  LIBRARIAN: ".13"
+  OPERATOR:  ".14"
+
+# --- Required vs optional roles ---
+
+role_requirements:
+  required:
+    - role: ARCHITECT
+      rationale: "No governed execution without planning evidence."
+    - role: BUILDER
+      rationale: "No governed execution without implementation evidence."
+    - role: VERIFIER
+      rationale: "No loop closure without validation evidence."
+    - role: OPERATOR
+      rationale: >
+        Operator approval is explicit and must not be inferred automatically
+        (project-constitution.yaml invariant).
+  optional:
+    - role: LIBRARIAN
+      rationale: >
+        Useful for structure, packaging, and memory artifacts.
+        Not required for the minimum governed execution loop.
+
+# --- Execution agent item schema ---
+
+execution_agents:
+  type: array
+  description: >
+    Computed from intake.required_roles + intake.staffing_tier.
+    Exclude optional_roles from minimum_viable output unless explicitly
+    included in required_roles.
+  item_schema:
+    role:
+      type: ExecutionRole
+      required: true
+      values: ["ARCHITECT", "BUILDER", "VERIFIER", "OPERATOR", "LIBRARIAN"]
+
+    nh_id:
+      type: string
+      required: true
+      description: "nh_root + execution_nh_offsets[role]. e.g. 7.0 + .10 = 7.0.10"
+
+    agent_key:
+      type: string
+      required: true
+      description: "<project_id>.<role_lowercase>"
+      example: "offbook.architect"
+
+    scope_repos:
+      type: array
+      required: true
+      description: >
+        Repos this agent is scoped to. See monorepo_vs_polyrepo_rules below.
+
+    scope_paths:
+      type: array
+      required: false
+      description: >
+        Path scope entries within each scoped repo. Pattern matches
+        agency.yaml (e.g., paths:portal/src/**, paths:.nexus/**).
+        If absent, the planner defaults to all paths in scope_repos.
+
+    scope_actions:
+      type: array
+      required: true
+      description: >
+        Permitted actions for this agent. Grounded in config/agency.yaml
+        baseline per role. Not owned by this schema — recorded as convention.
+      convention:
+        ARCHITECT: ["read", "plan", "design"]
+        BUILDER:   ["read", "patch", "build"]
+        VERIFIER:  ["read", "verify", "test"]
+        OPERATOR:  ["read", "review", "approve"]
+        LIBRARIAN: ["read", "document", "index"]
+
+    governance_resident_only:
+      type: boolean
+      required: true
+      description: >
+        If true, scope_repos is restricted to the governance-resident repo.
+        If false, scope_repos spans all repos in topology.repos.
+      defaults:
+        ARCHITECT: false
+        BUILDER:   false
+        VERIFIER:  false
+        OPERATOR:  true    # override allowed; see monorepo_vs_polyrepo_rules
+        LIBRARIAN: true    # override allowed
+
+    slots:
+      type: integer
+      required: true
+      description: >
+        Number of model slots for this role at the given staffing_tier.
+        See staffing_tier_rules for the mapping.
+
+    execution_roles:
+      type: array
+      required: true
+      description: "e.g. ['ARCHITECT']"
+
+    governance_only:
+      type: boolean
+      required: true
+      default: false
+
+# --- Staffing tier rules ---
+# Sources:
+#   minimum_viable: 1 slot per required role.
+#   expanded: role.min_slots from slot-policy.yaml minimum_slot_intent.
+#   panel: 5 candidates + 1 selector per role (model-slots.yaml convention).
+#          If model-slots.yaml slot count changes, re-evaluate panel count.
+
+staffing_tier_rules:
+  minimum_viable:
+    description: "1 slot per required role. No panel comparison."
+    slots_per_role:
+      ARCHITECT: 1
+      BUILDER:   1
+      VERIFIER:  1
+      OPERATOR:  1
+      LIBRARIAN: 1
+
+  expanded:
     description: >
-      Fixed NH suffix offsets for execution roles.
-      Matches dev-jai-nexus convention for consistency across projects.
-    values:
-      ARCHITECT: ".0.10"
-      BUILDER:   ".0.11"
-      VERIFIER:  ".0.12"
-      LIBRARIAN: ".0.13"
-      OPERATOR:  ".0.14"
+      role.min_slots from slot-policy.yaml minimum_slot_intent.
+      Enables baseline comparison but not full panel.
+    slots_per_role:
+      ARCHITECT: 3    # baseline, alternative, risk-oriented
+      BUILDER:   5    # baseline + 4 alternates
+      VERIFIER:  3    # baseline, adversarial, contract
+      OPERATOR:  2    # governance review, workflow review
+      LIBRARIAN: 2    # memory packager, structure normalizer
 
-  execution_agents:
-    type: array
+  panel:
     description: >
-      Execution agents computed from intake.required_roles + intake.staffing_tier.
-      For minimum_viable: one agent per required role.
-      For expanded/panel: see slot-policy.yaml for min/max slot counts.
-    item_schema:
-      role:
-        type: ExecutionRole
-        required: true
-      nh_id:
-        type: string
-        required: true
-        description: "<nh_root><execution_agent_nh_offsets[role]>"
-      agent_key:
-        type: string
-        required: true
-        description: "<project_id>.<role_lowercase>"
-        example: "offbook.architect"
-      scope_repos:
-        type: array
-        description: >
-          Repos this agent is scoped to. For most execution agents, this is
-          all repos in the project topology. Operators and librarians may be
-          scoped to the governance-resident repo only.
-      scope_paths:
-        type: array
-        description: "Path scope entries (same pattern as dev-jai-nexus agency.yaml)."
-      execution_roles:
-        type: array
-        description: "e.g., ['ARCHITECT']"
-      governance_only:
-        type: boolean
-        default: false
-      slots:
-        type: integer
-        description: >
-          Number of model slots for this role.
-          minimum_viable=1, expanded=role.min_slots, panel=role.max_slots.
+      5 candidate slots + 1 selector slot per role. Full comparison panel
+      active. Derived from model-slots.yaml convention (SLOT_<ROLE>_01..05
+      + SLOT_<ROLE>_SELECTOR). If model-slots.yaml changes, re-evaluate.
+    slots_per_role:
+      ARCHITECT: 6
+      BUILDER:   6
+      VERIFIER:  6
+      OPERATOR:  6
+      LIBRARIAN: 6
 
-  total_agents:
-    type: integer
-    description: "Total agent count = 5 governance + sum(execution_agents)."
+# --- Monorepo vs polyrepo scope_repos rules ---
 
-  staffing_summary:
-    type: string
-    description: "Human-readable summary of the computed staffing."
-    example: "minimum_viable: 5 governance + 4 execution = 9 total agents"
+monorepo_vs_polyrepo_rules:
+  monorepo:
+    description: "Single repo. All agents scoped to that repo."
+    rule: "scope_repos = [single repo]. governance_resident_only has no
+      practical effect (only one repo exists)."
+
+  polyrepo:
+    description: "Multiple repos. Scope differs by role category."
+    execution_spanning_roles:
+      roles: ["ARCHITECT", "BUILDER", "VERIFIER"]
+      rule: "scope_repos = all repos listed in intake.topology.repos"
+      rationale: >
+        These roles must be able to read and act across all repos to
+        produce coherent planning, implementation, and verification
+        evidence for the full project.
+    governance_resident_roles:
+      roles: ["OPERATOR", "LIBRARIAN"]
+      default_rule: "scope_repos = [governance-resident repo only]"
+      override: >
+        governance_resident_only=false if the project requires distributed
+        operator placement. This is a WS-C topology decision, not a WS-B
+        default.
+      rationale: >
+        Operator approval happens at the governance surface. Librarian
+        maintains .nexus/ and docs within the governance-resident repo.
+        Cross-repo placement is an explicit override, not the default.
+
+# --- Output fields ---
+
+total_agents:
+  type: integer
+  description: "5 governance + count(execution_agents at selected staffing_tier)."
+
+staffing_summary:
+  type: string
+  description: "Human-readable summary."
+  example: "minimum_viable: 5 governance + 4 execution = 9 total agents"
