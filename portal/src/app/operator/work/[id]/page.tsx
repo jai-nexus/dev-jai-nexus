@@ -2,6 +2,8 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { redirect } from "next/navigation";
 
 import { getServerAuthSession } from "@/auth";
@@ -17,6 +19,7 @@ import {
   coerceStringArray,
   deriveRequestedRoleFromAgentKey,
   getAssigneeFromTags,
+  getMotionFromTags,
 } from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
 import { computeExecutionLaneState } from "@/lib/work/executionLane";
@@ -154,6 +157,58 @@ function labelForEligibility(valid: boolean | null) {
   return "N/A";
 }
 
+function findRepoRoot(startDir: string): string | null {
+  let dir = startDir;
+  for (let i = 0; i < 20; i++) {
+    if (fs.existsSync(path.join(dir, ".nexus"))) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+  return null;
+}
+
+type GoverningMotionState = {
+  motionId: string;
+  title: string | null;
+  decisionStatus: string | null;
+  handoffStatus: string | null;
+  receiptStatus: string | null;
+};
+
+function loadGoverningMotionState(inboxTags: string[]): GoverningMotionState | null {
+  const motionId = getMotionFromTags(inboxTags);
+  if (!motionId) return null;
+  const repoRoot = findRepoRoot(process.cwd());
+  if (!repoRoot) return { motionId, title: null, decisionStatus: null, handoffStatus: null, receiptStatus: null };
+  const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
+  let title: string | null = null;
+  try {
+    const yaml = fs.readFileSync(path.join(motionDir, "motion.yaml"), "utf-8");
+    const m = yaml.match(/^title:\s*["']?(.+?)["']?\s*$/m);
+    if (m) title = m[1].trim();
+  } catch { }
+  let decisionStatus: string | null = null;
+  try {
+    const yaml = fs.readFileSync(path.join(motionDir, "decision.yaml"), "utf-8");
+    const m = yaml.match(/^status:\s*(\S+)/m);
+    if (m) decisionStatus = m[1].trim();
+  } catch { }
+  let handoffStatus: string | null = null;
+  try {
+    const raw = fs.readFileSync(path.join(motionDir, "execution.handoff.json"), "utf-8");
+    const obj = JSON.parse(raw) as Record<string, unknown>;
+    if (typeof obj.status === "string") handoffStatus = obj.status;
+  } catch { }
+  let receiptStatus: string | null = null;
+  try {
+    const raw = fs.readFileSync(path.join(motionDir, "execution.receipt.json"), "utf-8");
+    const obj = JSON.parse(raw) as Record<string, unknown>;
+    if (typeof obj.status === "string") receiptStatus = obj.status;
+  } catch { }
+  return { motionId, title, decisionStatus, handoffStatus, receiptStatus };
+}
+
 async function updatePacket(id: number, formData: FormData) {
   "use server";
 
@@ -277,6 +332,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   });
 
   const inboxTags = coerceStringArray(latestInbox?.tags);
+  const governingMotion = loadGoverningMotionState(inboxTags);
   const assigneeNhId = getAssigneeFromTags(inboxTags);
   const assignedAgent = assigneeNhId ? getAgentByNhId(assigneeNhId) : null;
 
@@ -551,6 +607,60 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           Contract summary, execution loop, run ledger, handoff history, and packet mutation stream.
         </p>
       </header>
+
+      {governingMotion ? (
+        <section className="mb-6 max-w-6xl rounded-md border border-gray-700 bg-zinc-950/50 p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+            Governing Motion
+          </h2>
+          <div className="flex flex-wrap items-start gap-6 text-sm">
+            <div>
+              <div className="text-[11px] text-gray-500">motion</div>
+              <div className="mt-0.5 font-mono text-sky-300">{governingMotion.motionId}</div>
+            </div>
+            <div className="flex-1 min-w-[180px]">
+              <div className="text-[11px] text-gray-500">title</div>
+              <div className="mt-0.5 text-gray-200">{governingMotion.title ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500">council decision</div>
+              <div className={`mt-0.5 inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
+                governingMotion.decisionStatus === "RATIFIED"
+                  ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
+                  : governingMotion.decisionStatus
+                    ? "bg-amber-900/40 text-amber-200 border-amber-800"
+                    : "bg-zinc-900 text-gray-400 border-gray-700"
+              }`}>
+                {governingMotion.decisionStatus ?? "—"}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500">handoff</div>
+              <div className={`mt-0.5 inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
+                governingMotion.handoffStatus === "ISSUED"
+                  ? "bg-sky-900/50 text-sky-200 border-sky-800"
+                  : governingMotion.handoffStatus
+                    ? "bg-amber-900/40 text-amber-200 border-amber-800"
+                    : "bg-zinc-900 text-gray-400 border-gray-700"
+              }`}>
+                {governingMotion.handoffStatus ?? "—"}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500">receipt</div>
+              <div className={`mt-0.5 inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
+                governingMotion.receiptStatus === "COMPLETED"
+                  ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
+                  : governingMotion.receiptStatus
+                    ? "bg-amber-900/40 text-amber-200 border-amber-800"
+                    : "bg-zinc-900 text-gray-400 border-gray-700"
+              }`}>
+                {governingMotion.receiptStatus ?? "pending"}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {assigneeNhId && assigneeEligibleForRole === false ? (
         <section className="mb-6 max-w-6xl rounded-md border border-red-800 bg-red-950/30 p-4">
