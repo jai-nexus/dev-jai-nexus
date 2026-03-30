@@ -1,0 +1,263 @@
+version: "0.1"
+artifact: "coverage-declaration.schema"
+program: "q3-bootstrap-planning"
+workstream: "WS-E"
+motion: "motion-0091"
+description: >
+  Schema for the post-bootstrap coverage declaration. An operator produces
+  one coverage-declaration per bootstrapped project after Wave 0 is
+  complete. It captures project identity, repo scope, agent coverage, and
+  current wave state in a single inspectable document.
+
+  Field provenance annotations indicate the originating workstream and
+  whether a field is planner-owned (derived from planning artifacts) or
+  operator-declared (confirmed/completed at Wave 0 close).
+
+# ---------------------------------------------------------------------------
+# Identity
+# ---------------------------------------------------------------------------
+
+fields:
+  project_id:
+    type: string
+    required: true
+    description: "Stable machine key. Matches project-intake project_id."
+    provenance: { workstream: WS-A, source: "project-intake.project_id", owned_by: planner }
+
+  project_name:
+    type: string
+    required: true
+    description: "Human display name."
+    provenance: { workstream: WS-A, source: "project-intake.project_name", owned_by: planner }
+
+  domain:
+    type: string
+    required: true
+    description: "Primary domain (e.g. offbook.ai)."
+    provenance: { workstream: WS-A, source: "project-intake.domain", owned_by: planner }
+
+  declaration_date:
+    type: string
+    format: "ISO8601 date"
+    required: true
+    description: "Date the operator completed the Wave 0 declaration."
+    provenance: { workstream: WS-E, source: "operator-declared", owned_by: operator }
+
+  declared_by:
+    type: string
+    required: true
+    description: "Operator identity who completed the declaration."
+    provenance: { workstream: WS-E, source: "operator-declared", owned_by: operator }
+
+# ---------------------------------------------------------------------------
+# Execution scope
+# ---------------------------------------------------------------------------
+
+  execution_scope:
+    type: enum
+    values: [repo_local, cross_repo]
+    required: true
+    description: >
+      Derived by WS-C topology planner. repo_local = monorepo; cross_repo =
+      polyrepo where agents span multiple repos.
+    provenance: { workstream: WS-C, source: "topology-plan.execution_scope", owned_by: planner }
+
+  topology_shape:
+    type: enum
+    values: [monorepo, polyrepo]
+    required: true
+    description: "Raw shape from WS-A intake."
+    provenance: { workstream: WS-A, source: "project-intake.topology.shape", owned_by: planner }
+
+# ---------------------------------------------------------------------------
+# Governance placement
+# ---------------------------------------------------------------------------
+
+  governance_resident_repo:
+    type: string
+    required: true
+    description: >
+      The repo where .nexus/ lives and governance artifacts are committed.
+      Exactly one repo per project.
+    provenance: { workstream: WS-C, source: "topology-plan.governance_resident_repo", owned_by: planner }
+
+  governance_surface:
+    type: object
+    required: true
+    description: >
+      Paths to key governance artifacts within the governance-resident repo.
+      All paths are relative to that repo root.
+    fields:
+      agency_config_path:
+        type: string
+        required: true
+        default: "config/agency.yaml"
+        provenance: { workstream: WS-D, source: "bootstrap-manifest.agency_config", owned_by: planner }
+      council_config_path:
+        type: string
+        required: true
+        default: "council.config.yaml"
+        provenance: { workstream: WS-D, source: "bootstrap-manifest.council_config", owned_by: planner }
+      constitution_path:
+        type: string
+        required: true
+        default: ".nexus/context/project-constitution.yaml"
+        provenance: { workstream: WS-D, source: "bootstrap-manifest.constitution", owned_by: planner }
+      slot_policy_path:
+        type: string
+        required: true
+        default: ".nexus/context/slot-policy.yaml"
+        provenance: { workstream: WS-D, source: "bootstrap-manifest.slot_policy", owned_by: planner }
+      motions_root:
+        type: string
+        required: true
+        default: ".nexus/motions/"
+        provenance: { workstream: WS-D, source: "bootstrap-manifest.motions_root", owned_by: planner }
+
+# ---------------------------------------------------------------------------
+# Agent coverage
+# ---------------------------------------------------------------------------
+
+  nh_root:
+    type: string
+    required: true
+    description: >
+      NH root assigned at WS-B. Forms the prefix for all agent NH IDs in this
+      project (e.g. "7.0" → agents 7.0, 7.0.1 … 7.0.14).
+    provenance: { workstream: WS-B, source: "agent-demand-matrix.nh_root", owned_by: planner }
+
+  agent_coverage:
+    type: list
+    required: true
+    description: >
+      One entry per agent declared in config/agency.yaml. Derived from the
+      agent demand matrix and topology plan. Operator confirms against the
+      bootstrapped agency.yaml.
+    item_fields:
+      nh_id:
+        type: string
+        required: true
+        description: "Fully qualified NH ID (e.g. 7.0.10)."
+        provenance: { workstream: WS-B, source: "agent-demand-matrix.nh_id", owned_by: planner }
+      role:
+        type: string
+        required: true
+        description: "Governance role (council|proposer|executor|challenger|arbiter) or execution role (ARCHITECT|BUILDER|VERIFIER|OPERATOR|LIBRARIAN)."
+        provenance: { workstream: WS-B, source: "agent-demand-matrix.role", owned_by: planner }
+      agent_key:
+        type: string
+        required: true
+        description: "Dot-notation agent key (e.g. offbook.architect)."
+        provenance: { workstream: WS-B, source: "agent-demand-matrix.agent_key", owned_by: planner }
+      scope_repos:
+        type: list
+        items: string
+        required: true
+        description: "Repos this agent is scoped to. Governance roles: governance-resident repo only."
+        provenance: { workstream: WS-C, source: "topology-plan.agent_scope_repos", owned_by: planner }
+      scope_paths:
+        type: list
+        items: string
+        required: false
+        description: "Explicit path patterns. Omit to inherit repo-level defaults."
+        provenance: { workstream: WS-C, source: "topology-plan.agent_scope_paths", owned_by: planner }
+      governance_resident_only:
+        type: boolean
+        required: true
+        description: >
+          True for OPERATOR and LIBRARIAN (scoped to governance-resident repo
+          only). False for ARCHITECT, BUILDER, VERIFIER (may span all repos).
+        provenance: { workstream: WS-B, source: "agent-demand-matrix.governance_resident_only", owned_by: planner }
+
+# ---------------------------------------------------------------------------
+# Wave state
+# ---------------------------------------------------------------------------
+
+  wave_state:
+    type: object
+    required: true
+    description: >
+      Current wave position and proof gate status. Populated at Wave 0 close
+      and updated each time a wave advances.
+    fields:
+      current_wave:
+        type: integer
+        minimum: 0
+        maximum: 4
+        required: true
+        description: "Wave the project has completed and had ratified."
+        provenance: { workstream: WS-E, source: "operator-declared", owned_by: operator }
+      proof_gates_satisfied:
+        type: list
+        items: string
+        required: true
+        description: >
+          Gate IDs from wave-model.schema.yaml that have been satisfied.
+          At Wave 0 close this list should include all Wave 0 proof gates.
+        provenance: { workstream: WS-C, source: "wave-model.waves[].proof_gates", owned_by: operator }
+      next_gate:
+        type: string
+        required: false
+        description: "The next unsatisfied proof gate, if any."
+        provenance: { workstream: WS-C, source: "wave-model.waves[].proof_gates", owned_by: operator }
+      entry_wave:
+        type: integer
+        required: true
+        description: >
+          Wave this project entered at, per wave-model entry_wave_rules
+          (greenfield=0, migration=1, extension=2).
+        provenance: { workstream: WS-C, source: "wave-model.entry_wave_rules", owned_by: planner }
+
+# ---------------------------------------------------------------------------
+# Validation rules
+# ---------------------------------------------------------------------------
+
+validation:
+  - rule: "nh_root must appear as prefix in all agent_coverage[].nh_id values"
+  - rule: "governance_resident_only=true agents must have scope_repos = [governance_resident_repo] only"
+  - rule: "governance_resident_only=false agents must have scope_repos ⊇ [governance_resident_repo]"
+  - rule: "For execution_scope=cross_repo, at least one agent must have len(scope_repos) > 1"
+  - rule: "wave_state.current_wave must be >= wave_state.entry_wave"
+  - rule: "governance_surface paths must be relative (no leading /)"
+
+# ---------------------------------------------------------------------------
+# OffBook.ai example (pressure test, WS-E)
+# ---------------------------------------------------------------------------
+
+example:
+  project_id: "offbook-ai"
+  project_name: "OffBook AI"
+  domain: "offbook.ai"
+  declaration_date: "2026-03-30"
+  declared_by: "Jerry Ingram"
+  execution_scope: "cross_repo"
+  topology_shape: "polyrepo"
+  governance_resident_repo: "offbook-core"
+  nh_root: "7.0"
+  governance_surface:
+    agency_config_path: "config/agency.yaml"
+    council_config_path: "council.config.yaml"
+    constitution_path: ".nexus/context/project-constitution.yaml"
+    slot_policy_path: ".nexus/context/slot-policy.yaml"
+    motions_root: ".nexus/motions/"
+  agent_coverage:
+    - { nh_id: "7.0",     role: council,    agent_key: "offbook.council",    scope_repos: ["offbook-core"], governance_resident_only: true }
+    - { nh_id: "7.0.1",   role: proposer,   agent_key: "offbook.proposer",   scope_repos: ["offbook-core"], governance_resident_only: true }
+    - { nh_id: "7.0.2",   role: executor,   agent_key: "offbook.executor",   scope_repos: ["offbook-core"], governance_resident_only: true }
+    - { nh_id: "7.0.3",   role: challenger, agent_key: "offbook.challenger", scope_repos: ["offbook-core"], governance_resident_only: true }
+    - { nh_id: "7.0.4",   role: arbiter,    agent_key: "offbook.arbiter",    scope_repos: ["offbook-core"], governance_resident_only: true }
+    - { nh_id: "7.0.10",  role: ARCHITECT,  agent_key: "offbook.architect",  scope_repos: ["offbook-core", "offbook-web"], governance_resident_only: false }
+    - { nh_id: "7.0.11",  role: BUILDER,    agent_key: "offbook.builder",    scope_repos: ["offbook-core", "offbook-web"], governance_resident_only: false }
+    - { nh_id: "7.0.12",  role: VERIFIER,   agent_key: "offbook.verifier",   scope_repos: ["offbook-core", "offbook-web"], governance_resident_only: false }
+    - { nh_id: "7.0.14",  role: OPERATOR,   agent_key: "offbook.operator",   scope_repos: ["offbook-core"], governance_resident_only: true }
+  wave_state:
+    current_wave: 0
+    entry_wave: 0
+    proof_gates_satisfied:
+      - "wave0:agency_yaml_valid"
+      - "wave0:council_config_present"
+      - "wave0:constitution_present"
+      - "wave0:slot_policy_present"
+      - "wave0:motion_stub_present"
+      - "wave0:claude_md_stubbed"
+    next_gate: "wave1:first_motion_ratified"
