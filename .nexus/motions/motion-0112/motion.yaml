@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0112
+kind: governance-closure
+status: proposed
+title: "Close motion-0037 stale promotion — promote decision.yaml to RATIFIED"
+program: offbook-ai-bootstrap
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-03-31T23:00:00.000Z"
