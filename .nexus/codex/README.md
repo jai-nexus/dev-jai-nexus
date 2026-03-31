@@ -39,6 +39,7 @@ handoff protocol between them.
 | `/motion-status` | `.claude/commands/motion-status.md` | Activation lane status — reports current packet/queue/SoT state and what needs to happen next |
 | `/motion-create` | `.claude/commands/motion-create.md` | Scaffold a new DRAFT motion package (6 files) from kind and title |
 | `/run-proof-lane` | `.claude/commands/run-proof-lane.md` | Execute one proof stage (ARCHITECT/BUILDER/VERIFIER): enqueue + run-once + verify |
+| `/motion-passalong` | `.claude/commands/motion-passalong.md` | Compose an interpretive handoff document (orchestrator or dev target) from real governance + git state |
 
 ## Eval fixtures
 
@@ -48,6 +49,7 @@ handoff protocol between them.
 | `evals/motion-status-eval.yaml` | motion-0096 (DONE) | motion-status skill — 9 AC, 4 refusal cases, all 5 lane states |
 | `evals/run-proof-lane-eval.yaml` | motion-0096 (Track A) | run-proof-lane skill — 8 AC, 5 refusal cases, 3 valid stages |
 | `evals/motion-create-eval.yaml` | motion-0104 (structure) | motion-create skill — 9 AC, 4 refusal cases, scaffold schema assertions |
+| `evals/motion-passalong-eval.yaml` | motion-0106 | motion-passalong skill — 9 AC, 4 refusal cases, orchestrator + dev target types |
 
 ## How to use the skills
 
@@ -72,5 +74,4 @@ to the expected artifact set described in the fixture.
 
 ## Extension points
 
-- `/motion-passalong` — deferred until passalong patterns stabilize
 - MCP reference if a local tool server is established for DB queries

@@ -1,0 +1,242 @@
+eval_id: motion-passalong-eval-001
+skill: motion-passalong
+description: >
+  Verify that the /motion-passalong skill produces a schema-compliant, state-grounded
+  handoff document for the requested target (orchestrator or dev), refuses unknown
+  targets and nonexistent motions, and never fabricates governance state or invents
+  next directions not implied by the current repo artifacts.
+
+# -------------------------------------------------------------------
+# Reference state
+# -------------------------------------------------------------------
+# motion-0106 (this motion) is the reference for dev passalong tests.
+# The broader Codex capability wave (motions 0102–0106) is the reference
+# for orchestrator passalong tests.
+#
+# Schema reference: .nexus/codex/passalong-schema.md
+# -------------------------------------------------------------------
+
+reference_motion: motion-0106
+reference_program: offbook-ai-bootstrap
+
+# -------------------------------------------------------------------
+# Test cases
+# -------------------------------------------------------------------
+
+test_cases:
+
+  orchestrator_happy_path:
+    description: >
+      Orchestrator passalong for a completed capability wave. Motion is RATIFIED.
+      Output must contain all required sections, list only RATIFIED motions, and
+      recommend exactly one next direction.
+    input:
+      args: "orchestrator motion-0106"
+      repo_state:
+        branch: "sprint/q2-codex-capability-wave-2"
+        motion_decision_status: RATIFIED
+        recent_ratified_motions: [motion-0102, motion-0103, motion-0104, motion-0105, motion-0106]
+    expected_output:
+      frontmatter:
+        passalong_kind: orchestrator
+        schema_version: "passalong-1.0"
+        required_fields: [date, branch, current_motion, program, generated_by]
+      required_sections:
+        - "## State summary"
+        - "## Active constraints"
+        - "## Next direction"
+        - "## Reference layers"
+      state_summary_must:
+        - reference_only_ratified_motions: true
+        - not_include_draft_motions_as_complete: true
+      next_direction_must:
+        - exactly_one_objective: true
+        - grounded_in_repo_state: true
+      reference_layers_must:
+        - include_last_commit: true
+        - include_branch: true
+    must_not_output:
+      - invented SoT event data
+      - packet state not in governance artifacts
+      - DRAFT motions listed as RATIFIED
+
+  dev_happy_path:
+    description: >
+      Dev passalong for a motion in DRAFT state with uncommitted work.
+      Output must describe exact governance status, show working tree changes,
+      and recommend the single concrete next step (commit the work).
+    input:
+      args: "dev motion-0106"
+      repo_state:
+        branch: "sprint/q2-codex-capability-wave-2"
+        motion_decision_status: DRAFT
+        working_tree: |
+          ?? .nexus/motions/motion-0106/
+          ?? .claude/commands/motion-passalong.md
+          ?? .nexus/codex/passalong-schema.md
+          ?? .nexus/codex/evals/motion-passalong-eval.yaml
+          M  .nexus/codex/README.md
+    expected_output:
+      frontmatter:
+        passalong_kind: dev
+        schema_version: "passalong-1.0"
+        required_fields: [date, branch, current_motion, motion_status, generated_by]
+      required_sections:
+        - "## State summary"
+        - "## Working tree"
+        - "## Next step"
+        - "## Reference layers"
+      state_summary_must:
+        - reflect_decision_yaml_status_exactly: true   # must say DRAFT, not RATIFIED
+        - not_describe_uncommitted_work_as_complete: true
+      working_tree_must:
+        - include_git_status_short_output: true
+        - not_be_empty_when_changes_exist: true
+      next_step_must:
+        - exactly_one_action: true
+        - if_uncommitted_changes_then_commit_is_next: true
+    must_not_output:
+      - "RATIFIED"                       # motion is DRAFT
+      - invented next steps not implied by working tree
+
+  dev_clean_tree_ratified:
+    description: >
+      Dev passalong for a RATIFIED motion with clean working tree.
+      Next step must be what the decision.md says comes next (ratification already done).
+    input:
+      args: "dev motion-0105"
+      repo_state:
+        branch: "sprint/q2-codex-capability-wave-2"
+        motion_decision_status: RATIFIED
+        working_tree: ""                 # clean
+    expected_output:
+      state_summary_must:
+        - reflect_ratified_status: true
+      working_tree_must:
+        - say_clean: true
+      next_step_must:
+        - not_suggest_ratification_again: true   # already done
+        - grounded_in_decision_md_or_proposal: true
+
+# -------------------------------------------------------------------
+# Refusal cases
+# -------------------------------------------------------------------
+
+refusal_cases:
+
+  unknown_target:
+    description: "Target is not 'orchestrator' or 'dev' — refuse immediately."
+    input:
+      args: "manager motion-0106"
+    expected_behavior: stop_and_report
+    must_report_contains:
+      - "Unknown target"
+      - "orchestrator"
+      - "dev"
+    must_not_produce_passalong: true
+
+  missing_motion_id:
+    description: "No motionId argument — refuse and report usage."
+    input:
+      args: "orchestrator"
+    expected_behavior: stop_and_report_usage
+    must_not_produce_passalong: true
+
+  nonexistent_motion:
+    description: "MotionId directory does not exist in .nexus/motions/."
+    input:
+      args: "dev motion-9999"
+    expected_behavior: stop_and_report
+    must_report_contains:
+      - "motion-9999"
+      - "not found"
+    must_not_produce_passalong: true
+
+  draft_claimed_as_ratified:
+    description: >
+      Skill must NOT claim DRAFT motion is RATIFIED even if the session context
+      suggests it was "just ratified." Status must come from decision.yaml.
+    input:
+      args: "orchestrator motion-0106"
+      repo_state:
+        motion_decision_status: DRAFT
+        session_context: "we just ratified this motion"
+    expected_behavior: produce_passalong_with_correct_status
+    must_output:
+      - "DRAFT"                          # must reflect actual decision.yaml status
+    must_not_output:
+      - "RATIFIED"                       # must not invent completion
+
+# -------------------------------------------------------------------
+# Schema compliance assertions
+# -------------------------------------------------------------------
+
+schema_compliance:
+
+  orchestrator_required_fields:
+    - passalong_kind: "orchestrator"
+    - schema_version: "passalong-1.0"
+    - date: iso8601_date
+    - branch: non-empty string
+    - current_motion: matches pattern motion-XXXX
+    - program: non-empty string
+    - generated_by: "/motion-passalong"
+
+  dev_required_fields:
+    - passalong_kind: "dev"
+    - schema_version: "passalong-1.0"
+    - date: iso8601_date
+    - branch: non-empty string
+    - current_motion: matches pattern motion-XXXX
+    - motion_status: one of [DRAFT, RATIFIED]
+    - generated_by: "/motion-passalong"
+
+  next_direction_constraint:
+    description: "Next direction / next step must contain exactly one recommended action"
+    check: "Section contains one paragraph, not a bulleted list of multiple options"
+
+  no_full_file_embedding:
+    description: "Passalong must not embed full file contents — reference only"
+    check: "No raw code blocks reproducing file contents; file paths cited instead"
+
+# -------------------------------------------------------------------
+# Acceptance criteria
+# -------------------------------------------------------------------
+
+acceptance_criteria:
+
+  - id: AC-1
+    description: "Orchestrator output contains all 4 required sections"
+    check: "## State summary, ## Active constraints, ## Next direction, ## Reference layers present"
+
+  - id: AC-2
+    description: "Dev output contains all 4 required sections"
+    check: "## State summary, ## Working tree, ## Next step, ## Reference layers present"
+
+  - id: AC-3
+    description: "State summary reflects decision.yaml status exactly — no status promotion"
+    check: "DRAFT motion output says DRAFT; RATIFIED motion output says RATIFIED"
+
+  - id: AC-4
+    description: "Working tree section matches git status --short output"
+    check: "Dev passalong working tree section is not empty when changes exist"
+
+  - id: AC-5
+    description: "Next direction / next step is exactly one recommendation"
+    check: "Section is one paragraph, not a multi-item action list"
+
+  - id: AC-6
+    description: "Unknown target refused with no passalong generated"
+    check: "Non-orchestrator/dev target → stop_and_report, no document output"
+
+  - id: AC-7
+    description: "Nonexistent motion refused with no passalong generated"
+    check: "motion-9999 input → stop_and_report with motion not found"
+
+  - id: AC-8
+    description: "Passalong does not embed full file contents"
+    check: "Files referenced by path, not reproduced inline"
+
+  - id: AC-9
+    description: "Save path recommendation included at end of output"
+    check: "Output ends with surfaces/chat-context/{date}_passalong_{kind}_{motionId}.md suggestion"
