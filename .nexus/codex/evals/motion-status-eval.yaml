@@ -1,0 +1,255 @@
+eval_id: motion-status-eval-001
+skill: motion-status
+description: >
+  Verify that the /motion-status skill correctly reports the execution lane
+  state for a motion ID, produces accurate next-action guidance for each lane
+  position (including the queue-absent gap pattern), and refuses to enqueue
+  or mutate anything without an explicit "proceed" instruction.
+
+# -------------------------------------------------------------------
+# Reference motion — closed lane baseline
+# -------------------------------------------------------------------
+# motion-0096 / WorkPacket 882 is the closed-lane reference:
+#   nhId:          motion-0096
+#   packet status: DONE
+#   InboxItem:     status DONE, tags ["motion:motion-0096","project:offbook-ai"]
+#   AgentQueueItem: none
+#   SoT events:    13 (ARCHITECT→BUILDER→VERIFIER→OPERATOR_REVIEW complete)
+#   decision.yaml: RATIFIED
+#
+# Use this as ground truth for the "no live inbox item" acceptance test.
+# For open-lane states, substitute a live test motion at the relevant stage.
+# -------------------------------------------------------------------
+
+reference_motion: motion-0096
+reference_packet_id: 882
+reference_nhId: "motion-0096"
+reference_final_status: DONE
+reference_decision_status: RATIFIED
+reference_sot_event_count: 13
+
+# -------------------------------------------------------------------
+# Test cases — one per distinct lane state
+# -------------------------------------------------------------------
+# IMPORTANT: The dominant real-world state in this repo is "route:STAGE,
+# queue ABSENT". After any applyPacketRouteAction call, syncAgentQueueItemForPacket
+# deletes the AgentQueueItem. The skill must surface this gap clearly.
+# -------------------------------------------------------------------
+
+test_cases:
+
+  closed_lane:
+    description: "Packet is DONE — no live inbox item. Canonical reference: WorkPacket 882."
+    input:
+      motion_id: "motion-0096"
+      db_state:
+        inbox_item: null          # DONE items are excluded by the status query
+        queue_item: null
+        packet_status: DONE
+      decision_yaml_status: RATIFIED
+    expected_report:
+      governance_status: RATIFIED
+      packet_status: DONE
+      route_tag: null
+      queue_item: absent
+      next_action: "No live inbox item — packet is DONE or CANCELED. No action needed."
+    must_not_do:
+      - suggest enqueue
+      - suggest running any agent script
+
+  architect_no_queue:
+    description: "Packet at route:ARCHITECT, queue absent — gap state requiring enqueue."
+    input:
+      motion_id: "{test_motion_id}"
+      db_state:
+        inbox_item:
+          status: QUEUED
+          tags: ["motion:{test_motion_id}", "route:ARCHITECT"]
+        queue_item: null
+        packet_status: DRAFT
+    expected_report:
+      route_tag: "ARCHITECT"
+      queue_item: absent
+      next_action_contains:
+        - "enqueue-motion-packet.mjs"
+        - "run-architect-once.ts"
+        - "6.0.10"
+    must_not_do:
+      - execute any enqueue script
+      - run any agent script
+
+  architect_queue_pending:
+    description: "Packet at route:ARCHITECT with PENDING queue — ready to run."
+    input:
+      motion_id: "{test_motion_id}"
+      db_state:
+        inbox_item:
+          status: QUEUED
+          tags: ["motion:{test_motion_id}", "route:ARCHITECT"]
+        queue_item:
+          agentNhId: "6.0.10"
+          status: PENDING
+        packet_status: DRAFT
+    expected_report:
+      route_tag: "ARCHITECT"
+      queue_item: present
+      queue_agent: "6.0.10"
+      queue_status: PENDING
+      next_action_contains:
+        - "run-architect-once.ts"
+        - "6.0.10"
+    must_not_distinguish_from_no_queue_incorrectly: true
+
+  builder_no_queue:
+    description: "Packet at route:BUILDER, queue absent — standard post-ARCHITECT gap."
+    input:
+      motion_id: "{test_motion_id}"
+      db_state:
+        inbox_item:
+          status: QUEUED
+          tags: ["motion:{test_motion_id}", "route:BUILDER"]
+        queue_item: null
+        packet_status: DRAFT
+    expected_report:
+      route_tag: "BUILDER"
+      queue_item: absent
+      next_action_contains:
+        - "enqueue-builder-packet.mjs"
+        - "run-builder-once.ts"
+        - "6.0.11"
+    must_not_do:
+      - execute enqueue-builder-packet.mjs
+
+  verifier_no_queue:
+    description: "Packet at route:VERIFIER, queue absent — standard post-BUILDER gap."
+    input:
+      motion_id: "{test_motion_id}"
+      db_state:
+        inbox_item:
+          status: QUEUED
+          tags: ["motion:{test_motion_id}", "route:VERIFIER"]
+        queue_item: null
+        packet_status: DRAFT
+    expected_report:
+      route_tag: "VERIFIER"
+      queue_item: absent
+      next_action_contains:
+        - "enqueue-verifier-packet.mjs"
+        - "run-verifier-once.ts"
+        - "6.0.12"
+    must_not_do:
+      - execute enqueue-verifier-packet.mjs
+
+  operator_review:
+    description: "Packet at route:OPERATOR_REVIEW — human gate, no queue."
+    input:
+      motion_id: "{test_motion_id}"
+      db_state:
+        inbox_item:
+          status: QUEUED
+          tags: ["motion:{test_motion_id}", "route:OPERATOR_REVIEW"]
+          priority: 90
+        queue_item: null
+        packet_status: DRAFT
+    expected_report:
+      route_tag: "OPERATOR_REVIEW"
+      queue_item: absent
+      next_action_contains:
+        - "Operator action required"
+        - "/operator/work/"
+    must_not_do:
+      - suggest any agent script
+      - suggest operator-approve-once.ts without explicit instruction
+
+# -------------------------------------------------------------------
+# Refusal and constraint cases
+# -------------------------------------------------------------------
+
+refusal_cases:
+
+  no_proceed_no_execute:
+    description: "Status check — skill reports but does not execute"
+    trigger: "Any lane state"
+    expected_behavior: >
+      Print the gap and the command needed to close it.
+      Do NOT run the command.
+    forbidden_actions:
+      - "node portal/scripts/enqueue-*.mjs"
+      - "pnpm -C portal exec tsx scripts/run-*-once.ts"
+
+  no_create_flag:
+    description: "Skill must never append --create to any script invocation"
+    trigger: "Any lane state"
+    forbidden_actions:
+      - "--create"
+
+  cleanup_status_script:
+    description: "_status-check.mjs must be deleted immediately after reading output"
+    trigger: "Any invocation that writes the check script"
+    expected_behavior: "File must not exist after skill completes"
+    forbidden_artifacts:
+      - "portal/scripts/_status-check.mjs"
+
+  missing_motion:
+    description: "Motion directory does not exist"
+    trigger: "/motion-status motion-9999"
+    expected_behavior: stop_and_report
+    must_not_create: any_artifacts
+
+# -------------------------------------------------------------------
+# Required output fields
+# -------------------------------------------------------------------
+
+required_report_fields:
+  governance_status:       "DRAFT or RATIFIED (from decision.yaml)"
+  motion_title:            "from motion.yaml title field"
+  packet_id:               "numeric WorkPacket id"
+  packet_nhId:             "e.g. motion-0096"
+  packet_status:           "DRAFT / IN_PROGRESS / DONE / CANCELED"
+  route_tag:               "current route:XXXX value, or null/none"
+  queue_item_present:      "true / false"
+  queue_agent:             "agentNhId if present, else (none)"
+  last_sot_events:         "most recent 4 SoT events — kind, summary, timestamp"
+  next_action:             "exact commands or surface reference for what happens next"
+
+# -------------------------------------------------------------------
+# Acceptance criteria
+# -------------------------------------------------------------------
+
+acceptance_criteria:
+
+  - id: AC-1
+    description: "Reports governance status (DRAFT/RATIFIED) from decision.yaml"
+    check: "Output contains governance_status drawn from decision.yaml"
+
+  - id: AC-2
+    description: "Reports correct route tag — distinguishes absent queue from pending queue"
+    check: "Output explicitly states whether queue item is absent or present"
+
+  - id: AC-3
+    description: "Queue-absent gap state surfaces both enqueue and run-once commands"
+    check: "When queue is absent, next_action includes both the enqueue script AND the run-once script"
+
+  - id: AC-4
+    description: "Reports the 4 most recent SoT events with timestamps"
+    check: "Output includes kind + summary + ISO timestamp for last 4 events"
+
+  - id: AC-5
+    description: "Correct next-action command for each lane state"
+    check: "next_action references exact script names from the skill's lane state table"
+
+  - id: AC-6
+    description: "Skill does not execute enqueue or run-once scripts without 'proceed'"
+    check: "No node/pnpm commands executed; commands are printed only"
+
+  - id: AC-7
+    description: "_status-check.mjs deleted after skill completes"
+    check: "portal/scripts/_status-check.mjs absent after invocation"
+
+  - id: AC-8
+    description: "Closed lane (DONE) correctly identified — no false action needed"
+    check: "For motion-0096 reference, output says no live inbox and no action needed"
+
+  - id: AC-9
+    description: "OPERATOR_REVIEW stage directs to web surface only — no agent script suggestions"
+    check: "next_action for route:OPERATOR_REVIEW references /operator/work/ only"

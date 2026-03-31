@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0102
+kind: codex-exec-policy
+status: proposed
+title: "Codex Execution Policy — Codex-exec / Claude-drafts operating split"
+program: offbook-ai-bootstrap
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-03-31T13:00:00.000Z"
