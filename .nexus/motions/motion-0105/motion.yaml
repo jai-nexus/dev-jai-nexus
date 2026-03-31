@@ -1,0 +1,14 @@
+protocol_version: "0.3.8"
+motion_id: motion-0105
+kind: codex-conditioning
+status: proposed
+title: "Codex Conditioning Expansion — motion-create eval coverage"
+program: offbook-ai-bootstrap
+parent_motion: motion-0103
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-03-31T16:00:00.000Z"

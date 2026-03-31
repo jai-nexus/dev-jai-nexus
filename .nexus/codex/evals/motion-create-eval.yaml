@@ -1,0 +1,258 @@
+eval_id: motion-create-eval-001
+skill: motion-create
+description: >
+  Verify that the /motion-create skill correctly scaffolds a DRAFT motion package
+  from a kind and title, selects the right next motion number, produces schema-valid
+  files, runs validate-motion after scaffolding, and refuses unknown kinds or
+  malformed arguments without creating any files.
+
+# -------------------------------------------------------------------
+# Reference motion — structural reference
+# -------------------------------------------------------------------
+# motion-0104 is the canonical structural reference for a correctly-created
+# motion package. It was created following the same repo conventions the
+# skill encodes. Use it as ground truth for schema assertions.
+#
+# Reference structure:
+#   motion.yaml:    protocol_version 0.3.8, kind, status: proposed,
+#                   required_gates: [validate_motion, validate_agency]
+#   proposal.md:    shell with ## Context / ## Problem / ## Approach /
+#                   ## Non-goals / ## Success criteria
+#   challenge.md:   shell with ## Resolution section
+#   execution.md:   shell with ## Scope / ## Steps / ## Evidence /
+#                   ## Gate validation
+#   decision.yaml:  status: DRAFT, ratified_by: null
+#   decision.md:    ## Status section reads DRAFT
+# -------------------------------------------------------------------
+
+reference_motion: motion-0104
+reference_kind: codex-conditioning
+
+# -------------------------------------------------------------------
+# Input conventions
+# -------------------------------------------------------------------
+# For tests that require a known next motion number, set the repo state
+# such that the highest existing directory is motion-{N}, so the skill
+# should produce motion-{N+1}.
+# -------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+# Test cases
+# -------------------------------------------------------------------
+
+test_cases:
+
+  happy_path_known_kind:
+    description: >
+      Standard invocation with a known kind and clear title. Highest existing
+      directory is motion-{N}. Skill must create motion-{N+1} with all 6 files.
+    input:
+      args: "codex-conditioning Proof lane eval coverage"
+      repo_state:
+        highest_existing_motion: "motion-{N}"   # e.g. motion-0105
+    expected_behavior:
+      new_motion_id: "motion-{N+1}"             # e.g. motion-0106
+      files_created:
+        - "motion.yaml"
+        - "proposal.md"
+        - "challenge.md"
+        - "execution.md"
+        - "decision.yaml"
+        - "decision.md"
+      file_count: 6
+    must_not_create:
+      - "vote.json"
+      - "verify.json"
+      - "policy.yaml"
+
+  motion_yaml_schema:
+    description: "motion.yaml must be schema-valid and contain required fields."
+    input:
+      args: "codex-conditioning My Test Motion"
+    expected_motion_yaml:
+      protocol_version: "0.3.8"
+      kind: "codex-conditioning"
+      status: "proposed"
+      required_gates: [validate_motion, validate_agency]
+      proposer_nh_id: "6.0.1"
+      council_nh_id: "6.0"
+      target:
+        repo: "dev-jai-nexus"
+        domain: "dev.jai.nexus"
+      parent_motion: commented_out       # MUST be commented out, not set
+    must_not_contain:
+      - "parent_motion: motion-"         # parent_motion must not be resolved
+
+  decision_yaml_schema:
+    description: "decision.yaml must be DRAFT with null ratified_by."
+    input:
+      args: "codex-conditioning My Test Motion"
+    expected_decision_yaml:
+      protocol_version: "0.3.8"
+      status: "DRAFT"
+      ratified_by: null
+      vote_mode: "unanimous_consent"
+      required_gates: [validate_motion, validate_agency]
+      target_domain: "dev.jai.nexus"
+      target_repo: "dev-jai-nexus"
+
+  decision_md_status:
+    description: "decision.md ## Status section must read DRAFT."
+    input:
+      args: "codex-conditioning My Test Motion"
+    expected_decision_md:
+      section: "## Status"
+      value: "DRAFT"
+
+  validate_motion_runs:
+    description: >
+      After scaffolding, skill must run validate-motion on the new motion.yaml
+      and report the result. If validate-motion exits non-zero, skill must stop.
+    input:
+      args: "codex-conditioning My Test Motion"
+    expected_behavior:
+      command_run: "node portal/scripts/validate-motion.mjs --motion .nexus/motions/{newMotionId}/motion.yaml"
+      exit_code: 0
+      output_contains: "motion schema OK"
+    must_not_run:
+      - "validate-agency.mjs"            # agency validation is ratification-time only
+
+  number_selection_gap:
+    description: >
+      If motion directories are not contiguous (e.g. 0100, 0103 exist but 0101,
+      0102 are absent), the skill must use the HIGHEST existing number + 1, not
+      fill the gap.
+    input:
+      args: "documentation Test gap motion"
+      repo_state:
+        existing_dirs: ["motion-0100", "motion-0103"]
+    expected_behavior:
+      new_motion_id: "motion-0104"       # max(0100, 0103) + 1 = 0104
+    must_not_produce:
+      - "motion-0101"                    # must not fill gap
+      - "motion-0102"
+
+# -------------------------------------------------------------------
+# Refusal cases — skill must stop before creating any files
+# -------------------------------------------------------------------
+
+refusal_cases:
+
+  unknown_kind:
+    description: "Kind not in the 10-item known kinds table — refuse immediately."
+    input:
+      args: "staged-deployment My New Motion"
+    expected_behavior: stop_and_report
+    must_not_create:
+      - any files in .nexus/motions/
+
+  empty_title:
+    description: "Kind present but no title — skill must stop and ask."
+    input:
+      args: "codex-conditioning"
+    expected_behavior: stop_and_ask_for_title
+    must_not_create:
+      - any files in .nexus/motions/
+
+  no_arguments:
+    description: "No arguments at all — skill must stop and report usage."
+    input:
+      args: ""
+    expected_behavior: stop_and_report_usage
+    must_not_create:
+      - any files in .nexus/motions/
+
+  ambiguous_kind:
+    description: "First token looks like a title word, not a kind — skill must stop."
+    input:
+      args: "Create a new motion for testing"
+    expected_behavior: stop_and_report
+    rationale: "'Create' is not in the known kinds table"
+    must_not_create:
+      - any files in .nexus/motions/
+
+# -------------------------------------------------------------------
+# Forbidden artifacts — must never be created by this skill
+# -------------------------------------------------------------------
+
+forbidden_artifacts:
+  - filename: "vote.json"
+    reason: "ratification artifact — created by /motion-ratify only"
+  - filename: "verify.json"
+    reason: "ratification artifact — created by /motion-ratify only"
+  - filename: "policy.yaml"
+    reason: "ratification artifact — created by /motion-ratify only"
+  - field: "parent_motion (resolved)"
+    reason: "requires judgment — must remain commented out in motion.yaml"
+
+# -------------------------------------------------------------------
+# Known kinds — the 10-item reference list the skill validates against
+# -------------------------------------------------------------------
+
+known_kinds:
+  - documentation
+  - governance-closure
+  - post-proof-assessment
+  - builder-proof
+  - verifier-proof
+  - operator-closeout
+  - staged-activation-proof
+  - codex-conditioning
+  - codex-exec-policy
+  - bootstrap-manifest
+
+unknown_kind_examples:
+  - staged-deployment
+  - AUDITOR
+  - fine-tuning
+  - wave-rollout
+
+# -------------------------------------------------------------------
+# Acceptance criteria
+# -------------------------------------------------------------------
+
+acceptance_criteria:
+
+  - id: AC-1
+    description: "Exactly 6 files created — no more, no less"
+    check: "ls .nexus/motions/{newMotionId}/ | wc -l equals 6"
+
+  - id: AC-2
+    description: "motion.yaml has correct protocol_version, kind, status: proposed"
+    check: >
+      grep 'protocol_version: "0.3.8"' motion.yaml &&
+      grep 'kind: {kind}' motion.yaml &&
+      grep 'status: proposed' motion.yaml
+
+  - id: AC-3
+    description: "decision.yaml has status: DRAFT and ratified_by: null"
+    check: >
+      grep 'status: DRAFT' decision.yaml &&
+      grep 'ratified_by: null' decision.yaml
+
+  - id: AC-4
+    description: "decision.md ## Status section reads DRAFT"
+    check: "grep -A1 '## Status' decision.md | grep DRAFT"
+
+  - id: AC-5
+    description: "No ratification artifacts created (vote.json, verify.json, policy.yaml absent)"
+    check: >
+      ! test -f vote.json &&
+      ! test -f verify.json &&
+      ! test -f policy.yaml
+
+  - id: AC-6
+    description: "parent_motion field is commented out in motion.yaml, not resolved"
+    check: "grep '# parent_motion' motion.yaml (comment) and no bare parent_motion: motion- line"
+
+  - id: AC-7
+    description: "validate-motion run on new motion.yaml exits 0"
+    check: "node portal/scripts/validate-motion.mjs exits 0 for the scaffolded motion.yaml"
+
+  - id: AC-8
+    description: "Unknown kind input produces no files"
+    check: "After refusal, .nexus/motions/{newMotionId}/ does not exist"
+
+  - id: AC-9
+    description: "Next motion number is highest existing + 1 (not gap-filling)"
+    check: "When highest dir is motion-{N}, new dir is motion-{N+1} zero-padded to 4 digits"
