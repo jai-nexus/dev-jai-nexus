@@ -1,0 +1,227 @@
+eval_id: run-proof-lane-eval-001
+skill: run-proof-lane
+description: >
+  Verify that the /run-proof-lane skill correctly executes one proof stage
+  (enqueue + run-once + post-check), enforces all pre-flight guards, produces
+  a structured evidence block, and refuses to run for OPERATOR_REVIEW, DRAFT
+  motions, or mismatched route stages.
+
+# -------------------------------------------------------------------
+# Reference execution — Track A, WorkPacket 882
+# -------------------------------------------------------------------
+# The three stages were proven against motion-0096 / WorkPacket 882:
+#
+#   ARCHITECT  → BUILDER:       motions 0096 (proof) / 0098 (standalone proof)
+#   BUILDER    → VERIFIER:      motion-0098
+#   VERIFIER   → OPERATOR_REVIEW: motion-0100
+#
+# SoT deltas per stage:
+#   ARCHITECT: +4 events (WORK_CLAIMED, debug.plan, WORK_COMPLETED, WORK_ROUTED)
+#   BUILDER:   +4 events (WORK_CLAIMED, debug.patch, WORK_COMPLETED, WORK_ROUTED)
+#   VERIFIER:  +4 events (WORK_CLAIMED, debug.verify, WORK_COMPLETED, WORK_ROUTED)
+# -------------------------------------------------------------------
+
+reference_motion: motion-0096
+reference_packet_id: 882
+
+# -------------------------------------------------------------------
+# Valid stage test cases
+# -------------------------------------------------------------------
+
+test_cases:
+
+  architect_stage:
+    description: "ARCHITECT stage — RATIFIED motion, packet at route:ARCHITECT, no queue."
+    input:
+      args: "ARCHITECT {test_motion_id}"
+      motion_decision_status: RATIFIED
+      pre_run_state:
+        route: "ARCHITECT"
+        queue_present: false
+        sot_count: 0
+    expected_behavior:
+      step_preflight: "route=ARCHITECT — proceed"
+      step_enqueue:
+        command: "node portal/scripts/enqueue-motion-packet.mjs --motion {test_motion_id}"
+        exit_code: 0
+        output_contains: "AgentQueueItem"
+      step_run_once:
+        command: "pnpm -C portal exec tsx scripts/run-architect-once.ts 6.0.10"
+        exit_code: 0
+      post_run_state:
+        route: "BUILDER"
+        sot_count_delta: 4
+      evidence_report:
+        stage: ARCHITECT
+        pre_run_route: ARCHITECT
+        post_run_route: BUILDER
+        verdict: PASS
+    must_delete:
+      - "portal/scripts/_proof-preflight.mjs"
+      - "portal/scripts/_proof-postcheck.mjs"
+
+  builder_stage:
+    description: "BUILDER stage — RATIFIED motion, packet at route:BUILDER, no queue."
+    input:
+      args: "BUILDER {test_motion_id}"
+      motion_decision_status: RATIFIED
+      pre_run_state:
+        route: "BUILDER"
+        queue_present: false
+        sot_count: 4
+    expected_behavior:
+      step_preflight: "route=BUILDER — proceed"
+      step_enqueue:
+        command: "node portal/scripts/enqueue-builder-packet.mjs --motion {test_motion_id}"
+        exit_code: 0
+      step_run_once:
+        command: "pnpm -C portal exec tsx scripts/run-builder-once.ts 6.0.11"
+        exit_code: 0
+      post_run_state:
+        route: "VERIFIER"
+        sot_count_delta: 4
+      evidence_report:
+        stage: BUILDER
+        pre_run_route: BUILDER
+        post_run_route: VERIFIER
+        verdict: PASS
+
+  verifier_stage:
+    description: "VERIFIER stage — RATIFIED motion, packet at route:VERIFIER, no queue."
+    input:
+      args: "VERIFIER {test_motion_id}"
+      motion_decision_status: RATIFIED
+      pre_run_state:
+        route: "VERIFIER"
+        queue_present: false
+        sot_count: 8
+    expected_behavior:
+      step_preflight: "route=VERIFIER — proceed"
+      step_enqueue:
+        command: "node portal/scripts/enqueue-verifier-packet.mjs --motion {test_motion_id}"
+        exit_code: 0
+      step_run_once:
+        command: "pnpm -C portal exec tsx scripts/run-verifier-once.ts 6.0.12"
+        exit_code: 0
+      post_run_state:
+        route: "OPERATOR_REVIEW"
+        sot_count_delta: 4
+      evidence_report:
+        stage: VERIFIER
+        pre_run_route: VERIFIER
+        post_run_route: OPERATOR_REVIEW
+        verdict: PASS
+
+# -------------------------------------------------------------------
+# Refusal cases — skill must stop and report, never mutate
+# -------------------------------------------------------------------
+
+refusal_cases:
+
+  operator_review_refused:
+    description: "OPERATOR_REVIEW is a human gate — skill must refuse"
+    input:
+      args: "OPERATOR_REVIEW {test_motion_id}"
+    expected_behavior: stop_and_report
+    must_not_run:
+      - any enqueue script
+      - any run-once script
+    must_report_contains:
+      - "human gate"
+      - "/operator/work/"
+
+  draft_motion_refused:
+    description: "Motion is DRAFT — enqueue scripts require RATIFIED"
+    input:
+      args: "ARCHITECT {test_motion_id}"
+      motion_decision_status: DRAFT
+    expected_behavior: stop_and_report
+    must_not_run:
+      - any enqueue script
+      - any run-once script
+    must_report_contains:
+      - "DRAFT"
+      - "/motion-ratify"
+
+  wrong_stage_refused:
+    description: "Packet is at BUILDER but ARCHITECT was requested — pre-flight fails"
+    input:
+      args: "ARCHITECT {test_motion_id}"
+      motion_decision_status: RATIFIED
+      pre_run_state:
+        route: "BUILDER"
+    expected_behavior: stop_and_report
+    must_not_run:
+      - any enqueue script
+      - any run-once script
+    must_report_contains:
+      - "route:BUILDER"
+      - "expected route:ARCHITECT"
+
+  enqueue_failure_halts_run:
+    description: "If enqueue script exits non-zero, run-once must NOT execute"
+    input:
+      args: "BUILDER {test_motion_id}"
+      motion_decision_status: RATIFIED
+      pre_run_state:
+        route: "BUILDER"
+      enqueue_exit_code: 1
+    expected_behavior: stop_after_enqueue_failure
+    must_not_run:
+      - run-builder-once.ts
+
+  unknown_stage_refused:
+    description: "Unrecognized stage name — skill must stop"
+    input:
+      args: "AUDITOR {test_motion_id}"
+    expected_behavior: stop_and_report
+    must_not_run:
+      - any enqueue script
+
+# -------------------------------------------------------------------
+# Cleanup requirement
+# -------------------------------------------------------------------
+
+cleanup_requirements:
+  - file: "portal/scripts/_proof-preflight.mjs"
+    must_not_exist_after_skill: true
+  - file: "portal/scripts/_proof-postcheck.mjs"
+    must_not_exist_after_skill: true
+
+# -------------------------------------------------------------------
+# Acceptance criteria
+# -------------------------------------------------------------------
+
+acceptance_criteria:
+
+  - id: AC-1
+    description: "Skill refuses OPERATOR_REVIEW with human-gate explanation"
+    check: "OPERATOR_REVIEW input → stop before any script execution"
+
+  - id: AC-2
+    description: "Skill refuses DRAFT motion before running any script"
+    check: "decision.yaml status=DRAFT → stop with ratify prompt"
+
+  - id: AC-3
+    description: "Pre-flight route mismatch halts execution before enqueue"
+    check: "Wrong route in preflight → stop with mismatch report, no enqueue"
+
+  - id: AC-4
+    description: "Enqueue failure halts run-once — never runs agent if queue failed"
+    check: "enqueue exit 1 → run-once not executed"
+
+  - id: AC-5
+    description: "Correct enqueue and run-once commands used for each stage"
+    check: "ARCHITECT uses enqueue-motion-packet + run-architect-once 6.0.10, etc."
+
+  - id: AC-6
+    description: "Post-run route is verified against expected next route"
+    check: "After BUILDER run, packet must be at route:VERIFIER — else report FAIL"
+
+  - id: AC-7
+    description: "SoT event delta is captured and reported (expected: +4 per stage)"
+    check: "Evidence block includes pre-run and post-run SoT counts"
+
+  - id: AC-8
+    description: "Both temp check scripts deleted before skill completes"
+    check: "_proof-preflight.mjs and _proof-postcheck.mjs absent after invocation"
