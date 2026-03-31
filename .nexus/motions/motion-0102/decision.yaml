@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0102
+status: DRAFT
+ratified_by: null
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-03-31T13:00:00.000Z"
+notes: "DRAFT: Codex-exec / Claude-drafts operating split policy. Primary deliverable: .nexus/codex/codex-exec-policy.md."

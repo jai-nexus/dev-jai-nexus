@@ -25,6 +25,12 @@ The conditioning works through:
 Claude follows these workflows because the prompts are precise and grounded in
 this repo's actual artifact structures — not because the model has been retrained.
 
+## Operating policy
+
+See `codex-exec-policy.md` for the governed Codex-exec / Claude-drafts operating
+split — which task classes Codex runs autonomously, which Claude retains, and the
+handoff protocol between them.
+
 ## Current skills
 
 | Skill | File | Workflow |
@@ -61,6 +67,8 @@ to the expected artifact set described in the fixture.
 
 ## Extension points
 
-- Add `evals/motion-status-eval.yaml` when verifier proof is established (packet at route:VERIFIER is the new reference state)
-- Add `/motion-passalong` skill when passalong generation patterns are stable
-- Add MCP reference if a local tool server is established for DB queries
+- `evals/motion-status-eval.yaml` — reference state: WorkPacket 882 DONE (no route tag) — add in motion-0103
+- `/motion-create` — motion package scaffolding skill — add in motion-0103
+- `/run-proof-lane` — proof lane execution skill (enqueue + run-once + verify) — add in motion-0104
+- `/motion-passalong` — deferred until passalong patterns stabilize
+- MCP reference if a local tool server is established for DB queries
