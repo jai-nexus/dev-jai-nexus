@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -16,4 +16,4 @@ to manifest.
 
 No sub-script changes. No runtime changes. No DB or UI changes.
 
-Awaiting BUILDER implementation, VERIFIER proof, and OPERATOR routing.
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
