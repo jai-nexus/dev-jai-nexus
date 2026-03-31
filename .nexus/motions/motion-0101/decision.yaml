@@ -1,9 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0101
-status: DRAFT
+status: RATIFIED
+ratified_by: manual:proposer
 title: "Operator Review Closeout — WorkPacket 882 (OffBook.ai staged activation)"
 kind: operator-closeout
 program: offbook-ai-bootstrap
 track: A
 created_at: "2026-03-31T11:00:00.000Z"
-last_updated: "2026-03-31T11:00:00.000Z"
+last_updated: "2026-03-31T12:15:10.000Z"

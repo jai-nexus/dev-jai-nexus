@@ -1,7 +1,7 @@
 # Decision - motion-0098
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0098` runs the downstream builder proof for WorkPacket 882 —
