@@ -48,6 +48,15 @@ async function replaceFile(fromPath, toPath) {
     await fs.rename(fromPath, toPath);
 }
 
+async function readIfExists(filePath) {
+    try {
+        return await fs.readFile(filePath);
+    } catch (err) {
+        if (err && err.code === "ENOENT") return null;
+        throw err;
+    }
+}
+
 async function main() {
     await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
@@ -66,6 +75,11 @@ async function main() {
         `${date}_repo-capsule.txt`,
         `${date}_active-path-pack.txt`,
     ];
+    const preservedDefaults = motionScoped
+        ? await Promise.all(
+            defaultFiles.map((name) => readIfExists(path.join(OUTPUT_DIR, name))),
+        )
+        : [];
     const files = motionScoped
         ? defaultFiles.map((name) => name.replace(`${date}_`, `${prefix}_`))
         : defaultFiles;
@@ -76,6 +90,12 @@ async function main() {
                 path.join(OUTPUT_DIR, defaultFiles[i]),
                 path.join(OUTPUT_DIR, files[i]),
             );
+            if (preservedDefaults[i] !== null) {
+                await fs.writeFile(
+                    path.join(OUTPUT_DIR, defaultFiles[i]),
+                    preservedDefaults[i],
+                );
+            }
         }
     }
 
