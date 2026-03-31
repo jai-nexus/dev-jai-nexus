@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0108
+status: RATIFIED
+ratified_by: manual:proposer
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-03-31T14:05:54.000Z"
+notes: "RATIFIED: add decision artifacts to active-path-pack; replace stale motion-0033 strings in repo-capsule."
