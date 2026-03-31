@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -17,4 +17,4 @@ Conditioning artifacts drafted:
 
 Gates passed: validate_motion EXIT 0, validate_agency EXIT 0.
 
-Awaiting ratification.
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
