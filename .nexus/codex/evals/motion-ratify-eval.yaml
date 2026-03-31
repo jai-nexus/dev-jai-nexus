@@ -1,0 +1,178 @@
+eval_id: motion-ratify-eval-001
+skill: motion-ratify
+description: >
+  Verify that the /motion-ratify skill correctly produces a complete,
+  schema-valid ratification artifact set for a DRAFT motion whose required
+  gates both pass.
+
+# -------------------------------------------------------------------
+# Reference motion
+# -------------------------------------------------------------------
+# motion-0093 is the canonical first real OffBook.ai Wave 0 rollout.
+# It is already RATIFIED, making it the ground-truth reference.
+# When using this eval, apply the skill to a test DRAFT motion (not
+# motion-0093 itself), then compare outputs against this reference.
+# -------------------------------------------------------------------
+
+reference_motion: motion-0093
+reference_kind: staged-rollout
+reference_risk_score: 0.10
+
+# Input state the skill should handle
+input:
+  motion_id: "{test_motion_id}"    # e.g. motion-0099 with status: DRAFT
+  decision_yaml:
+    status: DRAFT
+    required_gates: [validate_motion, validate_agency]
+  expected_gate_results:
+    validate_motion:
+      exit_code: 0
+      output_contains: "motion schema OK"
+    validate_agency:
+      exit_code: 0
+      output_contains: "registry-backed agency OK"
+  challenge_md:
+    blocking_objections: none      # verdict must say no blocking objections
+
+# Expected output artifact set
+expected_artifacts:
+
+  vote_json:
+    path: ".nexus/motions/{test_motion_id}/vote.json"
+    required: true
+    schema_version: "vote-0.2"
+    assertions:
+      - field: motion_id
+        value: "{test_motion_id}"
+      - field: vote_mode
+        value: "unanimous_consent"
+      - field: votes
+        length: 3
+        roles: [proposer, challenger, arbiter]
+        all_votes: "yes"
+      - field: outcome
+        value: "PASS"
+      - field: resolved_at
+        type: iso8601
+
+  verify_json:
+    path: ".nexus/motions/{test_motion_id}/verify.json"
+    required: true
+    schema_version: "verify-0.2"
+    assertions:
+      - field: motion_id
+        value: "{test_motion_id}"
+      - field: gates
+        length: 2
+        gate_names: [validate_motion, validate_agency]
+        all_ok: true
+      - field: all_required_ok
+        value: true
+
+  policy_yaml:
+    path: ".nexus/motions/{test_motion_id}/policy.yaml"
+    required: true
+    assertions:
+      - field: protocol_version
+        value: "0.3.8"
+      - field: motion_id
+        value: "{test_motion_id}"
+      - field: target_domain
+        value: "dev.jai.nexus"
+      - field: target_repo
+        value: "dev-jai-nexus"
+      - field: required_gates
+        value: [validate_motion, validate_agency]
+      - field: failed_required_gates
+        value: []
+      - field: required_ok
+        value: true
+      - field: recommended_vote
+        value: "yes"
+      - field: blocking_reasons
+        value: []
+
+  decision_yaml:
+    path: ".nexus/motions/{test_motion_id}/decision.yaml"
+    required: true
+    assertions:
+      - field: status
+        value: RATIFIED             # MUST change from DRAFT
+      - field: ratified_by
+        value: "manual:proposer"
+      - field: last_updated
+        type: iso8601
+        must_differ_from_draft: true
+
+  decision_md:
+    path: ".nexus/motions/{test_motion_id}/decision.md"
+    required: true
+    assertions:
+      - contains: "## Status\nRATIFIED"   # section heading must read RATIFIED
+
+# Artifacts the skill must NOT create
+forbidden_artifacts:
+  - path: ".nexus/motions/{test_motion_id}/execution.handoff.json"
+    reason: "not created for planning/governance/documentation motions"
+
+# Negative inputs — the skill must refuse these
+negative_cases:
+
+  already_ratified:
+    description: "Motion is already RATIFIED — skill must stop and not re-ratify"
+    input:
+      decision_yaml:
+        status: RATIFIED
+    expected_behavior: stop_and_report
+    must_not_overwrite: [vote.json, verify.json, policy.yaml, decision.yaml, decision.md]
+
+  gate_failure:
+    description: "validate-motion exits non-zero — skill must stop before creating artifacts"
+    input:
+      gate_results:
+        validate_motion:
+          exit_code: 1
+    expected_behavior: stop_and_report
+    must_not_create: [vote.json, verify.json, policy.yaml]
+
+  blocking_objection:
+    description: "challenge.md verdict contains unresolved blocking objection — must stop"
+    input:
+      challenge_md:
+        blocking_objections: present
+    expected_behavior: stop_and_report
+    must_not_create: [vote.json, verify.json, policy.yaml]
+
+# Acceptance criteria (human / automated checklist)
+acceptance_criteria:
+  - id: AC-1
+    description: "decision.yaml status is RATIFIED after skill run"
+    check: "grep 'status: RATIFIED' .nexus/motions/{test_motion_id}/decision.yaml"
+
+  - id: AC-2
+    description: "vote.json present with outcome PASS and 3 yes votes"
+    check: "vote.json outcome=PASS, votes array length=3, all vote=yes"
+
+  - id: AC-3
+    description: "verify.json present with all_required_ok=true"
+    check: "verify.json all_required_ok: true, both gates ok: true"
+
+  - id: AC-4
+    description: "policy.yaml present with required_ok=true and no failed gates"
+    check: "policy.yaml required_ok: true, failed_required_gates: []"
+
+  - id: AC-5
+    description: "decision.md ## Status section reads RATIFIED"
+    check: "grep -A1 '## Status' decision.md | grep RATIFIED"
+
+  - id: AC-6
+    description: "motion.yaml status field unchanged (still 'proposed')"
+    check: "grep 'status: proposed' .nexus/motions/{test_motion_id}/motion.yaml"
+
+  - id: AC-7
+    description: "Skill refused to proceed when gate exited non-zero"
+    check: "negative case: no artifacts created on gate failure"
+
+  - id: AC-8
+    description: "Skill refused to re-ratify already-RATIFIED motion"
+    check: "negative case: existing artifacts unchanged on RATIFIED input"
