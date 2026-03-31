@@ -1,7 +1,7 @@
 # Decision - motion-0096
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0096` implements the thinnest honest seam converting the staged
@@ -16,19 +16,26 @@ Two artifacts created:
   handle from coverage-declaration, creating WorkPacket + AgentInboxItem with
   `project:offbook-ai` linkage tag, reusing the proven activate-motion lane
 
-Dry-run validated. Idempotency confirmed. No existing scripts, runtime, or UI
-changed.
+## Live activation proof (2026-03-31)
 
-## Activation prerequisites (after ratification)
+```
+activate-staged-project.mjs --create
+→ WorkPacket ID: 882  nhId: motion-0096  status: DRAFT
+→ InboxItem ID:  11   tags: ["motion:motion-0096","project:offbook-ai","route:ARCHITECT"]
 
-```bash
-node portal/scripts/activate-staged-project.mjs \
-  --coverage out/offbook-ai/coverage-declaration.yaml \
-  --motion motion-0096 --create
+enqueue-motion-packet.mjs --motion motion-0096
+→ AgentQueueItem: e23a3217  agentNhId: 6.0.10  status: PENDING  repoScope: ["dev-jai-nexus"]
 
-node portal/scripts/enqueue-motion-packet.mjs --motion motion-0096
+run-architect-once.ts 6.0.10
+→ WORK_CLAIMED:    Work claimed: motion-0096 by 6.0.10
+→ debug.plan:      Architect plan recorded: motion-0096
+→ WORK_COMPLETED:  Work completed: motion-0096 by 6.0.10
+→ WORK_ROUTED:     Work routed: motion-0096 -> BUILDER
 
-pnpm -C portal exec tsx scripts/run-architect-once.ts 6.0.10
+Resulting inbox tags: ["motion:motion-0096","project:offbook-ai","route:BUILDER"]
+(project:offbook-ai persists through routing — operator surface visibility confirmed)
+
+Rerun safety: --create refused with EXIT 1 when live packet exists ✓
 ```
 
 ## Scope boundary
