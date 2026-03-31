@@ -119,6 +119,10 @@ async function main() {
         pathSet.add(`.nexus/motions/${motionId}/challenge.md`);
         pathSet.add(`.nexus/motions/${motionId}/execution.md`);
         pathSet.add(`.nexus/motions/${motionId}/policy.yaml`);
+        pathSet.add(`.nexus/motions/${motionId}/decision.yaml`);
+        pathSet.add(`.nexus/motions/${motionId}/decision.md`);
+        pathSet.add(`.nexus/motions/${motionId}/vote.json`);
+        pathSet.add(`.nexus/motions/${motionId}/verify.json`);
     }
 
     for (const p of explicitPaths) pathSet.add(p);

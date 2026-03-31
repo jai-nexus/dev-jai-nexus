@@ -126,7 +126,6 @@ async function main() {
     lines.push("## Current Work Front");
     lines.push(`- latest_motion_dir: ${latestMotionDir ?? "n/a"}`);
     lines.push("- recent proven runtime strip: ARCHITECT -> BUILDER -> VERIFIER");
-    lines.push("- current likely next work: context bundle generator");
     lines.push("");
 
     lines.push("## Key Paths");
@@ -137,11 +136,11 @@ async function main() {
     lines.push("");
 
     lines.push("## Important Commands");
-    lines.push("- pnpm council:run motion-0033");
+    lines.push(`- pnpm council:run ${latestMotionDir ?? "motion-XXXX"}`);
     lines.push("- pnpm -C portal typecheck");
     lines.push("- pnpm -C portal build");
     lines.push(
-        "- node portal/scripts/generate-context-bundle.mjs --motion motion-0033",
+        `- node portal/scripts/generate-context-bundle.mjs --motion ${latestMotionDir ?? "motion-XXXX"}`,
     );
     lines.push("");
 
