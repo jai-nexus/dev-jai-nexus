@@ -46,7 +46,18 @@ The only gap is that the decision.yaml promotion step was never executed.
 
 ## Scope
 
-Strictly limited to two files in one motion directory:
+This motion package (motion-0112):
+
+```
+.nexus/motions/motion-0112/motion.yaml
+.nexus/motions/motion-0112/proposal.md
+.nexus/motions/motion-0112/challenge.md
+.nexus/motions/motion-0112/execution.md
+.nexus/motions/motion-0112/decision.yaml
+.nexus/motions/motion-0112/decision.md
+```
+
+Repair targets (motion-0037 only — edited at execution time):
 
 ```
 .nexus/motions/motion-0037/decision.yaml

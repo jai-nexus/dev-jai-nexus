@@ -6,6 +6,17 @@
 
 ## Scope
 
+Files created (this motion package):
+
+```
+.nexus/motions/motion-0112/motion.yaml
+.nexus/motions/motion-0112/proposal.md
+.nexus/motions/motion-0112/challenge.md
+.nexus/motions/motion-0112/execution.md
+.nexus/motions/motion-0112/decision.yaml
+.nexus/motions/motion-0112/decision.md
+```
+
 Files to edit (motion-0037 only):
 
 ```
