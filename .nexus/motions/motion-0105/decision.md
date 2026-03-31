@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -13,6 +13,8 @@ Motion `motion-0105` adds `motion-create-eval.yaml` — the behavioral specifica
 for the `/motion-create` skill that was deferred in motion-0103.
 
 Primary artifact: `.nexus/codex/evals/motion-create-eval.yaml`
+
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
 
 ## What was added
 
@@ -28,4 +30,4 @@ Primary artifact: `.nexus/codex/evals/motion-create-eval.yaml`
 | `/motion-ratify` | `motion-ratify-eval.yaml` | RATIFIED (motion-0099) |
 | `/motion-status` | `motion-status-eval.yaml` | RATIFIED (motion-0103) |
 | `/run-proof-lane` | `run-proof-lane-eval.yaml` | RATIFIED (motion-0104) |
-| `/motion-create` | `motion-create-eval.yaml` | DRAFT → this motion |
+| `/motion-create` | `motion-create-eval.yaml` | RATIFIED (motion-0105) |

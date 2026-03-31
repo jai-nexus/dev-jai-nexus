@@ -1,10 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0105
-status: DRAFT
-ratified_by: null
+status: RATIFIED
+ratified_by: manual:proposer
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency]
-last_updated: "2026-03-31T16:00:00.000Z"
-notes: "DRAFT: motion-create eval fixture — kind validation, scaffold correctness, refusal cases."
+last_updated: "2026-03-31T12:11:33.000Z"
+notes: "RATIFIED: motion-create eval fixture — kind validation, scaffold correctness, refusal cases."
