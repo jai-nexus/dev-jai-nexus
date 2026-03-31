@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -14,6 +14,8 @@ dev-jai-nexus:
 - `/motion-create` as a deterministic motion package scaffolding skill
 - `motion-status-eval.yaml` as the behavioral spec for `/motion-status`
 
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
+
 ## Intended artifacts
 
 - `.claude/commands/motion-create.md`
@@ -21,5 +23,5 @@ dev-jai-nexus:
 
 ## Notes
 
-This motion remains in DRAFT. Ratification artifacts are intentionally absent
-until the package is reviewed and the required gates are run.
+This motion is RATIFIED. The draft conditioning artifacts are now accepted as
+the next governed expansion of the Codex conditioning layer.
