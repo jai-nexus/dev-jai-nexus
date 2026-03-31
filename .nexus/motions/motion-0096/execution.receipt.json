@@ -1,0 +1,12 @@
+{
+  "version": "0.1",
+  "motion_id": "motion-0096",
+  "packet_nh_id": "motion-0096",
+  "receipt_id": "motion-0096-receipt-001",
+  "closed_at": "2026-03-31T08:58:17.903Z",
+  "closed_by": "operator-approve-script:6.0.14",
+  "outcome": "COMPLETED",
+  "status": "COMPLETED",
+  "operator_action": "APPROVE",
+  "notes": "Operator approval via governed proof script."
+}
