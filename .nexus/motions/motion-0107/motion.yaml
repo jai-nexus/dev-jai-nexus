@@ -1,0 +1,14 @@
+protocol_version: "0.3.8"
+motion_id: motion-0107
+kind: builder-proof
+status: proposed
+title: "Governed context bundle scoping — encode motion ID in bundle output filenames"
+program: offbook-ai-bootstrap
+# parent_motion: motion-XXXX   # standalone improvement — no single governing parent
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-03-31T18:00:00.000Z"
