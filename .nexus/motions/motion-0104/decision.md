@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -13,6 +13,8 @@ Motion `motion-0104` adds the `/run-proof-lane` skill — the final piece of the
 Codex conditioning layer for the Track A execution program.
 
 Primary artifact: `.claude/commands/run-proof-lane.md`
+
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
 
 ## What was added
 
@@ -30,4 +32,5 @@ Primary artifact: `.claude/commands/run-proof-lane.md`
 | `/motion-create` | Motion package scaffolding |
 | `/run-proof-lane` | Proof lane execution |
 
-The core Codex conditioning layer for the offbook-ai-bootstrap program is complete.
+The core Codex conditioning layer for the offbook-ai-bootstrap program is complete
+and RATIFIED for this motion.
