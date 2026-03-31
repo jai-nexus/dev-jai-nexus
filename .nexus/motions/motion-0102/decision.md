@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -14,6 +14,8 @@ Motion `motion-0102` establishes the formal operating split between Codex
 policies, and motion proposals).
 
 Primary artifact: `.nexus/codex/codex-exec-policy.md`
+
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
 
 ## What was established
 
