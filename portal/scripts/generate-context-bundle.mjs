@@ -42,6 +42,12 @@ function runNodeScript(scriptName, extraArgs = []) {
     });
 }
 
+async function replaceFile(fromPath, toPath) {
+    if (fromPath === toPath) return;
+    await fs.rm(toPath, { force: true });
+    await fs.rename(fromPath, toPath);
+}
+
 async function main() {
     await fs.mkdir(OUTPUT_DIR, { recursive: true });
 
@@ -53,26 +59,41 @@ async function main() {
     runNodeScript("generate-active-path-pack.mjs", args);
 
     const date = todayStamp();
-    const files = [
+    const motionScoped = motionId !== null;
+    const prefix = motionScoped ? `${date}_${motionId}` : date;
+    const defaultFiles = [
         `${date}_motion-snapshots.txt`,
         `${date}_repo-capsule.txt`,
         `${date}_active-path-pack.txt`,
     ];
+    const files = motionScoped
+        ? defaultFiles.map((name) => name.replace(`${date}_`, `${prefix}_`))
+        : defaultFiles;
+
+    if (motionScoped) {
+        for (let i = 0; i < defaultFiles.length; i += 1) {
+            await replaceFile(
+                path.join(OUTPUT_DIR, defaultFiles[i]),
+                path.join(OUTPUT_DIR, files[i]),
+            );
+        }
+    }
 
     const manifest = {
-        schema: "context-bundle-0.1",
+        schema: "context-bundle-0.2",
         generated_at: utcNow(),
         repo: "dev-jai-nexus",
         branch: git(["rev-parse", "--abbrev-ref", "HEAD"]) || "(unknown)",
         head_commit: git(["rev-parse", "--short", "HEAD"]) || "(unknown)",
         motion: motionId,
+        motion_scoped: motionScoped,
         output_dir: path.relative(REPO_ROOT, OUTPUT_DIR).replaceAll("\\", "/"),
         files,
     };
 
     const manifestPath = path.join(
         OUTPUT_DIR,
-        `${date}_context-bundle_manifest.json`,
+        `${prefix}_context-bundle_manifest.json`,
     );
 
     await fs.writeFile(
