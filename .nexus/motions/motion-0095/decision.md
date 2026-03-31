@@ -1,7 +1,7 @@
 # Decision - motion-0095
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0095` implements the single remaining Wave 0 generator gap:

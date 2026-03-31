@@ -1,0 +1,69 @@
+motion_id: "motion-0097"
+title: "Bounded Post-motion-0096 Proof Assessment and Governance Closeout Sweep"
+
+status: "proposed"
+created_at: "2026-03-31T08:00:00Z"
+owner: "Jerry Ingram"
+
+kind: "assessment-closeout"
+program: "offbook-ai-bootstrap"
+related_motions:
+  - "motion-0084"
+  - "motion-0093"
+  - "motion-0095"
+  - "motion-0096"
+
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+  paths:
+    - ".nexus/motions/motion-0095/"
+    - ".nexus/planning/post-motion-0096-assessment.md"
+
+summary: >
+  Governance closeout sweep following the live proof of motion-0096. Closes
+  motion-0095 (governance gap: code merged, decision DRAFT). Creates a durable
+  assessment artifact codifying what motion-0096 proved, what it did not prove,
+  and the five readiness layers (staged rollout, staged activation, generalized
+  dispatch, live repo promotion, downstream builder-proof). Recommends next
+  tracks without implementing them. No runtime changes.
+
+problem: >
+  After motion-0096's live staged activation proof, two governance gaps exist:
+  (1) motion-0095 (bootstrap-manifest.instance.yaml emission) was merged at
+  commit ab43667 but its decision.yaml was never updated to RATIFIED — a clean
+  governance debt. (2) There is no durable artifact recording what the
+  motion-0084–0096 program has proven vs what remains unproven, and no
+  structured recommendation for next tracks. Both gaps should be closed before
+  any follow-on work begins.
+
+proposal:
+  - "Ratify motion-0095: create vote.json, verify.json, policy.yaml; update
+    decision.yaml and decision.md to RATIFIED. Both required gates (validate_motion,
+    validate_agency) pass live. Code was merged at commit ab43667."
+  - "Create .nexus/planning/post-motion-0096-assessment.md: defines what
+    motion-0096 proved and did not prove, codifies the five readiness layers,
+    and recommends next tracks (A-D) without implementing them."
+  - "No runtime changes, no queue changes, no staged target mutations."
+
+non_goals:
+  - "Do not implement next tracks in this motion."
+  - "Do not start builder/verifier proof (Track A is a separate motion)."
+  - "Do not start Wave 1+ work."
+  - "Do not start live repo promotion."
+  - "Do not modify motion-0084 or motion-0096."
+
+success_criteria:
+  - "motion-0095 decision.yaml status is RATIFIED."
+  - ".nexus/planning/post-motion-0096-assessment.md exists and codifies all five
+    readiness layers."
+  - "All five readiness layers have clear PROVEN / NOT PROVEN / PARTIAL status."
+  - "Next track recommendations are present and bounded."
+  - "validate_motion and validate_agency pass for motion-0097."
+
+vote:
+  mode: "unanimous_consent"
+  required_roles:
+    - "proposer"
+    - "challenger"
+    - "arbiter"
