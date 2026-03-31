@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -21,4 +21,4 @@ Two targeted script fixes in `portal/scripts/generate-*.mjs`:
 
 No other script changes. No runtime, DB, or UI changes.
 
-Awaiting BUILDER implementation, VERIFIER proof, and OPERATOR routing.
+Ratification artifacts written: `vote.json`, `verify.json`, `policy.yaml`.
