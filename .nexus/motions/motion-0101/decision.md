@@ -6,7 +6,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 

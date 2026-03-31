@@ -1,7 +1,7 @@
 # Decision - motion-0099
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0099` introduces the first Codex repo conditioning layer for

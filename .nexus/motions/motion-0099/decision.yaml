@@ -1,10 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0099
-status: DRAFT
-ratified_by: null
+status: RATIFIED
+ratified_by: manual:proposer
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency]
-last_updated: "2026-03-31T10:00:00.000Z"
+last_updated: "2026-03-31T12:05:10.000Z"
 notes: "DRAFT: Codex repo conditioning — motion-ratify and motion-status skills + eval fixture."

@@ -1,7 +1,7 @@
 # Decision - motion-0100
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0100` completes the downstream automated lane proof for WorkPacket
