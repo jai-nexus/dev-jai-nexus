@@ -1,10 +1,10 @@
 protocol_version: "0.3.8"
 motion_id: motion-0094
-status: DRAFT
-ratified_by: null
+status: RATIFIED
+ratified_by: "unanimous_consent"
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency]
-last_updated: "2026-03-30T00:00:00.000Z"
-notes: "DRAFT: OffBook.ai Wave 0 rollout closeout sweep. Ratifies motion-0093."
+last_updated: "2026-04-02T17:00:10.000Z"
+notes: "RATIFIED: OffBook.ai Wave 0 rollout closeout sweep — motion-0093 closed, 5 governance artifacts committed."

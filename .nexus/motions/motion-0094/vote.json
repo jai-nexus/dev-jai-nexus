@@ -1,0 +1,35 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0094",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:00:00.000Z",
+      "rationale": "motion-0094 executed a governance closeout sweep for motion-0093 (OffBook.ai Wave 0 rollout). All 5 downstream governance artifacts are committed in the repository. motion-0093 shows status: RATIFIED in its decision.yaml. The sweep confirmed all 6 success criteria met, 12 Wave 0 substrate artifacts present, and bootstrap-manifest.instance.yaml correctly deferred as a non-blocking known gap. This vote closes the motion-0094 governance record."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:00:05.000Z",
+      "rationale": "The downstream evidence is inspectable: motion-0093 has RATIFIED decision.yaml, vote.json, verify.json, policy.yaml, and updated decision.md. The sweep stayed within its declared scope — no rollout artifacts changed, no code changed beyond what was already committed. The challenge.md resolved the only objection (C-1 on bootstrap-manifest.instance.yaml) with an Accepted verdict. The only gap was the absence of ratification artifacts for motion-0094 itself, which this closure corrects."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:00:10.000Z",
+      "rationale": "The OffBook.ai Wave 0 rollout governance arc is verifiably closed. motion-0093 has a complete ratification artifact set. Ratifying motion-0094 completes the governance record for the sweep that established this closure. This is the third and final member of the self-unratified closure anomaly family identified by motion-0111. No downstream motion is re-opened or modified by this ratification."
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "resolved_at": "2026-04-02T17:00:10.000Z"
+}

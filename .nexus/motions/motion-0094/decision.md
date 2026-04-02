@@ -1,7 +1,7 @@
 # Decision - motion-0094
 
 ## Status
-DRAFT
+RATIFIED
 
 ## Summary
 Motion `motion-0094` is a governance closeout sweep for the first real OffBook.ai
@@ -32,3 +32,9 @@ Deferred to a separate bounded motion.
 ## Next step
 A follow-up bounded motion to implement `bootstrap-manifest.instance.yaml`
 emission in `generate-bootstrap.mjs` as specified in motion-0088.
+
+## Ratification note
+Ratification completed under motion-0116. This closes the third and final
+member of the self-unratified closure anomaly family identified by
+motion-0111 (P2). motion-0083 closed by motion-0113, motion-0092 closed by
+motion-0114, motion-0094 closed by motion-0116.
