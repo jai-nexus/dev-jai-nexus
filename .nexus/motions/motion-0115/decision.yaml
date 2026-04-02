@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0115
+status: RATIFIED
+ratified_by: "unanimous_consent"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-02T16:30:10.000Z"
+notes: "RATIFIED: governance-policy establishing GitHub CLI-first operator posture — github-cli-operator-flow.md added, codex-exec-policy.md §9 appended, codex/README.md posture note added."
