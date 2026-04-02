@@ -1,0 +1,27 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0115",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-02T16:30:00.000Z",
+      "rationale": "motion-0115 establishes the GitHub CLI-first operator posture for dev-jai-nexus. The implementation is complete: github-cli-operator-flow.md exists with all 7 sections, codex-exec-policy.md §9 is appended with the correct tool precedence table, and codex/README.md carries the posture note. Both required gates pass. The change is docs/policy only — no runtime, UI, DB, or conditioning artifacts modified."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-02T16:30:05.000Z",
+      "rationale": "The implementation is minimal and correct. §1–§8 of codex-exec-policy.md are untouched. The new §9 is orthogonal to §4 (handoff protocol). The operator guide covers auth, branch, PR creation, PR inspection, PR merge, local governance actions, and optional aliases — no over-specification. Codex optionality is established without removing Codex artifacts. No scope widening into motion-factory-playbook.md or operating-workflow.md."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-02T16:30:10.000Z",
+      "rationale": "The operator tool precedence is now governed and canonically referenced. The Codex-exec / Claude-drafts split is preserved. GitHub CLI-first is established without conflict with existing policy. The motion is bounded, the evidence is inspectable, and the gates pass. Ratification is appropriate."
+    }
+  ],
+  "outcome": "PASS",
+  "resolved_at": "2026-04-02T16:30:10.000Z"
+}

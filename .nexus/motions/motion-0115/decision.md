@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -19,5 +19,7 @@ note.
 
 No runtime, UI, DB, or portal changes. No Codex artifacts removed.
 
-This decision.md will be updated to RATIFIED after gate validation passes and
-the vote is cast under motion-0115.
+Ratified after re-running the required `motion-0115` gates with exit code 0
+for both validators and confirming the implementation is present:
+`github-cli-operator-flow.md` exists, `codex-exec-policy.md §9` is appended,
+and `codex/README.md` carries the posture note.
