@@ -31,6 +31,12 @@ See `codex-exec-policy.md` for the governed Codex-exec / Claude-drafts operating
 split — which task classes Codex runs autonomously, which Claude retains, and the
 handoff protocol between them.
 
+For GitHub-native repo operations (push, PR creation, merge), GitHub CLI (`gh`)
+is the default tool. Codex is optional for governance artifact tasks per
+`codex-exec-policy.md §2`; it is not the default executor for repo operations.
+See `.nexus/docs/github-cli-operator-flow.md` for the full operator tool
+precedence and command reference.
+
 ## Current skills
 
 | Skill | File | Workflow |

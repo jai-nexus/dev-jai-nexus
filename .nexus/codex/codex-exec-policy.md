@@ -146,3 +146,26 @@ Upcoming conditioning expansions (motions 0103–0104):
 - `motion-status-eval.yaml` — status skill eval fixture
 
 These expansions are Claude-drafted and will be Codex-ratified via `/motion-ratify`.
+
+---
+
+## 9. Operator tool precedence
+
+GitHub-native repo operations use **GitHub CLI (`gh`)** as the default tool.
+Codex is not the default executor for push, PR creation, PR inspection, or
+PR merge.
+
+| Action class | Default tool |
+|---|---|
+| Push branch, create PR, inspect PR status/checks, merge PR | `gh` (GitHub CLI) |
+| validate-motion, validate-agency, council-run, artifact generation | Local repo scripts |
+| Drafting, scoping, motion authoring, policy | Claude |
+| Orchestration, review, passalongs | ChatGPT |
+| Scripted ratification / status checks | Codex (optional, not default) |
+
+**Canonical reference:** `.nexus/docs/github-cli-operator-flow.md`
+
+The Codex-exec / Claude-drafts split in sections 1–8 applies to governance
+artifact production (ratification sweeps, status checks, proof lanes). It does
+not designate Codex as the default for GitHub-native repo operations. Those
+operations are GitHub CLI-first.
