@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0083",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "motion-0083 executed the ratification sweep for motions 0071 through 0082. All 60 downstream governance artifacts are committed, and all 12 downstream motions are already correctly RATIFIED. This vote closes the missing governance record for the sweep itself.",
+      "ts": "2026-04-01T00:40:00.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "The sweep stayed bounded to governance artifacts and did not touch application code. The downstream evidence is inspectable in repo history and in the ratified decision files for motions 0071 through 0082. The only anomaly was the missing closure artifacts for motion-0083 itself.",
+      "ts": "2026-04-01T00:40:05.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "packet 880 and the Q2 governed loop activation arc remain coherently closed. Ratifying motion-0083 completes the governance record for the sweep that established that closure, without reopening any downstream motion.",
+      "ts": "2026-04-01T00:40:10.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-01T00:40:15.000Z"
+}

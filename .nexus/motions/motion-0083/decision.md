@@ -4,9 +4,12 @@
 **Status:** DRAFT
 **Date:** 2026-03-30
 
+## Status
+RATIFIED
+
 ## Summary
 
-Motion `motion-0083` is a DRAFT governance closure sweep.
+Motion `motion-0083` is ratified.
 
 All 12 motions (motion-0071 through motion-0082) are ratified in workstream
 sequence order, with motion-0071 closing last as the umbrella program motion.
@@ -25,5 +28,5 @@ motion-0070 remains the canonical completed reference path.
 
 ## Notes
 
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratification completed under motion-0113 to close the self-unratified sweep anomaly
+identified by the motion corpus audit.
