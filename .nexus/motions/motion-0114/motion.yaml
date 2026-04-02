@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0114
+kind: governance-closure
+status: proposed
+title: "Close motion-0092 self-unratified sweep — write ratification artifacts and promote decision.yaml to RATIFIED"
+program: q2-self-unratified-closure-sweep
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-04-02T00:00:00.000Z"
