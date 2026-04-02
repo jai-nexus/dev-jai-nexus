@@ -1,0 +1,14 @@
+protocol_version: "0.3.8"
+motion_id: motion-0109
+kind: builder-proof
+status: proposed
+title: "Context bundle discoverability — add find-context-bundle.mjs with staleness detection"
+program: offbook-ai-bootstrap
+parent_motion: motion-0108
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-03-31T20:00:00.000Z"
