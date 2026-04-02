@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0113
+status: RATIFIED
+ratified_by: "unanimous_consent"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-02T15:10:35.000Z"
+notes: "RATIFIED: governance-closure for motion-0083 self-unratified sweep; motion-0083 now has PASS vote, verify, policy, and RATIFIED decision records."

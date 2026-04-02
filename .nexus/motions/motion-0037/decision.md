@@ -1,5 +1,8 @@
 # Decision Record - motion-0037
 
+## Status
+RATIFIED
+
 ## Decision
 Proceed with the first generated Claude bootstrap pack for dev-jai-nexus.
 
@@ -14,7 +17,7 @@ Motion-0036 established the Claude-facing operating artifacts, but practical Cla
 - treat the bootstrap output as a handoff layer, not a replacement for canonical sources.
 
 ## Ratification condition
-Ratify only after the generator emits:
+Ratified on 2026-03-13 after the generator emitted:
 - a dated Claude bootstrap markdown file,
 - a manifest sidecar,
 - stable markdown output across identical reruns,
