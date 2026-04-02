@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0092",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "voter_id": "manual:proposer",
+      "role": "proposer",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "motion-0092 executed the ratification sweep for motions 0084 through 0091. All 40 downstream governance artifacts are committed, and all 8 downstream motions already show status: RATIFIED in decision.yaml. This vote closes the missing governance record for the sweep itself.",
+      "ts": "2026-04-02T15:52:10.000Z"
+    },
+    {
+      "voter_id": "manual:challenger",
+      "role": "challenger",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "The sweep stayed bounded to governance artifacts and did not widen into runtime work. The downstream evidence is inspectable in the ratified decision files for motions 0084 through 0091. The remaining gap was the absence of ratification artifacts for motion-0092 itself, which this closure corrects.",
+      "ts": "2026-04-02T15:52:15.000Z"
+    },
+    {
+      "voter_id": "manual:arbiter",
+      "role": "arbiter",
+      "tier": 1,
+      "vote": "yes",
+      "rationale": "The motion-0084 bootstrap planning arc is coherently closed. Ratifying motion-0092 completes the governance record for the sweep that established that closure, without reopening or modifying any downstream motion.",
+      "ts": "2026-04-02T15:52:20.000Z"
+    }
+  ],
+  "protocol_version": "0.3.8",
+  "required_roles": ["proposer", "challenger", "arbiter"],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-02T15:52:25.000Z"
+}

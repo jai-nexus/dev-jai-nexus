@@ -4,9 +4,12 @@
 **Status:** DRAFT
 **Date:** 2026-03-30
 
+## Status
+RATIFIED
+
 ## Summary
 
-Motion `motion-0092` is a DRAFT governance closure sweep for the motion-0084
+Motion `motion-0092` is a RATIFIED governance closure sweep for the motion-0084
 bootstrap and agency planning program.
 
 ## Scope
@@ -26,5 +29,5 @@ decision.md=RATIFIED) in workstream order:
 
 ## Notes
 
-This motion package remains DRAFT until governed ratification is completed
-through the normal repo workflow.
+Ratification completed under motion-0114 to close the self-unratified sweep anomaly
+identified by the motion corpus audit.
