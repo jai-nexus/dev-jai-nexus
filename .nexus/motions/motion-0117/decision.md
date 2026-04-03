@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -31,5 +31,8 @@ promote decision.yaml to RATIFIED; add status header to decision.md.
 point-in-time baseline. After this motion, the repo reaches a clean pause
 baseline: all normalization targets closed, the audit itself ratified.
 
-This decision.md will be updated to RATIFIED after gate validation passes and
-the vote is cast under motion-0117.
+Ratified after re-running the required `motion-0117` gates with exit code 0
+for both validators and confirming `motion-0111` now has `vote.json` with
+`PASS`, `verify.json`, `policy.yaml`, `decision.yaml` with `status: RATIFIED`,
+and `decision.md` reflecting RATIFIED. The Q2 normalization arc is fully
+closed: all P1/P2 targets repaired, audit baseline ratified.

@@ -1,0 +1,35 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0117",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:30:00.000Z",
+      "rationale": "motion-0117 closes the final governance gap in the Q2 normalization arc. motion-0111 now has the full 9-artifact canonical set: vote.json (PASS, 3 yes), verify.json (all_required_ok: true), policy.yaml (risk_score 0.01), decision.yaml (status: RATIFIED), and decision.md (RATIFIED header). Both required gates pass EXIT 0. The repair is clean, bounded to motion-0111 only, and .nexus/docs/motion-corpus-audit.md was not modified."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:30:05.000Z",
+      "rationale": "The repair evidence is inspectable: motion-0111/decision.yaml shows status: RATIFIED and ratified_by: unanimous_consent. All three missing artifacts are present with correct structure. The audit document at .nexus/docs/motion-corpus-audit.md is unchanged. All four P1/P2 normalization targets it identified have been independently verified as repaired (motions 0112–0114, 0116). No scope was widened."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:30:10.000Z",
+      "rationale": "The Q2 normalization arc is now fully closed. The audit baseline (motion-0111) is ratified. All four anomalies it named are repaired. The repo is at a clean pause baseline. motion-0117 is well-scoped, the implementation is verified, and the gates pass. Ratification is appropriate."
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "resolved_at": "2026-04-02T18:30:10.000Z"
+}
