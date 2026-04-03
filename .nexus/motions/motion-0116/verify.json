@@ -1,0 +1,18 @@
+{
+  "schema_version": "verify-0.2",
+  "motion_id": "motion-0116",
+  "evaluated_at": "2026-04-02T17:15:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "ok": true,
+      "detail": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0116/motion.yaml -> EXIT 0"
+    },
+    {
+      "gate": "validate_agency",
+      "ok": true,
+      "detail": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus -> EXIT 0"
+    }
+  ],
+  "all_required_ok": true
+}
