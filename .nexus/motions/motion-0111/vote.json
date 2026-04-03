@@ -1,0 +1,35 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0111",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:00:00.000Z",
+      "rationale": "motion-0111 produced the canonical motion corpus audit document covering 110 motions (0001–0110), classifying 4 schema families, identifying 4 truly open motions (0037, 0083, 0092, 0094), stating the status-source rule (decision.yaml is authoritative over motion.yaml), and publishing the normalization action registry. The audit document is committed and inspectable at .nexus/docs/motion-corpus-audit.md. All four normalization targets it identified have been resolved: motion-0037 by motion-0112, motion-0083 by motion-0113, motion-0092 by motion-0114, motion-0094 by motion-0116. The audit findings were accurate and the action registry was complete. This vote closes the motion-0111 governance record."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:00:05.000Z",
+      "rationale": "The audit document is present and accurate as a 2026-03-31 point-in-time baseline. No downstream motion disputed its classifications or action registry. All four P1/P2 anomalies it identified have been independently confirmed and repaired with inspectable evidence across four bounded motions. The audit established the status-source rule which was correctly applied across all subsequent normalization work. The challenge.md for motion-0111 has no blocking objections."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-02T18:00:10.000Z",
+      "rationale": "motion-0111 is the governance baseline that enabled the entire Q2 normalization arc. Its findings were sound, its action registry was complete, and the four downstream repair motions validated every identified anomaly. Ratifying motion-0111 closes the final governance gap in this arc. All normalization targets are closed. The repo reaches a clean pause baseline."
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "resolved_at": "2026-04-02T18:00:10.000Z"
+}

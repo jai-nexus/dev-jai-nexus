@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -19,4 +19,7 @@ Findings:
 - Normalization action registry: P1 (0037), P2 (0083/0092/0094), P3 (backfill decision.md),
   P4 (add protocol_version to Family C) — in priority order
 
-No existing motions edited. Awaiting ratification.
+No existing motions edited. Ratification completed under motion-0117.
+All four normalization targets from the action registry have been resolved:
+P1 motion-0037 by motion-0112, P2 motion-0083 by motion-0113,
+P2 motion-0092 by motion-0114, P2 motion-0094 by motion-0116.
