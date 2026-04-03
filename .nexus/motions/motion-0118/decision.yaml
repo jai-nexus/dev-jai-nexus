@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0118
+status: DRAFT
+ratified_by: null
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-03T00:00:00.000Z"
+notes: "DRAFT: Corpus V1 Program Planning Canon v0 — pre-motion planning workflow, program graph vocabulary, context inheritance rules, motion quality standard, and launch packet template. Docs/planning only."
