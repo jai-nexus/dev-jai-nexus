@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0117
+status: DRAFT
+ratified_by: null
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-02T00:00:00.000Z"
+notes: "DRAFT: governance-closure for motion-0111 audit baseline; final governance gap in the Q2 normalization arc; repairs missing vote.json, verify.json, policy.yaml and promotes decision.yaml to RATIFIED."
