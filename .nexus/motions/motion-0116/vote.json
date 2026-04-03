@@ -1,0 +1,35 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0116",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:15:00.000Z",
+      "rationale": "motion-0116 closes the third and final member of the self-unratified closure anomaly family identified by motion-0111. motion-0094 now has the full 9-artifact canonical set: vote.json (PASS, 3 yes), verify.json (all_required_ok: true), policy.yaml (risk_score 0.02), decision.yaml (status: RATIFIED), and decision.md (RATIFIED header). Both required gates pass EXIT 0. The repair is clean, bounded to motion-0094 only, and motion-0093 was not modified."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:15:05.000Z",
+      "rationale": "The repair evidence is inspectable: motion-0094/decision.yaml shows status: RATIFIED and ratified_by: unanimous_consent. All three missing artifacts (vote.json, verify.json, policy.yaml) are present with correct structure. No downstream motion was modified. The challenge.md for motion-0094 had one resolved objection (C-1, Accepted). The P2 anomaly family is complete: 0083 closed by motion-0113, 0092 closed by motion-0114, 0094 closed by motion-0116."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-02T17:15:10.000Z",
+      "rationale": "The self-unratified closure anomaly family identified in the motion-0111 corpus audit is now fully resolved. All three members have complete 9-artifact governance records. motion-0116 is well-scoped, the implementation is verified, and the gates pass. Ratification is appropriate."
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "resolved_at": "2026-04-02T17:15:10.000Z"
+}

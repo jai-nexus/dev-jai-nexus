@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -23,5 +23,8 @@ motion-0093 is not modified. This is the final member of the P2 anomaly family:
 motion-0083 was closed by motion-0113, motion-0092 was closed by motion-0114,
 and motion-0094 is closed by this motion.
 
-This decision.md will be updated to RATIFIED after gate validation passes and
-the vote is cast under motion-0116.
+Ratified after re-running the required `motion-0116` gates with exit code 0
+for both validators and confirming `motion-0094` now has `vote.json` with
+`PASS`, `verify.json`, `policy.yaml`, `decision.yaml` with `status: RATIFIED`,
+and `decision.md` reflecting RATIFIED. This closes the third and final member
+of the P2 self-unratified closure anomaly family (0083 → 0092 → 0094).
