@@ -1,0 +1,94 @@
+schema_id: "context-inheritance-0.1"
+description: >
+  Schema for context inheritance rules within a motion line. Records which
+  context is inherited from the parent program plan, which must be restated
+  when changed, and any explicit overrides applied by a specific motion.
+  One instance per motion line (or per motion when overrides are needed).
+
+fields:
+  schema_version:
+    type: string
+    required: true
+
+  program_id:
+    type: string
+    required: true
+
+  motion_line_id:
+    type: string
+    required: true
+
+  applied_to_motion:
+    type: string
+    required: true
+    description: >
+      The motion_id this inheritance record applies to. For the launch
+      motion, this is the same as the first motion in the line.
+
+  inherited_from:
+    type: string
+    required: true
+    description: >
+      The motion_id or plan artifact from which context is inherited.
+      For the launch motion, this is the program plan. For subsequent
+      motions, this is the prior motion in the line (or its updated
+      launch packet, if one was produced).
+
+  inheritance_rules:
+    type: object
+    description: >
+      Which fields are governed by each rule. See
+      .nexus/docs/corpus-v1-program-planning-canon.md §Context inheritance
+      rules for rule definitions.
+    fields:
+      inherit_unless_overriding:
+        type: list
+        items: string
+        description: >
+          Fields inherited from parent without restatement.
+          Default: [goal_framing, baseline_read, constraints]
+      restate_if_changed:
+        type: list
+        items: string
+        description: >
+          Fields that must be explicitly restated in this motion if they
+          have changed since the prior motion.
+      never_re_litigate:
+        type: list
+        items: string
+        description: >
+          Resolved challenges or ratified decisions from prior motions in
+          the line. These may not be re-raised without new evidence.
+
+  overrides:
+    type: list
+    description: >
+      Explicit overrides of inherited values. Each entry names the field,
+      the prior value, the new value, and the reason for the override.
+    items:
+      field:
+        type: string
+        required: true
+      prior_value:
+        type: string
+        required: true
+      new_value:
+        type: string
+        required: true
+      reason:
+        type: string
+        required: true
+      violates_hard_constraint:
+        type: boolean
+        required: true
+        description: >
+          Must be false. An override that violates a hard constraint from
+          the program plan is not permitted and must trigger escalation.
+
+  updated_launch_packet:
+    type: string | null
+    description: >
+      Path to an updated launch packet produced by this motion for the
+      next motion in the line. Null if this motion does not produce an
+      update. When present, supersedes the prior launch packet for the
+      remaining line.

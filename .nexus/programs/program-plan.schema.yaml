@@ -1,0 +1,202 @@
+schema_id: "program-plan-0.1"
+description: >
+  Schema for a pre-motion planning artifact. Captures the output of the
+  9-phase planning workflow defined in
+  .nexus/docs/corpus-v1-program-planning-canon.md.
+  One instance per planned program or major motion line.
+
+fields:
+  schema_version:
+    type: string
+    required: true
+    description: Must match this schema's schema_id.
+
+  program_id:
+    type: string
+    required: true
+
+  title:
+    type: string
+    required: true
+
+  created_at:
+    type: iso8601
+    required: true
+
+  phases:
+    type: object
+    required: true
+    fields:
+
+      goal_framing:
+        description: Phase 1 output.
+        fields:
+          goal:
+            type: string
+            required: true
+            description: One-sentence goal statement.
+          done_when:
+            type: string
+            required: true
+            description: Explicit, falsifiable completion condition.
+          success_criteria:
+            type: list
+            items: string
+            required: true
+
+      baseline_read:
+        description: Phase 2 output.
+        fields:
+          relevant_motions:
+            type: list
+            items: string
+          relevant_substrate:
+            type: list
+            items: string
+            description: Paths to relevant substrate artifacts.
+          current_state_summary:
+            type: string
+            required: true
+
+      constraint_mapping:
+        description: Phase 3 output.
+        fields:
+          hard_constraints:
+            type: list
+            items: string
+            description: >
+              Things that must not change. Violating these would block
+              ratification.
+          soft_constraints:
+            type: list
+            items: string
+            description: >
+              Preferred patterns to preserve. Adjustable with stated reason.
+
+      program_decomposition:
+        description: Phase 4 output.
+        fields:
+          motions:
+            type: list
+            items:
+              motion_id:
+                type: string
+                description: >
+                  Tentative ID (e.g., motion-NNNN+1). Final IDs assigned at
+                  execution.
+              description:
+                type: string
+                required: true
+              input_state:
+                type: string
+                required: true
+              change:
+                type: string
+                required: true
+              output_state:
+                type: string
+                required: true
+
+      dependency_graph:
+        description: Phase 5 output.
+        fields:
+          edges:
+            type: list
+            items:
+              from:
+                type: string
+                description: Source motion_id.
+              to:
+                type: string
+                description: Target motion_id.
+              type:
+                type: enum
+                values: [sequential, parallel, conditional]
+                required: true
+              condition:
+                type: string
+                description: >
+                  Required when type is conditional. States the condition
+                  that must be true for this edge to activate.
+          critical_path:
+            type: list
+            items: string
+            description: Ordered list of motion_ids on the longest sequential chain.
+
+      agent_panel_strategy:
+        description: Phase 6 output.
+        fields:
+          era:
+            type: enum
+            values: [corpus-v1, corpus-v2]
+            required: true
+          per_motion:
+            type: list
+            items:
+              motion_id:
+                type: string
+              role:
+                type: string
+                description: >
+                  Corpus V1: operator identity.
+                  Corpus V2: panel seat identifier.
+              operating_mode:
+                type: string
+                description: >
+                  Corpus V1: strategic-project | motion-implementation |
+                  closeout-passalong.
+                  Corpus V2: panel-vote (mechanism defined in Corpus V2 canon).
+              notes:
+                type: string
+
+      motion_quality_check:
+        description: Phase 7 output.
+        fields:
+          standard_ref:
+            type: string
+            default: ".nexus/docs/motion-quality-standard.md"
+          dimensions_checked:
+            type: list
+            items:
+              dimension:
+                type: enum
+                values:
+                  - proposal_precision
+                  - challenge_adversarialism
+                  - execution_specificity
+                  - evidence_traceability
+                  - decision_rationale
+              status:
+                type: enum
+                values: [pass, conditional, deferred]
+              notes:
+                type: string
+
+      cost_escalation:
+        description: Phase 8 output.
+        fields:
+          estimated_sessions:
+            type: integer | null
+          estimated_motions:
+            type: integer | null
+          surfaces_touched:
+            type: list
+            items: string
+          escalation_triggers:
+            type: list
+            items: string
+          clean_exit_checkpoints:
+            type: list
+            items:
+              checkpoint:
+                type: string
+              clean_state:
+                type: string
+                description: What the repo looks like if execution stops here.
+
+      launch_packet_ref:
+        type: string
+        required: true
+        description: >
+          Path to the launch packet file for the first motion in this plan.
+          Template at .nexus/programs/motion-launch-packet.template.md.

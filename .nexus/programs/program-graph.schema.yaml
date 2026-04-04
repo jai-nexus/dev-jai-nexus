@@ -1,0 +1,105 @@
+schema_id: "program-graph-0.1"
+description: >
+  Schema for the dev-jai-nexus program graph. Records the structure of work
+  across eras, epics, programs, and motion lines. The data file is at
+  .nexus/programs/program-graph.yaml.
+
+fields:
+  schema_version:
+    type: string
+    required: true
+    description: Schema version identifier. Must match this schema's schema_id.
+
+  coverage:
+    type: enum
+    values: [partial, complete]
+    required: true
+    description: >
+      Whether this graph covers the full corpus (complete) or a known subset
+      (partial). At v0, partial is expected and correct.
+
+  generated_at:
+    type: iso8601
+    required: true
+
+  eras:
+    type: list
+    required: true
+    items:
+      era_id:
+        type: string
+        required: true
+        description: >
+          Short identifier. Examples: corpus-v1, corpus-v2.
+      title:
+        type: string
+        required: true
+      description:
+        type: string
+        required: true
+      governance_model:
+        type: string
+        required: true
+        description: >
+          How motions are voted in this era.
+          Examples: manual-unanimous-consent, jai-agent-panel-vote.
+      motion_range:
+        type: object
+        fields:
+          first: { type: string }
+          last: { type: string | null }
+          description: Null last means era is still open.
+      epics:
+        type: list
+        items:
+          epic_id:
+            type: string
+            required: true
+          title:
+            type: string
+            required: true
+          description:
+            type: string
+          programs:
+            type: list
+            items:
+              program_id:
+                type: string
+                required: true
+              title:
+                type: string
+                required: true
+              description:
+                type: string
+              parent_motion:
+                type: string | null
+                description: >
+                  The umbrella motion for this program. Null for informally
+                  grouped programs without a single umbrella.
+              motion_lines:
+                type: list
+                items:
+                  line_id:
+                    type: string
+                    required: true
+                  description:
+                    type: string
+                  motions:
+                    type: list
+                    items: string
+                    description: Ordered list of motion_ids in execution order.
+                  status:
+                    type: enum
+                    values: [open, closed]
+                    required: true
+              status:
+                type: enum
+                values: [open, closed]
+                required: true
+
+  uncategorized_motions:
+    type: list
+    items: string
+    description: >
+      Motion IDs not yet assigned to a program. Expected to be non-empty
+      when coverage is partial.
