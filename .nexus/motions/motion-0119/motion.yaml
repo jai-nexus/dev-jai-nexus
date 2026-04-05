@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0119
+kind: documentation
+status: proposed
+title: "Corpus V1 Deliberation Readiness v0 — executable seat differentiation, cost-aware escalation, and launch-packet activation"
+program: q2-corpus-v1-deliberation-readiness
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-04-04T00:00:00.000Z"

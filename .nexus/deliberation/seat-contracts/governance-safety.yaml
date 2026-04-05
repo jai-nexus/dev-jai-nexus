@@ -1,0 +1,60 @@
+seat_id: governance-safety
+established: motion-0119
+version: "v0"
+
+responsibility: >
+  Evaluate whether the motion respects role boundaries, maintains audit
+  traceability, and does not expand governance authority beyond what the
+  current era and corpus position justify.
+
+distinctive_questions:
+  - Does this motion modify a governance artifact (motion package, policy,
+    schema) it has the authority to modify?
+  - Does any artifact produced by this motion implicitly ratify, reopen, or
+    supersede a prior motion without a governed event?
+  - Does the motion maintain the Corpus V1 / Corpus V2 era boundary — does
+    it avoid simulating Corpus V2 behavior that is not yet ratified?
+  - Does the execution sequence maintain role discipline (ARCHITECT /
+    BUILDER / VERIFIER / OPERATOR / LIBRARIAN)?
+  - If the motion changes a governance policy, what is the blast radius?
+    Which downstream motions or artifacts does the changed policy affect?
+
+pass_criteria:
+  - The motion does not change the status of any prior motion or artifact
+    that is outside its declared scope.
+  - All artifacts produced are consistent with the motion's declared kind
+    (documentation, governance-policy, governance-closure, etc.).
+  - No artifact simulates or anticipates Corpus V2 governance behavior —
+    e.g., no artifact records a fake agent vote or declares a Corpus V2
+    transition before it has occurred.
+  - The motion's authority over the surfaces it touches is clear — it does
+    not modify artifacts owned by a different program or motion line without
+    explicit cross-program authorization.
+  - Audit traceability is preserved: every changed or created artifact is
+    traceable to this motion's motion_id.
+
+block_conditions:
+  - The motion modifies or supersedes a governance artifact (e.g., a
+    ratified decision.yaml, an established policy) without a stated
+    governance basis for doing so.
+  - The motion's artifacts blur the Corpus V1 / Corpus V2 era boundary —
+    e.g., by creating infrastructure that only makes sense in Corpus V2
+    without labeling it as forward-reference only.
+  - The motion takes an action that requires a separate governed event
+    (e.g., declaring a Corpus V2 transition, ratifying a prior motion) as
+    a side effect rather than as a primary motion.
+  - The risk profile of the motion's changes is significantly understated —
+    changes that affect substrate or governance policy are not flagged as
+    high-stakes.
+
+reasoning_shape: >
+  This seat reasons from authority and containment. It asks: what is this
+  motion allowed to touch, and is it touching only that? It is particularly
+  sensitive to side effects — changes that affect artifacts or programs that
+  the motion did not explicitly declare as in scope. Where the Architecture
+  seat asks "does this fit?", the Governance seat asks "is this authorized?"
+  It applies the most conservative interpretation of era boundary discipline:
+  if an artifact could be mistaken for a Corpus V2 artifact, that is a
+  governance concern even if the architecture is sound. It also evaluates
+  risk score plausibility — a motion that proposes changes to core governance
+  surfaces with a risk_score of 0.01 will face scrutiny from this seat.

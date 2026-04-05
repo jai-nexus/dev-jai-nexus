@@ -1,0 +1,13 @@
+motion_id: motion-0119
+status: RATIFIED
+result: PASS
+ratified_by: unanimous_consent
+last_updated: "2026-04-04T00:00:00.000Z"
+notes: >
+  RATIFIED: Corpus V1 deliberation readiness v0. Six per-seat contracts
+  committed under .nexus/deliberation/seat-contracts/ with differentiated
+  block conditions. Escalation ladder committed with four tiers, v0 heuristic
+  calibration note, and non-numeric triggers. Primary readiness narrative,
+  motion-folder phase guide, launch-packet activation path, and Corpus V2
+  readiness criteria all committed. Both required gates passed (exit 0).
+  Does not declare Corpus V2 started.

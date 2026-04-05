@@ -1,0 +1,28 @@
+{
+  "motion_id": "motion-0119",
+  "voted_at": "2026-04-04T00:00:00.000Z",
+  "era": "corpus-v1",
+  "vote_mechanism": "unanimous_consent",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Six per-seat contracts committed under .nexus/deliberation/seat-contracts/ — each with differentiated block_conditions, not renamed copies: cost-discipline.yaml, architecture.yaml, governance-safety.yaml, operator-usability.yaml, evidence-falsifiability.yaml, execution-pragmatism.yaml.",
+      "Escalation ladder committed at .nexus/deliberation/escalation-ladder.yaml with four tiers (Tier 0–3), numeric risk_score thresholds, non-numeric triggers (surface_type, novelty_flag, uncertainty_flag), automation eligibility per tier, and explicit v0 heuristic calibration note.",
+      "Primary deliberation readiness narrative committed at .nexus/docs/corpus-v1-deliberation-readiness.md — includes Corpus V1 usage workflow, tier decision tree, quality-standard seat mapping, worked example referencing motion-0115, and Corpus V2 forward reference.",
+      "Motion-folder phase guide committed at .nexus/docs/motion-folder-phase-guide.md — covers all six motion-package files with structural requirements, failure modes, and before/after examples.",
+      "Launch-packet activation path committed at .nexus/programs/launch-packet-activation.md — four steps: validate, convert, inherit, hand off. References .nexus/programs/motion-launch-packet.template.md.",
+      "Corpus V2 readiness criteria committed at .nexus/docs/corpus-v2-readiness-criteria.md — 10 falsifiable criteria with honest current-status assessments (2 met, 2 partial, 6 unmet). Does not declare Corpus V2 started.",
+      "validate_motion exit 0: motion schema OK. validate_agency exit 0: registry-backed agency OK. No runtime, UI, DB, or portal files modified."
+    ],
+    "missing_required_roles": []
+  }
+}

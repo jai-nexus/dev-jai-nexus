@@ -1,0 +1,63 @@
+seat_id: execution-pragmatism
+established: motion-0119
+version: "v0"
+
+responsibility: >
+  Evaluate whether the implementation plan is realistic given the actual
+  current state of the repo, and whether the execution sequence will
+  produce the stated output without requiring conditions that do not exist.
+
+distinctive_questions:
+  - Does the execution.md assume dependencies that are not yet committed
+    to the repo?
+  - Is the sequence of steps in execution.md achievable in a single
+    session, or does it implicitly require multiple sessions without
+    acknowledging that?
+  - Does the execution plan account for the known failure modes of the
+    surfaces it touches — validator edge cases, schema family differences,
+    file encoding or path issues on the target platform?
+  - Are the clean exit checkpoints realistic? If execution stops at
+    checkpoint N, will the repo actually be in a coherent state, or will
+    it be partially complete in a way that breaks subsequent operations?
+  - Does the execution plan match the current state of the repo — or does
+    it assume a state that would only be true after a prior motion that has
+    not yet been ratified?
+
+pass_criteria:
+  - All file paths in execution.md exist or will be created by a prior
+    step in the same execution sequence.
+  - The validation commands specified in execution.md have been confirmed
+    to work against the current repo state (not assumed from prior motions).
+  - The execution sequence handles the known schema family differences in
+    the corpus (Family A/B/C/D) where those families affect validator behavior.
+  - Clean exit checkpoints are explicitly stated and leave the repo in a
+    consistent state at each stop point.
+  - The total implementation scope is achievable in the estimated number
+    of sessions stated in the cost estimate.
+
+block_conditions:
+  - The execution.md references a file or artifact that does not yet exist
+    and is not created by a prior step in the same execution — a dependency
+    on uncommitted state.
+  - The implementation plan requires a specific repo condition (e.g., a
+    prior motion ratified, a directory present) that is not currently true
+    and is not established by this motion's own steps.
+  - The scope of work described in execution.md is significantly larger
+    than the scope described in the proposal — the implementation plan has
+    scope-crept without a corresponding proposal update.
+  - The evidence checklist includes commands that are known to fail on the
+    current platform or environment (e.g., Unix-only commands on a Windows
+    repo, missing tool dependencies).
+
+reasoning_shape: >
+  This seat reasons from ground truth. It reads the execution.md and asks:
+  is this actually doable from where we are right now? Where the Architecture
+  seat asks "does this fit?" and the Operator Usability seat asks "can a
+  human follow this?", the Execution Pragmatism seat asks "will this
+  actually work?" It is the seat most likely to catch an implementation plan
+  that was designed against an idealized repo state rather than the real one.
+  It applies extra scrutiny to execution sequences that assume a specific
+  prior state without verifying that state exists. It is not skeptical of
+  ambition — it is skeptical of assumptions. A bold plan with realistic
+  preconditions passes; a modest plan that silently assumes a precondition
+  that does not hold gets a BLOCK.

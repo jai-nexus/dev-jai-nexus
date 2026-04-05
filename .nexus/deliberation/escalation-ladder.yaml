@@ -1,0 +1,147 @@
+schema_id: escalation-ladder-v0
+established: motion-0119
+version: "v0"
+
+# CALIBRATION NOTE
+# The risk_score thresholds in this ladder are v0 heuristic calibrations.
+# They are grounded in the observed distribution of risk scores across
+# Corpus V1 policy.yaml files (motions 0083–0118 with modern policy.yaml),
+# not derived from first principles. The observed distribution clusters at:
+#   0.00–0.05: read-only, audit, and docs motions
+#   0.06–0.19: single-surface governance and policy motions
+#   0.20–0.39: multi-surface or structural motions
+#   0.40+: substrate, runtime, or multi-program motions
+# These boundaries will be recalibrated as Corpus V2 produces more
+# observations with agent-assigned risk scores against a defined scale.
+# Non-numeric triggers (surface_type, novelty_flag, uncertainty_flag) provide
+# escalation signal that does not depend on risk score calibration.
+
+tiers:
+
+  - tier_id: 0
+    label: "Trivial repair"
+    description: >
+      Single-artifact repairs, normalization fixes, and documentation
+      corrections with no downstream dependencies. The change is
+      self-contained, the risk is bounded, and the output state is
+      immediately verifiable.
+    trigger_conditions:
+      numeric:
+        risk_score_max: 0.05
+      non_numeric:
+        surface_type_exclusions:
+          - substrate
+          - runtime
+          - governance-policy
+        novelty_flag: false
+        uncertainty_flag: false
+    required_deliberation_steps:
+      - Gate check: validate_motion and validate_agency pass
+      - Single reviewer confirms output state matches proposal
+    automation_eligibility: >
+      Eligible for automation in Corpus V2. A gate-check agent can
+      validate and approve Tier 0 motions without full panel deliberation.
+      Automation requires: no non-numeric escalation trigger present.
+
+  - tier_id: 1
+    label: "Standard motion"
+    description: >
+      Full single-program motions with bounded scope, clear input and
+      output states, and no novel governance surface. The current default
+      tier for new documentation, schema, and policy motions.
+    trigger_conditions:
+      numeric:
+        risk_score_min: 0.06
+        risk_score_max: 0.19
+      non_numeric:
+        surface_type_exclusions:
+          - substrate
+          - runtime
+        novelty_flag: false
+        uncertainty_flag: false
+        note: >
+          A motion with risk_score < 0.06 escalates to Tier 1 if it
+          touches governance-policy surface or has any non-numeric trigger.
+    required_deliberation_steps:
+      - Full 5-dimension quality check against motion-quality-standard.md
+      - All three roles exercised (proposer, challenger, arbiter)
+      - validate_motion and validate_agency pass
+      - Evidence checklist verified before ratification
+    automation_eligibility: >
+      Partially eligible in Corpus V2. Proposal and challenge phases may be
+      assisted by agents; ratification vote requires at least one seat review
+      per the panel composition rules.
+
+  - tier_id: 2
+    label: "High-stakes motion"
+    description: >
+      Motions that touch substrate, runtime, or governance policy surfaces;
+      motions with risk_score >= 0.20; or motions that are the first of
+      their kind in the corpus (novelty_flag). Require an explicit adversarial
+      challenge pass and documented risk justification.
+    trigger_conditions:
+      numeric:
+        risk_score_min: 0.20
+      non_numeric:
+        surface_type_inclusions:
+          - substrate
+          - runtime
+          - governance-policy
+        novelty_flag: true
+        note: >
+          Any single non-numeric trigger (surface_type, novelty_flag) escalates
+          to Tier 2 regardless of risk_score. uncertainty_flag escalates to
+          Tier 3 (see below).
+    required_deliberation_steps:
+      - Full 5-dimension quality check
+      - All three roles exercised
+      - Mandatory adversarial challenge: at least one challenge must be
+        raised and resolved against the motion's weakest assumption
+      - Explicit risk score justification in policy.yaml notes field
+      - validate_motion and validate_agency pass
+      - Evidence checklist verified before ratification
+      - decision.md must explain the risk assessment, not just record the pass
+    automation_eligibility: >
+      Not eligible for single-agent automation in Corpus V2. Requires
+      multi-seat panel review. Cost Discipline and Governance/Safety seats
+      are mandatory for Tier 2.
+
+  - tier_id: 3
+    label: "Escalated / uncertain"
+    description: >
+      Motions where the right answer is not yet known: open challenges
+      marked conditional, unresolved dependencies on external state,
+      or motions that would change a surface whose current state has
+      not been fully audited. Deliberation is paused until the
+      uncertainty is resolved.
+    trigger_conditions:
+      numeric:
+        note: >
+          Any risk_score may trigger Tier 3 if a non-numeric uncertainty
+          trigger is present.
+      non_numeric:
+        uncertainty_flag: true
+        conditions_for_uncertainty_flag:
+          - One or more challenges in challenge.md are marked "conditional"
+            rather than fully resolved
+          - The motion depends on a prior motion that has not yet been ratified
+          - The execution.md contains a step labeled "TBD" or "to be determined"
+          - The baseline read is incomplete — relevant substrate was not reviewed
+    required_deliberation_steps:
+      - Identify the specific uncertainty blocking deliberation
+      - Produce a bounded action to resolve the uncertainty before proceeding
+        (a separate Tier 0 or Tier 1 motion, a baseline read, or an explicit
+        decision to accept the uncertainty with stated rationale)
+      - Once uncertainty is resolved, re-assign tier and proceed accordingly
+    automation_eligibility: >
+      Not eligible for automation. Tier 3 requires human operator judgment
+      to identify and resolve the blocking uncertainty before deliberation
+      can proceed.
+
+# Tier assignment rules:
+# 1. Start at the tier implied by risk_score.
+# 2. Escalate if any non-numeric trigger applies (surface_type, novelty_flag,
+#    uncertainty_flag). Triggers can only escalate, never de-escalate.
+# 3. Record the assigned tier in policy.yaml under escalation_tier.
+# 4. If tier is escalated above risk_score-implied level, note the trigger
+#    in policy.yaml notes field.
