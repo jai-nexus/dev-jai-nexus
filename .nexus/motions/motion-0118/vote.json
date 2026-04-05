@@ -1,0 +1,35 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0118",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-03T12:00:00.000Z",
+      "rationale": "motion-0118 delivers the Corpus V1 Program Planning Canon v0 in full. All 7 implementation artifacts are committed: corpus-v1-program-planning-canon.md (9-phase workflow, program graph vocabulary, era boundary, context inheritance rules, 6 Corpus V2 panel seat perspectives), motion-quality-standard.md (5 quality dimensions, self-assessment checklist, panel seat mapping), and 5 artifacts in .nexus/programs/ (program-graph.schema.yaml, program-plan.schema.yaml, context-inheritance.schema.yaml, program-graph.yaml with coverage: partial covering 8 major Corpus V1 programs, motion-launch-packet.template.md). Both required gates pass EXIT 0. No runtime, UI, DB, or portal files were modified. No prior motions modified."
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-03T12:00:05.000Z",
+      "rationale": "The implementation is inspectable and internally consistent. The planning canon covers all 9 phases with sufficient detail to be actionable. The quality standard is structured as a usable checklist, not bureaucratic overhead. The 6 Corpus V2 panel seat perspectives are named as a forward reference without pre-specifying their governance mechanism — the scope boundary is correctly drawn. The program graph is honestly marked coverage: partial with 70 early-corpus motions in uncategorized_motions, which is accurate and appropriate at v0. The launch packet template is self-contained and covers all 9 planning phases. All 5 challenges in challenge.md were resolved without scope widening."
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-03T12:00:10.000Z",
+      "rationale": "motion-0118 is the final Corpus V1 foundation move. The planning canon, quality standard, program graph, and launch packet template are in place. The repo now has everything needed to open new strategic motion lines repeatably and to enable a clean Corpus V2 transition when the conditions are met. The scope was held to docs/planning only as required. Ratification is appropriate."
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "resolved_at": "2026-04-03T12:00:10.000Z"
+}

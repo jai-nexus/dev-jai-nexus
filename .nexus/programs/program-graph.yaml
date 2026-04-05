@@ -1,0 +1,290 @@
+schema_version: "program-graph-0.1"
+coverage: partial
+generated_at: "2026-04-03T00:00:00.000Z"
+
+# This is a partial program graph of the Corpus V1 arc.
+# Major known programs are classified below.
+# Motions not yet assigned to a program are listed in uncategorized_motions.
+# A complete retrospective classification is a follow-on task.
+
+eras:
+  - era_id: corpus-v1
+    title: "Corpus V1 — Manual Vote Era"
+    description: >
+      All motions ratified by human operator unanimous consent.
+      Proposer, challenger, and arbiter roles exercised by Jerry Ingram
+      working with Claude. Era ends at the first JAI Agent-voted motion.
+    governance_model: manual-unanimous-consent
+    motion_range:
+      first: motion-0001
+      last: null  # era still open
+
+    epics:
+
+      - epic_id: q2-loop-activation
+        title: "Q2 Loop Activation"
+        description: >
+          Establish the governed execution loop: work packets, agent runtime,
+          SoT emission, and the proof chain that validates end-to-end
+          governance coherence.
+        programs:
+
+          - program_id: q2-loop-ratification-sweep
+            title: "Q2 Loop Ratification Sweep"
+            description: >
+              Close the Q2 loop activation arc by ratifying motions 0072–0082
+              and the umbrella motion 0071.
+            parent_motion: motion-0071
+            motion_lines:
+              - line_id: q2-loop-main
+                description: Child motions 0072–0082 then umbrella 0071, swept by 0083.
+                motions:
+                  - motion-0072
+                  - motion-0073
+                  - motion-0074
+                  - motion-0075
+                  - motion-0076
+                  - motion-0077
+                  - motion-0078
+                  - motion-0079
+                  - motion-0080
+                  - motion-0081
+                  - motion-0082
+                  - motion-0071
+                  - motion-0083
+                status: closed
+            status: closed
+
+      - epic_id: offbook-ai-bootstrap
+        title: "OffBook.ai Bootstrap"
+        description: >
+          Bootstrap the OffBook.ai Wave 0 substrate: planning schemas,
+          generator scripts, rollout, and proof chain.
+        programs:
+
+          - program_id: bootstrap-planning
+            title: "Bootstrap Planning Program"
+            description: >
+              Define schemas, generator, and Wave 0 artifacts for OffBook.ai
+              bootstrap. Workstreams A through E.
+            parent_motion: motion-0084
+            motion_lines:
+              - line_id: bootstrap-planning-main
+                description: >
+                  WS-A through WS-E child motions (0085–0091), swept by
+                  motion-0092 (umbrella 0084 ratified last).
+                motions:
+                  - motion-0085
+                  - motion-0086
+                  - motion-0087
+                  - motion-0088
+                  - motion-0089
+                  - motion-0090
+                  - motion-0091
+                  - motion-0084
+                  - motion-0092
+                status: closed
+            status: closed
+
+          - program_id: wave0-rollout
+            title: "OffBook.ai Wave 0 Rollout"
+            description: >
+              Execute the first real Wave 0 rollout using the bootstrap
+              generator. Close governance record for the rollout.
+            parent_motion: motion-0093
+            motion_lines:
+              - line_id: wave0-rollout-main
+                description: Rollout (0093) and closeout sweep (0094).
+                motions:
+                  - motion-0093
+                  - motion-0094
+                status: closed
+            status: closed
+
+      - epic_id: track-a-proof-chain
+        title: "Track A Proof Chain"
+        description: >
+          End-to-end governance coherence proof: from work packet to agent
+          execution to SoT emission to ratification.
+        programs:
+
+          - program_id: track-a-proof
+            title: "Track A Proof Chain (motions 0095–0101)"
+            description: >
+              Prove the full governed execution loop with WorkPacket 882.
+              ARCHITECT, BUILDER, VERIFIER stages with full SoT evidence.
+            parent_motion: motion-0095
+            motion_lines:
+              - line_id: track-a-main
+                description: Proof stages and closeout.
+                motions:
+                  - motion-0096
+                  - motion-0097
+                  - motion-0098
+                  - motion-0099
+                  - motion-0100
+                  - motion-0101
+                  - motion-0095
+                status: closed
+            status: closed
+
+      - epic_id: codex-exec-conditioning
+        title: "Codex Exec / Claude Drafts Conditioning"
+        description: >
+          Establish the Codex-exec / Claude-drafts operating split, skill
+          prompts, and eval fixtures. Extend with GitHub CLI-first posture.
+        programs:
+
+          - program_id: codex-conditioning
+            title: "Codex Exec Conditioning (motions 0102–0110)"
+            description: >
+              Govern the Codex-exec / Claude-drafts split. Create skill
+              prompts (/motion-ratify, /motion-status, /motion-create,
+              /run-proof-lane, /motion-passalong) and eval fixtures.
+              Extend context portability artifacts.
+            parent_motion: motion-0102
+            motion_lines:
+              - line_id: codex-conditioning-main
+                description: Policy, skills, evals, context artifacts.
+                motions:
+                  - motion-0103
+                  - motion-0104
+                  - motion-0105
+                  - motion-0106
+                  - motion-0107
+                  - motion-0108
+                  - motion-0109
+                  - motion-0110
+                  - motion-0102
+                status: closed
+            status: closed
+
+      - epic_id: q2-normalization
+        title: "Q2 Normalization Arc"
+        description: >
+          Corpus audit, anomaly identification, and bounded repair of all
+          truly open motions (0037, 0083, 0092, 0094). Audit baseline
+          ratified as the final step.
+        programs:
+
+          - program_id: normalization-arc
+            title: "Q2 Normalization Arc (motions 0111–0117)"
+            description: >
+              Audit the full corpus (110 motions), identify 4 anomalies
+              (P1: 0037, P2: 0083/0092/0094), repair each with a bounded
+              motion, ratify the audit baseline.
+            parent_motion: motion-0111
+            motion_lines:
+              - line_id: normalization-main
+                description: >
+                  Audit (0111), P1 repair (0112), P2 repairs
+                  (0113/0114/0116), operator posture (0115), audit closeout
+                  (0117).
+                motions:
+                  - motion-0111
+                  - motion-0112
+                  - motion-0113
+                  - motion-0114
+                  - motion-0115
+                  - motion-0116
+                  - motion-0117
+                status: closed
+            status: closed
+
+      - epic_id: corpus-v1-planning-foundation
+        title: "Corpus V1 Planning Foundation"
+        description: >
+          Establish the program planning canon, motion quality standard,
+          program graph, and launch packet template that will govern all
+          future strategic motion lines and enable the Corpus V2 transition.
+        programs:
+
+          - program_id: planning-canon
+            title: "Corpus V1 Program Planning Canon (motion-0118)"
+            description: >
+              Author the planning canon, quality standard, program graph
+              schema and data, program plan schema, context inheritance
+              schema, and launch packet template.
+            parent_motion: motion-0118
+            motion_lines:
+              - line_id: planning-canon-main
+                description: Single motion — docs/planning only.
+                motions:
+                  - motion-0118
+                status: open
+            status: open
+
+# Motions not yet assigned to a program.
+# Covers the early corpus (0001–0070) and any motion not explicitly
+# classified above. A complete retrospective is a follow-on task.
+uncategorized_motions:
+  - motion-0001
+  - motion-0002
+  - motion-0003
+  - motion-0004
+  - motion-0005
+  - motion-0006
+  - motion-0007
+  - motion-0008
+  - motion-0009
+  - motion-0010
+  - motion-0011
+  - motion-0012
+  - motion-0013
+  - motion-0014
+  - motion-0015
+  - motion-0016
+  - motion-0017
+  - motion-0018
+  - motion-0019
+  - motion-0020
+  - motion-0021
+  - motion-0022
+  - motion-0023
+  - motion-0024
+  - motion-0025
+  - motion-0026
+  - motion-0027
+  - motion-0028
+  - motion-0029
+  - motion-0030
+  - motion-0031
+  - motion-0032
+  - motion-0033
+  - motion-0034
+  - motion-0035
+  - motion-0036
+  - motion-0037
+  - motion-0038
+  - motion-0039
+  - motion-0040
+  - motion-0041
+  - motion-0042
+  - motion-0043
+  - motion-0044
+  - motion-0045
+  - motion-0046
+  - motion-0047
+  - motion-0048
+  - motion-0049
+  - motion-0050
+  - motion-0051
+  - motion-0052
+  - motion-0053
+  - motion-0054
+  - motion-0055
+  - motion-0056
+  - motion-0057
+  - motion-0058
+  - motion-0059
+  - motion-0060
+  - motion-0061
+  - motion-0062
+  - motion-0063
+  - motion-0064
+  - motion-0065
+  - motion-0066
+  - motion-0067
+  - motion-0068
+  - motion-0069
+  - motion-0070
