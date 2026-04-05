@@ -1,0 +1,30 @@
+{
+  "motion_id": "motion-0119",
+  "verified_at": "2026-04-04T00:00:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0119/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0119/motion.yaml — Title: Corpus V1 Deliberation Readiness v0 — executable seat differentiation, cost-aware escalation, and launch-packet activation — Target: domain=dev.jai.nexus repo=dev-jai-nexus",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Tier 0 (global): OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (201 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    { "check": "seat-contracts directory contains 6 YAML files", "result": "ok", "detail": "architecture.yaml, cost-discipline.yaml, evidence-falsifiability.yaml, execution-pragmatism.yaml, governance-safety.yaml, operator-usability.yaml" },
+    { "check": ".nexus/deliberation/escalation-ladder.yaml exists with 4 tiers", "result": "ok", "detail": "Tiers 0–3 present, calibration note present, non-numeric triggers present" },
+    { "check": ".nexus/docs/corpus-v1-deliberation-readiness.md exists with worked example", "result": "ok", "detail": "Worked example references motion-0115" },
+    { "check": ".nexus/docs/motion-folder-phase-guide.md exists with all 6 file sections", "result": "ok", "detail": "motion.yaml, proposal.md, challenge.md, execution.md, decision.yaml, decision.md — each with before/after example" },
+    { "check": ".nexus/programs/launch-packet-activation.md exists with 4 steps", "result": "ok", "detail": "Steps: validate, convert, inherit, hand off" },
+    { "check": ".nexus/docs/corpus-v2-readiness-criteria.md exists with >=8 criteria", "result": "ok", "detail": "10 criteria (CR-01 through CR-10), honest status assessments" },
+    { "check": "No runtime/portal/UI/DB files modified", "result": "ok", "detail": "All changes confined to .nexus/deliberation/, .nexus/docs/, .nexus/programs/, .nexus/motions/motion-0119/" }
+  ]
+}
