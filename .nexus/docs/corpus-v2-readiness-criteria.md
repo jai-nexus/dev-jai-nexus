@@ -2,10 +2,15 @@
 
 **Established:** motion-0119
 **Date:** 2026-04-04
+**Last updated:** 2026-04-04 by motion-0120
 **Status source:** This document records current-status assessments as of
-its creation date. It does not declare when Corpus V2 begins. The transition
+its last update. It does not declare when Corpus V2 begins. The transition
 requires a separate governed event: a Corpus V2 opening motion. This document
 is an input to that motion, not a substitute for it.
+
+**Attribution note:** Status fields in this document are updated by subsequent
+ratified motions. Each status change notes the motion that promoted the
+criterion. Changes are traceable to the promoting motion's ratification record.
 
 ---
 
@@ -33,14 +38,12 @@ Each criterion is:
 ratified, establishing the 9-phase planning workflow, program graph vocabulary,
 context inheritance rules, motion quality standard, and launch-packet template.
 
-**Current status:** `unmet`
+**Current status:** `met`
 
-**Assessment:** motion-0118 (planning canon) is on branch
-`sprint/q2-corpus-v1-program-planning`. All seven planning artifacts are
-committed but motion-0118 has not yet been ratified as of this document's
-creation. Ratification is in progress.
+**Assessment:** motion-0118 ratified. All seven planning artifacts committed
+and validated. Both required gates passed. *Promoted to met by motion-0120.*
 
-**Closing action:** Ratify motion-0118. Once ratified, this criterion is met.
+**Closing action:** Closed.
 
 ---
 
@@ -51,13 +54,14 @@ ratified: six per-seat contracts with PASS/BLOCK conditions, a four-tier
 escalation ladder, a primary readiness narrative, a motion-folder phase guide,
 a governed launch-packet activation path, and a falsifiable V2 readiness checklist.
 
-**Current status:** `unmet`
+**Current status:** `met`
 
-**Assessment:** motion-0119 (deliberation readiness) is in progress on branch
-`sprint/q2-corpus-v1-deliberation-readiness`. Implementation is being executed
-in this session. Ratification has not occurred.
+**Assessment:** motion-0119 ratified. Six seat contracts, escalation ladder,
+primary readiness narrative, phase guide, launch-packet activation path, and
+V2 readiness criteria all committed. Both required gates passed.
+*Promoted to met by motion-0120.*
 
-**Closing action:** Ratify motion-0119. Once ratified, this criterion is met.
+**Closing action:** Closed.
 
 ---
 
@@ -220,8 +224,8 @@ chain discipline for future high-stakes motions.
 
 | ID | Criterion | Status |
 |---|---|---|
-| CR-01 | Planning canon in place | unmet (in progress) |
-| CR-02 | Deliberation readiness in place | unmet (in progress) |
+| CR-01 | Planning canon in place | **met** *(motion-0118)* |
+| CR-02 | Deliberation readiness in place | **met** *(motion-0119)* |
 | CR-03 | Quality standard applied consistently | partial |
 | CR-04 | JAI Agent operational with panel seat | unmet |
 | CR-05 | Corpus V2 opening motion exists | unmet |
@@ -231,11 +235,13 @@ chain discipline for future high-stakes motions.
 | CR-09 | Context bundle generation accurate | met |
 | CR-10 | End-to-end governance proof exists | met |
 
-**Met:** 2 of 10
+**Met:** 4 of 10
 **Partial:** 2 of 10
-**Unmet:** 6 of 10
+**Unmet:** 4 of 10
 
-Corpus V2 transition is not yet warranted. The blocking criteria in order
-of dependency are: CR-01 → CR-02 → CR-03 → CR-04 → CR-05.
-CR-06, CR-07, and CR-08 are parallel tracks that do not block the transition
-but should be closed before declaring the Corpus V1 record complete.
+Corpus V2 transition is not yet warranted. CR-01 and CR-02 are now cleared.
+The remaining critical path is: CR-03 → CR-04 → CR-05.
+CR-04 (JAI Agent operational) is the primary blocker — its closure spec and
+checklist are established by motion-0120. CR-06, CR-07, and CR-08 are parallel
+tracks that do not block the transition but should be closed before declaring
+the Corpus V1 record complete.
