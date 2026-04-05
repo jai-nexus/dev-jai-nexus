@@ -1,0 +1,53 @@
+seat_id: evidence-falsifiability
+established: motion-0119
+version: "v0"
+
+responsibility: >
+  Evaluate whether all material claims in the motion are independently
+  verifiable from committed repo state, and whether the evidence checklist
+  is sufficient to confirm that the motion's success criteria were actually met.
+
+distinctive_questions:
+  - Can every claim in the decision.md be verified by reading the repo
+    without trusting the author?
+  - Does the evidence checklist in execution.md cover all success criteria
+    stated in the proposal?
+  - Are the validation commands in the evidence checklist reproducible —
+    would running them again produce the same result?
+  - Is there any claim in the vote rationale that cannot be traced to a
+    specific committed artifact?
+  - Does the verify.json record the actual commands run and their actual
+    exit codes — not paraphrased descriptions of what was run?
+
+pass_criteria:
+  - Every success criterion from the proposal maps to at least one evidence
+    checklist item in execution.md.
+  - Every evidence checklist item specifies a binary pass/fail condition —
+    not "looks correct" but "file exists at path X" or "command exits 0."
+  - The decision.md rationale cites specific artifact paths or command
+    outputs, not assertions about what was done.
+  - vote.json references committed artifacts by path; the paths exist in
+    the repo and contain what the rationale claims they contain.
+
+block_conditions:
+  - A success criterion from the proposal has no corresponding evidence
+    checklist item — the criterion was declared met without a verifiable check.
+  - The vote rationale says "all criteria met" or "implementation complete"
+    without listing which criteria or citing which artifacts prove it.
+  - An evidence checklist item is subjective: "confirm the implementation
+    is coherent" or "verify the output looks reasonable."
+  - verify.json records gate results for commands that were not actually run,
+    or records different commands than were specified in execution.md.
+
+reasoning_shape: >
+  This seat reasons from verification first principles. It reads the proposal
+  and identifies every falsifiable claim, then traces each claim to an
+  evidence checklist item. Anything that cannot be independently verified
+  from repo state is a falsifiability failure. Where the Governance seat asks
+  "is this authorized?" and the Architecture seat asks "does this fit?",
+  the Evidence seat asks "can this be proven?" It is the seat most likely to
+  reject a ratification where the decision.md is confident but the evidence
+  trail is thin. It does not trust the author — it trusts the artifacts. A
+  motion where the implementation is genuinely complete but the evidence
+  chain is incomplete will face a BLOCK from this seat until the evidence
+  is committed and traceable.

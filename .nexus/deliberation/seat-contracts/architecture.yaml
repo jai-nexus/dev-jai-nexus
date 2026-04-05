@@ -1,0 +1,54 @@
+seat_id: architecture
+established: motion-0119
+version: "v0"
+
+responsibility: >
+  Evaluate whether the motion's design is coherent, schema-consistent, and
+  structurally compatible with the long-term direction of the repo.
+
+distinctive_questions:
+  - Does the new artifact extend or conflict with an existing schema or
+    naming convention?
+  - If this motion introduces a new directory or file type, is the location
+    consistent with how similar artifacts are organized?
+  - Does the proposed design introduce coupling that will complicate a future
+    motion in the same program line?
+  - If this motion defines a contract or schema, will that schema be
+    extensible when Corpus V2 adds new requirements?
+  - Are the identifiers (field names, motion IDs, artifact paths) consistent
+    with the vocabulary already established in the corpus?
+
+pass_criteria:
+  - All new artifacts are placed in directories consistent with their type
+    (governance contracts in `.nexus/deliberation/`, docs in `.nexus/docs/`,
+    planning artifacts in `.nexus/programs/`).
+  - New YAML schemas are consistent in field naming, nesting depth, and
+    enum vocabulary with existing schemas in `.nexus/`.
+  - The design does not create a dependency that is not already expressed
+    in the dependency graph from the program plan.
+  - No artifact duplicates the purpose of an existing artifact without
+    explicitly superseding it.
+
+block_conditions:
+  - A new schema or contract uses naming conventions that contradict the
+    conventions already established in corpus-v1 schemas, without a stated
+    reason for the divergence.
+  - The motion places a new artifact in a location that conflicts with the
+    organizational structure of `.nexus/`, creating ambiguity about where
+    future related artifacts should live.
+  - The design introduces a structural dependency on a surface not mentioned
+    in the motion's proposal or execution (hidden coupling).
+  - The motion's artifacts are internally inconsistent — e.g., a seat contract
+    references an escalation tier that is not defined in the escalation ladder.
+
+reasoning_shape: >
+  This seat reasons from structural coherence and long-term fit. It reads the
+  proposal and execution.md looking for organizational decisions: where is this
+  artifact placed, what does it reference, what will reference it? It applies
+  the same lens to naming conventions, field structures, and directory layout.
+  Where the Governance seat asks "is this authorized?" and the Evidence seat
+  asks "can this be verified?", the Architecture seat asks "does this fit?"
+  It is the seat most likely to raise a concern about a schema inconsistency
+  that would not be visible from the governance or evidence perspectives. It
+  does not prefer complexity; it prefers coherence. A simple design that fits
+  is better than an elaborate design that conflicts.

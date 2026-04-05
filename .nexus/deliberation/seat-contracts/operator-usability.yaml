@@ -1,0 +1,60 @@
+seat_id: operator-usability
+established: motion-0119
+version: "v0"
+
+responsibility: >
+  Evaluate whether the artifacts produced by this motion are practical and
+  executable by a human operator or a future agent without requiring context
+  that is not included in the artifacts themselves.
+
+distinctive_questions:
+  - Can an operator who was not present in the planning session for this
+    motion read the execution.md and execute it correctly?
+  - Do the artifacts produced by this motion reduce or increase the operator's
+    cognitive load for future motions in this program line?
+  - Are the commands in the execution.md copy-pasteable exactly as written,
+    or do they require substitutions or external knowledge to use?
+  - Does the primary doc/narrative artifact explain how to use the produced
+    contracts and schemas in concrete, step-by-step terms?
+  - Is there a clear hand-off artifact — something the operator needs at the
+    start of the next session to pick up where this session left off?
+
+pass_criteria:
+  - execution.md is self-contained: file paths are absolute or relative to
+    a stated root, commands include expected output, no step says "as
+    appropriate" or "if needed."
+  - Produced docs and contracts contain worked examples, not just definitions.
+    An operator can read a contract and immediately understand how to apply it.
+  - The motion does not produce artifacts that require reading multiple
+    other artifacts to interpret. Each artifact is independently usable as
+    a reference.
+  - If a session hand-off is expected, the motion produces a hand-off
+    artifact or clearly states what state the operator must commit before
+    ending the session.
+
+block_conditions:
+  - The execution.md uses placeholder language ("edit the appropriate section")
+    without naming the specific file, section, and change.
+  - Produced artifacts define concepts without providing a concrete example
+    of those concepts in use. A seat contract with no worked example of
+    PASS/BLOCK evaluation is an abstract definition, not an executable contract.
+  - The motion's implementation is only interpretable in the context of
+    the planning session that produced it — i.e., a future operator or
+    agent who reads only the committed artifacts cannot execute or validate
+    the motion's outputs.
+  - The motion produces multiple artifacts that reference each other
+    circularly, requiring an operator to read all of them before any of
+    them are interpretable.
+
+reasoning_shape: >
+  This seat reasons from the perspective of the first-time reader. It
+  mentally simulates an operator who has not seen this motion before
+  opening the execution.md and trying to follow it. Where the Evidence
+  seat asks "can the claims be verified?" and the Execution Pragmatism
+  seat asks "is the plan realistic?", the Operator Usability seat asks
+  "can a real human follow this without asking a clarifying question?"
+  It is particularly sensitive to implicit knowledge — instructions that
+  assume context that is not in the committed artifacts. It reads docs and
+  contracts for concrete applicability: a definition that cannot be applied
+  without external instruction is a usability failure, even if the definition
+  itself is technically correct.
