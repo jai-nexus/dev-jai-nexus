@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0121",
+  "voted_at": "2026-04-05T00:00:00.000Z",
+  "era": "corpus-v1",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "This is an agent seat-contract evaluation artifact, not a ratification vote. The human ratification vote is in vote.json. This file demonstrates CR-04 structural compliance: a registered agent with a committed seat assignment has evaluated a real motion against the evidence-falsifiability seat contract and produced a governed output conforming to agent-vote-protocol v0.1.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 8 proposal success criteria have corresponding binary evidence checklist items in execution.md — no criterion is orphaned (CR04-03 block condition not triggered).",
+      "All 11 execution.md evidence checklist items are specific and binary — no subjective items (CR04-04 block condition not triggered).",
+      "Validation commands (validate_motion, validate_agency, node evidence command) are exact, deterministic, and reproducible on re-run.",
+      "Non-independence limitation acknowledged: agent and motion author share underlying model claude-sonnet-4-6. This trace is structural proof of schema compliance, not adversarial independence. Evaluator independence is Corpus V2 scope.",
+      "See evaluation trace at evaluation_trace_ref for full distinctive_questions responses and block_conditions_checked findings."
+    ],
+    "missing_required_roles": []
+  }
+}

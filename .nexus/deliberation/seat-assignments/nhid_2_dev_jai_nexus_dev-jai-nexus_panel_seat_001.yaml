@@ -1,0 +1,15 @@
+schema_id: seat-assignment-v0
+established: motion-0121
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+agent_name: dev.jai.nexus::DEV-JAI-NEXUS::PANEL_SEAT
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+assigned_at: "2026-04-05T00:00:00.000Z"
+notes: >
+  First seat assignment for the first registered JAI panel-seat agent.
+  Evidence-falsifiability seat chosen for the Corpus V1 CR-04 proof:
+  its distinctive_questions are directly applicable to any governance motion;
+  its block_conditions are structurally checkable from the motion package alone
+  without runtime context. The agent's evaluation of motion-0121 constitutes
+  the CR-04 structural proof of the governance schema end-to-end.

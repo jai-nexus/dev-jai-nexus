@@ -23,8 +23,12 @@ items:
     verification_method: >
       Read agents.generated.yaml. Locate the agent entry by agent_id.
       Confirm domain includes dev.jai.nexus and repo includes dev-jai-nexus.
-    status: unmet
-    closed_by: null
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      workspace/jai-nexus/nexus-core/registry/agents.generated.yaml —
+      agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001,
+      scope: [dev-jai-nexus], tier: 2. validate_agency exits 0 (202 agents).
 
   - id: CR04-02
     description: >
@@ -36,8 +40,12 @@ items:
       Check that .nexus/deliberation/seat-assignments/<agent_id>.yaml exists.
       Read the file and confirm seat_id matches a seat_id in one of the six
       seat contract YAMLs.
-    status: unmet
-    closed_by: null
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      .nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001.yaml —
+      seat_id: evidence-falsifiability, seat_contract_ref matches
+      .nexus/deliberation/seat-contracts/evidence-falsifiability.yaml.
 
   - id: CR04-03
     description: >
@@ -45,15 +53,17 @@ items:
       where the panel entry identifies the agent by agent_id (not a human
       identity), vote_type is "agent", and all required human vote schema
       fields are present (nested outcome object with result/yes/no/abstain).
-    artifact_ref: ".nexus/motions/motion-NNNN/vote.json"
+    artifact_ref: ".nexus/motions/motion-0121/agent-vote.json"
     verification_method: >
-      Locate the motion the agent voted on. Read vote.json. Confirm:
-      vote_type == "agent", agent_id is present and matches the registered
-      agent, outcome object has result/yes/no/abstain fields.
-      Command: node -e "const v=require('./path/to/vote.json');
+      node -e "const v=require('./.nexus/motions/motion-0121/agent-vote.json');
       console.log(v.vote_type, v.agent_id, v.outcome.result)"
-    status: unmet
-    closed_by: null
+      Expected: agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 PASS
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      .nexus/motions/motion-0121/agent-vote.json —
+      vote_type: agent, agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001,
+      outcome.result: PASS, outcome.yes: 1, outcome.no: 0.
 
   - id: CR04-04
     description: >
@@ -63,11 +73,17 @@ items:
       model, protocol_version.
     artifact_ref: ".nexus/deliberation/agent-vote-protocol.yaml"
     verification_method: >
-      Read vote.json. Confirm all eight extension fields are present and
-      non-null. Confirm seat_id matches the agent's committed seat assignment.
-      Confirm seat_contract_ref resolves to a file that exists.
-    status: unmet
-    closed_by: null
+      Read .nexus/motions/motion-0121/agent-vote.json. Confirm all eight
+      extension fields are present and non-null. Confirm seat_id matches
+      the committed seat assignment. Confirm seat_contract_ref resolves.
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      .nexus/motions/motion-0121/agent-vote.json — all eight extension fields
+      present: vote_type, agent_id, seat_id (evidence-falsifiability),
+      seat_contract_ref (.nexus/deliberation/seat-contracts/evidence-falsifiability.yaml),
+      seat_contract_version (v0), evaluation_trace_ref (trace path), model
+      (claude-sonnet-4-6), protocol_version (0.1).
 
   - id: CR04-05
     description: >
@@ -75,12 +91,15 @@ items:
       the motion the agent voted on.
     command: >
       node portal/scripts/validate-motion.mjs --motion
-      .nexus/motions/motion-NNNN/motion.yaml
+      .nexus/motions/motion-0121/motion.yaml
     verification_method: >
-      Run the validate-motion command for the motion the agent voted on.
+      Run the validate-motion command for motion-0121.
       Confirm exit code 0 and output contains "✅ motion schema OK".
-    status: unmet
-    closed_by: null
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0121/motion.yaml
+      → exit 0, output: ✅ motion schema OK.
 
   - id: CR04-06
     description: >
@@ -91,8 +110,12 @@ items:
     verification_method: >
       Read evaluation_trace_ref from the agent's vote.json.
       Confirm the file at that path exists and is parseable.
-    status: unmet
-    closed_by: null
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml
+      — exists, parseable as YAML, evaluation_trace_ref in agent-vote.json
+      matches this path exactly.
 
   - id: CR04-07
     description: >
@@ -100,14 +123,19 @@ items:
       least one distinctive_question and at least one block_condition from
       the agent's assigned seat contract. The trace's questions_evaluated
       list is non-empty and its block_conditions_checked list is non-empty.
-    artifact_ref: ".nexus/deliberation/evaluation-traces/<agent_id>-<motion_id>-trace.yaml"
+    artifact_ref: ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml"
     verification_method: >
-      Read the evaluation trace. Confirm questions_evaluated is a non-empty
-      list. Confirm block_conditions_checked is a non-empty list. Confirm at
-      least one entry in questions_evaluated matches verbatim (or closely
-      paraphrases) a distinctive_question from the assigned seat contract YAML.
-    status: unmet
-    closed_by: null
+      Read the evaluation trace. Confirm questions_evaluated has 5 entries
+      (all distinctive_questions addressed). Confirm block_conditions_checked
+      has 4 entries (all block_conditions checked). Confirm entries reference
+      evidence-falsifiability seat contract fields.
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      Evaluation trace questions_evaluated: 5 entries, each quoting a
+      distinctive_question from evidence-falsifiability.yaml verbatim with
+      specific response. block_conditions_checked: 4 entries, each stating
+      not_triggered with motion-0121-specific notes.
 
 # CR-04 is met when all seven items above have status: met.
 # Update each item's status and closed_by fields in a ratified motion
