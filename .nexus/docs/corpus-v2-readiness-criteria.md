@@ -122,12 +122,19 @@ canon for the agent-voted era).
 
 **Current status:** `unmet`
 
-**Assessment:** No Corpus V2 opening motion exists. This criterion cannot be
-met until CR-04 is met (at least one operational panel-seat agent).
+**Assessment:** No Corpus V2 opening motion has been ratified. This criterion
+cannot be met until CR-04 is met (satisfied by motion-0121) and the opening
+motion is implemented and ratified.
 
-**Closing action:** Author and ratify a Corpus V2 opening motion. That motion
-is the governed event that starts Corpus V2. It must not be simulated or
-anticipated by any Corpus V1 motion.
+Opening event implementation is prepared on branch `sprint/q2-cr05-corpus-v2-opening`
+(motion-0123): evaluation trace, agent-vote.json (`era: corpus-v2`, PASS),
+corpus-v2-canon-baseline.md, and supporting artifacts are committed on that branch.
+Ratification has not occurred. CR-05 remains unmet until the ratification step
+promotes it.
+
+**Closing action:** Ratify motion-0123 (Corpus V2 opening event). That
+ratification is the governed event that starts Corpus V2 and closes CR-05.
+Do not declare CR-05 met before ratification.
 
 ---
 
@@ -250,7 +257,8 @@ chain discipline for future high-stakes motions.
 CR-03 and CR-08 are now met. The remaining critical path is: **CR-05 (Corpus V2
 opening motion)**. CR-03 is met (5/5 qualifying post-0118 motions); the opening
 boundary pre-conditions are documented in `.nexus/docs/cr05-opening-boundary.md`.
-Corpus V2 has not started — the opening motion is a separate governed event that
-must not be authored in the same branch arc as the planning artifacts.
+Corpus V2 has not started — the opening motion (motion-0123) is under implementation
+on branch `sprint/q2-cr05-corpus-v2-opening` and must be ratified before the era
+transition is complete.
 CR-06 and CR-07 are parallel tracks that do not block the transition but should
 be closed before declaring the Corpus V1 record complete.

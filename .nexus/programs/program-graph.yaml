@@ -14,10 +14,12 @@ eras:
       All motions ratified by human operator unanimous consent.
       Proposer, challenger, and arbiter roles exercised by Jerry Ingram
       working with Claude. Era ends at the first JAI Agent-voted motion.
+      motion-0123 (Corpus V2 opening event) is under implementation on branch
+      sprint/q2-cr05-corpus-v2-opening. Era boundary set upon ratification.
     governance_model: manual-unanimous-consent
     motion_range:
       first: motion-0001
-      last: null  # era still open
+      last: null  # era still open; closes upon motion-0123 ratification
 
     epics:
 
@@ -278,10 +280,12 @@ eras:
             motion_lines:
               - line_id: cr05-opening-planning-main
                 description: >
-                  motion-0122 (planning artifacts), then CR-03 fifth qualifying
-                  motion if needed, then the Corpus V2 opening event (CR-05).
+                  motion-0122 (planning artifacts), then the Corpus V2 opening
+                  event (CR-05). motion-0123 implementation under way on branch
+                  sprint/q2-cr05-corpus-v2-opening. Program closes upon ratification.
                 motions:
                   - motion-0122
+                  - motion-0123
                 status: open
             status: open
 

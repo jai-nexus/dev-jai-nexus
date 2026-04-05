@@ -49,11 +49,15 @@ items:
       "not yet met."
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: cr03-compliance-record.yaml
+      has 5/5 entries PASS (motions 0118–0122), coverage_note declares CR-03
+      MET by motion-0122 ratification. motion-0121 entry promoted from
+      CONDITIONAL to PASS post-ratification per record note. Item is closeable;
+      closed_by will be set to motion-0123 upon ratification.
     note: >
-      Current state: 4 of 5 required post-0118 motions assessed (motions
-      0118-0121). One more qualifying ratified post-0118 motion with PASS
-      overall status is required. The opening motion may not be authored
-      until this item is met.
+      Item closeable post-motion-0122 ratification. Will be promoted to
+      status: met, closed_by: motion-0123 upon opening event ratification.
 
   - id: CR05-03
     description: >
@@ -68,9 +72,14 @@ items:
       Confirm all five cr05-* planning artifacts exist at their canonical paths.
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: .nexus/motions/motion-0122/decision.yaml
+      status: RATIFIED. All five cr05-* planning artifacts confirmed present at
+      canonical paths (committed and merged before this branch). Item is
+      closeable; closed_by will be set to motion-0123 upon ratification.
     note: >
-      motion-0122 is currently proposed. This item will be met after
-      motion-0122 is implemented and ratified.
+      Item closeable after motion-0122 ratification. Will be promoted to
+      status: met, closed_by: motion-0123 upon opening event ratification.
 
   - id: CR05-04
     description: >
@@ -85,9 +94,16 @@ items:
       specific artifacts or commands for verification.
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: .nexus/docs/cr05-opening-boundary.md
+      has 5 sections. All four pre-conditions (P-1 through P-4) confirmed met
+      (P-1: motion-0121; P-2: motion-0122; P-3: motion-0122 RATIFIED; P-4: no
+      prior era:corpus-v2 in any vote.json). Item is closeable; closed_by will
+      be set to motion-0123 upon ratification.
     note: >
-      This artifact is being committed by motion-0122 implementation.
-      Status will be promotable to met after motion-0122 ratification.
+      Artifact committed by motion-0122 implementation. Item closeable after
+      motion-0122 ratification. Will be promoted to status: met, closed_by:
+      motion-0123 upon opening event ratification.
 
   - id: CR05-05
     description: >
@@ -104,9 +120,15 @@ items:
       references a named file path or agent_id, not prose alone.
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: artifact exists with 6 sections
+      including minimum_panel_composition and required_evidence_artifacts.
+      Red lines RL-1 through RL-6 each reference named file paths or agent_ids.
+      Item is closeable; closed_by will be set to motion-0123 upon ratification.
     note: >
-      This artifact is being committed by motion-0122 implementation.
-      Status will be promotable to met after motion-0122 ratification.
+      Artifact committed by motion-0122 implementation. Item closeable after
+      motion-0122 ratification. Will be promoted to status: met, closed_by:
+      motion-0123 upon opening event ratification.
 
   - id: CR05-06
     description: >
@@ -124,9 +146,15 @@ items:
       is one of: zero, advisory, weighted.
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: opening_event_ratification_mechanism:
+      unanimous_consent_with_agent_witness (non-null). scope field contains
+      "opening event only." first_agent_vote_weight: advisory. Item is closeable;
+      closed_by will be set to motion-0123 upon ratification.
     note: >
-      This artifact is being committed by motion-0122 implementation.
-      Status will be promotable to met after motion-0122 ratification.
+      Artifact committed by motion-0122 implementation. Item closeable after
+      motion-0122 ratification. Will be promoted to status: met, closed_by:
+      motion-0123 upon opening event ratification.
 
   - id: CR05-07
     description: >
@@ -141,9 +169,16 @@ items:
       confirm the file exists in the repo.
     status: unmet
     closed_by: null
+    pre_ratification_verification: >
+      Verified at motion-0123 implementation: 3 sections non-empty
+      (carry_forward_unchanged: 8 artifacts; must_extend: 4 items; v1_only:
+      5 artifact categories). All referenced artifact paths confirmed present
+      in committed repo state. Item is closeable; closed_by will be set to
+      motion-0123 upon ratification.
     note: >
-      This artifact is being committed by motion-0122 implementation.
-      Status will be promotable to met after motion-0122 ratification.
+      Artifact committed by motion-0122 implementation. Item closeable after
+      motion-0122 ratification. Will be promoted to status: met, closed_by:
+      motion-0123 upon opening event ratification.
 
   - id: CR05-08
     description: >
@@ -160,13 +195,14 @@ items:
     closed_by: null
     note: >
       Current state: no Corpus V1 motion has declared Corpus V2 started.
+      Pre-implementation grep confirmed: no vote.json carries era: corpus-v2
+      as a field value (mentions in reasons-array text in motion-0120 and
+      motion-0122 are narrative references, not the era: field).
       This item remains met so long as no Corpus V1 motion improperly claims
-      the transition. Verification command must be re-run at time of opening
-      motion authoring.
+      the transition. Verification command must be re-run at ratification time.
 
-# CR-05 is met when: all eight items are confirmed met in committed repo state,
-# attributable to ratified motions. The opening motion must cite this checklist
-# and provide evidence per item.
-# Items CR05-01 and CR05-08 are already met.
-# Items CR05-02 through CR05-07 become closeable after motion-0122 ratification
-# and the fifth CR-03-qualifying motion.
+# CR-05 is NOT yet met. Items CR05-01 and CR05-08 are already met.
+# Items CR05-02 through CR05-07 are closeable (pre-ratification verification
+# completed by motion-0123 implementation) but not officially closed until
+# motion-0123 is ratified. All items will be promoted to status: met with
+# closed_by: motion-0123 during the ratification step.
