@@ -1,0 +1,14 @@
+motion_id: motion-0123
+status: proposed
+result: pending
+ratified_by: null
+last_updated: "2026-04-05T00:00:00.000Z"
+notes: >
+  Proposed. Awaiting implementation and ratification vote.
+  Three pairs: agent evaluation trace + agent-vote.json (Pair 1, required —
+  opening event invalid without); canon baseline + program graph (Pair 2);
+  checklist closure + criteria update (Pair 3).
+  All three pairs are required for a ratifiable opening event.
+  Stop rule: do not proceed with Pair 2 if Pair 1 evaluation trace shows
+  pass_or_block: BLOCK. Corpus V2 begins only upon ratification.
+  This package is the opening event proposal. Corpus V2 has not started.
