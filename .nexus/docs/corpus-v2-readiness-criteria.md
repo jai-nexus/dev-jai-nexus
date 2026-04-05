@@ -81,9 +81,13 @@ consecutive post-0118 motions demonstrate consistent quality-standard
 compliance (verified by the Evidence/Falsifiability and Governance/Safety
 seat-contract checks).
 
-**Closing action:** Ratify five consecutive post-0118 motions that each pass
-the full 5-dimension quality check. Document the compliance assessment in
-each decision.md.
+motion-0121 committed `.nexus/deliberation/cr03-compliance-record.yaml`
+covering motions 0118–0121 (4 of 5 required). All four assessed motions
+received PASS or CONDITIONAL (motion-0121 itself is CONDITIONAL at
+proposed stage; expected). *Updated by motion-0121.*
+
+**Closing action:** Assess one more post-0118 motion in the cr03-compliance-record.
+Once 5 consecutive motions show PASS, promote CR-03 to met.
 
 ---
 
@@ -94,16 +98,20 @@ least one of the six seat contract perspectives, produce a structured vote
 output (yes/no/abstain with rationale), and have that output recorded in a
 vote.json that passes validate_motion.
 
-**Current status:** `unmet`
+**Current status:** `met`
 
-**Assessment:** No JAI Agent panel seats are implemented as of this writing.
-The seat contracts produced by motion-0119 define the evaluation logic; no
-agent infrastructure exists to consume them.
+**Assessment:** motion-0121 ratified. `nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001`
+registered in agents.generated.yaml (validate_agency exits 0, 202 agents).
+Seat assignment committed at `.nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001.yaml`
+(evidence-falsifiability seat). Agent evaluation trace committed at
+`.nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml`
+with 5 distinctive_questions addressed and 4 block_conditions checked.
+Agent-vote.json committed at `.nexus/motions/motion-0121/agent-vote.json`,
+validate_motion exits 0. All seven CR04 checklist items promoted to met.
+Non-independence limitation acknowledged: structural proof, not adversarial
+independence. *Promoted to met by motion-0121.*
 
-**Closing action:** A Corpus V2 infrastructure motion that implements at
-least one panel-seat agent and produces a governed vote.json from that agent's
-evaluation. The agent must consume the seat contract YAML from
-`.nexus/deliberation/seat-contracts/` as part of its evaluation context.
+**Closing action:** Closed.
 
 ---
 
@@ -226,8 +234,8 @@ chain discipline for future high-stakes motions.
 |---|---|---|
 | CR-01 | Planning canon in place | **met** *(motion-0118)* |
 | CR-02 | Deliberation readiness in place | **met** *(motion-0119)* |
-| CR-03 | Quality standard applied consistently | partial |
-| CR-04 | JAI Agent operational with panel seat | unmet |
+| CR-03 | Quality standard applied consistently | partial (4/5) |
+| CR-04 | JAI Agent operational with panel seat | **met** *(motion-0121)* |
 | CR-05 | Corpus V2 opening motion exists | unmet |
 | CR-06 | Normalization arc complete | partial |
 | CR-07 | Program graph complete | unmet |
@@ -235,13 +243,12 @@ chain discipline for future high-stakes motions.
 | CR-09 | Context bundle generation accurate | met |
 | CR-10 | End-to-end governance proof exists | met |
 
-**Met:** 4 of 10
-**Partial:** 2 of 10
+**Met:** 5 of 10
+**Partial:** 1 of 10
 **Unmet:** 4 of 10
 
-Corpus V2 transition is not yet warranted. CR-01 and CR-02 are now cleared.
-The remaining critical path is: CR-03 → CR-04 → CR-05.
-CR-04 (JAI Agent operational) is the primary blocker — its closure spec and
-checklist are established by motion-0120. CR-06, CR-07, and CR-08 are parallel
-tracks that do not block the transition but should be closed before declaring
-the Corpus V1 record complete.
+CR-04 is now met. The remaining critical path is: CR-03 (one more post-0118
+motion) → CR-05 (Corpus V2 opening motion). Corpus V2 has not started —
+the opening motion is a separate governed event. CR-06, CR-07, and CR-08
+are parallel tracks that do not block the transition but should be closed
+before declaring the Corpus V1 record complete.

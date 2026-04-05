@@ -1,0 +1,68 @@
+{
+  "motion_id": "motion-0121",
+  "verified_at": "2026-04-05T00:00:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0121/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0121/motion.yaml — Title: CR-04 JAI Agent Operational v0 — minimum viable first agent, governed seat assignment, and traceable agent vote proof — Target: domain=dev.jai.nexus repo=dev-jai-nexus",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Tier 0 (global): OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 in agents.generated.yaml with scope dev-jai-nexus, tier 2",
+      "result": "ok",
+      "detail": "Entry present: agent_id, name, role: reviewer, scope: [dev-jai-nexus], engine: helper, tier: 2"
+    },
+    {
+      "check": ".nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001.yaml exists with seat_id: evidence-falsifiability",
+      "result": "ok"
+    },
+    {
+      "check": "evaluation trace exists with 5 questions_evaluated and 4 block_conditions_checked",
+      "result": "ok",
+      "detail": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml — pass_or_block: PASS, non-independence acknowledged"
+    },
+    {
+      "check": "agent-vote.json evidence command: vote_type, agent_id, outcome.result",
+      "command": "node -e \"const v=require('./.nexus/motions/motion-0121/agent-vote.json'); console.log(v.vote_type, v.agent_id, v.outcome.result)\"",
+      "result": "ok",
+      "output": "agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 PASS"
+    },
+    {
+      "check": "agent-vote.json has all 8 protocol extension fields",
+      "result": "ok",
+      "detail": "vote_type, agent_id, seat_id, seat_contract_ref, seat_contract_version, evaluation_trace_ref, model (claude-sonnet-4-6), protocol_version (0.1)"
+    },
+    {
+      "check": "All 7 CR-04 closure checklist items status: met, closed_by: motion-0121",
+      "result": "ok",
+      "detail": "CR04-01 through CR04-07 all met with evidence_ref fields"
+    },
+    {
+      "check": "corpus-v2-readiness-criteria.md CR-04 current_status: met",
+      "result": "ok",
+      "detail": "Summary updated to 5 met / 1 partial / 4 unmet"
+    },
+    {
+      "check": "CR-03 remains partial (4/5 motions assessed)",
+      "result": "ok",
+      "detail": "cr03-compliance-record.yaml covers motions 0118-0121; one more post-0118 motion required"
+    },
+    {
+      "check": "No runtime/portal/UI/DB files modified",
+      "result": "ok",
+      "detail": "Changes confined to agents.generated.yaml (registry), .nexus/deliberation/, .nexus/motions/motion-0121/, .nexus/docs/corpus-v2-readiness-criteria.md"
+    }
+  ]
+}

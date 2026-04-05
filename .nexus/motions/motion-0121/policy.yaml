@@ -1,0 +1,25 @@
+motion_id: motion-0121
+kind: governance-policy
+risk_score: 0.16
+escalation_tier: 2
+surfaces_touched:
+  - governance-docs
+  - governance-policy
+  - registry
+risk_notes: >
+  risk_score 0.16 reflects: (1) registry change — new agent entry appended
+  to workspace/jai-nexus/nexus-core/registry/agents.generated.yaml; validate_agency
+  exit 0 confirmed post-edit (202 agents); (2) new governance artifacts in
+  .nexus/deliberation/ (seat assignment, evaluation trace, cr03-compliance-record);
+  (3) updates to two existing governance documents (cr04-closure-checklist.yaml,
+  corpus-v2-readiness-criteria.md). No runtime, substrate, portal, or DB surfaces
+  touched. escalation_tier elevated to Tier 2 because: (1) novelty_flag — first
+  real agent registration, seat assignment, and agent-authored evaluation trace
+  in the corpus; (2) governance-policy surface — the agent-vote.json and
+  evaluation trace establish the live precedent for agent-vote-protocol v0.1
+  compliance; (3) registry write risk mitigated by pre-flight baseline read
+  (C-3 mitigation) and immediate validate_agency confirmation. All six challenges
+  addressed with no blocking challenge identified. Non-independence limitation
+  (C-2) acknowledged explicitly in evaluation trace and decision.md.
+ratified: true
+ratified_at: "2026-04-05T00:00:00.000Z"

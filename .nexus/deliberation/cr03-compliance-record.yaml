@@ -1,0 +1,206 @@
+schema_id: cr03-compliance-record-v0
+established: motion-0121
+version: "v0"
+produced_at: "2026-04-05T00:00:00.000Z"
+assessed_by_seats:
+  - evidence-falsifiability
+  - governance-safety
+readiness_criterion: CR-03
+
+coverage_note: >
+  This record covers 4 of the 5 consecutive post-0118 motions required by
+  CR-03. CR-03 will be met when one more post-0118 motion is assessed and
+  passes. The fifth assessment may be appended to this record or committed
+  as a successor record in a subsequent ratified motion. CR-03 is NOT
+  declared met by this record.
+
+motions_assessed:
+
+  - motion_id: motion-0118
+    title: "Corpus V1 Program Planning Canon v0"
+    dimensions:
+      proposal_precision:
+        result: PASS
+        evidence: >
+          proposal.md names the input state (no planning canon, no program graph,
+          no launch-packet template), the change (7 specific files committed at
+          explicit paths), and the output state (both validators pass, future
+          operator can open a program line from the launch packet alone).
+          All three are falsifiable from repo state.
+      challenge_adversarialism:
+        result: PASS
+        evidence: >
+          challenge.md raises 7 challenges including C-3 (scope — same concern
+          pattern as prior motions), C-4 (retroactive application to existing
+          corpus), and C-5 (planning canon that is itself not planning-canonically
+          authored). C-3 resolution names a specific early-stop guarantee.
+          Challenges engage real objections, not strawmen.
+      execution_specificity:
+        result: PASS
+        evidence: >
+          execution.md lists all 7 artifacts by exact file path with per-artifact
+          content requirements. Evidence checklist items are binary: file exists,
+          section present, schema parseable. Validation commands include exact
+          strings ("node portal/scripts/validate-motion.mjs --motion ...") with
+          expected output patterns.
+      evidence_traceability:
+        result: PASS
+        evidence: >
+          vote.json outcome.reasons list cites 7 specific artifact paths with
+          per-artifact findings. verify.json records both gate commands with
+          exit codes and output strings. decision.md names what was verified
+          ("Planning canon narrative committed... both validators pass...").
+          No material claim requires trusting the author.
+      decision_rationale:
+        result: PASS
+        evidence: >
+          decision.md states why the vote is correct: each of the 7 success
+          criteria is addressed with a specific artifact reference.
+          Explicitly states what the motion does not do (does not apply
+          retroactively, does not open new programs). Reader can reconstruct
+          the reasoning from decision.md alone.
+    overall: PASS
+    notes: null
+
+  - motion_id: motion-0119
+    title: "Corpus V1 Deliberation Readiness v0"
+    dimensions:
+      proposal_precision:
+        result: PASS
+        evidence: >
+          proposal.md identifies 5 named gaps (named vs executable seats,
+          cost-aware escalation, launch-packet activation, phase quality,
+          pre-V2 readiness), names 6 artifacts with exact paths and content
+          requirements, and explicitly lists what the motion does NOT do.
+          Output state is falsifiable: validators pass, seat contracts have
+          differentiated block_conditions.
+      challenge_adversarialism:
+        result: PASS
+        evidence: >
+          challenge.md raises 6 challenges. C-3 (too wide) and C-5 (numeric
+          threshold calibration) identify real implementation risks with explicit
+          mitigations required in execution. C-4 raises the authority-overreach
+          concern (does V2 readiness criteria overstep V1 authority?). Challenges
+          engage the strongest genuine objections, not constructed dismissals.
+      execution_specificity:
+        result: PASS
+        evidence: >
+          execution.md sequences 6 steps with artifact-level content requirements.
+          Evidence checklist has 11 binary items. Validation commands are exact
+          strings with expected output ("✅ motion schema OK"). Early-stop
+          coherence is guaranteed after Step 3.
+      evidence_traceability:
+        result: PASS
+        evidence: >
+          vote.json outcome.reasons cites 7 specific artifact paths.
+          verify.json records both gate commands with actual exit codes and
+          output strings, plus 7 implementation checks with artifact details.
+          decision.md cites verify.json evidence and names the specific files
+          that prove each success criterion.
+      decision_rationale:
+        result: PASS
+        evidence: >
+          decision.md names 6 artifacts verified, cites gate outputs, and
+          explicitly states what the ratification does not do (Corpus V2 not
+          started). The "Why this vote is correct" section engages each
+          major concern (seat contract differentiation, calibration note,
+          V2 readiness checklist honesty).
+    overall: PASS
+    notes: null
+
+  - motion_id: motion-0120
+    title: "Corpus V2 Readiness Blockers v0"
+    dimensions:
+      proposal_precision:
+        result: PASS
+        evidence: >
+          proposal.md identifies 5 gaps with input state (post-0119 baseline,
+          CR-01/CR-02 not yet reflected, no agent spec), describes 6 artifacts
+          in 3 natural pairs, and explicitly lists non-goals. Output state for
+          each artifact is falsifiable.
+      challenge_adversarialism:
+        result: PASS
+        evidence: >
+          challenge.md raises 6 challenges. C-2 (premature schema) and C-5
+          (architecture pre-specification authority boundary) are substantive
+          concerns with non-trivial resolutions. C-5 resolution explicitly
+          constrains the CR-04 spec to minimum viable interface requirements —
+          a real governance framing choice, not a dismissal.
+      execution_specificity:
+        result: PASS
+        evidence: >
+          execution.md uses paired-delivery structure with explicit stop-after-Pair-1
+          guarantee. Evidence checklist has 10 binary items. Criteria doc update
+          specifies exact status fields to change. Program graph update specifies
+          exact status values and generated_at timestamp.
+      evidence_traceability:
+        result: PASS
+        evidence: >
+          vote.json cites 7 artifact paths with per-artifact findings. verify.json
+          records both gate commands with actual exit codes plus 10 implementation
+          checks. decision.md cites specific artifact paths and gate outputs.
+          Explicitly states what is not done (CR-04 checklist items remain unmet).
+      decision_rationale:
+        result: PASS
+        evidence: >
+          decision.md's "Why this vote is correct" section explains the difference
+          between a definition and a specification (what motion-0120 contributes),
+          addresses C-2 and C-5 mitigations, and explicitly states that CR-04
+          checklist items remain unmet — the correct honest state. Reader can
+          reconstruct why ratification is appropriate.
+    overall: PASS
+    notes: null
+
+  - motion_id: motion-0121
+    title: "CR-04 JAI Agent Operational v0"
+    dimensions:
+      proposal_precision:
+        result: PASS
+        evidence: >
+          proposal.md defines 4 implementation phases with specific artifacts,
+          names jai-agent-001 (registry name: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001)
+          and the evidence-falsifiability seat as the first agent's assignment,
+          and includes an explicit stop rule before CR-05. Success criteria list
+          8 falsifiable conditions. Input state (no agent, all CR04 items unmet)
+          and output state (all 7 items met) are explicit.
+      challenge_adversarialism:
+        result: PASS
+        evidence: >
+          challenge.md raises 6 challenges. C-2 (non-independence) is the
+          most substantive: it identifies the real structural limitation of a
+          self-evaluating first agent and resolves it by honest characterization
+          rather than argument. C-5 (workspace path accessibility) is a genuine
+          implementation risk with a concrete pre-flight mitigation required
+          by the execution. Neither is a strawman.
+      execution_specificity:
+        result: PASS
+        evidence: >
+          execution.md mandates 3 pre-flight baseline reads before any write,
+          includes immediate validate_agency re-run after registry edit with
+          explicit stop-if-nonzero rule, provides exact evidence command for
+          agent-vote.json, and lists 11 binary evidence checklist items.
+          Stop conditions are enumerated (4 conditions).
+      evidence_traceability:
+        result: CONDITIONAL
+        evidence: >
+          The implementation artifacts (agent-vote.json, evaluation trace,
+          closure checklist updates) are prospective at this assessment time.
+          The motion package itself has complete traceability for proposal
+          and challenge layers. Evidence chain completion is conditional on
+          Phase 3 and Phase 4 execution. This is expected at proposed/pre-
+          implementation stage and is not a defect in the package.
+      decision_rationale:
+        result: CONDITIONAL
+        evidence: >
+          decision.md is in proposed state. Rationale will be complete after
+          implementation and ratification. The existing decision.md correctly
+          states the limitation: "non-independence limitation must be stated
+          explicitly" and "CR-04 not declared met until all seven checklist
+          items are committed met." The prospective framing is appropriate.
+    overall: CONDITIONAL
+    notes: >
+      CONDITIONAL is the correct status for a motion assessed at proposed/
+      pre-implementation stage. The package is complete and adversarially
+      sound. evidence_traceability and decision_rationale become PASS after
+      implementation and ratification. This record will be updated or
+      superseded at that point.

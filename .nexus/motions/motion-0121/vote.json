@@ -1,0 +1,28 @@
+{
+  "motion_id": "motion-0121",
+  "voted_at": "2026-04-05T00:00:00.000Z",
+  "era": "corpus-v1",
+  "vote_mechanism": "unanimous_consent",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "CR-03 compliance record committed at .nexus/deliberation/cr03-compliance-record.yaml covering motions 0118-0121 (4 of 5 required). All four assessed against evidence-falsifiability and governance-safety seat contracts. Motions 0118-0120 PASS on all five dimensions with artifact citations. Motion-0121 CONDITIONAL at proposed stage — expected and not a defect.",
+      "Agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 registered in workspace/jai-nexus/nexus-core/registry/agents.generated.yaml with scope: [dev-jai-nexus], tier: 2. validate_agency exits 0 (202 agents). Closes CR04-01.",
+      "Seat assignment committed at .nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001.yaml — seat_id: evidence-falsifiability, seat_contract_ref verified. Closes CR04-02.",
+      "Evaluation trace committed at .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0121-trace.yaml — 5 distinctive_questions addressed with motion-specific responses, 4 block_conditions checked (all not_triggered), pass_or_block: PASS. Non-independence limitation acknowledged explicitly in the trace. Closes CR04-06 and CR04-07.",
+      "agent-vote.json committed at .nexus/motions/motion-0121/agent-vote.json — vote_type: agent, agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001, outcome.result: PASS. All 8 agent-vote-protocol v0.1 extension fields present (vote_type, agent_id, seat_id, seat_contract_ref, seat_contract_version, evaluation_trace_ref, model, protocol_version). Closes CR04-03 and CR04-04.",
+      "validate_motion exits 0 for motion-0121. Closes CR04-05.",
+      "All 7 CR-04 closure checklist items promoted to status: met, closed_by: motion-0121, with evidence_ref per item. corpus-v2-readiness-criteria.md CR-04 promoted to met. Summary: 5 met / 1 partial / 4 unmet. CR-03 remains partial (4/5). Corpus V2 not started. CR-05 out of scope."
+    ],
+    "missing_required_roles": []
+  }
+}
