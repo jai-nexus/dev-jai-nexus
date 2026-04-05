@@ -1,0 +1,13 @@
+motion_id: motion-0119
+status: proposed
+result: pending
+ratified_by: null
+last_updated: "2026-04-04T00:00:00.000Z"
+notes: >
+  Proposed. Awaiting implementation and ratification vote.
+  Six implementation artifacts targeted:
+  seat-contracts/ (x6), escalation-ladder.yaml,
+  corpus-v1-deliberation-readiness.md,
+  motion-folder-phase-guide.md,
+  launch-packet-activation.md,
+  corpus-v2-readiness-criteria.md.
