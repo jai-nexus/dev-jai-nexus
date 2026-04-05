@@ -1,0 +1,172 @@
+schema_id: cr05-opening-checklist-v0
+established: motion-0122
+version: "v0"
+readiness_criterion: CR-05
+spec_ref: ".nexus/docs/cr05-opening-boundary.md"
+
+# This checklist governs when CR-05 (Corpus V2 opening motion) is permitted
+# to be authored and when it is declared valid after ratification.
+# All items must be confirmed true from committed repo state before the
+# opening motion is authored (pre-conditions) or before CR-05 is declared
+# met (post-conditions, noted where applicable).
+# No item may be marked met by author assertion alone.
+
+items:
+
+  - id: CR05-01
+    description: >
+      CR-04 confirmed met: all seven items in cr04-closure-checklist.yaml
+      show status: met in committed repo state. At least one registered agent
+      has produced a governed vote.json satisfying agent-vote-protocol v0.1
+      for at least one real motion.
+    artifact_ref: ".nexus/deliberation/cr04-closure-checklist.yaml"
+    verification_method: >
+      Read .nexus/deliberation/cr04-closure-checklist.yaml. Confirm all seven
+      items show status: met. Run: node portal/scripts/validate-agency.mjs
+      --domain dev.jai.nexus --repo dev-jai-nexus. Confirm exit 0.
+    status: met
+    closed_by: motion-0121
+    evidence_ref: >
+      .nexus/deliberation/cr04-closure-checklist.yaml — all seven items
+      status: met, closed_by: motion-0121. validate_agency exit 0 (202 agents).
+    note: >
+      CR05-01 is already met as of motion-0121 ratification. Recorded here
+      for completeness so the opening motion can cite this checklist as the
+      authoritative pre-condition record.
+
+  - id: CR05-02
+    description: >
+      CR-03 confirmed met: cr03-compliance-record.yaml covers at least five
+      consecutive post-0118 motions, all assessed with overall: PASS under
+      the Evidence/Falsifiability and Governance/Safety seat contracts.
+      Motions assessed as CONDITIONAL at proposed stage must have been
+      updated to PASS after ratification.
+    artifact_ref: ".nexus/deliberation/cr03-compliance-record.yaml"
+    verification_method: >
+      Read .nexus/deliberation/cr03-compliance-record.yaml. Count entries
+      with overall: PASS. Must be at least 5. No gap between assessed motions
+      (consecutive post-0118 sequence). Confirm coverage_note does not state
+      "not yet met."
+    status: unmet
+    closed_by: null
+    note: >
+      Current state: 4 of 5 required post-0118 motions assessed (motions
+      0118-0121). One more qualifying ratified post-0118 motion with PASS
+      overall status is required. The opening motion may not be authored
+      until this item is met.
+
+  - id: CR05-03
+    description: >
+      Opening planning arc ratified: .nexus/motions/motion-0122/decision.yaml
+      shows status: RATIFIED. The planning artifacts (cr05-opening-boundary.md,
+      cr05-opening-checklist.yaml, cr05-first-agent-voted-motion-contract.md,
+      cr05-panel-staging-guidance.yaml, cr05-inherited-context-packet.md) are
+      all committed and attributable to that ratified motion.
+    artifact_ref: ".nexus/motions/motion-0122/decision.yaml"
+    verification_method: >
+      Read .nexus/motions/motion-0122/decision.yaml. Confirm status: RATIFIED.
+      Confirm all five cr05-* planning artifacts exist at their canonical paths.
+    status: unmet
+    closed_by: null
+    note: >
+      motion-0122 is currently proposed. This item will be met after
+      motion-0122 is implemented and ratified.
+
+  - id: CR05-04
+    description: >
+      Opening boundary document committed: .nexus/docs/cr05-opening-boundary.md
+      exists and contains all five required sections (Purpose, Confirmed
+      pre-conditions, Confirmed non-conditions, The opening event, Hard stop).
+    artifact_ref: ".nexus/docs/cr05-opening-boundary.md"
+    verification_method: >
+      Read .nexus/docs/cr05-opening-boundary.md. Confirm sections: 1. Purpose,
+      2. Confirmed pre-conditions, 3. Confirmed non-conditions, 4. The opening
+      event, 5. Hard stop. Confirm all pre-conditions in Section 2 reference
+      specific artifacts or commands for verification.
+    status: unmet
+    closed_by: null
+    note: >
+      This artifact is being committed by motion-0122 implementation.
+      Status will be promotable to met after motion-0122 ratification.
+
+  - id: CR05-05
+    description: >
+      First-agent-voted-motion contract committed:
+      .nexus/deliberation/cr05-first-agent-voted-motion-contract.md exists
+      with minimum panel composition and required evidence artifacts specified.
+      Red lines reference specific named artifacts or agent_ids (no prose-only
+      conditions).
+    artifact_ref: ".nexus/deliberation/cr05-first-agent-voted-motion-contract.md"
+    verification_method: >
+      Read .nexus/deliberation/cr05-first-agent-voted-motion-contract.md.
+      Confirm sections include minimum_panel_composition and
+      required_evidence_artifacts. Confirm red lines section: each red line
+      references a named file path or agent_id, not prose alone.
+    status: unmet
+    closed_by: null
+    note: >
+      This artifact is being committed by motion-0122 implementation.
+      Status will be promotable to met after motion-0122 ratification.
+
+  - id: CR05-06
+    description: >
+      Panel staging guidance committed:
+      .nexus/deliberation/cr05-panel-staging-guidance.yaml exists and answers
+      the ratification-mechanism question for the opening event specifically.
+      The opening_event_ratification_mechanism field is non-null and is one
+      of: unanimous_consent_with_agent_witness or agent_participated_ratification.
+      The scope field explicitly limits this guidance to the opening event.
+    artifact_ref: ".nexus/deliberation/cr05-panel-staging-guidance.yaml"
+    verification_method: >
+      Read .nexus/deliberation/cr05-panel-staging-guidance.yaml. Confirm
+      opening_event_ratification_mechanism is present and non-null. Confirm
+      scope field contains "opening event only." Confirm first_agent_vote_weight
+      is one of: zero, advisory, weighted.
+    status: unmet
+    closed_by: null
+    note: >
+      This artifact is being committed by motion-0122 implementation.
+      Status will be promotable to met after motion-0122 ratification.
+
+  - id: CR05-07
+    description: >
+      Inherited-context packet committed:
+      .nexus/deliberation/cr05-inherited-context-packet.md exists and lists
+      artifacts in all three categories: carry_forward_unchanged, must_extend,
+      and v1_only. All referenced artifact paths are actual paths in the repo.
+    artifact_ref: ".nexus/deliberation/cr05-inherited-context-packet.md"
+    verification_method: >
+      Read .nexus/deliberation/cr05-inherited-context-packet.md. Confirm
+      all three sections are present and non-empty. For each path referenced,
+      confirm the file exists in the repo.
+    status: unmet
+    closed_by: null
+    note: >
+      This artifact is being committed by motion-0122 implementation.
+      Status will be promotable to met after motion-0122 ratification.
+
+  - id: CR05-08
+    description: >
+      No prior motion claims Corpus V2 started: no ratified decision.yaml or
+      decision.md in .nexus/motions/ declares an era transition to corpus-v2
+      prior to the opening motion. The opening motion is the first and only
+      motion to carry era: corpus-v2 in its vote.json.
+    artifact_ref: ".nexus/motions/"
+    verification_method: >
+      grep -r "era: corpus-v2" .nexus/motions/*/vote.json — must return
+      zero results before the opening motion exists. After the opening motion
+      is ratified, must return exactly one result (the opening motion's vote.json).
+    status: met
+    closed_by: null
+    note: >
+      Current state: no Corpus V1 motion has declared Corpus V2 started.
+      This item remains met so long as no Corpus V1 motion improperly claims
+      the transition. Verification command must be re-run at time of opening
+      motion authoring.
+
+# CR-05 is met when: all eight items are confirmed met in committed repo state,
+# attributable to ratified motions. The opening motion must cite this checklist
+# and provide evidence per item.
+# Items CR05-01 and CR05-08 are already met.
+# Items CR05-02 through CR05-07 become closeable after motion-0122 ratification
+# and the fifth CR-03-qualifying motion.

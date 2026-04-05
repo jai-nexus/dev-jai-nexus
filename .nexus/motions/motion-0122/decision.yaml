@@ -1,0 +1,15 @@
+motion_id: motion-0122
+status: RATIFIED
+result: PASS
+ratified_by: unanimous_consent
+last_updated: "2026-04-05T00:00:00.000Z"
+notes: >
+  RATIFIED. All 7 implementation artifacts committed and verified.
+  CR-03 promoted to met: cr03-compliance-record covers 5 of 5 post-0118
+  motions (0118-0122), all PASS. CR-08 corrected to met (closed by motion-0120,
+  correction required for consistency with cr05-opening-boundary.md NC-3).
+  Readiness summary: 7 met / 1 partial / 2 unmet.
+  Corpus V2 opening event unblocked from CR-03 side. Corpus V2 has not started.
+  CR-05 remains out of scope — opening motion must be authored in a separate
+  branch arc after this one is merged.
+  validate_motion exit 0. validate_agency exit 0 (202 agents).
