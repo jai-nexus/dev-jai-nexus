@@ -5,7 +5,7 @@
 
 ## Status
 
-DRAFT
+RATIFIED
 
 ## Summary
 
@@ -29,5 +29,8 @@ After ratification, the repo will have:
 - A program graph capturing the Corpus V1 arc of work
 - A launch packet template that opens each new planned motion line cleanly
 
-This decision.md will be updated to RATIFIED after implementation is complete,
-gate validation passes, and the vote is cast under motion-0118.
+Ratified after confirming all 7 implementation artifacts are present, both
+required gates pass EXIT 0, and no runtime or prior-motion artifacts were
+modified. The Corpus V1 planning canon, quality standard, program graph, and
+launch packet template are in place. The repo is at a clean Corpus V1
+foundation baseline, ready for the Corpus V2 transition when conditions are met.
