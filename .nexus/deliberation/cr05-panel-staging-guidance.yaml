@@ -1,0 +1,171 @@
+schema_id: cr05-panel-staging-guidance-v0
+established: motion-0122
+version: "v0"
+scope: "opening event only — does not govern Corpus V2 panel composition for post-opening motions"
+scope_note: >
+  This guidance resolves the ratification-mechanism question for the Corpus V2
+  opening motion specifically. Post-opening Corpus V2 motions are governed by
+  the canon established by the opening motion itself. This guidance is a
+  Corpus V1 pre-commitment that prevents the bootstrapping problem from being
+  resolved by author improvisation at opening-motion drafting time.
+
+# ---
+# SECTION 1: Opening event ratification mechanism
+# ---
+
+opening_event_ratification_mechanism: unanimous_consent_with_agent_witness
+
+rationale_for_mechanism_choice: >
+  The Corpus V2 governance canon that would govern agent_participated_ratification
+  does not exist at the time the opening motion is ratified — because the opening
+  motion is what establishes it. Choosing agent_participated_ratification for
+  the opening event creates a circular dependency: the opening motion would be
+  ratified under Corpus V2 rules before those rules are established. The opening
+  motion cannot bootstrap itself.
+
+  unanimous_consent_with_agent_witness resolves the bootstrapping problem: the
+  human panel retains ratification authority (continuing the Corpus V1 unanimous
+  consent model for the opening event), while agent participation is required
+  as evidence of genuine transition — not as a vote-weighted ratification
+  mechanism. The era declaration comes from the human ratification plus the
+  required agent evaluation trace, not from agent vote weight.
+
+  This is not a concession or a weakening: it is the structurally honest answer
+  to the bootstrapping problem. A Corpus V2 opening that claims agent_participated_ratification
+  without the canon that governs such ratification is procedurally incoherent.
+  The opening motion establishes that canon; it cannot simultaneously be governed
+  by it.
+
+  Post-opening Corpus V2 motions may use agent_participated_ratification once
+  the canon established by the opening event is in effect. That transition is
+  Corpus V2 canon scope, not Corpus V1 planning scope.
+
+# ---
+# SECTION 2: First agent vote weight
+# ---
+
+first_agent_vote_weight: advisory
+
+justification: >
+  advisory means the agent's evaluation and pass/block conclusion inform the
+  human panel's ratification decision but are not mathematically weighted in
+  the ratification count.
+
+  zero would make agent participation purely ceremonial — required evidence
+  that has no effect on deliberation. That is insufficient for the opening event,
+  which must demonstrate that agent participation is substantive, not decorative.
+
+  weighted requires a defined fraction, which in turn requires the Corpus V2
+  canon governing vote aggregation — which does not yet exist. The bootstrapping
+  problem applies here too.
+
+  advisory is the appropriate weight for the transition event: the agent's
+  PASS or BLOCK conclusion from the evaluation trace is visible to the human
+  panel before ratification, informs the deliberation, and is recorded in the
+  ratification record. If the agent concludes BLOCK and the human panel
+  overrides, the override must be reasoned in decision.md. This creates
+  accountability without requiring a vote-aggregation canon that has not yet
+  been established.
+
+# ---
+# SECTION 3: Human panel structure for the opening event
+# ---
+
+human_panel:
+  minimum_roles:
+    - proposer
+    - challenger
+    - arbiter
+  vote_mechanism: unanimous_consent
+  note: >
+    The human panel for the opening event follows the Corpus V1 unanimous
+    consent model. All three roles are required. The arbiter's role is to
+    adjudicate if proposer and challenger disagree; unanimous consent is
+    the expected outcome in most cases.
+
+# ---
+# SECTION 4: Agent panel structure for the opening event
+# ---
+
+agent_panel:
+  minimum_agents: 1
+  minimum_seats_represented: 1
+  note: >
+    At least one registered agent must produce a governed evaluation trace
+    and agent-vote.json for the opening motion. Additional agents may
+    participate and strengthen the opening record, but one is the minimum.
+    The agent must be registered in agents.generated.yaml with dev-jai-nexus
+    scope before the opening motion is drafted.
+  eligible_agents: >
+    Any agent registered in agents.generated.yaml with scope: [dev-jai-nexus]
+    at time of opening motion authoring. Currently: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+    (evidence-falsifiability seat). The opening planning arc does not register
+    new agents; agent registration for the opening event is a separate
+    implementation concern.
+
+# ---
+# SECTION 5: Agent conclusion handling
+# ---
+
+agent_conclusion_handling:
+  if_agent_concludes_pass: >
+    The human panel proceeds to ratification. The agent's PASS conclusion
+    and the evaluation trace are both recorded in the opening motion's
+    ratification record.
+  if_agent_concludes_block: >
+    The human panel must address the block condition in decision.md before
+    ratifying. The panel may override the agent's BLOCK conclusion if the
+    block condition is found inapplicable, but the override reasoning must
+    be explicit and specific. A human panel that ratifies despite an
+    unaddressed BLOCK conclusion has a governance record that will be
+    visible to future corpus reviewers.
+  if_agent_concludes_escalate: >
+    The panel must investigate the escalation trigger before proceeding.
+    ESCALATE from the opening event's agent participant triggers Tier 3 on
+    the escalation ladder.
+
+# ---
+# SECTION 6: Transition note
+# ---
+
+transition_note: >
+  This guidance applies only to the opening event (the Corpus V2 opening motion).
+  Post-opening Corpus V2 motions are governed by the canon established by the
+  opening motion, not by this guidance. The opening motion is responsible for
+  declaring what panel composition rules apply to Corpus V2 motions after the
+  opening. Those rules belong in the Corpus V2 canon baseline artifact (see
+  cr05-first-agent-voted-motion-contract.md §4.2 and §3, row 5) — not in this
+  guidance document, which is a Corpus V1 pre-commitment with a bounded scope.
+
+# ---
+# SECTION 7: Prohibited configurations
+# ---
+
+prohibited_configurations:
+  - label: All-human panel with era corpus-v2 label
+    description: >
+      A vote.json with era: corpus-v2 in a panel that contains no agent_id
+      entry resolving to a registered agent in agents.generated.yaml. This is
+      a red line per cr05-first-agent-voted-motion-contract.md RL-1. An
+      all-human panel cannot declare the Corpus V2 transition.
+
+  - label: Agent panel entry with unregistered agent_id
+    description: >
+      A panel entry or agent-vote.json with an agent_id that does not resolve
+      to a committed entry in workspace/jai-nexus/nexus-core/registry/agents.generated.yaml.
+      This is a governance violation per agent-vote-protocol v0.1 §5.
+
+  - label: Agent participant with no committed evaluation trace
+    description: >
+      An agent-vote.json in the opening motion package where the
+      evaluation_trace_ref path does not exist in committed repo state. The
+      trace must be committed before the opening motion is submitted for
+      ratification. An agent-vote.json without a trace is structurally
+      incomplete and does not satisfy the advisory participation requirement.
+
+  - label: Agent conclusion ignored without recorded reasoning
+    description: >
+      A human panel ratification that overrides an agent BLOCK conclusion
+      without addressing the specific block condition in decision.md. The
+      advisory weight of the agent vote means the panel may override, but
+      must not silently override.

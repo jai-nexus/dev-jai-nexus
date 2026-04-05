@@ -1,6 +1,6 @@
 schema_version: "program-graph-0.1"
 coverage: partial
-generated_at: "2026-04-04T00:00:00.000Z"
+generated_at: "2026-04-05T00:00:00.000Z"
 
 # This is a partial program graph of the Corpus V1 arc.
 # Major known programs are classified below.
@@ -249,11 +249,39 @@ eras:
             motion_lines:
               - line_id: readiness-blockers-main
                 description: >
-                  motion-0120 (spec + protocol), then implementation motions
-                  for CR-04 closure (agent registration, seat assignment,
-                  first governed vote).
+                  motion-0120 (spec + protocol), motion-0121 (CR-04 closure:
+                  agent registration, seat assignment, first governed vote).
                 motions:
                   - motion-0120
+                  - motion-0121
+                status: closed
+            status: closed
+
+      - epic_id: corpus-v2-opening-planning
+        title: "Corpus V2 Opening Planning"
+        description: >
+          Produce the pre-committed specification layer for the Corpus V2
+          opening event: opening boundary conditions, opening criteria checklist,
+          first-agent-voted-motion contract, panel staging guidance, and
+          inherited-context packet. The opening event itself (CR-05) is a
+          separate motion that depends on this planning arc being ratified and
+          CR-03 being confirmed met.
+        programs:
+
+          - program_id: q2-cr05-opening-planning
+            title: "CR-05 Corpus V2 Opening Planning v0 (motion-0122)"
+            description: >
+              Define the opening boundary, CR-05 opening checklist, first-agent-voted-
+              motion contract, panel staging guidance, inherited-context packet,
+              and launch packet for the opening-event arc.
+            parent_motion: motion-0122
+            motion_lines:
+              - line_id: cr05-opening-planning-main
+                description: >
+                  motion-0122 (planning artifacts), then CR-03 fifth qualifying
+                  motion if needed, then the Corpus V2 opening event (CR-05).
+                motions:
+                  - motion-0122
                 status: open
             status: open
 
