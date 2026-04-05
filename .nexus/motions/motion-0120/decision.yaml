@@ -1,0 +1,11 @@
+motion_id: motion-0120
+status: proposed
+result: pending
+ratified_by: null
+last_updated: "2026-04-04T00:00:00.000Z"
+notes: >
+  Proposed. Awaiting implementation and ratification vote.
+  Six artifacts targeted (three pairs): CR-04 spec + closure checklist
+  (Pair 1); agent-vote-protocol + criteria update (Pair 2);
+  program-graph update + launch packet (Pair 3).
+  Early stop after Pair 1 is coherent and ratifiable.
