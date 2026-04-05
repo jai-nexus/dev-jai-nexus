@@ -1,0 +1,29 @@
+{
+  "motion_id": "motion-0122",
+  "voted_at": "2026-04-05T00:00:00.000Z",
+  "era": "corpus-v1",
+  "vote_mechanism": "unanimous_consent",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      ".nexus/docs/cr05-opening-boundary.md committed with all 5 sections: Purpose, Confirmed pre-conditions (4 items with artifact refs/commands), Confirmed non-conditions (5 items), The opening event (5 requirements), Hard stop (5 rules). P-2 (CR-03) explicitly NOT MET in current state; P-3 (planning arc) NOT MET until this ratification. Hard stop HS-2 requires opening motion to be authored in a different branch arc.",
+      ".nexus/deliberation/cr05-opening-checklist.yaml committed with 8 items (CR05-01 through CR05-08), schema_id: cr05-opening-checklist-v0. CR05-01 (CR-04 confirmed met) and CR05-08 (no prior V2 claim) already status: met. CR05-02 through CR05-07 status: unmet pending this ratification and opening event.",
+      ".nexus/deliberation/cr05-first-agent-voted-motion-contract.md committed with 6 sections. Section 2 specifies human panel floor (proposer/challenger/arbiter) and agent participant minimum (1 registered agent, agent-vote.json, evaluation trace). Section 3 names 6 required evidence artifacts. Section 6 lists 6 red lines each referencing named file paths or agent_ids — no prose-only conditions.",
+      ".nexus/deliberation/cr05-panel-staging-guidance.yaml committed: opening_event_ratification_mechanism: unanimous_consent_with_agent_witness; first_agent_vote_weight: advisory; scope field: 'opening event only — does not govern Corpus V2 panel composition for post-opening motions'. Bootstrapping problem addressed explicitly in rationale_for_mechanism_choice.",
+      ".nexus/deliberation/cr05-inherited-context-packet.md committed with 3 sections: carry_forward_unchanged (8 artifacts including all 6 seat contracts, escalation ladder, agent vote protocol, planning canon, deliberation readiness doc, registry), must_extend (4 items: criteria doc, program graph, quality standard, compliance record), v1_only (closure checklists, opening planning artifacts, all V1 motion packages). All referenced paths verified present.",
+      ".nexus/programs/program-graph.yaml updated: corpus-v2-readiness-blockers program closed (motion-0121 added, status: closed); new epic corpus-v2-opening-planning added with q2-cr05-opening-planning program (motion-0122, status: open); generated_at updated to 2026-04-05.",
+      ".nexus/programs/q2-cr05-opening-planning-launch-packet.md committed with 8 sections; 0 bracketed placeholders; hard constraint section explicitly states opening motion must not be authored in same branch arc as planning artifacts.",
+      "CR-03 promoted to met: cr03-compliance-record.yaml updated — motion-0121 entry promoted from CONDITIONAL to PASS post-ratification (evidence_traceability and decision_rationale both satisfy quality standard after ratification); motion-0122 added as 5th qualifying entry, all 5 dimensions PASS. Coverage: 5 of 5 required. corpus-v2-readiness-criteria.md CR-03 promoted to met. CR-08 correction: criteria doc updated from unmet to met (motion-0120 produced the launch packet; missed at ratification; corrected for consistency with cr05-opening-boundary.md NC-3). Summary: 7 met / 1 partial / 2 unmet."
+    ],
+    "missing_required_roles": []
+  }
+}

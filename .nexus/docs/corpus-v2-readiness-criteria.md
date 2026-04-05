@@ -2,7 +2,7 @@
 
 **Established:** motion-0119
 **Date:** 2026-04-04
-**Last updated:** 2026-04-04 by motion-0120
+**Last updated:** 2026-04-05 by motion-0122
 **Status source:** This document records current-status assessments as of
 its last update. It does not declare when Corpus V2 begins. The transition
 requires a separate governed event: a Corpus V2 opening motion. This document
@@ -72,22 +72,20 @@ adversarialism, execution specificity, evidence traceability, decision rationale
 are consistently applied to all motions in the corpus from the point of the
 quality standard's establishment.
 
-**Current status:** `partial`
+**Current status:** `met`
 
 **Assessment:** The quality standard was established by motion-0118.
 Motions 0001–0117 predate it and were not authored against it. Motions from
-0118 forward are expected to meet it. CR-03 is met when at least five
-consecutive post-0118 motions demonstrate consistent quality-standard
-compliance (verified by the Evidence/Falsifiability and Governance/Safety
-seat-contract checks).
+0118 forward are expected to meet it.
 
-motion-0121 committed `.nexus/deliberation/cr03-compliance-record.yaml`
-covering motions 0118–0121 (4 of 5 required). All four assessed motions
-received PASS or CONDITIONAL (motion-0121 itself is CONDITIONAL at
-proposed stage; expected). *Updated by motion-0121.*
+motion-0122 ratification completed the five-motion consecutive run. The
+cr03-compliance-record.yaml was updated to cover motions 0118–0122 (5 of 5
+required). motion-0121's entry was promoted from CONDITIONAL to PASS
+post-ratification per the note in the original record. motion-0122 added as
+the fifth qualifying motion — all five quality dimensions PASS.
+*Promoted to met by motion-0122.*
 
-**Closing action:** Assess one more post-0118 motion in the cr03-compliance-record.
-Once 5 consecutive motions show PASS, promote CR-03 to met.
+**Closing action:** Closed.
 
 ---
 
@@ -180,17 +178,19 @@ committed, filed launch packet that follows the template, has been validated
 against the activation path (motion-0119), and is referenced by the first
 motion in that line.
 
-**Current status:** `unmet`
+**Current status:** `met`
 
-**Assessment:** motion-0119 is the first post-0118 motion line. It does not
-have a filed launch packet (it was authored before the launch-packet activation
-path was established). The next new program line after motion-0119 will be the
-first opportunity to apply the full launch-packet pattern in practice.
+**Assessment:** motion-0120 opened the `q2-corpus-v2-readiness-blockers` program
+line and filed `.nexus/programs/q2-corpus-v2-readiness-blockers-launch-packet.md`
+following the template. The launch packet is self-contained, covers all nine
+planning phases, and is referenced by motion-0120 as the first motion in the
+line. The closing action criteria are satisfied. This status update was missed
+at motion-0120 ratification and is corrected here by motion-0122: the correction
+is warranted by the cr05-opening-boundary.md NC-3 declaration, which required
+the criteria doc and the planning artifact to be consistent.
+*Corrected to met by motion-0122 (closed by motion-0120).*
 
-**Closing action:** Open the next post-0119 program line using a launch packet
-that follows the template. File the launch packet at its canonical location.
-Record the program-graph entry and context-inheritance record. Document in the
-first motion's decision.md that the launch-packet activation path was followed.
+**Closing action:** Closed.
 
 ---
 
@@ -234,21 +234,23 @@ chain discipline for future high-stakes motions.
 |---|---|---|
 | CR-01 | Planning canon in place | **met** *(motion-0118)* |
 | CR-02 | Deliberation readiness in place | **met** *(motion-0119)* |
-| CR-03 | Quality standard applied consistently | partial (4/5) |
+| CR-03 | Quality standard applied consistently | **met** *(motion-0122)* |
 | CR-04 | JAI Agent operational with panel seat | **met** *(motion-0121)* |
 | CR-05 | Corpus V2 opening motion exists | unmet |
 | CR-06 | Normalization arc complete | partial |
 | CR-07 | Program graph complete | unmet |
-| CR-08 | Launch-packet pattern used in practice | unmet |
+| CR-08 | Launch-packet pattern used in practice | **met** *(motion-0120, corrected by motion-0122)* |
 | CR-09 | Context bundle generation accurate | met |
 | CR-10 | End-to-end governance proof exists | met |
 
-**Met:** 5 of 10
+**Met:** 7 of 10
 **Partial:** 1 of 10
-**Unmet:** 4 of 10
+**Unmet:** 2 of 10
 
-CR-04 is now met. The remaining critical path is: CR-03 (one more post-0118
-motion) → CR-05 (Corpus V2 opening motion). Corpus V2 has not started —
-the opening motion is a separate governed event. CR-06, CR-07, and CR-08
-are parallel tracks that do not block the transition but should be closed
-before declaring the Corpus V1 record complete.
+CR-03 and CR-08 are now met. The remaining critical path is: **CR-05 (Corpus V2
+opening motion)**. CR-03 is met (5/5 qualifying post-0118 motions); the opening
+boundary pre-conditions are documented in `.nexus/docs/cr05-opening-boundary.md`.
+Corpus V2 has not started — the opening motion is a separate governed event that
+must not be authored in the same branch arc as the planning artifacts.
+CR-06 and CR-07 are parallel tracks that do not block the transition but should
+be closed before declaring the Corpus V1 record complete.

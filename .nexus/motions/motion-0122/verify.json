@@ -1,0 +1,73 @@
+{
+  "motion_id": "motion-0122",
+  "verified_at": "2026-04-05T00:00:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0122/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0122/motion.yaml — Title: CR-05 Corpus V2 Opening Planning v0 — opening boundary, first agent-voted motion shape, and transition guardrails — Target: domain=dev.jai.nexus repo=dev-jai-nexus",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Tier 0 (global): OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": ".nexus/docs/cr05-opening-boundary.md exists with all 5 required sections",
+      "result": "ok",
+      "detail": "Sections confirmed: 1. Purpose, 2. Confirmed pre-conditions (4 items with artifact refs), 3. Confirmed non-conditions (5 items), 4. The opening event (5 requirements), 5. Hard stop (5 rules). P-2 explicitly records CR-03 as NOT MET at time of writing. HS-2 prohibits drafting opening motion in same branch arc."
+    },
+    {
+      "check": ".nexus/deliberation/cr05-opening-checklist.yaml exists with 8 items, schema_id: cr05-opening-checklist-v0",
+      "result": "ok",
+      "detail": "Items CR05-01 through CR05-08 present. CR05-01 (CR-04 confirmed met) and CR05-08 (no prior V2 claim) status: met. CR05-02 through CR05-07 status: unmet. All items have artifact_ref or verification_method."
+    },
+    {
+      "check": ".nexus/deliberation/cr05-first-agent-voted-motion-contract.md exists with 6 sections; red lines reference named artifacts/agent_ids",
+      "result": "ok",
+      "detail": "Sections: 1. Purpose, 2. Minimum panel composition, 3. Required evidence artifacts (6-row table), 4. What opening motion establishes, 5. What it inherits, 6. Red lines (RL-1 through RL-6). Each red line references a named file path or agent_id. No prose-only conditions."
+    },
+    {
+      "check": ".nexus/deliberation/cr05-panel-staging-guidance.yaml exists; opening_event_ratification_mechanism non-null; scope field present",
+      "result": "ok",
+      "detail": "opening_event_ratification_mechanism: unanimous_consent_with_agent_witness. first_agent_vote_weight: advisory. scope: 'opening event only — does not govern Corpus V2 panel composition for post-opening motions'. Bootstrapping problem addressed in rationale_for_mechanism_choice."
+    },
+    {
+      "check": ".nexus/deliberation/cr05-inherited-context-packet.md exists with 3 sections non-empty; referenced paths exist",
+      "result": "ok",
+      "detail": "carry_forward_unchanged (8 artifacts: 6 seat contracts, escalation ladder, agent-vote-protocol, planning canon, deliberation readiness doc, registry, cr04-readiness-spec), must_extend (4 items), v1_only (closure checklists + all V1 motion packages). All referenced paths confirmed present in repo."
+    },
+    {
+      "check": ".nexus/programs/program-graph.yaml contains q2-cr05-opening-planning with status: open",
+      "result": "ok",
+      "detail": "New epic corpus-v2-opening-planning added. program_id: q2-cr05-opening-planning, parent_motion: motion-0122, status: open. corpus-v2-readiness-blockers program updated to closed with motion-0121 added. generated_at: 2026-04-05."
+    },
+    {
+      "check": ".nexus/programs/q2-cr05-opening-planning-launch-packet.md exists with no bracketed placeholders",
+      "result": "ok",
+      "detail": "8 sections present. grep count of '[' characters: 0. Constraint section explicitly states: 'The Corpus V2 opening motion must not be authored in the same branch arc as these planning artifacts.'"
+    },
+    {
+      "check": "cr03-compliance-record.yaml updated: motion-0121 promoted to PASS, motion-0122 added as 5th entry, coverage_note declares CR-03 met",
+      "result": "ok",
+      "detail": "motion-0121: evidence_traceability and decision_rationale updated from CONDITIONAL to PASS post-ratification, overall: PASS. motion-0122: all 5 dimensions PASS with evidence citations. coverage_note: '5 of 5 consecutive post-0118 motions required by CR-03 ... CR-03 is declared MET by this record.'"
+    },
+    {
+      "check": "corpus-v2-readiness-criteria.md CR-03 promoted to met; CR-08 corrected to met; summary updated to 7 met / 1 partial / 2 unmet",
+      "result": "ok",
+      "detail": "CR-03: current_status: met, promoted by motion-0122. CR-08: current_status: met, closed by motion-0120, corrected by motion-0122 for consistency with cr05-opening-boundary.md NC-3. Summary: 7 met / 1 partial / 2 unmet."
+    },
+    {
+      "check": "No runtime/portal/UI/DB/registry files modified",
+      "result": "ok",
+      "detail": "Changes confined to .nexus/deliberation/ (5 new cr05-* files, cr03-compliance-record updated), .nexus/docs/ (cr05-opening-boundary.md new, corpus-v2-readiness-criteria.md updated), .nexus/programs/ (program-graph.yaml updated, launch packet new), .nexus/motions/motion-0122/ (ratification artifacts). agents.generated.yaml unchanged (202 agents)."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+motion_id: motion-0122
+kind: governance-policy
+risk_score: 0.15
+escalation_tier: 2
+surfaces_touched:
+  - governance-docs
+  - governance-policy
+risk_notes: >
+  risk_score 0.15 reflects: (1) creation of 5 new governance artifacts in
+  .nexus/deliberation/ that define binding pre-conditions and red lines for
+  the Corpus V2 opening event; (2) creation of a new governance doc in
+  .nexus/docs/ (cr05-opening-boundary.md) that serves as the authoritative
+  opening boundary record; (3) update to .nexus/programs/program-graph.yaml
+  (new epic and program); (4) update to cr03-compliance-record.yaml (motion-0121
+  entry promoted, motion-0122 added, CR-03 declared met); (5) update to
+  corpus-v2-readiness-criteria.md (CR-03 and CR-08 promoted to met, summary
+  updated to 7/1/2). No runtime, portal, UI, DB, or agent registry files
+  touched. escalation_tier elevated to Tier 2 because: (1) novelty_flag —
+  first opening boundary doc, first opening checklist, first panel staging
+  guidance, and first inherited-context packet in the corpus; these artifacts
+  govern the highest-stakes future motion; (2) governance-policy surface —
+  the cr05-first-agent-voted-motion-contract and cr05-panel-staging-guidance
+  define enforceable constraints on the Corpus V2 opening event. Challenge C-2
+  (circular contract) and C-4 (pre-specifying V2 canon) identified real authority
+  risks; both addressed with arc-separation requirement and scope field limiting
+  panel guidance to the opening event only.
+ratified: true
+ratified_at: "2026-04-05T00:00:00.000Z"
