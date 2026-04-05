@@ -1,0 +1,12 @@
+motion_id: motion-0121
+status: proposed
+result: pending
+ratified_by: null
+last_updated: "2026-04-05T00:00:00.000Z"
+notes: >
+  Proposed. Awaiting implementation and ratification vote.
+  Four phases: CR-03 compliance record (Phase 1); agent registration +
+  seat assignment (Phase 2); governed vote + evaluation trace (Phase 3);
+  closure checklist + criteria update (Phase 4).
+  Hard stop before CR-05 / Corpus V2 opening motion.
+  CR-04 not declared met until all seven checklist items are committed met.
