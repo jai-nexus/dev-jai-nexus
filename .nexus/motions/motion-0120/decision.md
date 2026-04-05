@@ -1,8 +1,9 @@
 # Decision: Corpus V2 Readiness Blockers v0 — JAI Agent operational prerequisites before the Corpus V2 opening motion
 
 **Motion:** motion-0120
-**Status:** PROPOSED
-**Date:** 2026-04-04
+**Status:** RATIFIED
+**Vote:** yes=3, no=0, abstain=0 — PASS
+**Ratified:** 2026-04-04
 
 ---
 
@@ -63,11 +64,60 @@ No blocking challenge identified.
 
 ## Vote
 
-Pending implementation and ratification vote.
+**yes=3, no=0, abstain=0 — PASS — unanimous consent**
+
+CR-04 agent readiness spec verified at `.nexus/deliberation/cr04-agent-readiness-spec.md`:
+six sections present, minimum viable first agent definition specific and falsifiable
+(one agent, one seat, one real motion, one governed vote, one committed trace).
+
+CR-04 closure checklist verified at `.nexus/deliberation/cr04-closure-checklist.yaml`:
+seven items (CR04-01 through CR04-07), each with `artifact_ref` or `command` field,
+all `status: unmet` — machine-checkable pre-conditions for CR-04 closure without
+author assertion.
+
+Agent vote protocol verified at `.nexus/deliberation/agent-vote-protocol.yaml`:
+extension fields (vote_type enum human|agent, agent_id, seat_id, seat_contract_ref,
+seat_contract_version, evaluation_trace_ref, model, protocol_version), evaluation
+trace schema, compatibility note (additive — no validator changes required),
+forward-compatibility mechanism (protocol_version field), anti-patterns (human-authored
+agent vote, untraced vote, simulation).
+
+`corpus-v2-readiness-criteria.md` verified: CR-01 `current_status: met` (motion-0118),
+CR-02 `current_status: met` (motion-0119). Summary: 4 met / 2 partial / 4 unmet.
+Attribution note added.
+
+`program-graph.yaml` verified: planning-canon closed, q2-corpus-v1-deliberation-readiness
+closed, q2-corpus-v2-readiness-blockers open with motion-0120 as first line entry.
+
+Launch packet verified at `.nexus/programs/q2-corpus-v2-readiness-blockers-launch-packet.md`:
+nine sections complete, no bracketed placeholders. First real use of the launch-packet
+activation path — closes CR-08.
+
+`validate_motion` exit 0 (`✅ motion schema OK`).
+`validate_agency` exit 0 (`✅ registry-backed agency OK`).
+
+No runtime, portal, UI, or DB files modified.
 
 ---
 
-## Next step
+## Why this vote is correct
 
-Implement the six readiness-blocker artifacts. Verify all evidence checklist
-items. Ratify via unanimous consent vote.
+motion-0120 is ratified because the specification layer required before any
+CR-04 implementation motion can begin is now committed and verifiable. The
+CR-04 agent readiness spec converts the criteria description ("a JAI Agent
+exists that can evaluate a motion") into a falsifiable implementation target.
+The closure checklist makes CR-04 closure a verifiable repo state rather than
+an author declaration.
+
+Challenge C-2 (premature schema) is addressed: the protocol carries `version: v0`
+and a `protocol_version` field in each agent vote, enabling recalibration when the
+first real agent output is available. Challenge C-5 (architecture pre-specification)
+is addressed: the spec is explicitly framed as minimum viable interface requirements —
+any implementation that satisfies the interface is valid.
+
+**What this ratification does not do:**
+CR-04 is not declared met. The closure checklist has seven items all at
+`status: unmet` — that is the correct honest state. The next motion in this
+line (motion-0121) implements the agent and closes those items.
+Corpus V2 is not declared started. CR-05 remains out of scope.
+The critical path is now: CR-03 → **CR-04 (next motion)** → CR-05.

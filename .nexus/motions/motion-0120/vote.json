@@ -1,0 +1,28 @@
+{
+  "motion_id": "motion-0120",
+  "voted_at": "2026-04-04T00:00:00.000Z",
+  "era": "corpus-v1",
+  "vote_mechanism": "unanimous_consent",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "CR-04 agent readiness spec committed at .nexus/deliberation/cr04-agent-readiness-spec.md — six sections present including minimum viable first agent definition (one agent, one seat, one motion, one vote, one trace).",
+      "CR-04 closure checklist committed at .nexus/deliberation/cr04-closure-checklist.yaml — seven items (CR04-01 through CR04-07), each with artifact_ref or command field, all status: unmet pending implementation. Checklist is machine-checkable without author assertion.",
+      "Agent vote protocol committed at .nexus/deliberation/agent-vote-protocol.yaml — five sections: extension fields (vote_type, agent_id, seat_id, seat_contract_ref, seat_contract_version, evaluation_trace_ref, model, protocol_version), evaluation trace schema, compatibility note, forward-compatibility mechanism (protocol_version field), anti-patterns. Additive to existing human vote schema — no validator changes required.",
+      "corpus-v2-readiness-criteria.md updated: CR-01 promoted to met (motion-0118 ratified), CR-02 promoted to met (motion-0119 ratified). Summary table updated to 4 met / 2 partial / 4 unmet. Attribution note added.",
+      "program-graph.yaml updated: planning-canon and q2-corpus-v1-deliberation-readiness programs both marked closed. corpus-v2-readiness-blockers epic and program added with status: open, motion-0120 as first line entry.",
+      "Launch packet filed at .nexus/programs/q2-corpus-v2-readiness-blockers-launch-packet.md — no bracketed placeholders, nine sections complete, self-contained. First real use of launch-packet activation path — closes CR-08.",
+      "validate_motion exit 0. validate_agency exit 0. No runtime, portal, UI, or DB files modified. Does not declare CR-04 met. Does not declare Corpus V2 started. CR-05 remains out of scope."
+    ],
+    "missing_required_roles": []
+  }
+}
