@@ -1,6 +1,6 @@
 schema_version: "program-graph-0.1"
 coverage: partial
-generated_at: "2026-04-03T00:00:00.000Z"
+generated_at: "2026-04-04T00:00:00.000Z"
 
 # This is a partial program graph of the Corpus V1 arc.
 # Major known programs are classified below.
@@ -211,6 +211,49 @@ eras:
                 description: Single motion — docs/planning only.
                 motions:
                   - motion-0118
+                status: closed
+            status: closed
+
+          - program_id: q2-corpus-v1-deliberation-readiness
+            title: "Corpus V1 Deliberation Readiness (motion-0119)"
+            description: >
+              Produce the executable deliberation readiness layer: six per-seat
+              contracts, escalation ladder, primary readiness narrative,
+              motion-folder phase guide, launch-packet activation path, and
+              Corpus V2 readiness criteria.
+            parent_motion: motion-0119
+            motion_lines:
+              - line_id: deliberation-readiness-main
+                description: Single motion — docs/governance only.
+                motions:
+                  - motion-0119
+                status: closed
+            status: closed
+
+      - epic_id: corpus-v2-readiness-blockers
+        title: "Corpus V2 Readiness Blockers"
+        description: >
+          Close the minimum blocking criteria for the Corpus V2 opening motion.
+          Primary focus: CR-04 JAI Agent operational with a defined panel seat.
+          CR-05 (Corpus V2 opening motion) is explicitly out of scope for this
+          epic; it requires a separate governed event after CR-04 is met.
+        programs:
+
+          - program_id: q2-corpus-v2-readiness-blockers
+            title: "Corpus V2 Readiness Blockers v0 (motion-0120)"
+            description: >
+              Establish the CR-04 agent readiness specification, agent vote
+              protocol, closure checklist, updated readiness criteria, program
+              graph registration, and launch packet for the implementation line.
+            parent_motion: motion-0120
+            motion_lines:
+              - line_id: readiness-blockers-main
+                description: >
+                  motion-0120 (spec + protocol), then implementation motions
+                  for CR-04 closure (agent registration, seat assignment,
+                  first governed vote).
+                motions:
+                  - motion-0120
                 status: open
             status: open
 

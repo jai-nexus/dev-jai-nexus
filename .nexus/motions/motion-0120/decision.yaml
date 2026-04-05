@@ -1,0 +1,13 @@
+motion_id: motion-0120
+status: RATIFIED
+result: PASS
+ratified_by: unanimous_consent
+last_updated: "2026-04-04T00:00:00.000Z"
+notes: >
+  RATIFIED: Corpus V2 Readiness Blockers v0. CR-04 agent readiness spec and
+  closure checklist committed. Agent vote protocol (v0) committed with
+  forward-compatibility mechanism. corpus-v2-readiness-criteria.md updated:
+  CR-01 and CR-02 promoted to met (4 met / 2 partial / 4 unmet).
+  program-graph.yaml updated: readiness-blockers epic open, motion-0120 first
+  entry. Launch packet filed — closes CR-08. Does not declare CR-04 met.
+  Does not declare Corpus V2 started. CR-05 remains out of scope.

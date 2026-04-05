@@ -1,0 +1,21 @@
+motion_id: motion-0120
+kind: documentation
+risk_score: 0.14
+escalation_tier: 2
+surfaces_touched:
+  - governance-docs
+  - governance-policy
+risk_notes: >
+  risk_score 0.14 reflects creation of new governance spec artifacts and
+  updates to two existing governance documents (corpus-v2-readiness-criteria.md,
+  program-graph.yaml). No runtime, substrate, or portal surfaces touched.
+  escalation_tier elevated from Tier 1 (risk_score-implied) to Tier 2 because:
+  (1) novelty_flag — first agent-vote protocol and CR-04 readiness spec in the
+  corpus; (2) governance-policy surface — the agent vote protocol defines
+  enforceable schema requirements for future agent votes and the criteria doc
+  update changes the official readiness record. Challenge C-2 (premature schema)
+  and C-5 (architecture pre-specification) identified real risks; both addressed
+  with v0 label, forward-compatibility mechanism, and explicit minimum-viable
+  interface framing. Full adversarial challenge pass completed.
+ratified: true
+ratified_at: "2026-04-04T00:00:00.000Z"

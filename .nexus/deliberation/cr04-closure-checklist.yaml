@@ -1,0 +1,115 @@
+schema_id: cr04-closure-checklist-v0
+established: motion-0120
+version: "v0"
+readiness_criterion: CR-04
+spec_ref: ".nexus/deliberation/cr04-agent-readiness-spec.md"
+
+# This checklist governs when CR-04 (JAI Agent operational) is declared met.
+# Every item must be true and independently verifiable from repo state.
+# CR-04 is declared met when: all items are checked, the checked status is
+# committed to this file (or a successor document), and the check is
+# attributable to a ratified motion.
+# No item may be marked checked by author assertion alone.
+
+items:
+
+  - id: CR04-01
+    description: >
+      Agent registration: the agent's agent_id appears in
+      workspace/jai-nexus/nexus-core/registry/agents.generated.yaml with
+      a domain assignment that includes dev.jai.nexus and a repo assignment
+      that includes dev-jai-nexus.
+    artifact_ref: "workspace/jai-nexus/nexus-core/registry/agents.generated.yaml"
+    verification_method: >
+      Read agents.generated.yaml. Locate the agent entry by agent_id.
+      Confirm domain includes dev.jai.nexus and repo includes dev-jai-nexus.
+    status: unmet
+    closed_by: null
+
+  - id: CR04-02
+    description: >
+      Seat assignment: the agent has a committed seat assignment artifact at
+      .nexus/deliberation/seat-assignments/<agent_id>.yaml that maps the agent
+      to one of the six seat contracts in .nexus/deliberation/seat-contracts/.
+    artifact_ref: ".nexus/deliberation/seat-assignments/"
+    verification_method: >
+      Check that .nexus/deliberation/seat-assignments/<agent_id>.yaml exists.
+      Read the file and confirm seat_id matches a seat_id in one of the six
+      seat contract YAMLs.
+    status: unmet
+    closed_by: null
+
+  - id: CR04-03
+    description: >
+      Governed vote produced: a vote.json exists for at least one real motion
+      where the panel entry identifies the agent by agent_id (not a human
+      identity), vote_type is "agent", and all required human vote schema
+      fields are present (nested outcome object with result/yes/no/abstain).
+    artifact_ref: ".nexus/motions/motion-NNNN/vote.json"
+    verification_method: >
+      Locate the motion the agent voted on. Read vote.json. Confirm:
+      vote_type == "agent", agent_id is present and matches the registered
+      agent, outcome object has result/yes/no/abstain fields.
+      Command: node -e "const v=require('./path/to/vote.json');
+      console.log(v.vote_type, v.agent_id, v.outcome.result)"
+    status: unmet
+    closed_by: null
+
+  - id: CR04-04
+    description: >
+      Agent vote protocol compliance: the vote.json satisfies the extension
+      fields in agent-vote-protocol.yaml — specifically: vote_type, agent_id,
+      seat_id, seat_contract_ref, seat_contract_version, evaluation_trace_ref,
+      model, protocol_version.
+    artifact_ref: ".nexus/deliberation/agent-vote-protocol.yaml"
+    verification_method: >
+      Read vote.json. Confirm all eight extension fields are present and
+      non-null. Confirm seat_id matches the agent's committed seat assignment.
+      Confirm seat_contract_ref resolves to a file that exists.
+    status: unmet
+    closed_by: null
+
+  - id: CR04-05
+    description: >
+      Validation passes: node portal/scripts/validate-motion.mjs exits 0 for
+      the motion the agent voted on.
+    command: >
+      node portal/scripts/validate-motion.mjs --motion
+      .nexus/motions/motion-NNNN/motion.yaml
+    verification_method: >
+      Run the validate-motion command for the motion the agent voted on.
+      Confirm exit code 0 and output contains "✅ motion schema OK".
+    status: unmet
+    closed_by: null
+
+  - id: CR04-06
+    description: >
+      Evaluation trace committed: a trace artifact exists at the exact path
+      referenced in vote.json's evaluation_trace_ref field. The trace is
+      committed to the repo (not just local).
+    artifact_ref: ".nexus/deliberation/evaluation-traces/"
+    verification_method: >
+      Read evaluation_trace_ref from the agent's vote.json.
+      Confirm the file at that path exists and is parseable.
+    status: unmet
+    closed_by: null
+
+  - id: CR04-07
+    description: >
+      Seat contract consumed: the evaluation trace explicitly addresses at
+      least one distinctive_question and at least one block_condition from
+      the agent's assigned seat contract. The trace's questions_evaluated
+      list is non-empty and its block_conditions_checked list is non-empty.
+    artifact_ref: ".nexus/deliberation/evaluation-traces/<agent_id>-<motion_id>-trace.yaml"
+    verification_method: >
+      Read the evaluation trace. Confirm questions_evaluated is a non-empty
+      list. Confirm block_conditions_checked is a non-empty list. Confirm at
+      least one entry in questions_evaluated matches verbatim (or closely
+      paraphrases) a distinctive_question from the assigned seat contract YAML.
+    status: unmet
+    closed_by: null
+
+# CR-04 is met when all seven items above have status: met.
+# Update each item's status and closed_by fields in a ratified motion
+# that provides the evidence for each check.
+# Do not mark items met without committed artifacts supporting the check.

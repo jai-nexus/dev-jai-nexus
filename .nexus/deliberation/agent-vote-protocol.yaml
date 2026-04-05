@@ -1,0 +1,247 @@
+schema_id: agent-vote-protocol-v0
+established: motion-0120
+version: "v0"
+protocol_version: "0.1"
+
+# This schema governs how agent-produced votes are recorded in this repo.
+# It extends (does not replace) the existing human vote schema.
+# Existing validators do not need modification to validate an agent vote:
+# extension fields are additive. All existing human vote fields remain required.
+# See cr04-agent-readiness-spec.md §3 for the full field requirements.
+
+# ---
+# SECTION 1: Schema extension fields
+# Fields required in an agent vote.json beyond the existing human vote schema.
+# ---
+
+extension_fields:
+
+  vote_type:
+    type: enum
+    values: [human, agent]
+    required: true
+    description: >
+      Distinguishes the origin of the vote. Human votes (existing corpus)
+      may omit this field (treated as "human" for backwards compatibility).
+      Agent votes must explicitly set this to "agent". A vote.json with
+      vote_type "agent" that lacks the remaining extension fields is a
+      schema violation.
+
+  agent_id:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      The agent's registered identifier. Must resolve to an entry in
+      workspace/jai-nexus/nexus-core/registry/agents.generated.yaml.
+      Must not be a human identity. A human writing a vote.json with
+      an agent_id that does not exist in the registry is a governance
+      violation (see Section 5).
+
+  seat_id:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      The seat perspective from which the agent evaluated the motion.
+      Must match a seat_id field in one of the six seat contract YAMLs
+      at .nexus/deliberation/seat-contracts/.
+    valid_values:
+      - cost-discipline
+      - architecture
+      - governance-safety
+      - operator-usability
+      - evidence-falsifiability
+      - execution-pragmatism
+
+  seat_contract_ref:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      Relative path from repo root to the seat contract YAML file the
+      agent consumed as primary evaluation context. Example:
+      ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+
+  seat_contract_version:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      The value of the "version" field from the consumed seat contract YAML.
+      Records which version of the contract governed the evaluation.
+      Prior votes remain valid under the version they recorded.
+
+  evaluation_trace_ref:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      Relative path from repo root to the committed evaluation trace artifact.
+      The trace must exist at this path in the repo. It is not sufficient
+      for the trace to exist locally — it must be committed.
+      Recommended path pattern:
+      ".nexus/deliberation/evaluation-traces/<agent_id>-<motion_id>-trace.yaml"
+
+  model:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      The model identifier used to produce the evaluation.
+      Example: "claude-sonnet-4-6" or "claude-opus-4-6".
+      Records the specific model version for auditability.
+
+  protocol_version:
+    type: string
+    required_when: vote_type == agent
+    description: >
+      The version of this protocol document under which the vote was produced.
+      Must be set to the protocol_version field at the top of this file
+      (currently "0.1"). When this protocol is updated, existing votes remain
+      valid under the version they recorded.
+
+# ---
+# SECTION 2: Evaluation trace format
+# Minimum fields a trace artifact must contain to be a governed trace.
+# ---
+
+evaluation_trace_schema:
+
+  motion_id:
+    type: string
+    required: true
+    description: The motion_id of the motion evaluated.
+
+  agent_id:
+    type: string
+    required: true
+    description: The agent_id of the agent that produced this trace.
+
+  seat_id:
+    type: string
+    required: true
+    description: The seat perspective applied in this evaluation.
+
+  seat_contract_ref:
+    type: string
+    required: true
+    description: Path to the seat contract YAML consumed.
+
+  questions_evaluated:
+    type: list
+    required: true
+    min_length: 1
+    description: >
+      List of distinctive_questions from the seat contract that were
+      explicitly addressed in this evaluation. Each entry should quote
+      or closely paraphrase the question from the contract. Must be
+      non-empty.
+    items:
+      question:
+        type: string
+        description: The question as stated in the seat contract.
+      response:
+        type: string
+        description: The agent's response to this question.
+
+  block_conditions_checked:
+    type: list
+    required: true
+    min_length: 1
+    description: >
+      List of block_conditions from the seat contract, each checked
+      and marked triggered or not_triggered. Must be non-empty.
+    items:
+      condition:
+        type: string
+        description: The block condition as stated in the seat contract.
+      result:
+        type: enum
+        values: [triggered, not_triggered]
+      notes:
+        type: string
+        description: Brief explanation of why the condition was or was not triggered.
+
+  pass_or_block:
+    type: enum
+    values: [PASS, BLOCK, ESCALATE]
+    required: true
+    description: >
+      The seat's conclusion. PASS means no block condition was triggered
+      and the motion satisfies this seat's pass criteria. BLOCK means at
+      least one block condition was triggered. ESCALATE means the seat
+      cannot conclude without additional information (triggers Tier 3
+      escalation per the escalation ladder).
+
+  reasoning:
+    type: string
+    required: true
+    description: >
+      Free-text explanation of the evaluation conclusion. Must be specific
+      enough that a reviewer can understand why the agent reached the
+      pass_or_block conclusion without re-reading the seat contract.
+
+  produced_at:
+    type: iso8601
+    required: true
+
+# ---
+# SECTION 3: Compatibility note
+# ---
+
+compatibility:
+  note: >
+    Agent vote.json must also satisfy all fields required by the existing
+    human vote schema. The required human vote fields are:
+      motion_id, voted_at, era, vote_mechanism, panel (array), outcome
+      (object with: yes, no, abstain, yes_with_reservations, result,
+      reasons, missing_required_roles).
+    The existing validate_motion validator must pass (exit 0) on an agent
+    vote.json without any modification to the validator.
+    Extension fields in this protocol are additive — they extend the
+    existing schema, they do not replace it.
+  backwards_compatibility: >
+    Human votes that predate this protocol do not require vote_type or any
+    other extension field. Omitting vote_type is treated as vote_type: human
+    for backwards-compatible reads. Agent votes must explicitly set vote_type.
+
+# ---
+# SECTION 4: Forward compatibility mechanism
+# ---
+
+versioning:
+  current_version: "0.1"
+  policy: >
+    Schema updates to this protocol produce a new protocol_version value.
+    Agent votes record the protocol_version at time of production.
+    Existing votes remain valid under the version they recorded.
+    A new version of this protocol must be established by a ratified motion.
+    The motion must note what changed and why, and must specify whether
+    existing votes produced under prior versions require migration.
+  version_history:
+    - version: "0.1"
+      established_by: motion-0120
+      changes: Initial version.
+
+# ---
+# SECTION 5: What an agent vote is NOT
+# ---
+
+anti_patterns:
+  - label: Human-authored agent vote
+    description: >
+      A human operator writing a vote.json with agent_id set to a string
+      that does not resolve to a registered entry in agents.generated.yaml.
+      This is a governance violation regardless of the quality of the
+      evaluation. The agent_id field is not a label — it is a registry
+      reference. If the registry entry does not exist, the vote does not
+      count as an agent vote for CR-04 purposes.
+  - label: Untraced agent vote
+    description: >
+      An agent vote.json with evaluation_trace_ref pointing to a file that
+      does not exist in the repo, or pointing to a local file that was not
+      committed. The trace must be committed to the repo before the vote
+      counts as governed.
+  - label: Simulation
+    description: >
+      A human operator producing a vote.json labeled "agent" to demonstrate
+      what an agent vote would look like, without an actual agent having
+      evaluated the motion. Simulation is valuable for testing schema
+      compliance but does not satisfy CR-04. A simulation must be labeled
+      as such (vote_type: simulation or a note in the vote.json) and must
+      not be used to declare CR-04 met.
