@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0123",
+  "voted_at": "2026-04-08T00:00:00.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "unanimous_consent_with_agent_witness",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" },
+    {
+      "role": "agent-witness",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+      "seat_id": "evidence-falsifiability",
+      "vote_weight": "advisory",
+      "agent_conclusion": "PASS",
+      "agent_vote_ref": ".nexus/motions/motion-0123/agent-vote.json"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "ERA DECLARATION: This vote.json carries `era: corpus-v2` — the first such label in the corpus. Verified: grep -r \"era.*corpus-v2\" .nexus/motions/*/vote.json returned zero prior results. The era boundary is crossed by this ratification. Corpus V1 (motions 0001–0122) is permanent record. All post-opening motions must carry `era: corpus-v2`.",
+      "AGENT WITNESS: .nexus/motions/motion-0123/agent-vote.json — all 8 agent-vote-protocol v0.1 extension fields present (vote_type:agent, agent_id:nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001, seat_id:evidence-falsifiability, seat_contract_ref, seat_contract_version:v0, evaluation_trace_ref resolves, model:claude-sonnet-4-6, protocol_version:0.1). outcome.result: PASS. Non-independence limitation (shared model with motion author) acknowledged in evaluation trace and decision.md per contract §2. The advance over CR-04: the agent evaluated a motion declaring an era boundary, not its own instantiation.",
+      "EVALUATION TRACE: .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0123-trace.yaml — 5 questions_evaluated (all 5 distinctive_questions from evidence-falsifiability seat contract addressed, exceeding the ≥3 minimum per C-5 resolution), 4 block_conditions_checked (all not_triggered), pass_or_block: PASS. Trace is independently readable. RL-3 not triggered.",
+      "GATES: verify.json — validate_motion exit 0 (.nexus/motions/motion-0123/motion.yaml schema OK); validate_agency exit 0 (domain dev.jai.nexus tier 1 OK, repo dev-jai-nexus tier 2 OK, 202 agents).",
+      "CANON BASELINE: .nexus/docs/corpus-v2-canon-baseline.md committed — 6 sections. All 4 must_extend items from cr05-inherited-context-packet.md addressed: (1) criteria doc — CR-05 promoted to met; (2) program graph — corpus-v1 closed at motion-0122, corpus-v2 era entry added with first:motion-0123; (3) motion quality standard — explicitly deferred to named post-opening governed motion (condition: first agent-authored proposal); (4) CR-03 compliance record — closed as historical record by motion-0122. Corpus V1 inheritance cited: .nexus/deliberation/cr05-inherited-context-packet.md. RL-6 satisfied.",
+      "CR-05 CHECKLIST CLOSURE: all 8 cr05-opening-checklist items confirmed met — CR05-01 (CR-04 confirmed met, motion-0121); CR05-02 (CR-03 5/5 PASS, motion-0122); CR05-03 (motion-0122 RATIFIED); CR05-04 (cr05-opening-boundary.md 5 sections, P-1–P-4 all met); CR05-05 (cr05-first-agent-voted-motion-contract.md 6 sections, RL-1–RL-6); CR05-06 (cr05-panel-staging-guidance.yaml, opening_event_ratification_mechanism non-null: unanimous_consent_with_agent_witness); CR05-07 (cr05-inherited-context-packet.md 3 sections, paths verified); CR05-08 (no prior era:corpus-v2 in any vote.json — verified at implementation and re-verified at ratification). Each item cited with artifact reference in decision.md.",
+      "BRANCH ISOLATION: RL-4 satisfied — git log confirms this branch was created after motion-0122 merged as PR #73. This branch (sprint/q2-cr05-corpus-v2-opening) does not contain the initial commit of cr05-opening-boundary.md.",
+      "DEFERRED ITEMS DECLARED: Motion quality standard extension for agent-authored proposals (deferred — no agent-authored proposals exist yet); additional agent registrations (deferred — governed motion required); agent participation weight evolution beyond advisory (deferred — canon evolution required); first Corpus V2 program establishment (deferred — first post-opening motion); CR-06 and CR-07 parallel tracks (unaffected). All deferrals explicit in corpus-v2-canon-baseline.md §5 and decision.md."
+    ],
+    "missing_required_roles": []
+  }
+}

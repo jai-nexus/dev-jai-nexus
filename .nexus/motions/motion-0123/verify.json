@@ -1,0 +1,79 @@
+{
+  "motion_id": "motion-0123",
+  "verified_at": "2026-04-08T00:00:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0123/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0123/motion.yaml — Title: CR-05 Corpus V2 Opening v0 — first true agent-voted opening event and governed transition into Corpus V2 — Target: domain=dev.jai.nexus repo=dev-jai-nexus",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": "Evaluation trace exists at canonical path with ≥3 questions_evaluated, 4 block_conditions_checked, pass_or_block: PASS, non-independence stated",
+      "command": "node -e \"const fs=require('fs'); const t=fs.readFileSync('.nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0123-trace.yaml','utf8'); const q=(t.match(/^  - question:/gm)||[]).length; const bc=(t.match(/^  - condition:/gm)||[]).length; const pob=t.match(/^pass_or_block: (.+)/m)[1]; console.log('q:',q,'bc:',bc,'pass_or_block:',pob)\"",
+      "result": "ok",
+      "detail": "questions: 5 (≥3 satisfied, all 5 distinctive_questions addressed per C-5 resolution), bc: 4 (all 4 block_conditions checked), pass_or_block: PASS. Non-independence (shared model claude-sonnet-4-6) acknowledged in trace. RL-3 not triggered."
+    },
+    {
+      "check": "agent-vote.json exists: all 8 extension fields present, era: corpus-v2, result: PASS, evaluation_trace_ref resolves",
+      "command": "node -e \"const v=require('./.nexus/motions/motion-0123/agent-vote.json'); const fields=['vote_type','agent_id','seat_id','seat_contract_ref','seat_contract_version','evaluation_trace_ref','model','protocol_version']; const missing=fields.filter(f=>!v[f]); console.log('8 ext fields:',(fields.length-missing.length)+'/8','era:',v.era,'result:',v.outcome.result)\"",
+      "result": "ok",
+      "detail": "8/8 extension fields present. era: corpus-v2. outcome.result: PASS. evaluation_trace_ref resolves to committed trace file. RL-1 satisfied (panel includes agent_id), RL-2 satisfied (agent_id in registry)."
+    },
+    {
+      "check": "Evidence command: node -e \"const v=require('./.nexus/motions/motion-0123/agent-vote.json'); console.log(v.vote_type, v.agent_id, v.outcome.result)\"",
+      "command": "node -e \"const v=require('./.nexus/motions/motion-0123/agent-vote.json'); console.log(v.vote_type, v.agent_id, v.outcome.result)\"",
+      "exit_code": 0,
+      "output": "agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 PASS",
+      "result": "ok"
+    },
+    {
+      "check": ".nexus/docs/corpus-v2-canon-baseline.md exists with 6 sections; all must_extend items addressed",
+      "result": "ok",
+      "detail": "6 sections confirmed (Authority and scope, Corpus V1 inheritance record, Must-extend items addressed, What the opening event adds, What it does not determine, Post-opening boundary statement). All 4 must_extend items addressed. V1 inheritance cites cr05-inherited-context-packet.md. RL-6 satisfied."
+    },
+    {
+      "check": "program-graph.yaml: corpus-v1 last: motion-0122; corpus-v2 era entry with first: motion-0123; q2-cr05-opening-planning status: closed",
+      "result": "ok",
+      "detail": "corpus-v1 era last set to motion-0122 (era closed at this ratification). corpus-v2 era entry added: era_id: corpus-v2, governance_model: agent-participated-advisory, first: motion-0123. q2-cr05-opening-planning program and line status: closed. Program graph era boundary committed in repo state."
+    },
+    {
+      "check": "cr05-opening-checklist.yaml: all 8 items status: met; CR05-02 through CR05-07 have closed_by: motion-0123 and evidence_ref",
+      "result": "ok",
+      "detail": "CR05-01: met (closed_by: motion-0121). CR05-02 through CR05-07: met (closed_by: motion-0123) with evidence_ref per item. CR05-08: met (no prior era:corpus-v2 in any vote.json). All 8 items confirmed met in committed repo state."
+    },
+    {
+      "check": "corpus-v2-readiness-criteria.md: CR-05 current_status: met; summary 8 met / 1 partial / 1 unmet",
+      "result": "ok",
+      "detail": "CR-05 promoted to met (motion-0123). Summary updated to 8/1/1. Met: CR-01 through CR-05, CR-08, CR-09, CR-10. Partial: CR-06. Unmet: CR-07."
+    },
+    {
+      "check": "RL-1/CR05-08: grep -r \"era: corpus-v2\" .nexus/motions/*/vote.json — returns exactly one result: motion-0123/vote.json",
+      "command": "grep -r \"\\\"era\\\": \\\"corpus-v2\\\"\" .nexus/motions/*/vote.json",
+      "result": "ok",
+      "detail": "Exactly one result: .nexus/motions/motion-0123/vote.json. No prior motion carries this label. The era boundary is recorded in committed repo state."
+    },
+    {
+      "check": "RL-4: branch isolation — opening motion not authored in same branch arc as planning artifacts",
+      "command": "git log --oneline -8",
+      "result": "ok",
+      "detail": "git log confirms: motion-0123 implementation commit is on sprint/q2-cr05-corpus-v2-opening. motion-0122 planning artifacts appear as merged PR #73 (separate branch, already on main before this branch was created). Arc separation satisfied."
+    },
+    {
+      "check": "No runtime/portal/UI/DB/registry files modified",
+      "result": "ok",
+      "detail": "Changes confined to .nexus/motions/motion-0123/ (ratification artifacts), .nexus/deliberation/cr05-opening-checklist.yaml (checklist closure), .nexus/docs/corpus-v2-readiness-criteria.md (CR-05 promoted), .nexus/programs/program-graph.yaml (era boundary). agents.generated.yaml unchanged (202 agents). No portal/, workspace/, or runtime files touched."
+    }
+  ]
+}

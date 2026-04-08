@@ -1,14 +1,14 @@
 motion_id: motion-0123
-status: proposed
-result: pending
-ratified_by: null
-last_updated: "2026-04-05T00:00:00.000Z"
+status: RATIFIED
+result: PASS
+ratified_by: unanimous_consent_with_agent_witness
+last_updated: "2026-04-08T00:00:00.000Z"
 notes: >
-  Proposed. Awaiting implementation and ratification vote.
-  Three pairs: agent evaluation trace + agent-vote.json (Pair 1, required —
-  opening event invalid without); canon baseline + program graph (Pair 2);
-  checklist closure + criteria update (Pair 3).
-  All three pairs are required for a ratifiable opening event.
-  Stop rule: do not proceed with Pair 2 if Pair 1 evaluation trace shows
-  pass_or_block: BLOCK. Corpus V2 begins only upon ratification.
-  This package is the opening event proposal. Corpus V2 has not started.
+  Ratified 2026-04-08. Corpus V2 has begun. The era boundary is committed:
+  vote.json carries era: corpus-v2 — the first such label in the corpus.
+  All six required evidence artifacts from cr05-first-agent-voted-motion-contract §3
+  are committed. All eight CR05-opening-checklist items are met. CR-05 is met.
+  Agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 produced the opening
+  event evaluation trace (PASS) and agent-vote.json as required advisory witness.
+  Non-independence limitation (shared model) acknowledged and recorded.
+  Corpus V1 era last: motion-0122. Corpus V2 era first: motion-0123.
