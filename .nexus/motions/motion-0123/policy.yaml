@@ -1,0 +1,27 @@
+motion_id: motion-0123
+kind: governance-policy
+risk_score: 0.28
+escalation_tier: 2
+surfaces_touched:
+  - governance-docs
+  - governance-policy
+  - program-graph
+risk_notes: >
+  risk_score 0.28 reflects the highest-stakes motion in the corpus to date:
+  (1) Era declaration — vote.json carries era: corpus-v2, the first such label
+  in the corpus; the era boundary is now permanent record; (2) Corpus V2 canon
+  baseline committed at .nexus/docs/corpus-v2-canon-baseline.md — this artifact
+  governs all post-opening motions; (3) program-graph.yaml updated with corpus-v1
+  era closed (last: motion-0122) and corpus-v2 era entry added (first: motion-0123)
+  — permanent program graph mutation; (4) cr05-opening-checklist.yaml — all 8
+  items closed; this checklist is now a v1_only historical record; (5) corpus-v2-
+  readiness-criteria.md — CR-05 promoted to met, summary 8/1/1; the transition
+  readiness arc is complete; (6) first true agent-participated governance event —
+  agent nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001 produced the first
+  advisory evaluation trace for an era-boundary motion.
+  No runtime, portal, UI, DB, or agent registry files touched.
+  escalation_tier 2 retained (Tier 3 reserved for adversarial or cross-repo
+  governance changes; this motion is within the governed opening event scope
+  pre-committed by motion-0122).
+ratified: true
+ratified_at: "2026-04-08T00:00:00.000Z"

@@ -13,11 +13,12 @@ eras:
     description: >
       All motions ratified by human operator unanimous consent.
       Proposer, challenger, and arbiter roles exercised by Jerry Ingram
-      working with Claude. Era ends at the first JAI Agent-voted motion.
+      working with Claude. Era ended at the ratification of motion-0123
+      (2026-04-08) — the first JAI Agent-witnessed, governed era-boundary motion.
     governance_model: manual-unanimous-consent
     motion_range:
       first: motion-0001
-      last: null  # era still open
+      last: motion-0122  # era closed by motion-0123 ratification (2026-04-08)
 
     epics:
 
@@ -278,12 +279,28 @@ eras:
             motion_lines:
               - line_id: cr05-opening-planning-main
                 description: >
-                  motion-0122 (planning artifacts), then CR-03 fifth qualifying
-                  motion if needed, then the Corpus V2 opening event (CR-05).
+                  motion-0122 (planning artifacts), then the Corpus V2 opening
+                  event motion-0123 (CR-05). motion-0123 ratified 2026-04-08.
+                  Program closed.
                 motions:
                   - motion-0122
-                status: open
-            status: open
+                  - motion-0123
+                status: closed
+            status: closed
+
+  - era_id: corpus-v2
+    title: "Corpus V2 — Agent-Participated Era"
+    description: >
+      Motions ratified with required advisory agent participation.
+      Era established by motion-0123 ratification (2026-04-08).
+      Agent vote weight: advisory (per cr05-panel-staging-guidance.yaml).
+      Canon baseline: .nexus/docs/corpus-v2-canon-baseline.md
+      Subsequent governed motions may evolve panel composition and canon.
+    governance_model: agent-participated-advisory
+    motion_range:
+      first: motion-0123
+      last: null  # era open
+    epics: []  # first Corpus V2 program established by follow-on motion
 
 # Motions not yet assigned to a program.
 # Covers the early corpus (0001–0070) and any motion not explicitly

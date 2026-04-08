@@ -1,0 +1,233 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0123
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+produced_at: "2026-04-05T00:00:00.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# NON-INDEPENDENCE ACKNOWLEDGMENT (required per challenge C-1 resolution and
+# cr05-first-agent-voted-motion-contract §2 independence note)
+# The agent producing this trace (nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001)
+# and the author of motion-0123 share the same underlying model (claude-sonnet-4-6).
+# This evaluation is not adversarially independent.
+#
+# The advance over CR-04 is the object of evaluation, not the evaluator pool.
+# In motion-0121, the agent evaluated a motion that instantiated the agent itself —
+# the evaluation was self-referential by design. Here, the agent evaluates a motion
+# that declares a governance era boundary: a motion that, if ratified, permanently
+# changes the label of every future governance event and establishes a committed
+# governance canon baseline. Whether the evidence chain is falsifiable, whether
+# every claim traces to a committed artifact, whether block conditions are
+# triggered — these are questions with real stakes for the governance record.
+#
+# This trace is structural proof: the evidence-falsifiability seat contract is
+# being consumed to evaluate the opening event's evidence chain. It does not
+# provide adversarial independence. That is a post-opening canon concern deferred
+# explicitly by the contract and by this motion's hard stops.
+
+questions_evaluated:
+
+  - question: >
+      Can every claim in the decision.md be verified by reading the repo
+      without trusting the author?
+    response: >
+      As of proposed state, decision.md contains no material claims requiring
+      trust — it states "Pending implementation and ratification vote" and
+      lists a post-ratification boundary table derived from the proposal.
+      The post-ratification boundary table claims are traced to:
+      (1) the vote.json field `era: corpus-v2` — verifiable by grep at the
+          path `.nexus/motions/motion-0123/vote.json` once committed;
+      (2) the corpus-v2-canon-baseline.md document — verifiable at the declared
+          path `.nexus/docs/corpus-v2-canon-baseline.md`;
+      (3) the cr05-opening-checklist.yaml all-met state — verifiable by reading
+          the file and confirming all 8 items `status: met`;
+      (4) the program-graph.yaml corpus-v2 era entry — verifiable by reading
+          the file and confirming `era_id: corpus-v2` with `first: motion-0123`.
+      The challenge.md resolves 6 challenges, each citing specific committed
+      artifact paths or named governance mechanisms (unanimous_consent_with_agent_witness,
+      cr05-first-agent-voted-motion-contract §2, §3). No challenge resolution
+      depends on author assertion alone. The pre-committed contract artifacts
+      (cr05-opening-boundary.md, cr05-opening-checklist.yaml, cr05-first-agent-voted-motion-contract.md,
+      cr05-panel-staging-guidance.yaml, cr05-inherited-context-packet.md) are all
+      in committed repo state on the main branch, committed and merged as part
+      of motion-0122 before this branch was created. PASS: no trust-only claims.
+
+  - question: >
+      Does the evidence checklist in execution.md cover all success criteria
+      stated in the proposal?
+    response: >
+      proposal.md lists 14 success criteria (SC-1 through SC-14):
+      SC-1 (CR05-01 met) → covered by pre-flight 2 item (CR05-01 status: met)
+        and the cr05-opening-checklist.yaml all-8-met checklist item.
+      SC-2 (CR05-02 met) → covered by pre-flight 2 and checklist item.
+      SC-3 (CR05-03 met) → covered by pre-flight 2 (motion-0122 decision.yaml RATIFIED)
+        and checklist item.
+      SC-4 (CR05-04 met) → covered by pre-flight 2 (boundary doc 5 sections) and
+        checklist item.
+      SC-5 (CR05-05 met) → covered by pre-flight 2 and checklist item.
+      SC-6 (CR05-06 met) → covered by pre-flight 2 and checklist item.
+      SC-7 (CR05-07 met) → covered by pre-flight 2 and checklist item.
+      SC-8 (CR05-08 met) → covered by grep item ("returns exactly one result:
+        motion-0123/vote.json") and checklist item.
+      SC-9 (vote.json era:corpus-v2) → covered by the grep item (must return
+        exactly one result: .nexus/motions/motion-0123/vote.json).
+      SC-10 (agent-vote.json 8 protocol fields) → covered by "agent-vote.json
+        has all 8 protocol extension fields" item + evidence command item.
+      SC-11 (eval trace ≥3 questions) → covered by "evaluation trace exists,
+        questions_evaluated ≥ 3, block_conditions_checked has 4 entries,
+        pass_or_block: PASS" item.
+      SC-12 (verify.json both gates pass) → covered by validate-motion exits 0
+        and validate-agency exits 0 items.
+      SC-13 (corpus-v2-canon-baseline.md committed) → covered by "6 sections
+        present, must_extend items addressed" item.
+      SC-14 (CR-05 checklist closure in decision.md) → covered by checklist item
+        for cr05-opening-checklist all 8 met; decision.md will cite it per-item.
+      All 14 success criteria are covered by at least one binary, specific
+      evidence checklist item in execution.md. NOT TRIGGERED.
+
+  - question: >
+      Are the validation commands in the evidence checklist reproducible —
+      would running them again produce the same result?
+    response: >
+      The evidence checklist commands are:
+      (1) git log --oneline | head -5 — deterministic for a fixed commit; will
+          produce the same output on any re-run against the same committed state.
+      (2) grep -r "era: corpus-v2" .nexus/motions/*/vote.json — deterministic
+          file search; will return the same results against the same committed state.
+      (3) node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo
+          dev-jai-nexus — reads agents.generated.yaml (static after registration,
+          which will not change as part of this motion); exits 0 deterministically.
+      (4) node -e (agent-vote.json evidence command) — reads a static JSON file,
+          outputs three fields; identical on re-run given no file modification.
+      (5) node portal/scripts/validate-motion.mjs --motion motion.yaml — reads
+          static motion.yaml; exits 0 deterministically.
+      (6) File existence checks — deterministic by definition.
+      No command depends on external state, network calls, time-sensitive
+      conditions, or mutable runtime data. All commands will produce identical
+      results on re-run against the same committed repo state. PASS.
+
+  - question: >
+      Is there any claim in the vote rationale that cannot be traced to a
+      specific committed artifact?
+    response: >
+      The vote rationale (in the yet-to-be-written vote.json `reasons` array)
+      is not yet authored. At proposed state: prospective assessment.
+      The execution.md evidence checklist mandates per-item artifact references
+      for all 14 items. The decision.md CR-05 closure section requires citations
+      to specific artifact paths and field values for each of the 8 opening
+      checklist items (per execution.md Step 5 guidance). The opening event's
+      design — three pairs of artifacts each with a verifiable output statement —
+      structurally constrains the vote rationale to artifact-traceable claims.
+      The one potential gap: the claim that "the first Corpus V2 canon is established"
+      traces to corpus-v2-canon-baseline.md at its declared path. If that file
+      exists at that path in committed state, the claim is verifiable. If it does
+      not exist, the ratification would be invalid. The path reference is the
+      evidence; author assertion alone is not the evidence. Structurally PASS at
+      ratification, definitively verifiable when the ratification record is committed.
+
+  - question: >
+      Does the verify.json record the actual commands run and their actual
+      exit codes — not paraphrased descriptions of what was run?
+    response: >
+      verify.json is not yet produced (implementation pending). The execution.md
+      evidence checklist specifies the exact commands and expected exit codes /
+      output strings for each item. The established pattern for verify.json in
+      this repo (motions 0118–0122) is to record exact command strings and exact
+      exit code integers, not paraphrased descriptions. The pre-flight and gate
+      commands in execution.md are specified precisely enough to be recorded
+      verbatim without paraphrase. Structural PASS: no mechanism exists in the
+      execution.md that would require or permit paraphrase. Definitively verifiable
+      at ratification when verify.json is committed.
+
+block_conditions_checked:
+
+  - condition: >
+      A success criterion from the proposal has no corresponding evidence
+      checklist item — the criterion was declared met without a verifiable check.
+    result: not_triggered
+    notes: >
+      All 14 success criteria from proposal.md are covered by at least one
+      binary, path-specific checklist item in execution.md, as traced above
+      in the questions_evaluated response to the second distinctive question.
+      No success criterion is orphaned or declared met by prose assertion alone.
+
+  - condition: >
+      The vote rationale says "all criteria met" or "implementation complete"
+      without listing which criteria or citing which artifacts prove it.
+    result: not_triggered
+    notes: >
+      Vote rationale not yet written. decision.md in proposed state contains
+      no blanket claim. The execution.md structure mandates per-item evidence
+      artifact references for each of the 14 checklist items. The opening event
+      decision.md must cite each of the 8 CR05-opening-checklist items with
+      specific artifact references (execution.md Step 5 requirement). The
+      ratification vote.json reasons array will be specific (per the established
+      pattern from motions 0118–0122). Structurally not triggered at any point
+      in the expected implementation path.
+
+  - condition: >
+      An evidence checklist item is subjective: "confirm the implementation
+      is coherent" or "verify the output looks reasonable."
+    result: not_triggered
+    notes: >
+      All 14 execution.md evidence checklist items are binary and specific:
+      (pre-flights) branch history does not contain named commit; CR05 checklist
+      fields equal "met"; agent id present with specific scope and tier; seat
+      contract has 5 questions and 4 conditions.
+      (pair items) file exists at exact path; YAML parseable; questions_evaluated
+      has ≥3 entries; block_conditions_checked has 4 entries; pass_or_block field
+      non-null; node command outputs exact three-field string; agent-vote.json has
+      8 extension fields; evaluation_trace_ref resolves; canon baseline has 6 sections;
+      must_extend items addressed; program-graph fields equal specific values;
+      checklist all-8-met with closed_by and evidence_ref; criteria doc CR-05
+      field equals "met"; summary counts equal 8/1/1; grep returns exactly 1 result;
+      validate-motion exits 0; validate-agency exits 0.
+      None are subjective. All can be mechanically verified.
+
+  - condition: >
+      verify.json records gate results for commands that were not actually run,
+      or records different commands than were specified in execution.md.
+    result: not_triggered
+    notes: >
+      verify.json not yet produced. The execution.md specifies the exact gate
+      commands to be run and recorded. The pattern from prior verify.json files
+      (motions 0118–0122) confirms discipline: exact command strings, exact exit
+      codes, no paraphrase. The opening event's verify.json will record the two
+      gate commands (validate_motion and validate_agency) plus the implementation
+      evidence checks from the execution.md checklist. No structural trigger present.
+      Definitively verifiable at ratification.
+
+pass_or_block: PASS
+
+reasoning: >
+  The evidence-falsifiability seat finds no triggered block conditions in
+  motion-0123's package. All five distinctive questions are addressed with
+  motion-specific responses, and the evaluation finds PASS on each.
+
+  The structural advance over motion-0121: the agent here evaluates whether the
+  evidence chain for an era transition is independently falsifiable — not merely
+  whether its own registration artifacts are verifiable. The questions have real
+  stakes: if SC-9 (vote.json era:corpus-v2) had no corresponding checklist item,
+  the era boundary claim would be prose-only and the opening event would be
+  invalid per RL-6. It does have a corresponding item (the grep command). If the
+  canon baseline path were asserted but the file did not exist, the canon claim
+  would be unfalsifiable. The execution.md mandates file existence at the declared
+  path. These are falsifiability questions with governance consequences.
+
+  The non-independence limitation is stated and accepted per the contract §2
+  independence note and the challenge C-1 resolution. The seat's block_conditions
+  concern verifiability of claims and checklist coverage — not evaluator
+  independence. No block condition tests for independence; all four test for
+  evidence chain integrity. The evidence chain is intact.
+
+  PASS verdict: the motion-0123 package is evidence-falsifiably sound. All 14
+  success criteria have corresponding binary evidence checklist items. No checklist
+  item is subjective. The evidence chain will be complete, traceable, and
+  independently re-runnable at ratification. No block condition is triggered.
+
+  This trace, combined with the agent-vote.json, constitutes the required Pair 1
+  artifact set for the opening event. The opening event is valid to proceed to
+  Pair 2: corpus-v2-canon-baseline.md and program-graph.yaml update.

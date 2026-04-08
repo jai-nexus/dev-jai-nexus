@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0123",
+  "voted_at": "2026-04-05T00:00:00.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "This is the agent seat-contract evaluation artifact for the Corpus V2 opening event. It is not the ratification vote.json — the human ratification vote is a separate artifact. This file is the first committed agent-vote.json in the corpus carrying era: corpus-v2. The advance over motion-0121/agent-vote.json: the agent here evaluates a motion that declares an era boundary and establishes a governance canon, not merely its own instantiation. The non-independence limitation (agent and author share claude-sonnet-4-6) is acknowledged in the evaluation trace. Structural proof: the evidence-falsifiability seat contract is consumed to evaluate the opening event's evidence chain. Adversarial independence is a post-opening canon concern.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0123-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 14 proposal success criteria have corresponding binary evidence checklist items in execution.md — no criterion is orphaned. Block condition 1 not triggered.",
+      "All execution.md evidence checklist items are specific and binary: file exists at named path, command exits 0, field equals specific value, grep returns specific count. No subjective items. Block condition 3 not triggered.",
+      "Validation commands (validate_motion, validate_agency, grep, node evidence command) are exact, deterministic, and reproducible on re-run against the same committed repo state.",
+      "Non-independence limitation acknowledged: agent and motion author share underlying model claude-sonnet-4-6. The advance over CR-04 is the object of evaluation: this motion declares an era boundary and establishes a governance canon. This trace is structural proof of the evidence chain's falsifiability, not adversarial independence. Adversarial independence is a post-opening canon concern.",
+      "The pre-committed contract artifacts (cr05-first-agent-voted-motion-contract.md, cr05-panel-staging-guidance.yaml, cr05-opening-checklist.yaml, cr05-inherited-context-packet.md) are all in committed main-branch state from motion-0122, committed and merged before this branch was created. The evidence chain is not circular: the contract was not written to match this motion.",
+      "See evaluation trace at evaluation_trace_ref for full five distinctive_questions responses and four block_conditions_checked findings."
+    ],
+    "missing_required_roles": []
+  }
+}

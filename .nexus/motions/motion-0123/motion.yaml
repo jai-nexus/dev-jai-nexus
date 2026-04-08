@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0123
+kind: governance-policy
+status: proposed
+title: "CR-05 Corpus V2 Opening v0 — first true agent-voted opening event and governed transition into Corpus V2"
+program: q2-cr05-opening-planning
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-04-05T00:00:00.000Z"

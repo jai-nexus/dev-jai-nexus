@@ -2,7 +2,7 @@
 
 **Established:** motion-0119
 **Date:** 2026-04-04
-**Last updated:** 2026-04-05 by motion-0122
+**Last updated:** 2026-04-08 by motion-0123
 **Status source:** This document records current-status assessments as of
 its last update. It does not declare when Corpus V2 begins. The transition
 requires a separate governed event: a Corpus V2 opening motion. This document
@@ -120,14 +120,23 @@ transition: names the conditions that were met, records the first agent-voted
 motion, and establishes the Corpus V2 governance canon (extending this planning
 canon for the agent-voted era).
 
-**Current status:** `unmet`
+**Current status:** `met`
 
-**Assessment:** No Corpus V2 opening motion exists. This criterion cannot be
-met until CR-04 is met (at least one operational panel-seat agent).
+**Assessment:** motion-0123 ratified (2026-04-08). Opening boundary pre-conditions
+P-1 through P-4 all confirmed met before authoring. Agent
+`nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001` produced a governed evaluation
+trace (5 questions, 4 block conditions, PASS) and agent-vote.json satisfying
+agent-vote-protocol v0.1 with `era: corpus-v2` — the first such label in the
+corpus. Canon baseline committed at `.nexus/docs/corpus-v2-canon-baseline.md`
+addressing all four `must_extend` items. Program graph updated: corpus-v1 era
+closed at motion-0122, corpus-v2 era entry opened at motion-0123. All eight
+CR05-opening-checklist items met with per-item artifact references.
+Non-independence limitation (shared model) acknowledged in evaluation trace and
+decision.md; this is structural proof of the evidence chain, not adversarial
+proof; the limitation is a permanent record and does not invalidate the opening.
+*Promoted to met by motion-0123.*
 
-**Closing action:** Author and ratify a Corpus V2 opening motion. That motion
-is the governed event that starts Corpus V2. It must not be simulated or
-anticipated by any Corpus V1 motion.
+**Closing action:** Closed.
 
 ---
 
@@ -236,21 +245,21 @@ chain discipline for future high-stakes motions.
 | CR-02 | Deliberation readiness in place | **met** *(motion-0119)* |
 | CR-03 | Quality standard applied consistently | **met** *(motion-0122)* |
 | CR-04 | JAI Agent operational with panel seat | **met** *(motion-0121)* |
-| CR-05 | Corpus V2 opening motion exists | unmet |
+| CR-05 | Corpus V2 opening motion exists | **met** *(motion-0123)* |
 | CR-06 | Normalization arc complete | partial |
 | CR-07 | Program graph complete | unmet |
 | CR-08 | Launch-packet pattern used in practice | **met** *(motion-0120, corrected by motion-0122)* |
 | CR-09 | Context bundle generation accurate | met |
 | CR-10 | End-to-end governance proof exists | met |
 
-**Met:** 7 of 10
+**Met:** 8 of 10
 **Partial:** 1 of 10
-**Unmet:** 2 of 10
+**Unmet:** 1 of 10
 
-CR-03 and CR-08 are now met. The remaining critical path is: **CR-05 (Corpus V2
-opening motion)**. CR-03 is met (5/5 qualifying post-0118 motions); the opening
-boundary pre-conditions are documented in `.nexus/docs/cr05-opening-boundary.md`.
-Corpus V2 has not started — the opening motion is a separate governed event that
-must not be authored in the same branch arc as the planning artifacts.
-CR-06 and CR-07 are parallel tracks that do not block the transition but should
-be closed before declaring the Corpus V1 record complete.
+**Corpus V2 has begun.** motion-0123 ratified 2026-04-08: the Corpus V2 era is
+open, the canon baseline is committed, and advisory agent participation is required
+for all post-opening motions. The Corpus V1 era (motions 0001–0122) is permanent
+record. CR-06 and CR-07 are parallel tracks that do not block the era transition;
+they should be closed before declaring the Corpus V1 record complete. The
+remaining critical path is evolution of the Corpus V2 canon through post-opening
+governed motions.
