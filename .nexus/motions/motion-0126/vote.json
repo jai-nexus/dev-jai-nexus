@@ -1,0 +1,12 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0126",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    { "role": "proposer", "vote": "yes", "cast_at": "2026-04-09T15:40:26.000Z" },
+    { "role": "challenger", "vote": "yes", "cast_at": "2026-04-09T15:40:31.000Z" },
+    { "role": "arbiter", "vote": "yes", "cast_at": "2026-04-09T15:40:36.000Z" }
+  ],
+  "outcome": "PASS",
+  "resolved_at": "2026-04-09T15:40:36.000Z"
+}

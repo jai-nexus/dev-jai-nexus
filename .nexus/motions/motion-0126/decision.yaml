@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0126
+status: RATIFIED
+ratified_by: "unanimous_consent"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-09T15:40:26.000Z"
+notes: "RATIFIED: bounded proof motion for the Corpus V2 governed activation PROCEED path introduced by motion-0125."
