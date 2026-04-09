@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0125",
+  "voted_at": "2026-04-09T10:35:48.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "First motion evaluated under the Corpus V2 Deliberation Protocol (effective from motion-0125 per protocol §1). Tier 1 evaluation: evidence-falsifiability mandatory. motion-0125 is kind:governance-policy, cost:standard — no cost-discipline escalation triggered. Optional governance-safety seat not requested. Non-independence (shared model with author) acknowledged.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0125-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 6 proposal success criteria map to binary checklist items in execution.md. No criterion orphaned. Block condition 1 not triggered.",
+      "Evidence chain traces to committed code in portal/scripts/activate-motion.mjs, issue-execution-handoff.mjs, record-execution-receipt.mjs, portal/src/app/operator/work/ — all independently readable. Proof artifacts from motion-0126 (execution.handoff.json, execution.activation.json, execution.receipt.json) confirm the implementation works as claimed.",
+      "All evidence checklist items are binary: code path present, artifact field exists, commit diff confirms no widening beyond declared scope. No subjective items. Block condition 3 not triggered.",
+      "First motion under the Corpus V2 Deliberation Protocol — structural milestone. Tier 1 rules applied correctly: evidence-falsifiability mandatory, governance-safety available but not requested.",
+      "See evaluation trace at evaluation_trace_ref for full five distinctive_questions responses and four block_conditions_checked findings (all not_triggered)."
+    ],
+    "missing_required_roles": []
+  }
+}

@@ -1,0 +1,19 @@
+motion_id: motion-0125
+kind: governance-policy
+risk_score: 0.18
+escalation_tier: 1
+surfaces_touched:
+  - activation-scripts
+  - handoff-scripts
+  - receipt-scripts
+  - operator-work-ui
+  - work-packet-contract
+novelty_flag: false
+ratified: true
+ratified_at: "2026-04-09T10:35:48.000Z"
+notes: >
+  Tier 1: standard implementation motion binding the Corpus V2 deliberation protocol
+  to the execution artifact chain. No core governance policy documents modified.
+  No new escalation tier definitions. Cost category: standard (100k–500k tokens,
+  multiple artifacts, no new priced dependencies). Governance-safety optional seat
+  not requested.

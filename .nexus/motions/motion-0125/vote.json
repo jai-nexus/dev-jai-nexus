@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0125",
+  "voted_at": "2026-04-09T10:35:48.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "unanimous_consent_with_agent_witness",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" },
+    {
+      "role": "agent-witness",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+      "seat_id": "evidence-falsifiability",
+      "vote_weight": "advisory",
+      "agent_conclusion": "PASS",
+      "agent_vote_ref": ".nexus/motions/motion-0125/agent-vote.json"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "PROTOCOL APPLICATION: motion-0125 is the first motion evaluated under the Corpus V2 Deliberation Protocol (motion-0124). Tier 1 mandatory seat (evidence-falsifiability) evaluated. Agent PASS recorded. Gate and evidence chain confirms the protocol routing is operational.",
+      "ACTIVATION GATE: portal/scripts/activate-motion.mjs (commit 03d53f4) now reads cost estimate from execution.md, derives PROCEED/ESCALATE/BLOCK outcome, and writes execution.activation.json with corpus_v2 block. BLOCK and ESCALATE outcomes refuse --create flag. Verifiable by reading the committed script.",
+      "DURABLE HANDOFF: portal/scripts/issue-execution-handoff.mjs extended with corpus_v2 block (cost_category, cost_basis, tier_hint, requires_operator_escalation, activation_outcome). Fields are null at issue time, populated by activate-motion.mjs on activation. Verifiable by reading both committed scripts.",
+      "DURABLE RECEIPT: portal/scripts/record-execution-receipt.mjs extended with same corpus_v2 metadata propagation. Reads from handoff and activation artifacts with fallback chain. Non-destructive to existing receipt semantics.",
+      "OPERATOR SURFACE: portal/src/app/operator/work/[id]/page.tsx reads corpus_v2 fields from handoff, activation, and receipt artifacts for display. portal/src/lib/work/workPacketContract.ts exports CorpusActivationOutcome type and parser.",
+      "PROOF EVIDENCE: motion-0126 execution artifacts (execution.handoff.json, execution.activation.json, execution.receipt.json) confirm the path works end-to-end. work_packet_id: 883 created with tags motion:motion-0126, cost:standard, activation:PROCEED.",
+      "SCOPE DISCIPLINE: no database schema, no API routes, no Prisma migrations, no agents.generated.yaml changes. Diff confined to portal/scripts/, portal/src/app/operator/work/, portal/src/lib/work/, .nexus/motions/motion-0125/.",
+      "GATES: validate_motion exit 0; validate_agency exit 0."
+    ],
+    "missing_required_roles": []
+  }
+}
