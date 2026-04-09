@@ -120,6 +120,21 @@ function firstNonEmpty(...values) {
     return null;
 }
 
+function parseCorpusCostEstimate(executionMdText) {
+    const categoryMatch = executionMdText.match(/^Category:\s*\[?\s*(minimal|standard|substantial|major)\s*\]?/im);
+    const basisMatch = executionMdText.match(/^Basis:\s*(.+)$/im);
+    return {
+        category: categoryMatch ? categoryMatch[1].toLowerCase() : null,
+        basis: basisMatch ? basisMatch[1].trim() : null,
+    };
+}
+
+function deriveCorpusTierHint(category) {
+    if (category === "minimal" || category === "standard") return "tier1";
+    if (category === "substantial" || category === "major") return "tier2";
+    return null;
+}
+
 // --------------------------------------------------
 // main
 // --------------------------------------------------
@@ -186,6 +201,8 @@ function firstNonEmpty(...values) {
         );
 
         const handoffId = `${motionId}-handoff-001`;
+        const executionPlanText = exists(executionMdPath) ? readText(executionMdPath) : "";
+        const costEstimate = parseCorpusCostEstimate(executionPlanText);
 
         const artifact = {
             version: "0.1",
@@ -206,6 +223,17 @@ function firstNonEmpty(...values) {
                 execution_plan: exists(executionMdPath) ? rel(repoRoot, executionMdPath) : null,
                 decision: rel(repoRoot, decisionYamlPath),
                 verify: rel(repoRoot, verifyJsonPath),
+            },
+            corpus_v2: {
+                cost_category: costEstimate.category,
+                cost_basis: costEstimate.basis,
+                tier_hint: deriveCorpusTierHint(costEstimate.category),
+                requires_operator_escalation:
+                    costEstimate.category === "substantial" || costEstimate.category === "major",
+                activation_outcome: null,
+                activation_recorded_at: null,
+                activation_artifact: null,
+                activation_reasons: [],
             },
             status: "ISSUED",
             notes:

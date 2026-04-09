@@ -1,0 +1,13 @@
+protocol_version: "0.3.8"
+motion_id: motion-0125
+kind: governance-policy
+status: proposed
+title: "Corpus V2 governed activation gate v0 — cost category and durable escalation outcome wiring"
+program: q2-corpus-v2-live-value-loop
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-04-09T00:00:00.000Z"

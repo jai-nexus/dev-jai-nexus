@@ -114,15 +114,179 @@ function findRepoRoot(startDir) {
 // Cannot import the .ts source directly from a .mjs script; this must stay
 // in sync with the canonical helper if the prefix ever changes.
 const MOTION_TAG_PREFIX = "motion:";
+const COST_TAG_PREFIX = "cost:";
+const ACTIVATION_OUTCOME_TAG_PREFIX = "activation:";
 function buildMotionTag(motionId) {
     return `${MOTION_TAG_PREFIX}${motionId}`;
+}
+function buildCostCategoryTag(category) {
+    return `${COST_TAG_PREFIX}${category}`;
+}
+function buildActivationOutcomeTag(outcome) {
+    return `${ACTIVATION_OUTCOME_TAG_PREFIX}${outcome}`;
+}
+
+function isCorpusV2Motion(motionId) {
+    const match = /^motion-(\d+)$/.exec(String(motionId).trim());
+    if (!match) return false;
+    return Number(match[1]) >= 125;
+}
+
+function parseCorpusCostEstimate(executionMdText) {
+    const categoryMatch = executionMdText.match(/^Category:\s*\[?\s*(minimal|standard|substantial|major)\s*\]?/im);
+    const basisMatch = executionMdText.match(/^Basis:\s*(.+)$/im);
+    return {
+        category: categoryMatch ? categoryMatch[1].toLowerCase() : null,
+        basis: basisMatch ? basisMatch[1].trim() : null,
+    };
+}
+
+function deriveCorpusTierHint(category) {
+    if (category === "minimal" || category === "standard") return "tier1";
+    if (category === "substantial" || category === "major") return "tier2";
+    return null;
+}
+
+function evaluateCorpusActivation({ motionId, executionMdPresent, executionMdText }) {
+    if (!isCorpusV2Motion(motionId)) {
+        return {
+            applies: false,
+            outcome: "PROCEED",
+            costCategory: null,
+            basis: null,
+            reasons: [],
+        };
+    }
+
+    if (!executionMdPresent) {
+        return {
+            applies: true,
+            outcome: "BLOCK",
+            costCategory: null,
+            basis: null,
+            reasons: ["Corpus V2 activation requires execution.md with a declared cost category."],
+        };
+    }
+
+    const parsed = parseCorpusCostEstimate(executionMdText);
+    if (!parsed.category || !parsed.basis) {
+        return {
+            applies: true,
+            outcome: "BLOCK",
+            costCategory: parsed.category,
+            basis: parsed.basis,
+            reasons: [
+                "Corpus V2 activation requires a cost estimate block in execution.md.",
+                "Expected: Category: [minimal|standard|substantial|major] and Basis: ...",
+            ],
+        };
+    }
+
+    if (parsed.category === "substantial" || parsed.category === "major") {
+        return {
+            applies: true,
+            outcome: "ESCALATE",
+            costCategory: parsed.category,
+            basis: parsed.basis,
+            reasons: [
+                `Corpus V2 declared cost category is "${parsed.category}", which requires operator escalation before live activation.`,
+            ],
+        };
+    }
+
+    return {
+        applies: true,
+        outcome: "PROCEED",
+        costCategory: parsed.category,
+        basis: parsed.basis,
+        reasons: [`Corpus V2 declared cost category "${parsed.category}" is within direct activation bounds.`],
+    };
+}
+
+function writeActivationArtifact({
+    motionDir,
+    motionId,
+    decisionStatus,
+    handoffId,
+    targetRepo,
+    targetDomain,
+    packetTitle,
+    routeTag,
+    activationTag,
+    createRequested,
+    packetId = null,
+    inboxItemId = null,
+    activation,
+}) {
+    const artifactPath = path.join(motionDir, "execution.activation.json");
+    const artifact = {
+        version: "0.1",
+        protocol: "corpus-v2-live-value-activation",
+        motion_id: motionId,
+        recorded_at: new Date().toISOString().replace(/\.\d{3}Z$/, ".000Z"),
+        create_requested: createRequested,
+        decision_status: decisionStatus,
+        handoff_id: handoffId,
+        target_repo: targetRepo,
+        target_domain: targetDomain,
+        packet_title: packetTitle,
+        activation_tag: activationTag,
+        route_tag: routeTag,
+        corpus_v2: {
+            applies: activation.applies,
+            cost_category: activation.costCategory,
+            cost_basis: activation.basis,
+            tier_hint: deriveCorpusTierHint(activation.costCategory),
+            requires_operator_escalation: activation.outcome === "ESCALATE",
+            outcome: activation.outcome,
+            reasons: activation.reasons,
+        },
+        work_packet_id: packetId,
+        inbox_item_id: inboxItemId,
+    };
+    fs.writeFileSync(artifactPath, JSON.stringify(artifact, null, 2) + "\n", "utf8");
+    return artifactPath;
+}
+
+function syncHandoffCorpusV2({
+    handoffPath,
+    activationArtifactPath,
+    activationArtifact,
+}) {
+    if (!exists(handoffPath)) return;
+    const handoff = readJson(handoffPath, "execution.handoff.json");
+    const existingCorpus = handoff.corpus_v2 && typeof handoff.corpus_v2 === "object" ? handoff.corpus_v2 : {};
+    const next = {
+        ...handoff,
+        corpus_v2: {
+            ...existingCorpus,
+            cost_category: activationArtifact.corpus_v2.cost_category,
+            cost_basis: activationArtifact.corpus_v2.cost_basis,
+            tier_hint: activationArtifact.corpus_v2.tier_hint,
+            requires_operator_escalation: activationArtifact.corpus_v2.requires_operator_escalation,
+            activation_outcome: activationArtifact.corpus_v2.outcome,
+            activation_recorded_at: activationArtifact.recorded_at,
+            activation_artifact: handoff.inputs?.motion
+                ? path.relative(path.dirname(handoffPath), activationArtifactPath).split(path.sep).join("/")
+                : path.basename(activationArtifactPath),
+            activation_reasons: activationArtifact.corpus_v2.reasons,
+        },
+    };
+    fs.writeFileSync(handoffPath, JSON.stringify(next, null, 2) + "\n", "utf8");
 }
 
 // --------------------------------------------------
 // create mode
 // --------------------------------------------------
 
-async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoRoot }) {
+async function runCreate({
+    motionId,
+    activationTag,
+    routeTag,
+    packetTitle,
+    repoRoot,
+    extraTags = [],
+}) {
     if (!process.env.DATABASE_URL) {
         const envPath = path.join(repoRoot, "portal", ".env.local");
         if (exists(envPath)) {
@@ -182,7 +346,7 @@ async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoR
                     workPacketId: packet.id,
                     status: "QUEUED",
                     priority: 60,
-                    tags: [activationTag, routeTag],
+                    tags: [activationTag, routeTag, ...extraTags],
                 },
                 select: { id: true, status: true, priority: true, tags: true },
             });
@@ -204,7 +368,7 @@ async function runCreate({ motionId, activationTag, routeTag, packetTitle, repoR
         console.log(`[ACTIVATE-MOTION] Motion ${motionId} is now LIVE in the execution system.`);
         console.log();
 
-        process.exit(0);
+        return result;
     } finally {
         await prisma.$disconnect();
         await pool.end();
@@ -311,11 +475,22 @@ async function main() {
 
         // Warn — execution.md (WS-2 readiness)
         const executionMdPresent = exists(executionMdPath);
+        const executionMdText = executionMdPresent ? readText(executionMdPath) : null;
         if (executionMdPresent) {
             pass("execution_md", `present (WS-2 context binding ready)`);
         } else {
             warn("execution_md", `absent — WS-2 agent context binding will not be available`);
         }
+
+        const activation = evaluateCorpusActivation({
+            motionId,
+            executionMdPresent,
+            executionMdText,
+        });
+
+        const costTag = activation.costCategory ? buildCostCategoryTag(activation.costCategory) : null;
+        const outcomeTag = buildActivationOutcomeTag(activation.outcome);
+        const extraTags = [costTag, outcomeTag].filter(Boolean);
 
         // --------------------------------------------------
         // Derived activation params
@@ -324,24 +499,114 @@ async function main() {
         const routeTag      = `route:ARCHITECT`;
         const packetTitle   = `[${motionId}] ${motionTitle}`;
 
+        const activationArtifactPath = writeActivationArtifact({
+            motionDir,
+            motionId,
+            decisionStatus,
+            handoffId,
+            targetRepo,
+            targetDomain: firstNonEmpty(decisionObj.target_domain, motionObj?.target?.domain),
+            packetTitle,
+            routeTag,
+            activationTag,
+            createRequested: args.create,
+            activation,
+        });
+        const activationArtifact = readJson(activationArtifactPath, "execution.activation.json");
+        syncHandoffCorpusV2({
+            handoffPath,
+            activationArtifactPath,
+            activationArtifact,
+        });
+
+        if (activation.applies) {
+            pass(
+                "corpus_v2_activation",
+                `outcome=${activation.outcome} cost=${activation.costCategory ?? "(missing)"} artifact=.nexus/motions/${motionId}/execution.activation.json`
+            );
+            if (activation.basis) {
+                console.log(`[ACTIVATE-MOTION] Corpus V2 basis: ${activation.basis}`);
+            }
+            for (const reason of activation.reasons) {
+                console.log(`[ACTIVATE-MOTION] Corpus V2 note:  ${reason}`);
+            }
+        }
+
+        if (activation.outcome === "BLOCK") {
+            fail(
+                "corpus_v2_cost_gate",
+                `Activation blocked by Corpus V2 cost gate.\n` +
+                `  Artifact: ${path.relative(repoRoot, activationArtifactPath).split(path.sep).join("/")}\n` +
+                `  Reason: ${activation.reasons.join(" ")}`
+            );
+        }
+
+        if (activation.outcome === "ESCALATE" && args.create) {
+            fail(
+                "corpus_v2_escalation_gate",
+                `Create refused by Corpus V2 escalation gate.\n` +
+                `  Declared cost category: ${activation.costCategory}\n` +
+                `  Artifact: ${path.relative(repoRoot, activationArtifactPath).split(path.sep).join("/")}\n` +
+                `  Use dry-run output and operator review before bounded live activation.`
+            );
+        }
+
         if (args.create) {
             // Real creation path (WS-1 phase 2)
             console.log();
             console.log(`[ACTIVATE-MOTION] All preconditions passed. Creating work packet...`);
-            await runCreate({ motionId, activationTag, routeTag, packetTitle, repoRoot });
+            const result = await runCreate({
+                motionId,
+                activationTag,
+                routeTag,
+                packetTitle,
+                repoRoot,
+                extraTags,
+            });
+            writeActivationArtifact({
+                motionDir,
+                motionId,
+                decisionStatus,
+                handoffId,
+                targetRepo,
+                targetDomain: firstNonEmpty(decisionObj.target_domain, motionObj?.target?.domain),
+                packetTitle,
+                routeTag,
+                activationTag,
+                createRequested: true,
+                packetId: result.packet.id,
+                inboxItemId: result.inbox.id,
+                activation,
+            });
+            const updatedActivationArtifact = readJson(activationArtifactPath, "execution.activation.json");
+            syncHandoffCorpusV2({
+                handoffPath,
+                activationArtifactPath,
+                activationArtifact: updatedActivationArtifact,
+            });
+            process.exit(0);
         } else {
             // Dry-run output (WS-1 phase 1 behavior — unchanged)
             console.log();
             console.log(`[ACTIVATE-MOTION] --- Activation intent (dry-run) ---`);
             console.log(`[ACTIVATE-MOTION] Activation tag:   ${activationTag}`);
             console.log(`[ACTIVATE-MOTION] Route tag:        ${routeTag}`);
+            if (costTag) console.log(`[ACTIVATE-MOTION] Cost tag:         ${costTag}`);
+            console.log(`[ACTIVATE-MOTION] Outcome tag:      ${outcomeTag}`);
             console.log(`[ACTIVATE-MOTION] Handoff ID:       ${handoffId}`);
             console.log(`[ACTIVATE-MOTION] Target repo:      ${targetRepo}`);
             console.log(`[ACTIVATE-MOTION] Packet title:     ${packetTitle}`);
-            console.log(`[ACTIVATE-MOTION] Tags:             ["${activationTag}", "${routeTag}"]`);
+            console.log(`[ACTIVATE-MOTION] Tags:             ${JSON.stringify([activationTag, routeTag, ...extraTags])}`);
             console.log(`[ACTIVATE-MOTION] execution.md:     ${executionMdPresent ? "PRESENT" : "ABSENT"}`);
+            if (activation.applies) {
+                console.log(`[ACTIVATE-MOTION] Corpus V2:       ${activation.outcome}`);
+            }
             console.log();
-            console.log(`[ACTIVATE-MOTION] This motion is ACTIVATABLE.`);
+            console.log(
+                activation.outcome === "ESCALATE"
+                    ? `[ACTIVATE-MOTION] This motion requires operator escalation before live activation.`
+                    : `[ACTIVATE-MOTION] This motion is ACTIVATABLE.`
+            );
             console.log(`[ACTIVATE-MOTION] DRY-RUN ONLY — no database writes performed.`);
             console.log(`[ACTIVATE-MOTION] To create the packet: add --create`);
             console.log();

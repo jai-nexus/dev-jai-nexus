@@ -103,6 +103,17 @@ function readJsonFile(p, label) {
     }
 }
 
+function readOptionalJsonFile(p) {
+    try {
+        if (!exists(p)) return null;
+        const raw = fs.readFileSync(p, "utf8");
+        const obj = JSON.parse(raw);
+        return obj && typeof obj === "object" ? obj : null;
+    } catch {
+        return null;
+    }
+}
+
 function stableJson(obj) {
     return JSON.stringify(obj, null, 2) + "\n";
 }
@@ -155,6 +166,7 @@ function findRepoRoot(startDir) {
         const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
         const handoffPath = path.join(motionDir, "execution.handoff.json");
         const receiptPath = path.join(motionDir, "execution.receipt.json");
+        const activationPath = path.join(motionDir, "execution.activation.json");
 
         if (!exists(motionDir)) {
             die(`Motion directory not found: .nexus/motions/${motionId}`);
@@ -170,6 +182,10 @@ function findRepoRoot(startDir) {
         const existing = exists(receiptPath)
             ? readJsonFile(receiptPath, `${motionId}/execution.receipt.json`)
             : null;
+        const activation = readOptionalJsonFile(activationPath);
+        const handoffCorpus = handoff.corpus_v2 && typeof handoff.corpus_v2 === "object" ? handoff.corpus_v2 : null;
+        const activationCorpus =
+            activation?.corpus_v2 && typeof activation.corpus_v2 === "object" ? activation.corpus_v2 : null;
 
         const now = utcNow();
 
@@ -186,6 +202,43 @@ function findRepoRoot(startDir) {
             error: args.error ? String(args.error) : (existing?.error ?? null),
             revert_of: args.revertOf ? String(args.revertOf) : (existing?.revert_of ?? null),
             notes: String(args.notes || "").trim(),
+            corpus_v2: {
+                cost_category:
+                    handoffCorpus?.cost_category ??
+                    activationCorpus?.cost_category ??
+                    existing?.corpus_v2?.cost_category ??
+                    null,
+                cost_basis:
+                    handoffCorpus?.cost_basis ??
+                    activationCorpus?.cost_basis ??
+                    existing?.corpus_v2?.cost_basis ??
+                    null,
+                tier_hint:
+                    handoffCorpus?.tier_hint ??
+                    activationCorpus?.tier_hint ??
+                    existing?.corpus_v2?.tier_hint ??
+                    null,
+                requires_operator_escalation:
+                    handoffCorpus?.requires_operator_escalation ??
+                    activationCorpus?.requires_operator_escalation ??
+                    existing?.corpus_v2?.requires_operator_escalation ??
+                    false,
+                activation_outcome:
+                    handoffCorpus?.activation_outcome ??
+                    activationCorpus?.outcome ??
+                    existing?.corpus_v2?.activation_outcome ??
+                    null,
+                activation_recorded_at:
+                    handoffCorpus?.activation_recorded_at ??
+                    activation?.recorded_at ??
+                    existing?.corpus_v2?.activation_recorded_at ??
+                    null,
+                activation_reasons:
+                    handoffCorpus?.activation_reasons ??
+                    activationCorpus?.reasons ??
+                    existing?.corpus_v2?.activation_reasons ??
+                    [],
+            },
         };
 
         // Timestamp semantics

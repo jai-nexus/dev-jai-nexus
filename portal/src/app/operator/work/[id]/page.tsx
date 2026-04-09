@@ -16,7 +16,9 @@ import {
   type ExecutionRole,
 } from "@/lib/agencyConfig";
 import {
+  getActivationOutcomeFromTags,
   coerceStringArray,
+  getCostCategoryFromTags,
   deriveRequestedRoleFromAgentKey,
   getAssigneeFromTags,
   getMotionFromTags,
@@ -174,13 +176,29 @@ type GoverningMotionState = {
   decisionStatus: string | null;
   handoffStatus: string | null;
   receiptStatus: string | null;
+  costCategory: string | null;
+  activationOutcome: string | null;
+  activationRecordedAt: string | null;
 };
 
 function loadGoverningMotionState(inboxTags: string[]): GoverningMotionState | null {
   const motionId = getMotionFromTags(inboxTags);
   if (!motionId) return null;
   const repoRoot = findRepoRoot(process.cwd());
-  if (!repoRoot) return { motionId, title: null, decisionStatus: null, handoffStatus: null, receiptStatus: null };
+  const taggedCostCategory = getCostCategoryFromTags(inboxTags);
+  const taggedActivationOutcome = getActivationOutcomeFromTags(inboxTags);
+  if (!repoRoot) {
+    return {
+      motionId,
+      title: null,
+      decisionStatus: null,
+      handoffStatus: null,
+      receiptStatus: null,
+      costCategory: taggedCostCategory,
+      activationOutcome: taggedActivationOutcome,
+      activationRecordedAt: null,
+    };
+  }
   const motionDir = path.join(repoRoot, ".nexus", "motions", motionId);
   let title: string | null = null;
   try {
@@ -195,18 +213,66 @@ function loadGoverningMotionState(inboxTags: string[]): GoverningMotionState | n
     if (m) decisionStatus = m[1].trim();
   } catch { }
   let handoffStatus: string | null = null;
+  let handoffCorpusCostCategory: string | null = null;
+  let handoffCorpusOutcome: string | null = null;
+  let handoffRecordedAt: string | null = null;
   try {
     const raw = fs.readFileSync(path.join(motionDir, "execution.handoff.json"), "utf-8");
     const obj = JSON.parse(raw) as Record<string, unknown>;
     if (typeof obj.status === "string") handoffStatus = obj.status;
+    const corpusV2 = isJsonObject(obj.corpus_v2 as JsonValue | null | undefined)
+      ? (obj.corpus_v2 as JsonObject)
+      : null;
+    if (typeof corpusV2?.cost_category === "string") handoffCorpusCostCategory = corpusV2.cost_category;
+    if (typeof corpusV2?.activation_outcome === "string") handoffCorpusOutcome = corpusV2.activation_outcome;
+    if (typeof corpusV2?.activation_recorded_at === "string") handoffRecordedAt = corpusV2.activation_recorded_at;
   } catch { }
   let receiptStatus: string | null = null;
+  let receiptCorpusCostCategory: string | null = null;
+  let receiptCorpusOutcome: string | null = null;
+  let receiptRecordedAt: string | null = null;
   try {
     const raw = fs.readFileSync(path.join(motionDir, "execution.receipt.json"), "utf-8");
     const obj = JSON.parse(raw) as Record<string, unknown>;
     if (typeof obj.status === "string") receiptStatus = obj.status;
+    const corpusV2 = isJsonObject(obj.corpus_v2 as JsonValue | null | undefined)
+      ? (obj.corpus_v2 as JsonObject)
+      : null;
+    if (typeof corpusV2?.cost_category === "string") receiptCorpusCostCategory = corpusV2.cost_category;
+    if (typeof corpusV2?.activation_outcome === "string") receiptCorpusOutcome = corpusV2.activation_outcome;
+    if (typeof corpusV2?.activation_recorded_at === "string") receiptRecordedAt = corpusV2.activation_recorded_at;
   } catch { }
-  return { motionId, title, decisionStatus, handoffStatus, receiptStatus };
+  let artifactCostCategory: string | null = null;
+  let artifactActivationOutcome: string | null = null;
+  let activationRecordedAt: string | null = null;
+  try {
+    const raw = fs.readFileSync(path.join(motionDir, "execution.activation.json"), "utf-8");
+    const obj = JSON.parse(raw) as Record<string, unknown>;
+    const corpusV2 = isJsonObject(obj.corpus_v2 as JsonValue | null | undefined)
+      ? (obj.corpus_v2 as JsonObject)
+      : null;
+    if (typeof corpusV2?.cost_category === "string") artifactCostCategory = corpusV2.cost_category;
+    if (typeof corpusV2?.outcome === "string") artifactActivationOutcome = corpusV2.outcome;
+    if (typeof obj.recorded_at === "string") activationRecordedAt = obj.recorded_at;
+  } catch { }
+  return {
+    motionId,
+    title,
+    decisionStatus,
+    handoffStatus,
+    receiptStatus,
+    costCategory:
+      receiptCorpusCostCategory ??
+      handoffCorpusCostCategory ??
+      artifactCostCategory ??
+      taggedCostCategory,
+    activationOutcome:
+      receiptCorpusOutcome ??
+      handoffCorpusOutcome ??
+      artifactActivationOutcome ??
+      taggedActivationOutcome,
+    activationRecordedAt: receiptRecordedAt ?? handoffRecordedAt ?? activationRecordedAt,
+  };
 }
 
 type LoopCoherenceVerdict = "COHERENT" | "PROGRESSING" | "INCOHERENT" | "NOT_GOVERNED";
@@ -279,6 +345,23 @@ function writeReceiptArtifact(
       action === "APPROVE" ? "COMPLETED" :
       action === "REQUEST_CHANGES" ? "CHANGES_REQUESTED" : "REQUEUED";
     const closedBy = actor.email ? `operator:${actor.email}` : "operator:unknown";
+    let handoffCorpus: Record<string, unknown> | null = null;
+    try {
+      const raw = fs.readFileSync(path.join(motionDir, "execution.handoff.json"), "utf-8");
+      const handoff = JSON.parse(raw) as Record<string, unknown>;
+      if (isJsonObject(handoff.corpus_v2 as JsonValue | null | undefined)) {
+        handoffCorpus = handoff.corpus_v2 as JsonObject;
+      }
+    } catch { }
+    let activationArtifact: Record<string, unknown> | null = null;
+    try {
+      const raw = fs.readFileSync(path.join(motionDir, "execution.activation.json"), "utf-8");
+      activationArtifact = JSON.parse(raw) as Record<string, unknown>;
+    } catch { }
+    const activationCorpus =
+      isJsonObject(activationArtifact?.corpus_v2 as JsonValue | null | undefined)
+        ? (activationArtifact?.corpus_v2 as JsonObject)
+        : null;
     const receipt = {
       version: "0.1",
       motion_id: motionId,
@@ -290,6 +373,22 @@ function writeReceiptArtifact(
       status: outcome,
       operator_action: action,
       notes: "Operator decision recorded via dev-jai-nexus operator surface.",
+      corpus_v2: {
+        cost_category: handoffCorpus?.cost_category ?? activationCorpus?.cost_category ?? null,
+        cost_basis: handoffCorpus?.cost_basis ?? activationCorpus?.cost_basis ?? null,
+        tier_hint: handoffCorpus?.tier_hint ?? activationCorpus?.tier_hint ?? null,
+        requires_operator_escalation:
+          handoffCorpus?.requires_operator_escalation ??
+          activationCorpus?.requires_operator_escalation ??
+          false,
+        activation_outcome: handoffCorpus?.activation_outcome ?? activationCorpus?.outcome ?? null,
+        activation_recorded_at:
+          handoffCorpus?.activation_recorded_at ??
+          activationArtifact?.recorded_at ??
+          null,
+        activation_reasons:
+          handoffCorpus?.activation_reasons ?? activationCorpus?.reasons ?? [],
+      },
     };
     fs.writeFileSync(
       path.join(motionDir, "execution.receipt.json"),
@@ -794,6 +893,24 @@ export default async function WorkPacketDetailPage({ params }: Props) {
                 {governingMotion.receiptStatus ?? "pending"}
               </div>
             </div>
+            <div>
+              <div className="text-[11px] text-gray-500">cost category</div>
+              <div className="mt-0.5 font-mono text-gray-200">{governingMotion.costCategory ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-[11px] text-gray-500">activation outcome</div>
+              <div className={`mt-0.5 inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${
+                governingMotion.activationOutcome === "PROCEED"
+                  ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
+                  : governingMotion.activationOutcome === "ESCALATE"
+                    ? "bg-amber-900/40 text-amber-200 border-amber-800"
+                    : governingMotion.activationOutcome === "BLOCK"
+                      ? "bg-red-900/40 text-red-200 border-red-800"
+                      : "bg-zinc-900 text-gray-400 border-gray-700"
+              }`}>
+                {governingMotion.activationOutcome ?? "—"}
+              </div>
+            </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-gray-800 pt-3">
             <div className="text-[11px] text-gray-500">loop coherence</div>
@@ -917,6 +1034,18 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             <div>
               <span className="text-gray-500">operator decision:</span>{" "}
               <span className="font-mono">{operatorDecisionKind ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">corpus cost:</span>{" "}
+              <span className="font-mono">{governingMotion?.costCategory ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">activation outcome:</span>{" "}
+              <span className="font-mono">{governingMotion?.activationOutcome ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">activation recorded:</span>{" "}
+              <span className="font-mono">{governingMotion?.activationRecordedAt ?? "—"}</span>
             </div>
           </div>
         </div>

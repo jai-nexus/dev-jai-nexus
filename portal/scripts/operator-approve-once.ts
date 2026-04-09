@@ -50,7 +50,7 @@ async function main() {
         { prisma },
         { applyPacketRouteAction },
         { coerceStringArray, getMotionFromTags },
-        { existsSync, writeFileSync },
+        { existsSync, readFileSync, writeFileSync },
         { join },
     ] = await Promise.all([
         import("@/lib/prisma"),
@@ -122,6 +122,23 @@ async function main() {
         if (repoRoot) {
             const motionDir = join(repoRoot, ".nexus", "motions", motionId);
             if (existsSync(motionDir)) {
+                let handoffCorpus: Record<string, unknown> | null = null;
+                try {
+                    const raw = readFileSync(join(motionDir, "execution.handoff.json"), "utf-8");
+                    const handoff = JSON.parse(raw) as Record<string, unknown>;
+                    if (handoff.corpus_v2 && typeof handoff.corpus_v2 === "object") {
+                        handoffCorpus = handoff.corpus_v2 as Record<string, unknown>;
+                    }
+                } catch { }
+                let activationArtifact: Record<string, unknown> | null = null;
+                try {
+                    const raw = readFileSync(join(motionDir, "execution.activation.json"), "utf-8");
+                    activationArtifact = JSON.parse(raw) as Record<string, unknown>;
+                } catch { }
+                const activationCorpus =
+                    activationArtifact?.corpus_v2 && typeof activationArtifact.corpus_v2 === "object"
+                        ? activationArtifact.corpus_v2 as Record<string, unknown>
+                        : null;
                 const receipt = {
                     version: "0.1",
                     motion_id: motionId,
@@ -133,6 +150,27 @@ async function main() {
                     status: "COMPLETED",
                     operator_action: "APPROVE",
                     notes: "Operator approval via governed proof script.",
+                    corpus_v2: {
+                        cost_category: handoffCorpus?.cost_category ?? activationCorpus?.cost_category ?? null,
+                        cost_basis: handoffCorpus?.cost_basis ?? activationCorpus?.cost_basis ?? null,
+                        tier_hint: handoffCorpus?.tier_hint ?? activationCorpus?.tier_hint ?? null,
+                        requires_operator_escalation:
+                            handoffCorpus?.requires_operator_escalation ??
+                            activationCorpus?.requires_operator_escalation ??
+                            false,
+                        activation_outcome:
+                            handoffCorpus?.activation_outcome ??
+                            activationCorpus?.outcome ??
+                            null,
+                        activation_recorded_at:
+                            handoffCorpus?.activation_recorded_at ??
+                            activationArtifact?.recorded_at ??
+                            null,
+                        activation_reasons:
+                            handoffCorpus?.activation_reasons ??
+                            activationCorpus?.reasons ??
+                            [],
+                    },
                 };
                 writeFileSync(
                     join(motionDir, "execution.receipt.json"),

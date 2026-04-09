@@ -1,0 +1,10 @@
+protocol_version: "0.3.8"
+motion_id: motion-0125
+status: DRAFT
+ratified_by: null
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+last_updated: "2026-04-09T00:00:00.000Z"
+notes: "DRAFT: first governed Corpus V2 operational follow-on to motion-0124; activation cost discipline and outcome semantics wired into handoff and receipt artifacts."
