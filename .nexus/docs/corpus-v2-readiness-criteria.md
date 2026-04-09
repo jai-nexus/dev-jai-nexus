@@ -2,7 +2,7 @@
 
 **Established:** motion-0119
 **Date:** 2026-04-04
-**Last updated:** 2026-04-08 by motion-0123
+**Last updated:** 2026-04-08 by motion-0124
 **Status source:** This document records current-status assessments as of
 its last update. It does not declare when Corpus V2 begins. The transition
 requires a separate governed event: a Corpus V2 opening motion. This document
@@ -146,19 +146,17 @@ proof; the limitation is a permanent record and does not invalidate the opening.
 (motion-0111) are ratified: motion-0037 (P1 anomaly), motion-0083,
 motion-0092, and motion-0094 (P2 anomaly family).
 
-**Current status:** `partial`
+**Current status:** `met`
 
-**Assessment:** P2 anomaly family is resolved: motion-0113 (closes 0083),
-motion-0114 (closes 0092), and motion-0116 (closes 0094) are all ratified
-on their respective branches. The audit baseline (motion-0111) is ratified
-via motion-0117.
+**Assessment:** All four anomalies identified by the corpus audit (motion-0111)
+are resolved. P2 anomaly family: motion-0113 (closes 0083), motion-0114 (closes
+0092), and motion-0116 (closes 0094) are all ratified. Audit baseline
+(motion-0111) ratified via motion-0117. P1 anomaly: motion-0112 (closes 0037)
+is RATIFIED as of 2026-04-01. The closing action was explicit: "Confirm
+motion-0112 is ratified." Confirmed. No new work required.
+*Promoted to met by motion-0124 (confirmation action).*
 
-motion-0037 (P1 anomaly) status: motion-0112 targeted the P1 repair. Current
-ratification status of motion-0112 must be confirmed.
-
-**Closing action:** Confirm motion-0112 is ratified. If not, ratify it.
-Once motion-0112 is ratified, all four anomalies are resolved and this
-criterion is met.
+**Closing action:** Closed.
 
 ---
 
@@ -246,20 +244,20 @@ chain discipline for future high-stakes motions.
 | CR-03 | Quality standard applied consistently | **met** *(motion-0122)* |
 | CR-04 | JAI Agent operational with panel seat | **met** *(motion-0121)* |
 | CR-05 | Corpus V2 opening motion exists | **met** *(motion-0123)* |
-| CR-06 | Normalization arc complete | partial |
+| CR-06 | Normalization arc complete | **met** *(confirmed by motion-0124)* |
 | CR-07 | Program graph complete | unmet |
 | CR-08 | Launch-packet pattern used in practice | **met** *(motion-0120, corrected by motion-0122)* |
 | CR-09 | Context bundle generation accurate | met |
 | CR-10 | End-to-end governance proof exists | met |
 
-**Met:** 8 of 10
-**Partial:** 1 of 10
+**Met:** 9 of 10
+**Partial:** 0 of 10
 **Unmet:** 1 of 10
 
 **Corpus V2 has begun.** motion-0123 ratified 2026-04-08: the Corpus V2 era is
 open, the canon baseline is committed, and advisory agent participation is required
 for all post-opening motions. The Corpus V1 era (motions 0001–0122) is permanent
-record. CR-06 and CR-07 are parallel tracks that do not block the era transition;
-they should be closed before declaring the Corpus V1 record complete. The
-remaining critical path is evolution of the Corpus V2 canon through post-opening
-governed motions.
+record. CR-06 promoted to met by motion-0124 (confirmation: motion-0112 RATIFIED
+2026-04-01, all four corpus anomalies resolved). CR-07 remains the sole unmet
+criterion; it is a documentation task (program graph completeness for motions
+0001–0070) and does not block the operational arc.

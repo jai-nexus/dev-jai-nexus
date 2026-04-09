@@ -1,0 +1,25 @@
+schema_id: seat-assignment-v0
+established: motion-0124
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+agent_name: dev.jai.nexus::DEV-JAI-NEXUS::PANEL_SEAT
+seat_id: cost-discipline
+seat_contract_ref: ".nexus/deliberation/seat-contracts/cost-discipline.yaml"
+seat_contract_version: "v0"
+assigned_at: "2026-04-08T00:00:00.000Z"
+notes: >
+  Seat assignment extension granted by motion-0124. The primary seat assignment
+  for this agent is evidence-falsifiability (seat_001, motion-0121). This
+  extension adds the cost-discipline seat to enable Tier 2 evaluation coverage.
+
+  Operational mechanics: the same agent produces a separate evaluation trace
+  from the cost-discipline seat perspective, referencing this seat's
+  distinctive_questions and block_conditions independently of the
+  evidence-falsifiability trace.
+
+  Non-independence limitation: this seat assignment is held by the same
+  underlying model (claude-sonnet-4-6) as the evidence-falsifiability seat
+  and the motion author's context. Evaluations produced from this seat are
+  structurally independent in reasoning scope but not adversarially independent
+  in model identity. This limitation must be stated in any evaluation trace
+  that uses this assignment. It does not invalidate the evaluation; it is a
+  permanent honest record of the operating state.

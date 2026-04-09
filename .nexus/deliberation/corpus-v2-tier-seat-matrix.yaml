@@ -1,0 +1,129 @@
+schema_id: corpus-v2-tier-seat-matrix-v0
+established: motion-0124
+version: "v0"
+effective_from: motion-0125
+last_updated: "2026-04-08T00:00:00.000Z"
+
+# Canonical per-tier seat routing for Corpus V2 motions.
+# This file is the machine-readable source of truth referenced by:
+#   .nexus/docs/corpus-v2-deliberation-protocol.md §2
+#
+# Fields per entry:
+#   tier:                  integer 0–3
+#   label:                 human-readable tier name
+#   mandatory_seats:       seats that must produce an evaluation trace
+#   optional_seats_by_kind: kind → list of available (non-mandatory) seats
+#   cost_escalation:       declared cost category that triggers additional mandatory seat
+#   min_evaluations:       minimum number of evaluation traces required
+#   ratification_blocked:  true if tier itself blocks ratification until resolution
+#   notes:                 operational notes for this tier
+
+tiers:
+
+  - tier: 0
+    label: "Trivial repair"
+    description: >
+      Corrections to committed artifacts with no governance impact.
+      Typos, broken file references, manifest formatting errors.
+      No new artifacts, no policy changes, no scope expansion.
+    mandatory_seats:
+      - evidence-falsifiability
+    optional_seats_by_kind: {}
+    cost_escalation: null
+    min_evaluations: 1
+    ratification_blocked: false
+    notes: >
+      The evidence-falsifiability evaluation checks that the repair is
+      genuinely trivial and contains no hidden scope expansion. A repair
+      that changes normative content is not Tier 0.
+
+  - tier: 1
+    label: "Standard motion"
+    description: >
+      Default tier for motions that introduce new artifacts, extend an existing
+      system, or close a tracked criterion. No novel infrastructure, no
+      cross-program authority, no changes to core governance policy documents.
+    mandatory_seats:
+      - evidence-falsifiability
+    optional_seats_by_kind:
+      governance-policy:
+        - governance-safety
+      implementation:
+        - execution-pragmatism
+      architecture:
+        - architecture
+      documentation: []
+    cost_escalation:
+      trigger_categories:
+        - substantial
+        - major
+      additional_mandatory_seat: cost-discipline
+      note: >
+        If declared cost category is "substantial" or "major", the cost-discipline
+        seat becomes mandatory for this motion, regardless of motion kind.
+        This does not by itself elevate the motion to Tier 2; it adds one
+        mandatory evaluation to a Tier 1 motion.
+    min_evaluations: 1
+    ratification_blocked: false
+    notes: >
+      Optional seats are available at author or panel discretion. A challenger
+      may request an optional seat evaluation. If optional seat evaluation
+      produces a BLOCK, it carries the same enforcement weight as a mandatory
+      seat BLOCK.
+
+  - tier: 2
+    label: "High-stakes"
+    description: >
+      Motions meeting any of:
+      (a) Change core governance policy documents — this protocol, the canon
+          baseline, the escalation ladder, any seat contract
+      (b) Expand or restrict agent authority or seat assignments
+      (c) Modify program graph era entries or change program status to closed
+      (d) Carry novelty_flag: true or high_stakes: true in policy.yaml
+      (e) Declared cost category is "major"
+    mandatory_seats:
+      - evidence-falsifiability
+      - cost-discipline
+      - governance-safety
+    optional_seats_by_kind:
+      governance-policy:
+        - architecture
+        - operator-usability
+      implementation:
+        - execution-pragmatism
+        - operator-usability
+      architecture:
+        - execution-pragmatism
+      documentation:
+        - operator-usability
+    cost_escalation: null  # cost-discipline already mandatory at Tier 2
+    min_evaluations: 3
+    ratification_blocked: false
+    notes: >
+      All three mandatory seat evaluations must be present in committed repo
+      state before ratification. May be produced by a single agent from three
+      seat perspectives when valid seat assignments exist for all three seats.
+      Non-independence must be stated in each trace. See protocol §5 for
+      single-agent multi-seat mechanics.
+
+  - tier: 3
+    label: "Escalated (ratification blocked)"
+    description: >
+      Output state when an evidence-falsifiability evaluation finds a material
+      claim that cannot be resolved from committed repo state, or when a BLOCK
+      from a mandatory seat cannot be addressed without additional governed work.
+      Tier 3 is not pre-declared — it is reached when an evaluation cannot
+      produce PASS.
+    mandatory_seats:
+      - evidence-falsifiability
+    optional_seats_by_kind: {}
+    cost_escalation: null
+    min_evaluations: 1
+    ratification_blocked: true
+    resolution_required: true
+    notes: >
+      The evidence-falsifiability trace documents the specific uncertainty or
+      unresolvable claim. Ratification is blocked until the uncertainty is
+      resolved by a separate motion or by new evidence committed to the repo.
+      After resolution, the motion re-enters the deliberation cycle at Tier 1
+      or Tier 2 depending on its kind and cost category.

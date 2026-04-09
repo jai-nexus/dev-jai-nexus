@@ -300,7 +300,33 @@ eras:
     motion_range:
       first: motion-0123
       last: null  # era open
-    epics: []  # first Corpus V2 program established by follow-on motion
+    epics:
+
+      - epic_id: corpus-v2-live-value-operations
+        title: "Corpus V2 Live Value Operations"
+        description: >
+          All motions that make Corpus V2 real as an operating governance system,
+          not just a ratified transition. Encompasses the deliberation protocol,
+          tier-seat routing, cost discipline integration, escalation enforcement,
+          and subsequent operational arc motions.
+        programs:
+
+          - program_id: q2-corpus-v2-live-value-loop
+            title: "Q2 Corpus V2 Live Value Loop"
+            description: >
+              Establish the Corpus V2 operating manual: deliberation protocol,
+              tier-seat routing matrix, seat assignment extensions, cost discipline
+              integration, and escalation enforcement. Parent motion: motion-0124.
+            parent_motion: motion-0124
+            motion_lines:
+              - line_id: live-value-loop-main
+                description: >
+                  Deliberation protocol and tier-seat routing (motion-0124),
+                  followed by subsequent operational motions on this program arc.
+                motions:
+                  - motion-0124
+                status: open
+            status: open
 
 # Motions not yet assigned to a program.
 # Covers the early corpus (0001–0070) and any motion not explicitly
