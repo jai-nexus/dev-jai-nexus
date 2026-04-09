@@ -1,0 +1,18 @@
+motion_id: motion-0124
+kind: governance-policy
+risk_score: 0.32
+escalation_tier: 2
+surfaces_touched:
+  - governance-docs
+  - governance-policy
+  - deliberation-protocol
+  - program-graph
+novelty_flag: true
+ratified: true
+ratified_at: "2026-04-09T09:33:22.000Z"
+notes: >
+  Tier 2: modifies core governance policy documents (establishes the deliberation
+  protocol, which is a core governance policy doc per the protocol's own §2 Tier 2
+  definition). Extends agent seat assignments. Updates program graph era entry.
+  novelty_flag: true — first protocol document in the corpus, first seat assignment
+  extensions, first Corpus V2 program registration.

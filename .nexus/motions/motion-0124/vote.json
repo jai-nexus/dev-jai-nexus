@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0124",
+  "voted_at": "2026-04-09T09:33:22.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "unanimous_consent_with_agent_witness",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" },
+    {
+      "role": "agent-witness",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+      "seat_id": "evidence-falsifiability",
+      "vote_weight": "advisory",
+      "agent_conclusion": "PASS",
+      "agent_vote_ref": ".nexus/motions/motion-0124/agent-vote.json"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "PROTOCOL LAYER ESTABLISHED: .nexus/docs/corpus-v2-deliberation-protocol.md committed with 6 sections (authority/scope, per-tier seat routing, cost discipline integration, escalation enforcement, multi-seat evaluation, protocol evolution). Document is the governing reference for motions 0125 onward.",
+      "TIER-SEAT MATRIX: .nexus/deliberation/corpus-v2-tier-seat-matrix.yaml committed with Tier 0–3 entries, each specifying mandatory_seats, optional_seats_by_kind, min_evaluations. Machine-readable canonical source referenced by the protocol document.",
+      "SEAT ASSIGNMENT EXTENSIONS: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_002.yaml (cost-discipline) and panel_seat_003.yaml (governance-safety) committed. Non-independence limitation stated in each. The existing agent now covers all three mandatory Tier 2 seats.",
+      "PROGRAM GRAPH: corpus-v2 era entry updated from epics:[] to first epic (corpus-v2-live-value-operations) and first program (q2-corpus-v2-live-value-loop). Parent motion: motion-0124. Program status: open.",
+      "LAUNCH PACKET: .nexus/programs/q2-corpus-v2-live-value-loop-launch-packet.md committed. 7 sections following standard template.",
+      "CR-06 CONFIRMATION: .nexus/docs/corpus-v2-readiness-criteria.md updated — CR-06 promoted to met (motion-0112 confirmed RATIFIED 2026-04-01, all 4 corpus anomalies resolved). Summary advances from 8/1/1 to 9/0/1.",
+      "AGENT EVALUATION: .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0124-trace.yaml committed — 5 questions_evaluated, 4 block_conditions_checked (all not_triggered), pass_or_block: PASS. Operates under corpus-v2 canon baseline (not the protocol it creates, per scope clause — motion-0124 is the last motion evaluated under canon-baseline-only rules). Non-independence (shared model) acknowledged.",
+      "SCOPE DISCIPLINE: No runtime, portal, UI, DB, or registry files modified. No changes to agents.generated.yaml. No changes to six seat contracts. No prior motion statuses altered. Confirmed by git diff — changes confined to .nexus/deliberation/, .nexus/docs/, .nexus/motions/motion-0124/, .nexus/programs/.",
+      "GATES: validate_motion exit 0; validate_agency exit 0 (202 agents, domain dev.jai.nexus tier 1 OK, repo dev-jai-nexus tier 2 OK)."
+    ],
+    "missing_required_roles": []
+  }
+}
