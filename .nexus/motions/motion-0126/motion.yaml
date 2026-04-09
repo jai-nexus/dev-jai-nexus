@@ -1,7 +1,7 @@
 protocol_version: "0.3.8"
 motion_id: motion-0126
 kind: staged-activation-proof
-status: proposed
+status: ratified
 title: "Corpus V2 governed activation proof v0 — proceed path"
 program: q2-corpus-v2-live-value-loop
 proposer_nh_id: "6.0.1"

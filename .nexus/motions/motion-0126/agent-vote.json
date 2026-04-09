@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0126",
+  "voted_at": "2026-04-09T14:49:47.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "Confirmatory evaluation produced after the human panel unanimous consent vote (see evaluation trace sequencing note). The vote was cast based on gate results before this trace was produced. This trace satisfies the Corpus V2 Deliberation Protocol §1 agent evaluation requirement and is a post-commit record. Motion-0126 is kind:staged-activation-proof, cost:standard — Tier 1 evaluation applies. Evidence-falsifiability mandatory seat satisfied.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0126-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 6 proposal success criteria have execution.md evidence log entries citing committed artifact field values. No criterion orphaned. Block condition 1 not triggered.",
+      "Committed proof artifacts (execution.activation.json: outcome:PROCEED, work_packet_id:883; execution.handoff.json: corpus_v2 block; execution.receipt.json: corpus_v2 preserved, status:ACKNOWLEDGED) independently verify every material claim.",
+      "Receipt status is ACKNOWLEDGED — not COMPLETED or VERIFIED. The proof is honest about what was exercised. No over-claim.",
+      "Sequencing gap acknowledged: evaluation produced after human panel vote. Documented in trace and decision.md. Evidence chain is intact and unaffected by sequencing.",
+      "See evaluation trace at evaluation_trace_ref for full five distinctive_questions responses and four block_conditions_checked findings (all not_triggered)."
+    ],
+    "missing_required_roles": []
+  }
+}

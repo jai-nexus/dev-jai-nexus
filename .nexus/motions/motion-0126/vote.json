@@ -1,12 +1,21 @@
 {
   "schema_version": "vote-0.2",
   "motion_id": "motion-0126",
-  "vote_mode": "unanimous_consent",
+  "era": "corpus-v2",
+  "vote_mode": "unanimous_consent_with_agent_witness",
   "votes": [
     { "role": "proposer", "vote": "yes", "cast_at": "2026-04-09T15:40:26.000Z" },
     { "role": "challenger", "vote": "yes", "cast_at": "2026-04-09T15:40:31.000Z" },
     { "role": "arbiter", "vote": "yes", "cast_at": "2026-04-09T15:40:36.000Z" }
   ],
+  "agent_witness": {
+    "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+    "seat_id": "evidence-falsifiability",
+    "vote_weight": "advisory",
+    "agent_conclusion": "PASS",
+    "agent_vote_ref": ".nexus/motions/motion-0126/agent-vote.json",
+    "note": "Confirmatory evaluation — produced as post-commit record. Human panel voted on gate results before this trace was available. Sequencing gap documented in agent-vote.json, evaluation trace, and decision.md."
+  },
   "outcome": "PASS",
   "resolved_at": "2026-04-09T15:40:36.000Z"
 }
