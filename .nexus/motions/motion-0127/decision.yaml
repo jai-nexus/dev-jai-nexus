@@ -1,0 +1,12 @@
+protocol_version: "0.3.8"
+motion_id: motion-0127
+status: RATIFIED
+result: PASS
+ratified_by: unanimous_consent_with_agent_witness
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency]
+ratified_at: "2026-04-11T00:00:00.000Z"
+last_updated: "2026-04-11T00:00:00.000Z"
+notes: "RATIFIED: bounded ESCALATE-path proof motion; proves Corpus V2 activation gate refuses creation for substantial cost declaration and preserves escalation rationale in artifact chain."

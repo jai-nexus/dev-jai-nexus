@@ -1,0 +1,79 @@
+{
+  "motion_id": "motion-0127",
+  "verified_at": "2026-04-11T00:00:00.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0127/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0127/motion.yaml — Title: Corpus V2 governed activation proof v0 — escalate path",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": "handoff_corpus_v2_fields",
+      "artifact": ".nexus/motions/motion-0127/execution.handoff.json",
+      "fields": {
+        "corpus_v2.cost_category": "substantial",
+        "corpus_v2.tier_hint": "tier2",
+        "corpus_v2.requires_operator_escalation": true,
+        "corpus_v2.activation_outcome": "ESCALATE"
+      },
+      "result": "ok"
+    },
+    {
+      "check": "activation_escalate_gate_fired",
+      "artifact": ".nexus/motions/motion-0127/execution.activation.json",
+      "fields": {
+        "create_requested": true,
+        "corpus_v2.outcome": "ESCALATE",
+        "work_packet_id": null
+      },
+      "notes": "Three fields together prove corpus_v2_escalation_gate fired and refused packet creation: create_requested:true (attempt was made), outcome:ESCALATE (gate decision), work_packet_id:null (no packet created). activate --create exited 1.",
+      "result": "ok"
+    },
+    {
+      "check": "receipt_blocked_status",
+      "artifact": ".nexus/motions/motion-0127/execution.receipt.json",
+      "fields": {
+        "status": "BLOCKED",
+        "corpus_v2.activation_outcome": "ESCALATE",
+        "corpus_v2.requires_operator_escalation": true,
+        "finished_at": "2026-04-11T14:33:17.000Z"
+      },
+      "notes": "BLOCKED sets finished_at — lifecycle closed without execution. started_at:null.",
+      "result": "ok"
+    },
+    {
+      "check": "no_code_changes",
+      "notes": "Diff confined to .nexus/motions/motion-0127/ and .nexus/deliberation/evaluation-traces/. No portal/ files modified. No database writes (--create exits 1 before DB call).",
+      "result": "ok"
+    },
+    {
+      "check": "evaluation_traces_present",
+      "traces": [
+        {
+          "path": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0127-evidence-falsifiability-trace.yaml",
+          "seat": "evidence-falsifiability",
+          "result": "PASS"
+        },
+        {
+          "path": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0127-cost-discipline-trace.yaml",
+          "seat": "cost-discipline",
+          "result": "PASS",
+          "note": "First operational use of seat_002 (established motion-0124)"
+        }
+      ],
+      "result": "ok"
+    }
+  ]
+}

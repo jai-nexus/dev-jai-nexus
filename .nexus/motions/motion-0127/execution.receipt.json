@@ -1,0 +1,25 @@
+{
+  "version": "0.1",
+  "motion_id": "motion-0127",
+  "handoff_id": "motion-0127-handoff-001",
+  "receipt_id": "motion-0127-receipt-001",
+  "status": "BLOCKED",
+  "actor": "manual:executor",
+  "acknowledged_at": "2026-04-11T14:33:17.000Z",
+  "started_at": null,
+  "finished_at": "2026-04-11T14:33:17.000Z",
+  "error": null,
+  "revert_of": null,
+  "notes": "ESCALATE-path proof complete. Activation gate correctly refused --create for substantial cost category. corpus_v2_escalation_gate fired (exit 1). No work packet created. Receipt status BLOCKED records governed refusal.",
+  "corpus_v2": {
+    "cost_category": "substantial",
+    "cost_basis": "intentional declaration to exercise the Corpus V2 ESCALATE activation gate; actual scope is bounded artifact-only (motion package, scripts, no DB writes, no code changes), but Category: substantial is required to trigger ESCALATE behavior in activate-motion.mjs; the mismatch is documented in proposal.md and challenge.md C-1.",
+    "tier_hint": "tier2",
+    "requires_operator_escalation": true,
+    "activation_outcome": "ESCALATE",
+    "activation_recorded_at": "2026-04-11T14:33:02.000Z",
+    "activation_reasons": [
+      "Corpus V2 declared cost category is \"substantial\", which requires operator escalation before live activation."
+    ]
+  }
+}
