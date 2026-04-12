@@ -1,0 +1,179 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0126
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+produced_at: "2026-04-09T14:49:47.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# SEQUENCING NOTE: motion-0126 was committed (37f18a7) with vote.json, policy.yaml,
+# and verify.json before this evaluation trace was produced. The human panel ratified
+# on the basis of gate results and committed proof artifacts. This evaluation trace
+# is produced as a post-commit confirmatory record to satisfy the Corpus V2 Deliberation
+# Protocol requirement (motion-0124 §1: "at least one registered panel-seat agent must
+# evaluate each motion"). The sequencing gap is acknowledged and documented in
+# decision.md. The evaluation conclusions are not affected by the sequencing — the
+# evidence artifacts are committed and independently verifiable.
+#
+# PROTOCOL NOTE: motion-0126 is kind:staged-activation-proof, cost:standard. Under
+# the Deliberation Protocol Tier 1: evidence-falsifiability is mandatory. This trace
+# satisfies that requirement.
+#
+# NON-INDEPENDENCE ACKNOWLEDGMENT: The agent and motion author share the same underlying
+# model (claude-sonnet-4-6). Structural proof of evidence chain integrity.
+
+questions_evaluated:
+
+  - question: >
+      Can every claim in the decision.md be verified by reading the repo
+      without trusting the author?
+    response: >
+      decision.md claims: "motion-0126 is the first bounded proof motion for the
+      post-opening Corpus V2 activation path. It exercises the PROCEED branch
+      introduced by motion-0125."
+      Falsifiable sub-claims:
+      (1) PROCEED outcome — verifiable by reading execution.activation.json:
+          corpus_v2.outcome = "PROCEED". File committed at
+          .nexus/motions/motion-0126/execution.activation.json.
+      (2) Work packet created — verifiable by reading execution.activation.json:
+          work_packet_id: 883, inbox_item_id: 12.
+      (3) Handoff carries corpus_v2 metadata — verifiable by reading
+          execution.handoff.json: corpus_v2 block with cost_category:standard,
+          tier_hint:tier1, activation_outcome:PROCEED.
+      (4) Receipt preserves corpus_v2 metadata — verifiable by reading
+          execution.receipt.json: same corpus_v2 fields with status:ACKNOWLEDGED.
+      (5) Receipt is ACKNOWLEDGED not completed — verifiable by reading
+          execution.receipt.json: status:ACKNOWLEDGED, started_at:null, finished_at:null.
+          Honest about what was exercised.
+      All claims trace to committed artifacts. PASS.
+
+  - question: >
+      Does the evidence checklist in execution.md cover all success criteria
+      stated in the proposal?
+    response: >
+      proposal.md success criteria:
+      SC-1: motion-0126 validates and is ratified
+        → evidence log item 1: validate-motion EXIT 0
+        → evidence log item 2: validate-agency EXIT 0
+      SC-2: execution.handoff.json contains Corpus V2 cost metadata
+        → evidence log item 3: handoff written with corpus_v2.cost_category:standard,
+          tier_hint:tier1, requires_operator_escalation:false. Confirmed by committed file.
+      SC-3: execution.activation.json records PROCEED
+        → evidence log items 4–5: dry-run confirmed PROCEED; --create produced
+          work_packet_id:883. Confirmed by committed file.
+      SC-4: real work packet created with motion:, cost:, activation: tags
+        → evidence log item 5: work_packet_id:883 with tags motion:motion-0126,
+          cost:standard, activation:PROCEED. Confirmed by activation artifact.
+      SC-5: execution.receipt.json preserves Corpus V2 metadata
+        → evidence log item 6: receipt written with corpus_v2 block. Confirmed by
+          committed file.
+      SC-6: proof remains honest — receipt status not overstated
+        → execution.receipt.json status:ACKNOWLEDGED (not COMPLETED or VERIFIED).
+          Execution.md notes: "without claiming a completed execution path that was
+          not exercised."
+      All 6 success criteria have evidence log entries. Evidence log is specific and
+      cites committed artifact field values. PASS.
+
+  - question: >
+      Are the validation commands in the evidence checklist reproducible —
+      would running them again produce the same result?
+    response: >
+      execution.md evidence log records:
+      (1) validate-motion EXIT 0 — deterministic against committed motion.yaml.
+      (2) validate-agency EXIT 0 — deterministic against committed agents.generated.yaml.
+      (3) issue-execution-handoff command — wrote committed file; re-running would
+          attempt to overwrite, but the committed artifact is the deterministic reference.
+      (4) activate-motion dry-run — would re-run against committed execution.md and
+          derive same PROCEED outcome (standard cost category).
+      (5) activate-motion --create — would attempt to create a duplicate work packet;
+          the first run's result (packet 883) is the committed evidence.
+      (6) record-execution-receipt — wrote committed file; committed artifact is the
+          deterministic reference.
+      The commands are specific, all inputs are static (committed files), and the
+      committed artifacts are the permanent evidence. Reproducible in the sense that
+      the inputs are frozen and re-runnable. PASS.
+
+  - question: >
+      Is there any claim in the vote rationale that cannot be traced to a
+      specific committed artifact?
+    response: >
+      vote.json outcome.reasons array is not updated to include this evaluation (the
+      vote was cast before the agent trace was produced — see sequencing note above).
+      However, the vote rationale references only the two gate results (EXIT 0) and
+      the unanimous consent outcome. Those are traceable to verify.json. The broader
+      proof claims are in execution.md's evidence log, each citing committed artifact
+      field values. No vote rationale claim requires trusting the author without a
+      committed artifact. PASS — noting the sequencing gap documented in decision.md.
+
+  - question: >
+      Does the verify.json record the actual commands run and their actual
+      exit codes — not paraphrased descriptions of what was run?
+    response: >
+      verify.json (original, pre-coherence-pass) records validate_motion and
+      validate_agency with exit_code: 0 (as node portal/scripts/... -> EXIT 0
+      strings). After the coherence pass, verify.json is extended with
+      implementation_checks that cite committed artifact field values and the
+      execution.md evidence log. The gate results are exact command strings and
+      exact exit codes. PASS.
+
+block_conditions_checked:
+
+  - condition: >
+      A success criterion from the proposal has no corresponding evidence
+      checklist item — the criterion was declared met without a verifiable check.
+    result: not_triggered
+    notes: >
+      All 6 success criteria from proposal.md have corresponding entries in the
+      execution.md evidence log. Each log entry cites specific committed artifact
+      fields and exit codes.
+
+  - condition: >
+      The vote rationale says "all criteria met" or "implementation complete"
+      without listing which criteria or citing which artifacts prove it.
+    result: not_triggered
+    notes: >
+      vote.json outcome reflects unanimous consent + gate results. execution.md
+      evidence log provides per-criterion specifics with committed artifact references.
+      No blanket assertion.
+
+  - condition: >
+      An evidence checklist item is subjective: "confirm the implementation
+      is coherent" or "verify the output looks reasonable."
+    result: not_triggered
+    notes: >
+      All execution.md evidence log entries are specific: field values (cost_category:standard,
+      outcome:PROCEED, work_packet_id:883), exit codes (EXIT 0), and committed file paths.
+      None are subjective.
+
+  - condition: >
+      verify.json records gate results for commands that were not actually run,
+      or records different commands than were specified in execution.md.
+    result: not_triggered
+    notes: >
+      verify.json gate commands match the execution.md pre-flight items (validate-motion,
+      validate-agency). After coherence pass, implementation_checks are added but
+      gates section is unchanged from the original recorded commands.
+
+pass_or_block: PASS
+
+reasoning: >
+  The evidence-falsifiability seat finds no triggered block conditions. All five
+  distinctive questions reach PASS.
+
+  The material proof of motion-0126: three committed JSON artifacts in
+  .nexus/motions/motion-0126/ that show a real governed activation cycle from
+  handoff through activation to receipt, with Corpus V2 metadata preserved at
+  every step. The artifacts are independently readable and verify the specific
+  field values claimed in the execution.md evidence log.
+
+  Sequencing gap acknowledged: this trace was produced after the human panel vote
+  (see sequencing note at top of file). The gap is a governance record gap —
+  the evidence chain itself is intact and unaffected by the sequencing. The gap
+  is documented in decision.md. The correct resolution is to treat this as a
+  confirmatory evaluation that post-records the required agent witness, not to
+  re-open or invalidate the ratification.
+
+  PASS verdict: motion-0126 is evidence-falsifiably sound. Committed execution
+  artifacts prove the PROCEED path works end-to-end as described.

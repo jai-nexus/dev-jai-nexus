@@ -1,0 +1,35 @@
+{
+  "version": "0.1",
+  "motion_id": "motion-0127",
+  "handoff_id": "motion-0127-handoff-001",
+  "issued_at": "2026-04-11T14:32:44.000Z",
+  "issued_by": "manual:operator",
+  "decision_status": "RATIFIED",
+  "target_domain": "dev.jai.nexus",
+  "target_repo": "dev-jai-nexus",
+  "scope": {
+    "kind": "repo_local",
+    "mode": "bounded",
+    "execution_class": "artifact_only"
+  },
+  "inputs": {
+    "motion": ".nexus/motions/motion-0127/motion.yaml",
+    "execution_plan": ".nexus/motions/motion-0127/execution.md",
+    "decision": ".nexus/motions/motion-0127/decision.yaml",
+    "verify": ".nexus/motions/motion-0127/verify.json"
+  },
+  "corpus_v2": {
+    "cost_category": "substantial",
+    "cost_basis": "intentional declaration to exercise the Corpus V2 ESCALATE activation gate; actual scope is bounded artifact-only (motion package, scripts, no DB writes, no code changes), but Category: substantial is required to trigger ESCALATE behavior in activate-motion.mjs; the mismatch is documented in proposal.md and challenge.md C-1.",
+    "tier_hint": "tier2",
+    "requires_operator_escalation": true,
+    "activation_outcome": "ESCALATE",
+    "activation_recorded_at": "2026-04-11T14:33:02.000Z",
+    "activation_artifact": "execution.activation.json",
+    "activation_reasons": [
+      "Corpus V2 declared cost category is \"substantial\", which requires operator escalation before live activation."
+    ]
+  },
+  "status": "ISSUED",
+  "notes": "Initial bounded handoff for Corpus V2 ESCALATE-path proof. Cost:substantial triggers requires_operator_escalation at handoff time."
+}

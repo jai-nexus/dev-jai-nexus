@@ -1,0 +1,8 @@
+protocol_version: "0.3.8"
+motion_id: motion-0124
+kind: governance-policy
+status: ratified
+title: "Corpus V2 Deliberation Protocol v0 — tiered agent seat routing, cost discipline gates, and escalation enforcement"
+program: q2-corpus-v2-live-value-loop
+required_gates: [validate_motion, validate_agency]
+created_at: "2026-04-08T00:00:00.000Z"

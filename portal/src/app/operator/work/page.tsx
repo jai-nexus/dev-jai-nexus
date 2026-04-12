@@ -16,7 +16,12 @@ import {
   type ExecutionRole,
 } from "@/lib/agencyConfig";
 import { WorkPacketStatus, type Prisma } from "@prisma/client";
-import { coerceStringArray, getAssigneeFromTags } from "@/lib/work/workPacketContract";
+import {
+  coerceStringArray,
+  getActivationOutcomeFromTags,
+  getAssigneeFromTags,
+  getCostCategoryFromTags,
+} from "@/lib/work/workPacketContract";
 import { computeWorkPacketControlState } from "@/lib/work/workPacketLifecycle";
 import { computeExecutionLaneState } from "@/lib/work/executionLane";
 import { DEBUG_LOOP_EVENT_KINDS, RUNTIME_EVENT_KINDS } from "@/lib/work/agentRunContract";
@@ -205,6 +210,13 @@ function laneTone(lane: string) {
   return "slate";
 }
 
+function corpusOutcomeTone(outcome: string | null) {
+  if (outcome === "PROCEED") return "emerald";
+  if (outcome === "ESCALATE") return "amber";
+  if (outcome === "BLOCK") return "red";
+  return "slate";
+}
+
 function eligibilityTone(valid: boolean | null) {
   if (valid === true) return "emerald";
   if (valid === false) return "red";
@@ -319,6 +331,8 @@ export default async function WorkPage({ searchParams }: Props) {
     const inbox = inboxByPacket.get(p.id) ?? null;
     const tags = coerceStringArray(inbox?.tags);
     const assigneeNh = getAssigneeFromTags(tags);
+    const costCategory = getCostCategoryFromTags(tags);
+    const activationOutcome = getActivationOutcomeFromTags(tags);
     const requestedRoleFromTags = getRequestedRoleFromTags(tags);
     const assigneeAgent = assigneeNh ? getAgentByNhId(assigneeNh) : null;
     const requestedRoleFromEvents = requestedRoleByPacket.get(p.id) ?? null;
@@ -360,6 +374,8 @@ export default async function WorkPage({ searchParams }: Props) {
       inbox,
       assigneeNh,
       assigneeAgent,
+      costCategory,
+      activationOutcome,
       requestedRole,
       latestRuntime,
       latestDebug,
@@ -521,6 +537,7 @@ export default async function WorkPage({ searchParams }: Props) {
               <th className="py-2 px-3 text-xs text-gray-400">NH</th>
               <th className="py-2 px-3 text-xs text-gray-400">Title</th>
               <th className="py-2 px-3 text-xs text-gray-400">Status</th>
+              <th className="py-2 px-3 text-xs text-gray-400">Corpus V2</th>
               <th className="py-2 px-3 text-xs text-gray-400">Role</th>
               <th className="py-2 px-3 text-xs text-gray-400">Control</th>
               <th className="py-2 px-3 text-xs text-gray-400">Lane</th>
@@ -540,6 +557,8 @@ export default async function WorkPage({ searchParams }: Props) {
                 packet: p,
                 inbox,
                 assigneeNh,
+                costCategory,
+                activationOutcome,
                 requestedRole,
                 latestRuntime,
                 latestDebug,
@@ -558,6 +577,18 @@ export default async function WorkPage({ searchParams }: Props) {
                   </td>
 
                   <td className="py-2 px-3 text-xs whitespace-nowrap">{p.status}</td>
+
+                  <td className="py-2 px-3 text-xs min-w-[150px]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {costCategory ? <Chip tone="amber">{costCategory}</Chip> : null}
+                      {activationOutcome ? (
+                        <Chip tone={corpusOutcomeTone(activationOutcome)}>{activationOutcome}</Chip>
+                      ) : null}
+                      {!costCategory && !activationOutcome ? (
+                        <span className="text-gray-500">—</span>
+                      ) : null}
+                    </div>
+                  </td>
 
                   <td className="py-2 px-3 text-xs whitespace-nowrap">
                     {requestedRole ? (
@@ -661,7 +692,7 @@ export default async function WorkPage({ searchParams }: Props) {
 
             {filtered.length === 0 ? (
               <tr>
-                <td className="py-6 px-3 text-sm text-gray-400" colSpan={13}>
+                <td className="py-6 px-3 text-sm text-gray-400" colSpan={14}>
                   No work packets match the current filters.
                 </td>
               </tr>

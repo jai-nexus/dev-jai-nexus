@@ -5,6 +5,9 @@ export type RequestedRole =
     | "LIBRARIAN"
     | "OPERATOR";
 
+export type CorpusCostCategory = "minimal" | "standard" | "substantial" | "major";
+export type CorpusActivationOutcome = "PROCEED" | "ESCALATE" | "BLOCK";
+
 export function sanitizeNhLike(input?: string): string | undefined {
     const raw = (input ?? "").trim();
     if (!raw) return undefined;
@@ -32,6 +35,8 @@ export function buildInboxTags(assigneeNhId?: string | null): string[] {
 }
 
 const MOTION_TAG_PREFIX = "motion:";
+const COST_TAG_PREFIX = "cost:";
+const ACTIVATION_OUTCOME_TAG_PREFIX = "activation:";
 
 export function buildMotionTag(motionId: string): string {
     return `${MOTION_TAG_PREFIX}${motionId}`;
@@ -42,6 +47,41 @@ export function getMotionFromTags(tags: string[]): string | null {
     if (!hit) return null;
     const motionId = hit.slice(MOTION_TAG_PREFIX.length).trim();
     return motionId || null;
+}
+
+export function buildCostCategoryTag(category: CorpusCostCategory): string {
+    return `${COST_TAG_PREFIX}${category}`;
+}
+
+export function getCostCategoryFromTags(tags: string[]): CorpusCostCategory | null {
+    const hit = tags.find((t) => typeof t === "string" && t.startsWith(COST_TAG_PREFIX));
+    if (!hit) return null;
+    const category = hit.slice(COST_TAG_PREFIX.length).trim().toLowerCase();
+    if (
+        category === "minimal" ||
+        category === "standard" ||
+        category === "substantial" ||
+        category === "major"
+    ) {
+        return category;
+    }
+    return null;
+}
+
+export function buildActivationOutcomeTag(outcome: CorpusActivationOutcome): string {
+    return `${ACTIVATION_OUTCOME_TAG_PREFIX}${outcome}`;
+}
+
+export function getActivationOutcomeFromTags(tags: string[]): CorpusActivationOutcome | null {
+    const hit = tags.find(
+        (t) => typeof t === "string" && t.startsWith(ACTIVATION_OUTCOME_TAG_PREFIX),
+    );
+    if (!hit) return null;
+    const outcome = hit.slice(ACTIVATION_OUTCOME_TAG_PREFIX.length).trim().toUpperCase();
+    if (outcome === "PROCEED" || outcome === "ESCALATE" || outcome === "BLOCK") {
+        return outcome;
+    }
+    return null;
 }
 
 export function deriveRequestedRoleFromAgentKey(agentKey?: string | null): RequestedRole | null {

@@ -1,0 +1,45 @@
+{
+  "schema_version": "verify-0.2",
+  "motion_id": "motion-0126",
+  "evaluated_at": "2026-04-09T15:40:26.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "ok": true,
+      "detail": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0126/motion.yaml -> EXIT 0"
+    },
+    {
+      "gate": "validate_agency",
+      "ok": true,
+      "detail": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus -> EXIT 0"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": "execution.handoff.json exists with corpus_v2.cost_category:standard, tier_hint:tier1, requires_operator_escalation:false",
+      "result": "ok",
+      "detail": ".nexus/motions/motion-0126/execution.handoff.json committed. corpus_v2.cost_category:standard, corpus_v2.tier_hint:tier1, corpus_v2.requires_operator_escalation:false, corpus_v2.activation_outcome:PROCEED (updated by activation run)."
+    },
+    {
+      "check": "execution.activation.json exists with corpus_v2.outcome:PROCEED, work_packet_id:883, inbox_item_id:12",
+      "result": "ok",
+      "detail": ".nexus/motions/motion-0126/execution.activation.json committed. corpus_v2.outcome:PROCEED, work_packet_id:883, inbox_item_id:12. packet_title:[motion-0126] Corpus V2 governed activation proof v0 — proceed path. activation_tag:motion:motion-0126, route_tag:route:ARCHITECT."
+    },
+    {
+      "check": "execution.receipt.json exists with status:ACKNOWLEDGED, corpus_v2 metadata preserved",
+      "result": "ok",
+      "detail": ".nexus/motions/motion-0126/execution.receipt.json committed. status:ACKNOWLEDGED (not overstated). corpus_v2.cost_category:standard, corpus_v2.activation_outcome:PROCEED, corpus_v2.activation_recorded_at:2026-04-09T19:43:57.000Z. started_at:null, finished_at:null — proof is bounded to activation path, not full execution path."
+    },
+    {
+      "check": "No new implementation files introduced — proof motion uses existing motion-0125 infrastructure",
+      "result": "ok",
+      "detail": "Commit 37f18a7 diff: 12 files changed, all under .nexus/motions/motion-0126/. No portal/scripts/ or portal/src/ changes. Proof is bounded to artifact production only."
+    },
+    {
+      "check": "Agent evaluation trace and agent-vote.json present (post-commit confirmatory record)",
+      "result": "ok",
+      "detail": "Evaluation trace at .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0126-trace.yaml. agent-vote.json at .nexus/motions/motion-0126/agent-vote.json. Both produced as post-commit confirmatory records; sequencing gap documented. Tier 1 evidence-falsifiability mandatory seat: PASS."
+    }
+  ]
+}

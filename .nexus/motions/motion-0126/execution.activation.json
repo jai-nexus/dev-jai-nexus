@@ -1,0 +1,27 @@
+{
+  "version": "0.1",
+  "protocol": "corpus-v2-live-value-activation",
+  "motion_id": "motion-0126",
+  "recorded_at": "2026-04-09T19:43:57.000Z",
+  "create_requested": true,
+  "decision_status": "RATIFIED",
+  "handoff_id": "motion-0126-handoff-001",
+  "target_repo": "dev-jai-nexus",
+  "target_domain": "dev.jai.nexus",
+  "packet_title": "[motion-0126] Corpus V2 governed activation proof v0 — proceed path",
+  "activation_tag": "motion:motion-0126",
+  "route_tag": "route:ARCHITECT",
+  "corpus_v2": {
+    "applies": true,
+    "cost_category": "standard",
+    "cost_basis": "single proof motion using the already-implemented governed activation path; one live work packet, no new infrastructure, no new priced dependency, and no scope beyond proving the `PROCEED` branch.",
+    "tier_hint": "tier1",
+    "requires_operator_escalation": false,
+    "outcome": "PROCEED",
+    "reasons": [
+      "Corpus V2 declared cost category \"standard\" is within direct activation bounds."
+    ]
+  },
+  "work_packet_id": 883,
+  "inbox_item_id": 12
+}

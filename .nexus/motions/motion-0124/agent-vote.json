@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0124",
+  "voted_at": "2026-04-08T00:00:00.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "Advisory agent evaluation for motion-0124 under Corpus V2 canon baseline (motion-0123). This motion operates under the canon baseline, not the deliberation protocol it creates — the protocol's scope clause is explicit: effective from motion-0125 onward. The evaluation is from the evidence-falsifiability seat only (canon baseline requires at least one registered panel-seat agent evaluation). The gap (evaluated under weaker rules than it creates) is documented in challenge.md C-6. Non-independence (shared model with author) acknowledged.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0124-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 8 proposal success criteria have corresponding binary evidence checklist items in execution.md — no criterion is orphaned. Block condition 1 not triggered.",
+      "All evidence checklist items are specific and binary: file exists at named path, YAML has fields with specific values, gate commands exit 0, section headers present. No subjective items. Block condition 3 not triggered.",
+      "Validation conditions are exact, deterministic, and reproducible on re-run against the same committed repo state.",
+      "Non-independence limitation acknowledged: agent and motion author share underlying model claude-sonnet-4-6. This is structural proof of evidence chain integrity, not adversarial independence. Limitation documented in evaluation trace, challenge.md C-2, and seat assignment files seat_002 and seat_003.",
+      "Tier note: motion-0124 operates under corpus-v2 canon baseline (motion-0123), not the protocol it creates. The deliberation protocol takes effect for motions 0125+. This single evidence-falsifiability evaluation satisfies the canon baseline requirement.",
+      "See evaluation trace at evaluation_trace_ref for full five distinctive_questions responses and four block_conditions_checked findings (all not_triggered)."
+    ],
+    "missing_required_roles": []
+  }
+}

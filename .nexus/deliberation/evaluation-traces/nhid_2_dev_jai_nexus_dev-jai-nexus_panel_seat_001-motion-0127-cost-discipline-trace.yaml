@@ -1,0 +1,163 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0127
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: cost-discipline
+seat_contract_ref: ".nexus/deliberation/seat-contracts/cost-discipline.yaml"
+seat_contract_version: "v0"
+seat_assignment_ref: ".nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_002.yaml"
+produced_at: "2026-04-11T14:33:17.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# FIRST OPERATIONAL USE: This is the first evaluation trace produced by the agent
+# from the cost-discipline seat perspective. The seat_002 assignment was established
+# by motion-0124 to enable Tier 2 and Tier 1 cost-escalation coverage. motion-0127
+# is the first motion to trigger the cost-discipline mandatory requirement:
+# kind:staged-activation-proof, cost:substantial → Tier 1 + cost-escalation →
+# cost-discipline mandatory.
+#
+# NON-INDEPENDENCE ACKNOWLEDGMENT: The same agent holds all three seat assignments
+# (seat_001 evidence-falsifiability, seat_002 cost-discipline, seat_003 governance-safety).
+# This trace is produced from the cost-discipline seat perspective. Evaluations are
+# independent in reasoning scope but share the same underlying model (claude-sonnet-4-6)
+# with the motion author. Structural proof; not adversarially independent. Per
+# seat_002 assignment notes and deliberation protocol §5.
+
+questions_evaluated:
+
+  - question: >
+      Is the number of artifacts created or modified proportionate to the
+      problem being solved?
+    response: >
+      motion-0127 creates: 1 motion package (10 files), 3 execution artifacts
+      (handoff, activation, receipt), 2 evaluation traces, 1 agent-vote.json,
+      1 vote.json, 1 policy.yaml. Total: ~18 files.
+      The proof's target is a single well-defined behavior: the ESCALATE activation
+      gate. This artifact count is similar to motion-0126 (PROCEED proof), which
+      produced the same categories of artifacts. No speculative or extra artifacts
+      are created. The 2 evaluation traces instead of 1 are required by the
+      deliberation protocol (cost-discipline mandatory seat triggered).
+      Proportionate. PASS.
+
+  - question: >
+      Could a smaller, cheaper motion achieve the same governance outcome?
+    response: >
+      The governance outcome is: "the ESCALATE gate behavior is captured in durable
+      committed artifacts, proving the activation path works correctly for substantial
+      cost declarations."
+      A smaller motion could not achieve this because:
+      (1) The proof requires declaring substantial cost, which triggers the gate
+      (2) The proof requires running three scripts and committing three artifacts
+      (3) The proof requires a complete motion package (the scripts check for
+          decision.yaml RATIFIED and verify.json before running)
+      The motion package itself is the minimum necessary to exercise the governed
+      activation path. No further reduction is possible without breaking the proof.
+      PASS.
+
+  - question: >
+      What is the operator-time and context-window cost of this deliberation,
+      and is that cost justified by the motion's impact?
+    response: >
+      Context-window cost: standard proof motion (same class as motion-0126).
+      Two evaluation traces instead of one (cost-discipline mandatory) modestly
+      increases deliberation cost.
+      Impact: completes the ESCALATE branch of the Corpus V2 activation proof.
+      Without this proof, the branch's claim that "ESCALATE behavior is governed"
+      is implementation-only with no committed evidence. The cost-discipline seat
+      requirement being triggered is itself a governance milestone (first use of
+      seat_002). The impact justifies the deliberation cost. PASS.
+
+  - question: >
+      Does the execution.md sequence minimize unnecessary steps, or does it
+      include work that is not strictly required for the stated output state?
+    response: >
+      Execution.md steps:
+      (1) validate-motion, validate-agency — required gates
+      (2) issue-execution-handoff — required for activation
+      (3) activate dry-run — establishes initial activation.json with ESCALATE
+      (4) activate --create — produces final activation.json (create_requested:true,
+          work_packet_id:null) — this is the key proof step
+      (5) record-execution-receipt BLOCKED — completes the artifact chain
+      (6) evaluation traces — required by deliberation protocol
+      No unnecessary steps. The dry-run (step 3) could be skipped since --create
+      also writes the activation artifact, but it provides a clean two-step evidence
+      log (confirm ESCALATE, then prove refusal) that is clearer for future reviewers.
+      The cost is negligible (no database calls). PASS.
+
+  - question: >
+      In Corpus V2: what is the estimated token spend for panel deliberation at
+      the assigned escalation tier, and is that spend approved?
+    response: >
+      Tier: Tier 1 + cost-escalation (two mandatory seats). Token spend:
+      similar to motion-0126 (single Tier 1 seat) plus one additional cost-discipline
+      trace. Total estimated: standard range (100k–200k tokens). The declared
+      Category:substantial in execution.md is intentional to trigger the ESCALATE
+      gate — it does not represent the actual deliberation cost. The actual
+      deliberation cost is standard. This intentional mismatch between declared
+      category and actual deliberation cost is the central proof mechanism.
+      Spend is approved: the motion is the ESCALATE-path proof, which is a
+      planned and necessary element of the branch arc. PASS.
+
+block_conditions_checked:
+
+  - condition: >
+      The motion creates new artifacts whose purpose is not traceable to a
+      stated success criterion. Every artifact must serve a named goal.
+    result: not_triggered
+    notes: >
+      All artifacts trace to proposal.md success criteria:
+      handoff → SC-1; activation → SC-2; receipt → SC-3;
+      evaluation traces → SC-4; motion package → required by scripts (RATIFIED
+      decision.yaml and verify.json are preconditions for handoff issuance).
+      No orphaned artifacts.
+
+  - condition: >
+      The motion's execution cost (sessions, motions, surfaces touched) is
+      significantly above what the impact justifies, with no stated reason.
+    result: not_triggered
+    notes: >
+      The declared cost category (substantial) does not match the actual
+      deliberation cost (standard). This is the intentional proof mechanism,
+      stated explicitly in proposal.md, challenge.md C-1, and execution.md.
+      "No stated reason" is the block condition trigger — the reason IS stated.
+      Block condition not triggered.
+
+  - condition: >
+      The motion re-does work already committed by a prior motion in the same
+      program line without a stated reason (duplicate spend).
+    result: not_triggered
+    notes: >
+      motion-0126 proved PROCEED; motion-0127 proves ESCALATE. Different branches,
+      different artifacts, different proof value. Not duplicate spend.
+
+  - condition: >
+      The escalation tier is understated — the motion touches a high-stakes
+      surface (substrate, runtime, governance policy) but is assigned Tier 0
+      or Tier 1 without explicit justification.
+    result: not_triggered
+    notes: >
+      The motion touches only its own .nexus/motions/motion-0127/ artifacts and
+      produces evaluation traces. No substrate, runtime, or governance policy
+      documents are modified. Tier 1 + cost-escalation is correct for this scope.
+      The cost-discipline mandatory seat is correctly triggered by the substantial
+      declaration per the deliberation protocol.
+
+pass_or_block: PASS
+
+reasoning: >
+  The cost-discipline seat finds no triggered block conditions.
+  All five distinctive questions reach PASS.
+
+  The central cost-discipline concern for this motion is the declared
+  Category:substantial for a proof motion whose actual scope is bounded and
+  artifact-only. A surface reading would flag this as a mismatch. The evaluation
+  resolves it: the mismatch is the proof mechanism, it is documented (not silent),
+  and the block condition ("no stated reason") is not triggered.
+
+  First operational use of this seat (seat_002, established by motion-0124):
+  the cost-discipline seat assignment was created specifically for cases like this —
+  where declared cost category affects governance routing and requires explicit
+  evaluation. The seat is functioning as designed.
+
+  The motion does not inflate scope, does not create artifacts beyond what is
+  required for the proof, and does not re-do prior work. PASS verdict.

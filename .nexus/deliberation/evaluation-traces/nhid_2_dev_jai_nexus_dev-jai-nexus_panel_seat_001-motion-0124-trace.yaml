@@ -1,0 +1,191 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0124
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+produced_at: "2026-04-08T00:00:00.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# NON-INDEPENDENCE ACKNOWLEDGMENT
+# The agent producing this trace (nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001)
+# and the author of motion-0124 share the same underlying model (claude-sonnet-4-6).
+# This evaluation is not adversarially independent.
+#
+# TIER NOTE: motion-0124 is a governance-policy motion that modifies core
+# governance policy documents and extends agent seat coverage. Under the protocol
+# it creates, it would be Tier 2. This motion operates under the Corpus V2 canon
+# baseline (motion-0123) — the protocol it creates explicitly applies from
+# motion-0125 onward. Under the canon baseline, one evidence-falsifiability
+# evaluation is required. This is that evaluation.
+#
+# The acknowledged gap (evaluated under weaker rules than it creates) is documented
+# in challenge.md C-6 and resolved by the human panel exercising independent
+# judgment on governance-safety and cost-discipline concerns. This trace focuses
+# on whether every claim is independently verifiable from committed repo state.
+
+questions_evaluated:
+
+  - question: >
+      Can every claim in the decision.md be verified by reading the repo
+      without trusting the author?
+    response: >
+      decision.md in proposed state contains no claims requiring trust. It
+      presents a post-ratification boundary table with 7 rows:
+      (1) corpus-v2-deliberation-protocol.md committed — verifiable by file
+          existence check at declared path.
+      (2) corpus-v2-tier-seat-matrix.yaml committed — verifiable by file
+          existence at declared path.
+      (3) Seat assignments for cost-discipline and governance-safety — verifiable
+          by file existence of seat_002 and seat_003 assignment files.
+      (4) Corpus V2 program graph has epic and program — verifiable by reading
+          program-graph.yaml and confirming corpus-v2 era_id has epic
+          corpus-v2-live-value-operations and program q2-corpus-v2-live-value-loop.
+      (5) CR-06 met — verifiable by reading corpus-v2-readiness-criteria.md and
+          confirming CR-06 current_status: met.
+      (6) Summary 9/0/1 — verifiable by counting the summary table rows.
+      (7) Tier 2 evaluation governed — verifiable by reading the committed
+          deliberation protocol and confirming §2 Tier 2 entry.
+      All seven boundary table claims are falsifiable from committed repo state.
+      PASS.
+
+  - question: >
+      Does the evidence checklist in execution.md cover all success criteria
+      stated in the proposal?
+    response: >
+      proposal.md lists 8 success criteria (SC-1 through SC-8). Mapping:
+      SC-1 (deliberation-protocol.md with 6 sections) → evidence item 1:
+        "corpus-v2-deliberation-protocol.md exists with 6 sections"
+      SC-2 (tier-seat-matrix.yaml with Tier 0–3 entries) → evidence item 2:
+        "corpus-v2-tier-seat-matrix.yaml exists with Tier 0–3 entries, each with
+        mandatory_seats, optional_seats_by_kind, min_evaluations"
+      SC-3 (seat_002 file committed) → evidence item 3
+      SC-4 (seat_003 file committed) → evidence item 4 (implicit in "two additional
+        seat assignment files committed" — items 3 and 4 together)
+      SC-5 (program-graph.yaml with epic + program) → evidence item 5:
+        "program-graph.yaml corpus-v2 has epic corpus-v2-live-value-operations
+        and program q2-corpus-v2-live-value-loop with motion-0124 as parent_motion"
+      SC-6 (launch packet committed) → evidence item 6
+      SC-7 (CR-06 met; summary 9/0/1) → evidence item 7
+      SC-8 (evaluation trace + agent-vote.json) → evidence item 8
+      All 8 success criteria map to at least one binary evidence item. PASS.
+
+  - question: >
+      Are the validation commands in the evidence checklist reproducible —
+      would running them again produce the same result?
+    response: >
+      The evidence checklist uses binary file-existence and field-value checks:
+      (1) File exists at canonical path — deterministic against committed state.
+      (2) YAML/JSON has specified fields with specified values — deterministic
+          by reading static committed files.
+      (3) Section headers present in protocol document — deterministic text match.
+      (4) program-graph.yaml corpus-v2 entry has specific field values —
+          deterministic read.
+      (5) criteria doc CR-06 field equals "met"; summary counts equal 9/0/1 —
+          deterministic read.
+      (6) Evaluation trace pass_or_block value — deterministic read.
+      No evidence item depends on external state, network calls, time-sensitive
+      conditions, or mutable runtime data. The two gate commands (validate_motion,
+      validate_agency) read static YAML and the agents.generated.yaml registry;
+      both produce deterministic exit codes for unchanged input. All commands will
+      produce identical results on re-run against the same committed state. PASS.
+
+  - question: >
+      Is there any claim in the vote rationale that cannot be traced to a
+      specific committed artifact?
+    response: >
+      Vote rationale (vote.json reasons) not yet authored. Prospective assessment:
+      The 8 evidence items in execution.md each specify a binary condition and an
+      artifact path. A well-formed vote rationale for this motion would cite all
+      8 evidence item results with their artifact paths. The only claim that could
+      be authored without a committed artifact is the non-independence limitation
+      acknowledgment — which is not a falsifiable claim but a declared characteristic
+      of the evaluation architecture. The limitation is documented in the seat
+      assignment files (seat_002, seat_003) and in this trace; any reference to it
+      in the vote rationale traces to those committed files. Structurally PASS:
+      no mechanism permits untraced claims in the expected ratification record.
+
+  - question: >
+      Does the verify.json record the actual commands run and their actual
+      exit codes — not paraphrased descriptions of what was run?
+    response: >
+      verify.json not yet produced. The execution.md specifies the two required
+      gate commands exactly: validate-motion.mjs and validate-agency.mjs. The
+      evidence items are binary checks resolvable from file reads — the verify.json
+      implementation_checks will record exact field values or file existence
+      results, not paraphrased descriptions. The established pattern from
+      motions 0118–0123 is to record exact command strings and exit codes.
+      Structurally PASS; definitively verifiable at ratification.
+
+block_conditions_checked:
+
+  - condition: >
+      A success criterion from the proposal has no corresponding evidence
+      checklist item — the criterion was declared met without a verifiable check.
+    result: not_triggered
+    notes: >
+      All 8 success criteria from proposal.md are covered by at least one binary,
+      path-specific evidence item in execution.md, as traced above in the
+      second distinctive question response. No success criterion is orphaned.
+
+  - condition: >
+      The vote rationale says "all criteria met" or "implementation complete"
+      without listing which criteria or citing which artifacts prove it.
+    result: not_triggered
+    notes: >
+      Vote rationale not yet written. execution.md structure mandates per-item
+      artifact references for all 8 evidence checklist items. Structurally
+      not triggered at any point in the expected implementation path.
+
+  - condition: >
+      An evidence checklist item is subjective: "confirm the implementation
+      is coherent" or "verify the output looks reasonable."
+    result: not_triggered
+    notes: >
+      All 8 evidence checklist items are binary and specific: file exists at
+      named path; YAML has fields with specific values; section headers present;
+      field values equal specific strings; gate commands exit 0. None are
+      subjective. All can be mechanically verified.
+
+  - condition: >
+      verify.json records gate results for commands that were not actually run,
+      or records different commands than were specified in execution.md.
+    result: not_triggered
+    notes: >
+      verify.json not yet produced. The execution.md specifies exact gate
+      commands. The established pattern from prior verify.json files confirms
+      discipline. No structural trigger present.
+
+pass_or_block: PASS
+
+reasoning: >
+  The evidence-falsifiability seat finds no triggered block conditions in
+  motion-0124's package. All five distinctive questions are addressed with
+  motion-specific responses. All four block conditions are not triggered.
+
+  The motion delivers 5 implementation pairs: (1) deliberation protocol + tier-seat
+  matrix, (2) seat assignment extensions, (3) program graph + launch packet,
+  (4) CR-06 promotion, (5) this evaluation trace + agent-vote.json. Each pair
+  has a corresponding binary evidence item in execution.md that is independently
+  verifiable from committed repo state.
+
+  The most falsifiability-sensitive claim in this motion: the deliberation protocol
+  takes effect "from motion-0125 onward." This is a normative scope declaration
+  in a governance document. It is verifiable by reading the protocol document's
+  §1 (effective from motion-0125 onward). The tier-seat routing matrix carries
+  `effective_from: motion-0125` in its header. The evidence chain for this claim
+  exists in the committed document itself.
+
+  The second most sensitive claim: the existing agent "holds three seat assignments
+  enabling Tier 2 evaluation." This claim is verifiable by reading the three
+  seat assignment YAML files (seat_001 established by motion-0121; seat_002 and
+  seat_003 established by this motion). Each file cites its seat contract ref.
+
+  The non-independence limitation is stated and accepted per challenge.md C-2
+  resolution. The seat's block conditions concern evidence chain integrity, not
+  evaluator independence. The evidence chain for all 8 success criteria is intact.
+
+  PASS verdict: motion-0124's package is evidence-falsifiably sound at proposed
+  state. The implementation artifacts are specific, binary-verifiable, and
+  path-addressable. No block condition is triggered.

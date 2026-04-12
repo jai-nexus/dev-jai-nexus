@@ -1,0 +1,49 @@
+{
+  "motion_id": "motion-0127",
+  "voted_at": "2026-04-11T14:33:17.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "note": "Tier 1 + cost-escalation evaluation: evidence-falsifiability mandatory (this vote) + cost-discipline mandatory (separate trace). First operational use of seat_002 cost-discipline assignment (established by motion-0124). Both seats: PASS.",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0127-evidence-falsifiability-trace.yaml",
+  "additional_seat_evaluation": {
+    "seat_id": "cost-discipline",
+    "seat_assignment_ref": ".nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_002.yaml",
+    "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0127-cost-discipline-trace.yaml",
+    "result": "PASS"
+  },
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    },
+    {
+      "role": "panel-seat",
+      "seat_id": "cost-discipline",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "ESCALATE GATE PROVED: execution.activation.json shows create_requested:true, corpus_v2.outcome:ESCALATE, work_packet_id:null. Three fields together prove the gate fired and packet creation was refused.",
+      "ARTIFACT CHAIN COMPLETE: handoff (requires_operator_escalation:true, tier_hint:tier2) → activation (outcome:ESCALATE, create_requested:true, work_packet_id:null) → receipt (status:BLOCKED, activation_outcome:ESCALATE, finished_at set). Corpus V2 metadata preserved at every step.",
+      "FIRST COST-DISCIPLINE SEAT USE: seat_002 cost-discipline assignment (motion-0124) activated for the first time. cost:substantial triggered the mandatory cost-discipline evaluation per deliberation protocol §2 Tier 1 cost-escalation rule. Both evidence-falsifiability and cost-discipline seats: PASS.",
+      "INTENTIONAL COST MISMATCH DOCUMENTED: substantial declared for bounded-scope proof; mismatch is the proof mechanism, stated in proposal.md, challenge.md C-1, and execution.md. Cost-discipline seat evaluated and found no block condition triggered.",
+      "NO CODE CHANGES: proof uses existing motion-0125 infrastructure. No new implementation. No DB writes (--create refused before DB call).",
+      "GATES: validate_motion exit 0; validate_agency exit 0."
+    ],
+    "missing_required_roles": []
+  }
+}

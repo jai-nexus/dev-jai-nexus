@@ -1,0 +1,25 @@
+{
+  "version": "0.1",
+  "motion_id": "motion-0126",
+  "handoff_id": "motion-0126-handoff-001",
+  "receipt_id": "motion-0126-receipt-001",
+  "status": "ACKNOWLEDGED",
+  "actor": "manual:executor",
+  "acknowledged_at": "2026-04-09T19:43:48.000Z",
+  "started_at": null,
+  "finished_at": null,
+  "error": null,
+  "revert_of": null,
+  "notes": "Acknowledged bounded Corpus V2 PROCEED-path proof after live activation; receipt refreshed after packet creation to preserve final activation metadata.",
+  "corpus_v2": {
+    "cost_category": "standard",
+    "cost_basis": "single proof motion using the already-implemented governed activation path; one live work packet, no new infrastructure, no new priced dependency, and no scope beyond proving the `PROCEED` branch.",
+    "tier_hint": "tier1",
+    "requires_operator_escalation": false,
+    "activation_outcome": "PROCEED",
+    "activation_recorded_at": "2026-04-09T19:43:57.000Z",
+    "activation_reasons": [
+      "Corpus V2 declared cost category \"standard\" is within direct activation bounds."
+    ]
+  }
+}

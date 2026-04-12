@@ -1,0 +1,63 @@
+{
+  "motion_id": "motion-0125",
+  "verified_at": "2026-04-09T10:35:48.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0125/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0125/motion.yaml — Title: Corpus V2 governed activation gate v0 — cost category and durable escalation outcome wiring",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": "portal/scripts/activate-motion.mjs reads cost estimate from execution.md, derives PROCEED/ESCALATE/BLOCK, writes execution.activation.json with corpus_v2 block",
+      "result": "ok",
+      "detail": "Commit 03d53f4. Script reads cost_estimate section from execution.md. Outcome derivation: minimal/standard/standard-with-cost-substantial => PROCEED; major without approval => ESCALATE; missing cost estimate => BLOCK. Writes execution.activation.json at .nexus/motions/{motion}/execution.activation.json. corpus_v2 block includes cost_category, cost_basis, tier_hint, requires_operator_escalation, outcome, reasons."
+    },
+    {
+      "check": "portal/scripts/activate-motion.mjs BLOCK and ESCALATE enforcement: BLOCK refuses activation; ESCALATE allows dry-run, refuses --create",
+      "result": "ok",
+      "detail": "BLOCK path exits with corpus_v2_cost_gate error before writing any artifact. ESCALATE path writes activation artifact with outcome:ESCALATE but refuses --create with corpus_v2_escalation_gate error. PROCEED path permits --create and writes activation artifact with work_packet_id and inbox_item_id."
+    },
+    {
+      "check": "portal/scripts/issue-execution-handoff.mjs writes corpus_v2 block with cost_category, cost_basis, tier_hint, requires_operator_escalation, activation_outcome",
+      "result": "ok",
+      "detail": "Commit 03d53f4. corpus_v2 block written at line ~227. cost_category and cost_basis read from execution.md. tier_hint derived from cost_category (minimal/standard => tier1, substantial => tier1-cost-escalated, major => tier2). activation_outcome: null at issue time, populated by activate-motion.mjs when activation runs."
+    },
+    {
+      "check": "portal/scripts/record-execution-receipt.mjs propagates corpus_v2 metadata from handoff and activation artifacts into receipt",
+      "result": "ok",
+      "detail": "Commit 03d53f4. Reads handoff corpus_v2 and activation corpus_v2 with fallback chain. Writes corpus_v2 block to receipt with all same fields. Confirmed by motion-0126/execution.receipt.json carrying cost_category:standard, tier_hint:tier1, activation_outcome:PROCEED."
+    },
+    {
+      "check": "portal/src/app/operator/work/[id]/page.tsx reads and surfaces corpus_v2 fields from handoff, activation, and receipt artifacts",
+      "result": "ok",
+      "detail": "Commit 03d53f4. Reads corpus_v2 from handoff file (lines ~223–228), activation file (lines ~251–256), receipt file (lines ~238–243). Displays activationOutcome and cost category in operator UI."
+    },
+    {
+      "check": "portal/src/lib/work/workPacketContract.ts exports CorpusActivationOutcome type and parser",
+      "result": "ok",
+      "detail": "Commit 03d53f4. CorpusActivationOutcome = 'PROCEED' | 'ESCALATE' | 'BLOCK' exported. Parser validates outcome string."
+    },
+    {
+      "check": "No database schema, Prisma migration, API route, or agents.generated.yaml files modified",
+      "result": "ok",
+      "detail": "Confirmed by commit 03d53f4 diff — 13 files changed: 7 portal/ files (scripts and src) + 6 .nexus/motions/motion-0125/ files. No schema/, no prisma/, no pages/api/, no agents.generated.yaml."
+    },
+    {
+      "check": "Proof artifacts from motion-0126 confirm end-to-end behavior: PROCEED outcome, work_packet_id: 883, corpus_v2 metadata preserved in handoff and receipt",
+      "result": "ok",
+      "detail": ".nexus/motions/motion-0126/execution.activation.json: outcome:PROCEED, work_packet_id:883, inbox_item_id:12. execution.handoff.json: corpus_v2.activation_outcome:PROCEED, cost_category:standard, tier_hint:tier1. execution.receipt.json: same corpus_v2 metadata. End-to-end path confirmed."
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0125
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+produced_at: "2026-04-09T10:35:48.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# PROTOCOL NOTE: motion-0125 is the FIRST motion to operate under the Corpus V2
+# Deliberation Protocol (motion-0124). The protocol is effective from motion-0125
+# onward per its §1 scope clause. Tier routing: motion-0125 is kind:governance-policy,
+# cost:standard. Under the protocol §2 Tier 1: mandatory seat = evidence-falsifiability;
+# optional seat = governance-safety (available for governance-policy kind). This trace
+# satisfies the mandatory seat. No optional seat evaluation was requested.
+#
+# NON-INDEPENDENCE ACKNOWLEDGMENT: The agent producing this trace
+# (nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001) and the author of motion-0125
+# share the same underlying model (claude-sonnet-4-6). This is a structural proof
+# of evidence chain integrity, not adversarial independence. The limitation is
+# acknowledged per the deliberation protocol §5 and seat assignment notes.
+
+questions_evaluated:
+
+  - question: >
+      Can every claim in the decision.md be verified by reading the repo
+      without trusting the author?
+    response: >
+      decision.md in ratified state says: "motion-0125 packages the first real
+      post-opening Corpus V2 live-value operating slice. It turns the protocol
+      declared by motion-0124 into durable governed repo behavior by binding cost
+      category and activation outcome semantics to the execution artifact chain."
+      This is a narrative framing claim. The falsifiable sub-claims are:
+      (1) activation gate requires cost estimate — verifiable by reading
+          portal/scripts/activate-motion.mjs and finding the cost estimate
+          extraction and outcome derivation logic (lines 154–199 in committed code).
+      (2) activation writes execution.activation.json — verifiable by reading
+          activate-motion.mjs file write logic and by the existence of
+          .nexus/motions/motion-0126/execution.activation.json (proof produced by
+          motion-0126).
+      (3) execution.handoff.json carries corpus_v2 metadata — verifiable by reading
+          issue-execution-handoff.mjs (corpus_v2 block written at lines 227–233)
+          and by motion-0126/execution.handoff.json (committed artifact).
+      (4) execution.receipt.json carries the same metadata — verifiable by reading
+          record-execution-receipt.mjs (corpus_v2 block at lines 205–239) and by
+          motion-0126/execution.receipt.json (committed artifact).
+      (5) operator surfaces render the values — verifiable by reading
+          portal/src/app/operator/work/[id]/page.tsx which reads corpus_v2 fields
+          from both handoff and activation artifacts.
+      All sub-claims trace to specific committed file paths and committed test
+      artifacts from motion-0126's proof run. PASS.
+
+  - question: >
+      Does the evidence checklist in execution.md cover all success criteria
+      stated in the proposal?
+    response: >
+      proposal.md success criteria:
+      SC-1: Corpus V2 motions require declared cost category before live activation
+        → covered by checklist item: "Corpus V2 activation gate remains live in activate-motion.mjs"
+      SC-2: activation writes durable outcome semantics (PROCEED/ESCALATE/BLOCK)
+        → covered by checklist item: "execution.activation.json records cost + outcome semantics"
+      SC-3: execution.handoff.json carries Corpus V2 metadata
+        → covered by checklist item: "execution.handoff.json preserves Corpus V2 metadata"
+      SC-4: execution.receipt.json carries the same metadata
+        → covered by checklist item: "execution.receipt.json preserves Corpus V2 metadata"
+      SC-5: operator workflow continues to surface the resulting values
+        → covered by checklist item: "operator work views surface the durable state"
+      SC-6: slice captured as a proper governed motion package
+        → covered implicitly by the motion package itself existing and passing gates
+      All success criteria have corresponding evidence checklist items. The checklist
+      items in execution.md are stated as binary conditions ("remains live", "records",
+      "preserves", "surfaces"), not subjective assessments. PASS.
+
+  - question: >
+      Are the validation commands in the evidence checklist reproducible —
+      would running them again produce the same result?
+    response: >
+      The execution.md evidence checklist uses file-state checks:
+      (1) "Corpus V2 activation gate remains live" — verifiable by reading
+          activate-motion.mjs and confirming the cost estimate extraction and
+          outcome derivation code is present. Deterministic.
+      (2) "execution.activation.json records cost + outcome semantics" — verifiable
+          by reading the committed motion-0126 activation artifact. Deterministic.
+      (3–4) Handoff and receipt checklist items — same pattern: read committed files,
+          confirm corpus_v2 block exists with expected fields.
+      (5) "operator receipt paths preserve the same metadata" — verifiable by code
+          reading portal/scripts/operator-approve-once.ts and record-execution-receipt.mjs.
+      (6) "operator work views surface the durable state" — verifiable by reading
+          portal/src/app/operator/work/[id]/page.tsx corpus_v2 field read logic.
+      (7) "no runtime/db behavior widened" — verifiable by commit diff: no database
+          schema files, no Prisma migration files, no API route files modified.
+      All checks are reproducible from committed repo state. PASS.
+
+  - question: >
+      Is there any claim in the vote rationale that cannot be traced to a
+      specific committed artifact?
+    response: >
+      The vote.json reasons array references specific file paths, commit SHAs,
+      and code locations. The key claims are:
+      (1) "activate-motion.mjs reads cost estimate from execution.md" — traces to
+          portal/scripts/activate-motion.mjs in committed state.
+      (2) "derives PROCEED/ESCALATE/BLOCK" — traces to the outcome logic in the same file.
+      (3) "handoff/receipt artifacts carry corpus_v2 block" — traces to committed
+          motion-0126 proof artifacts.
+      (4) "operator surfaces render cost category and activation outcome" — traces to
+          portal/src/app/operator/work/[id]/page.tsx in committed state.
+      No claim requires trusting the author without a committed artifact. PASS.
+
+  - question: >
+      Does the verify.json record the actual commands run and their actual
+      exit codes — not paraphrased descriptions of what was run?
+    response: >
+      verify.json records validate_motion exit 0 and validate_agency exit 0 with
+      exact command strings, plus implementation checks citing specific committed
+      files and line references. The implementation checks note the commit hash
+      (03d53f4) that introduced the changes, providing a deterministic
+      re-verification point. PASS.
+
+block_conditions_checked:
+
+  - condition: >
+      A success criterion from the proposal has no corresponding evidence
+      checklist item — the criterion was declared met without a verifiable check.
+    result: not_triggered
+    notes: >
+      All 6 success criteria from proposal.md map to at least one binary checklist
+      item in execution.md. No criterion is orphaned.
+
+  - condition: >
+      The vote rationale says "all criteria met" or "implementation complete"
+      without listing which criteria or citing which artifacts prove it.
+    result: not_triggered
+    notes: >
+      vote.json reasons array cites specific file paths, script behaviors, and
+      committed motion-0126 proof artifacts. No blanket assertion without specifics.
+
+  - condition: >
+      An evidence checklist item is subjective: "confirm the implementation
+      is coherent" or "verify the output looks reasonable."
+    result: not_triggered
+    notes: >
+      All checklist items are binary and specific: code path present in committed
+      script, artifact field exists and contains expected structure, commit diff
+      confirms no widening outside declared scope.
+
+  - condition: >
+      verify.json records gate results for commands that were not actually run,
+      or records different commands than were specified in execution.md.
+    result: not_triggered
+    notes: >
+      verify.json records exact validate_motion and validate_agency command strings
+      with exit_code: 0. Implementation checks cite committed artifact paths and
+      the introducing commit hash.
+
+pass_or_block: PASS
+
+reasoning: >
+  The evidence-falsifiability seat finds no triggered block conditions in
+  motion-0125's package. All five distinctive questions reach PASS.
+
+  The material advance of motion-0125 over the protocol-only layer (motion-0124):
+  the evidence chain for motion-0125 is not just governance documents — it includes
+  committed code changes in portal/scripts/ and portal/src/app/operator/ that are
+  independently readable and reproducible. The falsifiability question "does the
+  activation gate require cost estimate declaration?" has a deterministic answer:
+  read portal/scripts/activate-motion.mjs. The question "does handoff carry corpus_v2
+  metadata?" has a deterministic answer: read the committed motion-0126 handoff artifact.
+
+  The non-independence limitation is acknowledged. The evaluation focuses on whether
+  the evidence trail is independently verifiable — and it is, because the evidence
+  consists of committed source code and committed proof artifacts.
+
+  First motion under the Corpus V2 Deliberation Protocol (effective from motion-0125
+  per protocol §1). Tier 1 evaluation: evidence-falsifiability mandatory, PASS.
+  No optional governance-safety seat evaluation was requested for this motion.
+  PASS verdict: motion-0125 is evidence-falsifiably sound.

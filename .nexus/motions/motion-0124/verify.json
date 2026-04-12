@@ -1,0 +1,68 @@
+{
+  "motion_id": "motion-0124",
+  "verified_at": "2026-04-09T09:33:22.000Z",
+  "gates": [
+    {
+      "gate": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0124/motion.yaml",
+      "exit_code": 0,
+      "output": "✅ motion schema OK — Motion: .nexus/motions/motion-0124/motion.yaml — Title: Corpus V2 Deliberation Protocol v0 — tiered agent seat routing, cost discipline gates, and escalation enforcement",
+      "result": "ok"
+    },
+    {
+      "gate": "validate_agency",
+      "command": "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "exit_code": 0,
+      "output": "✅ registry-backed agency OK — Domain: dev.jai.nexus Tier 1 (domain): OK — Repo: dev-jai-nexus Tier 2 (repo): OK — agents.generated.yaml: OK (202 agents)",
+      "result": "ok"
+    }
+  ],
+  "all_required_ok": true,
+  "implementation_checks": [
+    {
+      "check": ".nexus/docs/corpus-v2-deliberation-protocol.md exists with 6 sections",
+      "result": "ok",
+      "detail": "File exists. Sections confirmed: 1. Authority and scope, 2. Per-tier seat routing, 3. Cost discipline integration, 4. Escalation enforcement, 5. Multi-seat evaluation with a single agent, 6. Protocol evolution. Effective from motion-0125 onward (scope clause confirmed in §1)."
+    },
+    {
+      "check": ".nexus/deliberation/corpus-v2-tier-seat-matrix.yaml exists with Tier 0–3 entries, each with mandatory_seats, optional_seats_by_kind, min_evaluations",
+      "result": "ok",
+      "detail": "File exists. 4 tier entries: tier 0 (trivial repair), tier 1 (standard), tier 2 (high-stakes), tier 3 (escalated/blocked). Each entry has mandatory_seats, optional_seats_by_kind, min_evaluations, ratification_blocked, notes."
+    },
+    {
+      "check": ".nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_002.yaml exists (cost-discipline seat)",
+      "result": "ok",
+      "detail": "File exists. seat_id: cost-discipline. established: motion-0124. seat_contract_ref: .nexus/deliberation/seat-contracts/cost-discipline.yaml. Non-independence limitation stated."
+    },
+    {
+      "check": ".nexus/deliberation/seat-assignments/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_003.yaml exists (governance-safety seat)",
+      "result": "ok",
+      "detail": "File exists. seat_id: governance-safety. established: motion-0124. seat_contract_ref: .nexus/deliberation/seat-contracts/governance-safety.yaml. Non-independence limitation stated."
+    },
+    {
+      "check": ".nexus/programs/program-graph.yaml corpus-v2 has epic corpus-v2-live-value-operations and program q2-corpus-v2-live-value-loop with parent_motion: motion-0124",
+      "result": "ok",
+      "detail": "program-graph.yaml updated. corpus-v2 era entry now has epics list with corpus-v2-live-value-operations epic containing q2-corpus-v2-live-value-loop program. parent_motion: motion-0124. motion-0124 in motion_lines. status: open."
+    },
+    {
+      "check": ".nexus/programs/q2-corpus-v2-live-value-loop-launch-packet.md exists",
+      "result": "ok",
+      "detail": "File exists. Covers program overview, strategic context, success criteria, motion lines, out-of-scope, activation path, context inheritance."
+    },
+    {
+      "check": ".nexus/docs/corpus-v2-readiness-criteria.md CR-06 current_status: met; summary 9 met / 0 partial / 1 unmet",
+      "result": "ok",
+      "detail": "CR-06 updated to met (confirmed motion-0112 RATIFIED 2026-04-01, all 4 anomalies resolved). Summary: Met: 9, Partial: 0, Unmet: 1 (CR-07 only)."
+    },
+    {
+      "check": "Evaluation trace exists with 5 questions_evaluated, 4 block_conditions_checked (all not_triggered), pass_or_block: PASS; agent-vote.json with 8 extension fields and outcome.result: PASS",
+      "result": "ok",
+      "detail": "Trace at .nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0124-trace.yaml. 5 questions, 4 block conditions (not_triggered), pass_or_block: PASS. agent-vote.json at .nexus/motions/motion-0124/agent-vote.json: 8 extension fields, era: corpus-v2, outcome.result: PASS. Evaluates under corpus-v2 canon baseline (not the protocol it creates — scope clause)."
+    },
+    {
+      "check": "No runtime, portal (TS/UI), DB, or registry files modified",
+      "result": "ok",
+      "detail": "Confirmed by commit b84a93c diff — changes confined to .nexus/deliberation/, .nexus/docs/, .nexus/motions/motion-0124/, .nexus/programs/. No portal/src/, portal/scripts/, or agents.generated.yaml changes."
+    }
+  ]
+}

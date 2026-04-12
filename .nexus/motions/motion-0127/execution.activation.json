@@ -1,0 +1,27 @@
+{
+  "version": "0.1",
+  "protocol": "corpus-v2-live-value-activation",
+  "motion_id": "motion-0127",
+  "recorded_at": "2026-04-11T14:33:02.000Z",
+  "create_requested": true,
+  "decision_status": "RATIFIED",
+  "handoff_id": "motion-0127-handoff-001",
+  "target_repo": "dev-jai-nexus",
+  "target_domain": "dev.jai.nexus",
+  "packet_title": "[motion-0127] Corpus V2 governed activation proof v0 — escalate path",
+  "activation_tag": "motion:motion-0127",
+  "route_tag": "route:ARCHITECT",
+  "corpus_v2": {
+    "applies": true,
+    "cost_category": "substantial",
+    "cost_basis": "intentional declaration to exercise the Corpus V2 ESCALATE activation gate; actual scope is bounded artifact-only (motion package, scripts, no DB writes, no code changes), but Category: substantial is required to trigger ESCALATE behavior in activate-motion.mjs; the mismatch is documented in proposal.md and challenge.md C-1.",
+    "tier_hint": "tier2",
+    "requires_operator_escalation": true,
+    "outcome": "ESCALATE",
+    "reasons": [
+      "Corpus V2 declared cost category is \"substantial\", which requires operator escalation before live activation."
+    ]
+  },
+  "work_packet_id": null,
+  "inbox_item_id": null
+}

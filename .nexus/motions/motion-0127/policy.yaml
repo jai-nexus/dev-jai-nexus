@@ -1,0 +1,17 @@
+motion_id: motion-0127
+kind: staged-activation-proof
+risk_score: 0.06
+escalation_tier: 1
+surfaces_touched:
+  - activation-artifacts
+  - evaluation-traces
+novelty_flag: false
+ratified: true
+ratified_at: "2026-04-11T14:33:17.000Z"
+notes: >
+  Tier 1 + cost-escalation: cost:substantial triggers mandatory cost-discipline seat.
+  First operational use of seat_002 cost-discipline seat assignment.
+  No code changes. No database writes. Bounded proof motion.
+  declared_cost_category: substantial (intentional ESCALATE gate trigger).
+  actual_scope_cost: standard (artifact-only proof).
+  Mismatch documented and governed per challenge.md C-1.

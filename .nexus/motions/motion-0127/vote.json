@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0127",
+  "voted_at": "2026-04-11T14:33:17.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "unanimous_consent_with_agent_witness",
+  "panel": [
+    { "role": "proposer", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "challenger", "nh_id": "6.0.1", "identity": "JerryIngram" },
+    { "role": "arbiter", "nh_id": "6.0", "identity": "JerryIngram" },
+    {
+      "role": "agent-witness",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+      "seat_id": "evidence-falsifiability",
+      "vote_weight": "advisory",
+      "agent_conclusion": "PASS",
+      "agent_vote_ref": ".nexus/motions/motion-0127/agent-vote.json",
+      "additional_seats_evaluated": ["cost-discipline"],
+      "all_seats_pass": true
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "ESCALATE GATE PROVED: execution.activation.json records create_requested:true, outcome:ESCALATE, work_packet_id:null. The corpus_v2_escalation_gate fired and refused packet creation. No work packet exists for motion-0127.",
+      "ARTIFACT CHAIN: handoff issued with corpus_v2.requires_operator_escalation:true (derived from cost:substantial at issue time). Activation artifact records ESCALATE. Receipt records BLOCKED with finished_at set.",
+      "FIRST COST-DISCIPLINE SEAT: seat_002 assignment (motion-0124) produced its first evaluation trace. Deliberation protocol §2 Tier 1 cost-escalation rule correctly triggered by substantial declaration. Both mandatory seats PASS.",
+      "NO FABRICATED EVIDENCE: proof is entirely from committed script outputs. Durable artifacts show field values that are only possible if the scripts ran in the described sequence.",
+      "SCOPE DISCIPLINE: no code changes, no DB writes, no new infrastructure. Diff confined to .nexus/motions/motion-0127/ and .nexus/deliberation/evaluation-traces/.",
+      "GATES: validate_motion exit 0; validate_agency exit 0."
+    ],
+    "missing_required_roles": []
+  }
+}
