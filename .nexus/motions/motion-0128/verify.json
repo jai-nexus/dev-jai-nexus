@@ -1,0 +1,71 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0128",
+  "latest": {
+    "validate_motion": {
+      "gate": "validate_motion",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-04-13T23:07:33.094Z",
+      "command": "node portal\\scripts\\validate-motion.mjs --motion .nexus\\motions\\motion-0128\\motion.yaml",
+      "cwd": ".",
+      "required": true
+    },
+    "validate_agency": {
+      "gate": "validate_agency",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-04-13T23:07:33.495Z",
+      "command": "node portal\\scripts\\validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+      "cwd": ".",
+      "required": true
+    },
+    "typecheck": {
+      "gate": "typecheck",
+      "ok": true,
+      "status": 0,
+      "ts": "2026-04-13T23:07:38.533Z",
+      "command": "pnpm -C portal typecheck",
+      "cwd": ".",
+      "required": true
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-04-13T23:07:38.533Z"
+  },
+  "implementation_checks": {
+    "list_escalations_exists": {
+      "check": "file_exists",
+      "path": "portal/scripts/list-escalations.mjs",
+      "ok": true,
+      "note": "155-line CLI; normalizeSeverity + normalizeReason + SEVERITY_RANK sort"
+    },
+    "council_run_escalation_injections": {
+      "check": "code_committed",
+      "path": "portal/scripts/council-run.mjs",
+      "ok": true,
+      "note": "4 injections: escalation state read, policy field, emit when required_ok=false, lifecycle block via blocking_reasons.push"
+    },
+    "activate_motion_lifecycle_block": {
+      "check": "code_committed",
+      "path": "portal/scripts/activate-motion.mjs",
+      "ok": true,
+      "note": "escalation_lifecycle_block fail() in --create path when ACTIVE+blocking"
+    },
+    "test_suite_65_assertions": {
+      "check": "test_suite",
+      "path": "portal/scripts/test-escalation-hardening.mjs",
+      "ok": true,
+      "assertions": 65,
+      "scenarios": 8,
+      "note": "malformed YAML, safe defaults, severity normalization, reason normalization, idempotency, RESOLVED preservation, sort stability, CLI smoke test"
+    },
+    "typecheck_clean": {
+      "check": "gate_result",
+      "gate": "typecheck",
+      "ok": true,
+      "note": "pnpm -C portal typecheck exit 0 — no portal/src/ type errors introduced"
+    }
+  }
+}
