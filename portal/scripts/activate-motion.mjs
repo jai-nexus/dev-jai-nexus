@@ -551,6 +551,37 @@ async function main() {
             );
         }
 
+        // Escalation lifecycle block: refuse --create when escalation.yaml is ACTIVE+blocking.
+        // Only applies in --create mode; dry-run is never blocked (operator can still inspect).
+        //
+        // Safe-default rules — none of these conditions produce a block:
+        //   - No escalation.yaml present        → no block (file absence is not an escalation)
+        //   - escalation.yaml parse error        → no block (cannot confirm ACTIVE state)
+        //   - status !== "ACTIVE" (or missing)   → no block (RESOLVED, null, unknown → proceed)
+        //   - blocking !== true (strict)          → no block (truthy non-booleans not accepted)
+        //
+        // Only status === "ACTIVE" AND blocking === true together produce a block.
+        if (args.create) {
+            const _escalYamlPath = path.join(motionDir, "escalation.yaml");
+            if (exists(_escalYamlPath)) {
+                try {
+                    const _escalObj = yaml.load(readText(_escalYamlPath));
+                    if (_escalObj?.status === "ACTIVE" && _escalObj?.blocking === true) {
+                        fail(
+                            "escalation_lifecycle_block",
+                            `Create refused: escalation.yaml is ACTIVE with blocking=true.\n` +
+                            `  Reason: ${_escalObj.reason ?? "see escalation.yaml"}\n` +
+                            `  Resolve the escalation before activating this motion.`
+                        );
+                    }
+                } catch {
+                    // Parse error → cannot confirm ACTIVE+blocking → do not block activation.
+                    // A malformed escalation.yaml must not prevent unrelated work packet creation.
+                    // Correct response is to repair the file, not to veto the activation.
+                }
+            }
+        }
+
         if (args.create) {
             // Real creation path (WS-1 phase 2)
             console.log();
