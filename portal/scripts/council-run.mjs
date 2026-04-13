@@ -803,6 +803,30 @@ const {
     maxRiskScore,
 });
 
+// -----------------------------
+// Escalation state (computed before policy write so it can be included in policy.yaml)
+// Safe defaults: unparseable or missing escalation.yaml leaves escalationStateTag = "null".
+// A malformed file never crashes council-run — the try/catch discards parse errors and
+// the "null" default means no escalation state is injected into policy.yaml.
+// -----------------------------
+const escalationPath = path.join(motionDir, "escalation.yaml");
+let escalationStateTag = "null";
+if (exists(escalationPath)) {
+    try {
+        const _existingEsc = yaml.load(readText(escalationPath));
+        // Optional chaining handles null/non-object from yaml.load (e.g. empty file → null).
+        // Only set ACTIVE when both status AND required are explicitly true strings/booleans.
+        // Any other value (missing status, unknown status) leaves tag as "null" — safe default.
+        if (_existingEsc?.status === "ACTIVE" && _existingEsc?.required === true) escalationStateTag = "ACTIVE";
+        else if (_existingEsc?.status === "RESOLVED") escalationStateTag = "RESOLVED";
+    } catch { /* unparseable escalation.yaml — default "null" tag remains, no crash */ }
+}
+// If required_ok=false and no prior RESOLVED escalation, we will emit ACTIVE below.
+// A RESOLVED prior escalation is intentionally preserved: the operator's resolution stands
+// even if gates still fail (R-4 in challenge.md). The operator decided the escalation is
+// closed; the root cause may need fixing, but the lifecycle is not re-blocked automatically.
+if (!required_ok && escalationStateTag !== "RESOLVED") escalationStateTag = "ACTIVE";
+
 const policyTemplate = `protocol_version: "${PROTOCOL_VERSION}"
 motion_id: ${motionId}
 evaluated_at: "${nowIso()}"
@@ -821,9 +845,50 @@ eligible_to_vote: ${eligible_to_vote}
 recommended_vote: "${recommended_vote}"
 blocking_reasons: [${blocking_reasons.map((r) => `"${r.replace(/"/g, '\\"')}"`).join(", ")}]
 warnings: [${warnings.map((w) => `"${w.replace(/"/g, '\\"')}"`).join(", ")}]
+escalation_state: ${escalationStateTag}
 `;
 
 writeYamlIfChangedIgnoringKeys(policyPath, policyTemplate, ["evaluated_at"]);
+
+// Emit escalation.yaml when required_ok=false (skip if prior status is RESOLVED)
+if (!required_ok && escalationStateTag === "ACTIVE") {
+    const _failedList = failed_required_gates.join(", ");
+    const _escalReason = `required_ok=false: failed required gates [${_failedList}]`;
+    const _escalSeverity = failed_required_gates.length > 1 ? "critical" : "high";
+    let _shouldEmit = true;
+    if (exists(escalationPath)) {
+        try {
+            const _prevEsc = yaml.load(readText(escalationPath));
+            // Idempotency: skip re-write when the existing file already records the same
+            // failure reason. This prevents emitted_at churn on repeated council-run calls
+            // against the same set of failing gates.
+            //
+            // Edge case: if the reason field is missing from the existing escalation.yaml
+            // (_prevEsc?.reason === undefined), the equality check is false → _shouldEmit
+            // remains true → the file is rewritten with a clean canonical artifact.
+            // This is intentional: a partial or hand-edited escalation.yaml is refreshed
+            // to the correct machine-written format on the next council-run.
+            if (_prevEsc?.status === "ACTIVE" && _prevEsc?.reason === _escalReason) {
+                _shouldEmit = false;
+            }
+        } catch { /* parse error on existing file — emit fresh, overwrite with clean artifact */ }
+    }
+    if (_shouldEmit) {
+        const _escalContent =
+            `version: "0.1"\n` +
+            `motion_id: ${motionId}\n` +
+            `status: ACTIVE\n` +
+            `severity: ${_escalSeverity}\n` +
+            `required: true\n` +
+            `blocking: true\n` +
+            `reason: "${_escalReason.replace(/"/g, '\\"')}"\n` +
+            `emitted_at: "${nowIso()}"\n` +
+            `emitted_by: council-run.mjs\n`;
+        fs.writeFileSync(escalationPath, _escalContent, "utf8");
+        console.log(`[COUNCIL-RUN] ⚠️  Escalation emitted for ${motionId}: severity=${_escalSeverity} blocking=true`);
+        appendChat("ESCALATION_EMITTED", `Escalation emitted: severity=${_escalSeverity} gates=[${_failedList}]`, 1);
+    }
+}
 
 appendChat(
     "POLICY_EVAL",
@@ -938,6 +1003,32 @@ appendChat(
     }`,
     1
 );
+
+// -----------------------------
+// Escalation lifecycle block
+// -----------------------------
+if (exists(escalationPath)) {
+    try {
+        const _escalBlock = yaml.load(readText(escalationPath));
+        // Block condition requires both fields to be explicitly correct:
+        //   status === "ACTIVE"   — string equality; RESOLVED or missing status → no block
+        //   blocking === true     — strict boolean; js-yaml parses `blocking: yes` as true,
+        //                           but `blocking: 1` is not === true (intentional strictness)
+        // Safe default on any other value: no block. Absence of escalation.yaml → no block.
+        // Parse error (caught below) → no block. A malformed file never prevents ratification.
+        if (_escalBlock?.status === "ACTIVE" && _escalBlock?.blocking === true) {
+            const _escalBlockMsg =
+                `escalation.status=ACTIVE blocking=true: ${_escalBlock.reason ?? "see escalation.yaml"}`;
+            blocking_reasons.push(_escalBlockMsg);
+            console.log(`[COUNCIL-RUN] ⛔ Escalation lifecycle block applied: ${_escalBlockMsg}`);
+            appendChat("ESCALATION_BLOCK", `Lifecycle blocked: ${_escalBlockMsg}`, 1);
+        }
+    } catch {
+        // A malformed escalation.yaml never prevents ratification. If we cannot parse the
+        // file, we cannot confirm ACTIVE+blocking, so we proceed as if no escalation exists.
+        // This is the safe default: a corrupt governance artifact is not treated as a veto.
+    }
+}
 
 // -----------------------------
 // Stage 7: Ratification (decision refresh)

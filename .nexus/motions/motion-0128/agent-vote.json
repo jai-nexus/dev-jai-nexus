@@ -1,0 +1,37 @@
+{
+  "motion_id": "motion-0128",
+  "voted_at": "2026-04-13T23:07:38.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0128-evidence-falsifiability-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 9 planned evidence items in execution.md have committed artifacts or test-suite coverage. No criterion orphaned. Block condition 1 not triggered.",
+      "Three committed scripts (list-escalations.mjs, council-run.mjs +injection, activate-motion.mjs +injection) implement all deliverables stated in proposal.md SC-1 through SC-10.",
+      "test-escalation-hardening.mjs provides 65 independent assertions across 8 scenarios covering: malformed YAML never crashes (SC-8), severity normalization (SC-9), reason normalization, idempotency, RESOLVED preservation (SC-10), multi-motion sort stability, CLI smoke test.",
+      "verify.json records actual commands run with actual exit codes: validate_motion EXIT 0, validate_agency EXIT 0, typecheck EXIT 0. All three required gates PASS.",
+      "Typecheck gate confirms no portal/src/ type errors introduced (planned evidence item 9). pnpm -C portal typecheck exit 0 recorded in verify.json at 2026-04-13T23:07:38.533Z.",
+      "See evaluation trace for full five distinctive_questions responses and four block_conditions_checked findings (all not_triggered)."
+    ],
+    "missing_required_roles": []
+  }
+}
