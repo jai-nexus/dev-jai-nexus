@@ -1,0 +1,186 @@
+schema_id: evaluation-trace-v0
+motion_id: motion-0128
+agent_id: nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001
+seat_id: evidence-falsifiability
+seat_contract_ref: ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml"
+seat_contract_version: "v0"
+produced_at: "2026-04-13T23:07:38.000Z"
+model: "claude-sonnet-4-6"
+protocol_version: "0.1"
+
+# PROTOCOL NOTE: motion-0128 is kind:builder-proof, cost:standard.
+# Under the Deliberation Protocol Tier 1: evidence-falsifiability is mandatory.
+# This trace satisfies that requirement.
+#
+# NON-INDEPENDENCE ACKNOWLEDGMENT: The agent and motion author share the same underlying
+# model (claude-sonnet-4-6). Structural proof is via committed artifacts independently
+# readable from the repo.
+
+questions_evaluated:
+
+  - question: >
+      Can every claim in the decision.md be verified by reading the repo
+      without trusting the author?
+    response: >
+      decision.md claims for motion-0128:
+      (1) list-escalations.mjs lists ACTIVE escalations across motions, sorted by
+          severity — verifiable by reading portal/scripts/list-escalations.mjs.
+          Normalization logic (normalizeSeverity, normalizeReason) and SEVERITY_RANK
+          sort are explicit in the committed file.
+      (2) council-run.mjs emits escalation.yaml when required_ok=false — verifiable
+          by reading the Injection 1/2/3 block in council-run.mjs. The escalation
+          write logic is committed code, not a claim.
+      (3) council-run.mjs blocks RATIFIED when escalation is ACTIVE+blocking —
+          verifiable by reading the Injection 4 block (blocking_reasons.push) in
+          council-run.mjs.
+      (4) activate-motion.mjs refuses --create when escalation ACTIVE+blocking —
+          verifiable by reading the escalation_lifecycle_block injection in
+          activate-motion.mjs.
+      (5) 65 assertions pass in test-escalation-hardening.mjs — verifiable by
+          running `node portal/scripts/test-escalation-hardening.mjs`. The test
+          suite is a committed artifact.
+      (6) typecheck exits 0 — verifiable from verify.json: typecheck gate ok:true,
+          status:0, ts:2026-04-13T23:07:38.533Z.
+      All claims trace to committed scripts or verify.json gate records. PASS.
+
+  - question: >
+      Does the evidence checklist in execution.md cover all success criteria
+      stated in the proposal?
+    response: >
+      proposal.md success criteria:
+      SC-1: list-escalations.mjs exists and lists only ACTIVE escalations
+        → execution.md evidence item 4: list-escalations.mjs exits 0.
+        → execution.md evidence item 5: escalation.yaml emitted when required_ok=false.
+        → test-escalation-hardening.mjs Scenario 8 (CLI smoke test): verifies ACTIVE
+          count=1, RESOLVED excluded, malformed excluded.
+      SC-2: escalation.yaml emitted with correct fields
+        → execution.md evidence item 5: council-run.mjs emits escalation.yaml
+          (verified by reading emitted artifact).
+        → test-escalation-hardening.mjs Scenario 2/5: field defaults and idempotency.
+      SC-3: council-run blocks RATIFIED when ACTIVE+blocking
+        → execution.md evidence item 6: decision.yaml status:BLOCKED with escalation
+          reason in notes.
+      SC-4: activate-motion refuses --create when ACTIVE+blocking
+        → execution.md evidence item 7: exit code 1 with escalation_lifecycle_block.
+      SC-5: escalation-resolution.yaml schema documented
+        → execution.md Scope section: schema documented inline.
+      SC-6: RESOLVED status preserved across council-run re-runs
+        → execution.md evidence item 8: file not overwritten when prior status:RESOLVED.
+        → test-escalation-hardening.mjs Scenario 6: councilRunEscalationState with
+          RESOLVED file and required_ok=false → tag stays RESOLVED.
+      SC-7: malformed escalation.yaml never crashes or blocks
+        → test-escalation-hardening.mjs Scenario 1: 14 assertions for malformed inputs.
+      SC-8: severity normalization ("unknown" for invalid values, sorts last)
+        → test-escalation-hardening.mjs Scenario 3: 10 normalizeSeverity assertions.
+      SC-9: reason normalization (multi-line collapsed, null → "(no reason)")
+        → test-escalation-hardening.mjs Scenario 4: 7 normalizeReason assertions.
+      SC-10: idempotent emission (same reason → no re-write)
+        → test-escalation-hardening.mjs Scenario 5: 4 idempotency assertions.
+      All 10 success criteria have evidence checklist coverage. PASS.
+
+  - question: >
+      Are the validation commands in the evidence checklist reproducible —
+      would running them again produce the same result?
+    response: >
+      execution.md evidence items:
+      (1-3) Gate commands (validate-motion, validate-agency, typecheck) — deterministic
+          against committed motion.yaml and repo TypeScript. verify.json records exact
+          commands and exit codes.
+      (4) list-escalations.mjs exits 0 on clean state — deterministic: no ACTIVE
+          escalations in committed repo state.
+      (5) council-run emits escalation.yaml when required_ok=false — reproducible by
+          staging a motion with a failing required gate and re-running council-run.
+          The emission logic is deterministic.
+      (6) council-run blocks RATIFIED — reproducible: ACTIVE+blocking escalation.yaml
+          + council-run → blocking_reasons.length > 0 → status:BLOCKED. Deterministic.
+      (7) activate-motion refuses --create — reproducible: ACTIVE+blocking escalation.yaml
+          + activate-motion --create → fail() called. Deterministic.
+      (8) RESOLVED preservation — reproducible: RESOLVED escalation.yaml + council-run
+          (required_ok=false) → tag stays RESOLVED, no overwrite. Deterministic.
+      (9) test suite 65/65 — `node portal/scripts/test-escalation-hardening.mjs`
+          is fully self-contained (OS temp dir, cleanup). Reproducible.
+      All commands are specific, inputs are static committed files, and outcomes
+      are deterministic. PASS.
+
+  - question: >
+      Is there any claim in the vote rationale that cannot be traced to a
+      specific committed artifact?
+    response: >
+      vote.json unanimous consent outcome (3 yes votes) traces to verify.json gate
+      results (all PASS). The agent_witness conclusion "PASS" traces to this evaluation
+      trace (committed). execution.md evidence log provides per-criterion specifics
+      with committed artifact references (script files, verify.json records, test suite).
+      No vote rationale claim requires trusting the author without a committed artifact.
+      PASS.
+
+  - question: >
+      Does the verify.json record the actual commands run and their actual
+      exit codes — not paraphrased descriptions of what were run?
+    response: >
+      verify.json latest section records three gates, each with:
+        gate: <name>, ok: true, status: 0 (exact exit code), ts: <iso timestamp>,
+        command: <exact command string as executed>, cwd: ".", required: true.
+      After this evaluation, verify.json is extended with implementation_checks that
+      cite committed artifact field values from the test suite and deployed scripts.
+      The gate records are exact command strings and exact exit codes. PASS.
+
+block_conditions_checked:
+
+  - condition: >
+      A success criterion from the proposal has no corresponding evidence
+      checklist item — the criterion was declared met without a verifiable check.
+    result: not_triggered
+    notes: >
+      All 10 success criteria from proposal.md have corresponding entries in the
+      execution.md evidence log and/or test-escalation-hardening.mjs scenario coverage.
+      Each entry cites committed artifacts (script files, verify.json, test assertions).
+
+  - condition: >
+      The vote rationale says "all criteria met" or "implementation complete"
+      without listing which criteria or citing which artifacts prove it.
+    result: not_triggered
+    notes: >
+      vote.json outcome reflects gate results + unanimous consent. execution.md
+      evidence log provides per-criterion specifics with committed artifact references.
+      agent-vote.json reasons array lists specific artifacts for each criterion group.
+      No blanket assertion.
+
+  - condition: >
+      An evidence checklist item is subjective: "confirm the implementation
+      is coherent" or "verify the output looks reasonable."
+    result: not_triggered
+    notes: >
+      All evidence items are specific: exit codes (EXIT 0), committed file paths,
+      test assertion counts (65/65), and behavior assertions (ACTIVE count, field
+      values, blocking behavior). None are subjective.
+
+  - condition: >
+      verify.json records gate results for commands that were not actually run,
+      or records different commands than were specified in execution.md.
+    result: not_triggered
+    notes: >
+      verify.json gate commands (validate_motion, validate_agency, typecheck) match
+      the execution.md planned evidence items 1-3 and the checks_required field in
+      motion.yaml. Timestamps and exit codes are recorded by council-run.mjs at
+      actual execution time.
+
+pass_or_block: PASS
+
+reasoning: >
+  The evidence-falsifiability seat finds no triggered block conditions. All five
+  distinctive questions reach PASS.
+
+  The material proof of motion-0128: three committed scripts implement the full
+  escalation routing surface (list-escalations.mjs, council-run.mjs +4 injections,
+  activate-motion.mjs +1 injection). A 65-assertion test suite (test-escalation-hardening.mjs)
+  independently exercises 8 edge-case scenarios. verify.json records all three required
+  gates passing with exact commands and exit codes at 2026-04-13T23:07:38.
+
+  The deliverables are exactly what was proposed: a lightweight, operator-facing
+  escalation routing surface that routes required-gate failures through a governed
+  live-state artifact (escalation.yaml), enforces RESOLVED-preservation, and exposes
+  a deterministic CLI listing. No over-claim; the implementation is bounded to what
+  was specified in proposal.md SC-1 through SC-10.
+
+  PASS verdict: motion-0128 is evidence-falsifiably sound. Committed script artifacts
+  and test suite prove the escalation routing surface works as described.
