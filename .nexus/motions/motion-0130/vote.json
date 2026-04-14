@@ -1,0 +1,47 @@
+{
+  "schema_version": "vote-0.2",
+  "motion_id": "motion-0130",
+  "era": "corpus-v2",
+  "vote_mode": "unanimous_consent",
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes",
+      "cast_at": "2026-04-14T12:00:00.000Z"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes",
+      "cast_at": "2026-04-14T12:00:05.000Z"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes",
+      "cast_at": "2026-04-14T12:00:10.000Z"
+    }
+  ],
+  "agent_witness": {
+    "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+    "seat_id": "evidence-falsifiability",
+    "vote_weight": "advisory",
+    "agent_conclusion": "PASS",
+    "agent_vote_ref": ".nexus/motions/motion-0130/agent-vote.json"
+  },
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-14T16:12:17.580Z"
+}
