@@ -20,7 +20,8 @@
     "claude:bootstrap": "node portal/scripts/generate-claude-bootstrap.mjs",
     "code:pack": "node portal/scripts/generate-task-code-pack.mjs",
     "snapshot:motions": "node portal/scripts/snapshot-motion-full.mjs --manifest",
-    "bootstrap:gen": "node portal/scripts/generate-bootstrap.mjs"
+    "bootstrap:gen": "node portal/scripts/generate-bootstrap.mjs",
+    "grid:ingest": "node portal/scripts/grid-ingest-bundle.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
