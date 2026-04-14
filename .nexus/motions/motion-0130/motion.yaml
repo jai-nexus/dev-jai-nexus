@@ -1,7 +1,7 @@
 protocol_version: "0.3.8"
 motion_id: motion-0130
 kind: builder-proof
-status: proposed
+status: ratified
 title: "JAI Grid Motion Draft Ingestion v0: governed diff to motion-draft scaffold"
 program: q2-corpus-v2-live-value-loop
 proposer_nh_id: "6.0.1"
