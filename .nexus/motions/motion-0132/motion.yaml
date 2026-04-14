@@ -1,7 +1,7 @@
 protocol_version: "0.3.8"
 motion_id: motion-0132
 kind: builder-proof
-status: proposed
+status: ratified
 title: "JAI Grid Repo Ingest Workflow v0: validated draft bundle to local motion package"
 program: q2-corpus-v2-live-value-loop
 proposer_nh_id: "6.0.1"
