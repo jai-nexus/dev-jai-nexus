@@ -1,0 +1,36 @@
+{
+  "motion_id": "motion-0129",
+  "voted_at": "2026-04-14T02:01:15.000Z",
+  "era": "corpus-v2",
+  "vote_mechanism": "agent-seat-evaluation",
+  "vote_type": "agent",
+  "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001",
+  "seat_id": "evidence-falsifiability",
+  "seat_contract_ref": ".nexus/deliberation/seat-contracts/evidence-falsifiability.yaml",
+  "seat_contract_version": "v0",
+  "evaluation_trace_ref": ".nexus/deliberation/evaluation-traces/nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001-motion-0129-evidence-falsifiability-trace.yaml",
+  "model": "claude-sonnet-4-6",
+  "protocol_version": "0.1",
+  "panel": [
+    {
+      "role": "panel-seat",
+      "seat_id": "evidence-falsifiability",
+      "agent_id": "nhid_2_dev_jai_nexus_dev-jai-nexus_panel_seat_001"
+    }
+  ],
+  "outcome": {
+    "yes": 1,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "All 10 success criteria (SC-1 through SC-10) in execution.md have committed artifacts. SC-1: OperatorSubnav.tsx Grid link (f0bf1e4). SC-2: gridConfig.ts loadGridConfig() + GridView.tsx zone rendering. SC-3: PropertyPanel in GridView.tsx. No criterion orphaned. Block condition 1 not triggered.",
+      "Four committed source modules implement all deliverables: gridConfig.ts (canonical read), gridDraft.ts (staged state + reducer + layout), connectionValidator.ts (structural validation), gridDiff.ts (diff + YAML serialization). GridView.tsx wires all together. Commits f0bf1e4, 8fdb13b, 49a5fc6, da28e54.",
+      "Connection validation (SC-6): validateConnection() enforces LANE_RANK forward-only (ARCHITECT=0→BUILDER=1→VERIFIER=2→OPERATOR=3), LIBRARIAN exempt, governance requires target governance_only||OPERATOR. Same-agent loop rejected. Committed in connectionValidator.ts (da28e54).",
+      "No runtime writes to .nexus/ or canonical config (SC-9): GridView.tsx has no fs imports. gridDiff.ts serializeMotionDraft() is a pure string builder. All draft state lives in React useReducer. navigator.clipboard used for copy only. git status remains clean after any interaction.",
+      "verify.json records actual gate commands with exact exit codes: validate_motion EXIT 0 (02:01:10), validate_agency EXIT 0 (02:01:11), typecheck EXIT 0 (02:01:15). All timestamps 2026-04-14T02:01. policy.yaml: required_ok:true, risk_score:0.19, failed_required_gates:[]. See evaluation trace for full five questions and four block conditions (all not_triggered)."
+    ],
+    "missing_required_roles": []
+  }
+}

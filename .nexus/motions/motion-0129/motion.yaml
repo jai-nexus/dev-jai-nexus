@@ -1,7 +1,7 @@
 protocol_version: "0.3.8"
 motion_id: motion-0129
 kind: builder-proof
-status: proposed
+status: ratified
 title: "JAI Grid Configuration Mode v0: editable blueprint + governed structural diffs"
 program: q2-corpus-v2-live-value-loop
 proposer_nh_id: "6.0.1"
