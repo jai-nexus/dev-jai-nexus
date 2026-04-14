@@ -32,6 +32,8 @@ import { validateConnection } from "@/lib/grid/connectionValidator";
 import { diffGridDraft } from "@/lib/grid/gridDiff";
 import {
   buildMotionDraftScaffold,
+  isValidMotionId,
+  substituteMotionId,
   type MotionDraftScaffold,
 } from "@/lib/grid/gridMotionDraft";
 
@@ -1183,20 +1185,37 @@ function DraftBanner({
 
 // ── MotionDraftModal ──────────────────────────────────────────────────────────
 //
-// Displays the full motion-draft scaffold as four named, copyable sections.
+// Displays the full motion-draft scaffold as five named, copyable sections.
 // No file writes — all output is copy-only. Closing does not clear draft state.
 //
-// Sections: motion.yaml · proposal.md · execution.md · challenge.md
-// Each section has a filename label, scrollable pre block, and per-section copy button.
+// Sections: motion.yaml · proposal.md · execution.md · challenge.md · bundle.txt
+// Motion ID input applies substituteMotionId() live; banner goes amber→green on valid ID.
 
 const SCAFFOLD_TABS = [
   { key: "motionYaml",  label: "motion.yaml"  },
   { key: "proposalMd",  label: "proposal.md"  },
   { key: "executionMd", label: "execution.md" },
   { key: "challengeMd", label: "challenge.md" },
+  { key: "bundle",      label: "bundle.txt"   },
 ] as const;
 
 type ScaffoldTabKey = typeof SCAFFOLD_TABS[number]["key"];
+
+function buildBundle(s: MotionDraftScaffold): string {
+  return [
+    "=== motion.yaml ===",
+    s.motionYaml,
+    "",
+    "=== proposal.md ===",
+    s.proposalMd,
+    "",
+    "=== execution.md ===",
+    s.executionMd,
+    "",
+    "=== challenge.md ===",
+    s.challengeMd,
+  ].join("\n");
+}
 
 function MotionDraftModal({
   scaffold,
@@ -1207,8 +1226,16 @@ function MotionDraftModal({
 }) {
   const [activeTab, setActiveTab] = useState<ScaffoldTabKey>("motionYaml");
   const [copiedTab, setCopiedTab] = useState<ScaffoldTabKey | null>(null);
+  const [motionId, setMotionId] = useState("");
 
-  const activeContent = scaffold[activeTab];
+  const idValid = isValidMotionId(motionId);
+  const resolved = idValid ? substituteMotionId(scaffold, motionId) : scaffold;
+
+  const activeContent =
+    activeTab === "bundle" ? buildBundle(resolved) : resolved[activeTab];
+
+  const activeLabel = SCAFFOLD_TABS.find((t) => t.key === activeTab)!.label;
+  const footerPath = `.nexus/motions/${idValid ? motionId : "motion-XXXX"}/${activeLabel}`;
 
   function handleCopy() {
     navigator.clipboard.writeText(activeContent).then(() => {
@@ -1246,10 +1273,30 @@ function MotionDraftModal({
             </button>
           </div>
 
-          {/* Placeholder warning */}
-          <div className="mt-2 rounded border border-amber-700/50 bg-amber-950/40 px-3 py-1.5 text-[11px] text-amber-300">
-            Replace <span className="font-mono">motion-XXXX</span> with the next
-            available motion ID before committing. No files have been written.
+          {/* Motion ID input + status banner */}
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              type="text"
+              value={motionId}
+              onChange={(e) => setMotionId(e.target.value)}
+              placeholder="motion-XXXX"
+              className="rounded border border-gray-700 bg-zinc-900 px-2 py-1 text-[11px] font-mono text-gray-200 placeholder-gray-600 focus:border-amber-700 focus:outline-none w-36"
+              spellCheck={false}
+            />
+            <div
+              className={`flex-1 rounded border px-3 py-1.5 text-[11px] ${
+                idValid
+                  ? "border-emerald-700/50 bg-emerald-950/40 text-emerald-300"
+                  : "border-amber-700/50 bg-amber-950/40 text-amber-300"
+              }`}
+            >
+              {idValid ? (
+                <>Motion ID set to <span className="font-mono">{motionId}</span>. Ready to copy.</>
+              ) : (
+                <>Replace <span className="font-mono">motion-XXXX</span> with the next
+                available motion ID before committing. No files have been written.</>
+              )}
+            </div>
           </div>
 
           {/* Tabs */}
@@ -1280,7 +1327,7 @@ function MotionDraftModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-gray-800 flex-shrink-0">
           <span className="text-[11px] text-gray-600 font-mono">
-            .nexus/motions/motion-XXXX/{SCAFFOLD_TABS.find((t) => t.key === activeTab)?.label}
+            {footerPath}
           </span>
           <button
             onClick={handleCopy}
@@ -1292,7 +1339,7 @@ function MotionDraftModal({
           >
             {copiedTab === activeTab
               ? "Copied ✓"
-              : `Copy ${SCAFFOLD_TABS.find((t) => t.key === activeTab)?.label}`}
+              : `Copy ${activeLabel}`}
           </button>
         </div>
       </div>
