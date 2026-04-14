@@ -45,6 +45,34 @@ export interface MotionDraftOpts {
   program?: string;
 }
 
+// ── Motion ID helpers (motion-0131) ──────────────────────────────────────────
+
+/** Matches motion-0000 through motion-9999 */
+export const MOTION_ID_PATTERN = /^motion-\d{4}$/;
+
+/** Returns true iff id matches MOTION_ID_PATTERN */
+export function isValidMotionId(id: string): boolean {
+  return MOTION_ID_PATTERN.test(id);
+}
+
+/**
+ * Returns a new MotionDraftScaffold with every occurrence of "motion-XXXX"
+ * replaced by motionId in all four file strings.
+ * Pure — does not mutate the input scaffold.
+ */
+export function substituteMotionId(
+  scaffold: MotionDraftScaffold,
+  motionId: string,
+): MotionDraftScaffold {
+  return {
+    ...scaffold,
+    motionYaml:  scaffold.motionYaml.replaceAll("motion-XXXX", motionId),
+    proposalMd:  scaffold.proposalMd.replaceAll("motion-XXXX", motionId),
+    executionMd: scaffold.executionMd.replaceAll("motion-XXXX", motionId),
+    challengeMd: scaffold.challengeMd.replaceAll("motion-XXXX", motionId),
+  };
+}
+
 // ── Root function ─────────────────────────────────────────────────────────────
 
 export function buildMotionDraftScaffold(
