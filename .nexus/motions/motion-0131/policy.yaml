@@ -1,0 +1,6 @@
+motion_id: motion-0131
+required_ok: false
+risk_score: 0.15
+escalation_state: null
+failed_required_gates: []
+notes: "proposed — gates not yet run"
