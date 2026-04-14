@@ -29,7 +29,11 @@ import {
   type ConnectionType,
 } from "@/lib/grid/gridDraft";
 import { validateConnection } from "@/lib/grid/connectionValidator";
-import { diffGridDraft, serializeMotionDraft } from "@/lib/grid/gridDiff";
+import { diffGridDraft } from "@/lib/grid/gridDiff";
+import {
+  buildMotionDraftScaffold,
+  type MotionDraftScaffold,
+} from "@/lib/grid/gridMotionDraft";
 
 // ── V2 extended shape ────────────────────────────────────────────────────────
 
@@ -108,9 +112,9 @@ export function GridView({ config }: { config: GridConfig }) {
   const [connSource, setConnSource] = useState<AgencyAgent | null>(null);
   const [connError, setConnError] = useState<string | null>(null);
 
-  // Diff modal state
+  // Motion draft modal state
   const [showDiff, setShowDiff] = useState(false);
-  const [diffYaml, setDiffYaml] = useState<string | null>(null);
+  const [scaffold, setScaffold] = useState<MotionDraftScaffold | null>(null);
 
   // Auto-clear connection errors after 3 s
   useEffect(() => {
@@ -221,8 +225,7 @@ export function GridView({ config }: { config: GridConfig }) {
 
   function handlePropose() {
     const diff = diffGridDraft(config, draft);
-    const yaml = serializeMotionDraft(diff);
-    setDiffYaml(yaml);
+    setScaffold(buildMotionDraftScaffold(diff));
     setShowDiff(true);
   }
 
@@ -533,9 +536,9 @@ export function GridView({ config }: { config: GridConfig }) {
         />
       )}
 
-      {showDiff && diffYaml !== null && (
-        <DiffModal
-          yaml={diffYaml}
+      {showDiff && scaffold !== null && (
+        <MotionDraftModal
+          scaffold={scaffold}
           onClose={() => setShowDiff(false)}
         />
       )}
@@ -1178,24 +1181,39 @@ function DraftBanner({
   );
 }
 
-// ── DiffModal ─────────────────────────────────────────────────────────────────
+// ── MotionDraftModal ──────────────────────────────────────────────────────────
 //
-// Displays the serialized motion-draft YAML for operator copy.
-// No file writes — output is copy-only.
+// Displays the full motion-draft scaffold as four named, copyable sections.
+// No file writes — all output is copy-only. Closing does not clear draft state.
+//
+// Sections: motion.yaml · proposal.md · execution.md · challenge.md
+// Each section has a filename label, scrollable pre block, and per-section copy button.
 
-function DiffModal({
-  yaml,
+const SCAFFOLD_TABS = [
+  { key: "motionYaml",  label: "motion.yaml"  },
+  { key: "proposalMd",  label: "proposal.md"  },
+  { key: "executionMd", label: "execution.md" },
+  { key: "challengeMd", label: "challenge.md" },
+] as const;
+
+type ScaffoldTabKey = typeof SCAFFOLD_TABS[number]["key"];
+
+function MotionDraftModal({
+  scaffold,
   onClose,
 }: {
-  yaml: string;
+  scaffold: MotionDraftScaffold;
   onClose: () => void;
 }) {
-  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<ScaffoldTabKey>("motionYaml");
+  const [copiedTab, setCopiedTab] = useState<ScaffoldTabKey | null>(null);
+
+  const activeContent = scaffold[activeTab];
 
   function handleCopy() {
-    navigator.clipboard.writeText(yaml).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(activeContent).then(() => {
+      setCopiedTab(activeTab);
+      setTimeout(() => setCopiedTab(null), 2000);
     });
   }
 
@@ -1206,48 +1224,75 @@ function DiffModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-2xl rounded-xl border border-amber-800/50 bg-zinc-950 flex flex-col max-h-[80vh]">
+      <div className="w-full max-w-3xl rounded-xl border border-amber-800/50 bg-zinc-950 flex flex-col max-h-[85vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800">
-          <div>
-            <div className="text-sm font-medium text-amber-200">
-              Motion Draft — Structural Diff
+        <div className="px-5 py-3 border-b border-gray-800">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-amber-200">
+                Motion Draft Package
+              </div>
+              <div className="text-[11px] text-gray-500 mt-0.5 truncate">
+                {scaffold.changesSummary.derivedTitle}
+              </div>
             </div>
-            <div className="text-[11px] text-gray-600 mt-0.5">
-              Copy this block into a motion proposal. No file has been written.
-            </div>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 text-gray-600 hover:text-gray-300 text-xl leading-none"
+              aria-label="Close"
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-600 hover:text-gray-300 text-xl leading-none ml-4"
-            aria-label="Close"
-          >
-            ×
-          </button>
+
+          {/* Placeholder warning */}
+          <div className="mt-2 rounded border border-amber-700/50 bg-amber-950/40 px-3 py-1.5 text-[11px] text-amber-300">
+            Replace <span className="font-mono">motion-XXXX</span> with the next
+            available motion ID before committing. No files have been written.
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 mt-3">
+            {SCAFFOLD_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`rounded-md px-3 py-1 text-[11px] font-mono transition-colors ${
+                  activeTab === tab.key
+                    ? "bg-amber-900/50 text-amber-200 border border-amber-700/60"
+                    : "text-gray-500 hover:text-gray-300 border border-transparent hover:border-gray-700"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* YAML block */}
+        {/* Content */}
         <div className="overflow-auto flex-1 p-4">
           <pre className="text-[11px] font-mono text-gray-300 whitespace-pre leading-relaxed">
-            {yaml}
+            {activeContent}
           </pre>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-800">
-          <span className="text-[11px] text-gray-600">
-            Paste into <span className="font-mono">.nexus/motions/motion-XXXX/proposal.md</span>
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-800 flex-shrink-0">
+          <span className="text-[11px] text-gray-600 font-mono">
+            .nexus/motions/motion-XXXX/{SCAFFOLD_TABS.find((t) => t.key === activeTab)?.label}
           </span>
           <button
             onClick={handleCopy}
             className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
-              copied
+              copiedTab === activeTab
                 ? "border-emerald-700 bg-emerald-900/40 text-emerald-200"
                 : "border-gray-700 bg-zinc-800 text-gray-300 hover:border-gray-600 hover:bg-zinc-700"
             }`}
           >
-            {copied ? "Copied ✓" : "Copy YAML"}
+            {copiedTab === activeTab
+              ? "Copied ✓"
+              : `Copy ${SCAFFOLD_TABS.find((t) => t.key === activeTab)?.label}`}
           </button>
         </div>
       </div>
