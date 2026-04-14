@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 const links = [
   { href: "/operator/events", label: "Events" },
   { href: "/operator/agents", label: "Agents" },
+  { href: "/operator/grid", label: "Grid" },
   { href: "/operator/projects", label: "Projects" },
   { href: "/operator/work", label: "Work" },
   { href: "/operator/waves", label: "Waves" },
