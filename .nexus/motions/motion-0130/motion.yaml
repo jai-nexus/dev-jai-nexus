@@ -1,0 +1,15 @@
+protocol_version: "0.3.8"
+motion_id: motion-0130
+kind: builder-proof
+status: proposed
+title: "JAI Grid Motion Draft Ingestion v0: governed diff to motion-draft scaffold"
+program: q2-corpus-v2-live-value-loop
+proposer_nh_id: "6.0.1"
+council_nh_id: "6.0"
+target:
+  repo: dev-jai-nexus
+  domain: dev.jai.nexus
+required_gates: [validate_motion, validate_agency, typecheck]
+checks_required: [typecheck]
+checks_optional: []
+created_at: "2026-04-14T00:00:00.000Z"
