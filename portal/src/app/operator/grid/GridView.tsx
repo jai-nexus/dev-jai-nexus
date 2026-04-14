@@ -3,15 +3,20 @@
 // portal/src/app/operator/grid/GridView.tsx
 //
 // Client component for Grid Configuration Mode (motion-0129).
-// Slice 2 additions: staged draft state, bounded drag/reposition, DraftBanner, Discard.
+// Slice 3 additions: connection drawing, connection validation, staged connections list.
 //
-// Drag model: HTML5 drag-and-drop. Zone cards are drop targets.
-//   - Dropping an agent onto a different zone stages a MOVE in GridDraftState.
-//   - The "snap grid" is the zone layout itself — agents snap to zones.
-//   - Same-zone drops are no-ops (no meaningless self-moves).
-//   - Nothing is written to any file. Canonical config is never mutated.
+// Connection drawing is a tool within Configuration Mode — no separate top-level mode.
+// All connection changes are staged in client state only. No file writes.
+//
+// Flow:
+//   1. Click "Draw Connection" → connMode = true
+//   2. Choose type (Handoff | Governance)
+//   3. Click source agent → connSource set, highlighted teal
+//   4. Click target agent → validate → stage or show inline error
+//   5. Source stays selected for chaining; click source again to deselect
+//   6. "Exit" or ESC to leave connection mode
 
-import { useReducer, useState, useCallback } from "react";
+import { useReducer, useState, useCallback, useEffect } from "react";
 import type { GridConfig, AgencyAgent, ExecutionRole } from "@/lib/grid/gridConfig";
 import {
   draftReducer,
@@ -20,12 +25,15 @@ import {
   type ZoneId,
   type EffectiveAgent,
   type EffectiveZone,
+  type ConnectionChange,
+  type ConnectionType,
 } from "@/lib/grid/gridDraft";
+import { validateConnection } from "@/lib/grid/connectionValidator";
+import { diffGridDraft, serializeMotionDraft } from "@/lib/grid/gridDiff";
 
-// ── V2 extended shape (same pattern as agents/page.tsx) ──────────────────────
+// ── V2 extended shape ────────────────────────────────────────────────────────
 
 type AgentV2Shape = {
-  type?: string;
   capabilities?: string[];
   constraints?: {
     canEditCode?: boolean;
@@ -33,7 +41,6 @@ type AgentV2Shape = {
     canWriteDocs?: boolean;
     requiresEvidence?: boolean;
   };
-  scopeMode?: string;
 };
 function asV2(agent: AgencyAgent): AgentV2Shape {
   return agent as unknown as AgentV2Shape;
@@ -90,22 +97,136 @@ const DT_FROM_RANK = "application/jai-fromrank";
 export function GridView({ config }: { config: GridConfig }) {
   const [draft, dispatchDraft] = useReducer(draftReducer, EMPTY_DRAFT);
   const [selectedAgent, setSelectedAgent] = useState<AgencyAgent | null>(null);
+
+  // Drag state
   const [dragSourceNhId, setDragSourceNhId] = useState<string | null>(null);
   const [dragTargetZone, setDragTargetZone] = useState<ZoneId | null>(null);
 
+  // Connection mode state
+  const [connMode, setConnMode] = useState(false);
+  const [connType, setConnType] = useState<ConnectionType | null>(null);
+  const [connSource, setConnSource] = useState<AgencyAgent | null>(null);
+  const [connError, setConnError] = useState<string | null>(null);
+
+  // Diff modal state
+  const [showDiff, setShowDiff] = useState(false);
+  const [diffYaml, setDiffYaml] = useState<string | null>(null);
+
+  // Auto-clear connection errors after 3 s
+  useEffect(() => {
+    if (!connError) return;
+    const t = setTimeout(() => setConnError(null), 3000);
+    return () => clearTimeout(t);
+  }, [connError]);
+
+  // ESC exits connection mode
+  useEffect(() => {
+    if (!connMode) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") exitConnMode();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connMode]);
+
   const layout = applyDraftToLayout(config, draft);
-  const hasDraft = draft.changes.length > 0;
+  const hasDraft =
+    draft.changes.length > 0 || draft.connections.length > 0;
+  const totalChanges = draft.changes.length + draft.connections.length;
 
-  const handleSelectAgent = useCallback(
-    (agent: AgencyAgent) => {
-      setSelectedAgent((prev) =>
-        prev?.nh_id === agent.nh_id ? null : agent,
+  // ── Selection ────────────────────────────────────────────────────────────
+
+  const handleSelectAgent = useCallback((agent: AgencyAgent) => {
+    setSelectedAgent((prev) =>
+      prev?.nh_id === agent.nh_id ? null : agent,
+    );
+  }, []);
+
+  // ── Connection drawing ───────────────────────────────────────────────────
+
+  function exitConnMode() {
+    setConnMode(false);
+    setConnType(null);
+    setConnSource(null);
+    setConnError(null);
+  }
+
+  function handleConnectClick(agent: AgencyAgent) {
+    if (!connType) {
+      setConnError("Choose a connection type (Handoff or Governance) first.");
+      return;
+    }
+
+    // No source yet → set source
+    if (!connSource) {
+      setConnSource(agent);
+      return;
+    }
+
+    // Click source again → deselect source
+    if (connSource.nh_id === agent.nh_id) {
+      setConnSource(null);
+      return;
+    }
+
+    // Duplicate check
+    const isDuplicate = draft.connections.some(
+      (c) =>
+        c.sourceNhId === connSource.nh_id &&
+        c.targetNhId === agent.nh_id &&
+        c.type === connType,
+    );
+    if (isDuplicate) {
+      setConnError(
+        `A ${connType} connection from ${connSource.label} to ${agent.label} is already staged.`,
       );
-    },
-    [],
-  );
+      return;
+    }
 
-  // ── Drag handlers ──────────────────────────────────────────────────────────
+    // Structural validation
+    const result = validateConnection(connSource, agent, connType);
+    if (!result.ok) {
+      setConnError(result.reason ?? "Invalid connection.");
+      return;
+    }
+
+    // Stage connection
+    const id = `conn-${draft.connections.length + 1}`;
+    dispatchDraft({
+      type: "CONNECT",
+      connection: {
+        id,
+        sourceNhId: connSource.nh_id,
+        sourceLabel: connSource.label,
+        targetNhId: agent.nh_id,
+        targetLabel: agent.label,
+        type: connType,
+      },
+    });
+    setConnError(null);
+    // Keep source for chaining — operator can draw multiple connections from same source
+  }
+
+  // Routes agent click through connection mode or normal selection
+  function handleAgentClick(agent: AgencyAgent) {
+    if (connMode) {
+      handleConnectClick(agent);
+    } else {
+      handleSelectAgent(agent);
+    }
+  }
+
+  // ── Propose changes ──────────────────────────────────────────────────────
+
+  function handlePropose() {
+    const diff = diffGridDraft(config, draft);
+    const yaml = serializeMotionDraft(diff);
+    setDiffYaml(yaml);
+    setShowDiff(true);
+  }
+
+  // ── Drag handlers ────────────────────────────────────────────────────────
 
   function handleDragStart(
     e: React.DragEvent,
@@ -113,6 +234,10 @@ export function GridView({ config }: { config: GridConfig }) {
     fromZone: ZoneId,
     fromRank: number,
   ) {
+    if (connMode) {
+      e.preventDefault();
+      return;
+    }
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData(DT_NH_ID, agent.nh_id);
     e.dataTransfer.setData(DT_LABEL, agent.label);
@@ -152,9 +277,8 @@ export function GridView({ config }: { config: GridConfig }) {
 
     if (!nhId) return;
 
-    // toRank: append to end of target zone.
-    // If agent was already in the target zone, count excludes itself.
-    const agentsInTarget = targetZone === fromZone ? currentAgentCount - 1 : currentAgentCount;
+    const agentsInTarget =
+      targetZone === fromZone ? currentAgentCount - 1 : currentAgentCount;
     const toRank = Math.max(0, agentsInTarget);
 
     dispatchDraft({
@@ -168,7 +292,7 @@ export function GridView({ config }: { config: GridConfig }) {
     });
   }
 
-  // ── Zone grouping ──────────────────────────────────────────────────────────
+  // ── Zone grouping ────────────────────────────────────────────────────────
 
   const executionLane = layout.zones.filter((z) =>
     (["ARCHITECT", "BUILDER", "VERIFIER"] as ExecutionRole[]).includes(z.role),
@@ -178,34 +302,70 @@ export function GridView({ config }: { config: GridConfig }) {
   );
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8 pb-24">
+    <main className="min-h-screen bg-black text-gray-100 p-8 pb-28">
 
       {/* ── Header ── */}
-      <header className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-3xl font-semibold">JAI NEXUS · Grid</h1>
-          <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[11px] uppercase tracking-wide text-gray-400">
-            Configuration Mode
-          </span>
-          {hasDraft ? (
-            <span className="inline-flex items-center rounded-full border border-amber-700/60 bg-amber-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-400">
-              Draft · {draft.changes.length} pending
+      <header className="mb-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-semibold">JAI NEXUS · Grid</h1>
+            <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[11px] uppercase tracking-wide text-gray-400">
+              Configuration Mode
             </span>
-          ) : (
-            <span className="inline-flex items-center rounded-full border border-emerald-800/50 bg-emerald-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">
-              Canonical · v0
-            </span>
-          )}
+            {hasDraft ? (
+              <span className="inline-flex items-center rounded-full border border-amber-700/60 bg-amber-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-400">
+                Draft · {totalChanges} pending
+              </span>
+            ) : (
+              <span className="inline-flex items-center rounded-full border border-emerald-800/50 bg-emerald-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">
+                Canonical · v0
+              </span>
+            )}
+          </div>
+
+          {/* Connect mode toggle */}
+          <button
+            onClick={() => {
+              if (connMode) {
+                exitConnMode();
+              } else {
+                setConnMode(true);
+                setSelectedAgent(null);
+              }
+            }}
+            className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
+              connMode
+                ? "border-teal-600 bg-teal-900/40 text-teal-200"
+                : "border-gray-700 bg-zinc-900 text-gray-300 hover:border-gray-600 hover:bg-zinc-800"
+            }`}
+          >
+            {connMode ? "● Connect Mode" : "Draw Connection"}
+          </button>
         </div>
-        <p className="text-sm text-gray-500">
-          {hasDraft
-            ? "Staged changes are client-only — nothing has been written."
-            : "Canonical execution-role topology derived from agency config. Drag agents between zones to stage changes."}
+
+        <p className="text-sm text-gray-500 mt-1">
+          {connMode
+            ? "Connection mode active. Choose type, select source, then click a target."
+            : hasDraft
+              ? "Staged changes are client-only — nothing has been written."
+              : "Canonical topology. Drag agents between zones or draw connections to stage changes."}
         </p>
       </header>
 
-      {/* ── Main: zones left, property panel right ── */}
-      <div className="flex gap-6 items-start">
+      {/* ── Connection mode toolbar ── */}
+      {connMode && (
+        <ConnectModeBar
+          connType={connType}
+          connSource={connSource}
+          connError={connError}
+          onSelectType={setConnType}
+          onClearSource={() => setConnSource(null)}
+          onExit={exitConnMode}
+        />
+      )}
+
+      {/* ── Main: zones left, panel right ── */}
+      <div className="flex gap-6 items-start mt-4">
 
         {/* ── Zones column ── */}
         <div className="flex-1 min-w-0 space-y-4">
@@ -221,16 +381,20 @@ export function GridView({ config }: { config: GridConfig }) {
                   key={zone.role}
                   zone={zone}
                   selectedNhId={selectedAgent?.nh_id ?? null}
+                  connSource={connSource}
+                  connMode={connMode}
                   dragSourceNhId={dragSourceNhId}
                   isDragTarget={dragTargetZone === zone.role}
-                  onSelectAgent={handleSelectAgent}
+                  onAgentClick={handleAgentClick}
                   onDragStart={(e, agent, rank) =>
                     handleDragStart(e, agent, zone.role, rank)
                   }
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOverZone(e, zone.role)}
                   onDragLeave={handleDragLeaveZone}
-                  onDrop={(e) => handleDropOnZone(e, zone.role, zone.agents.length)}
+                  onDrop={(e) =>
+                    handleDropOnZone(e, zone.role, zone.agents.length)
+                  }
                 />
               ))}
             </div>
@@ -247,16 +411,20 @@ export function GridView({ config }: { config: GridConfig }) {
                   key={zone.role}
                   zone={zone}
                   selectedNhId={selectedAgent?.nh_id ?? null}
+                  connSource={connSource}
+                  connMode={connMode}
                   dragSourceNhId={dragSourceNhId}
                   isDragTarget={dragTargetZone === zone.role}
-                  onSelectAgent={handleSelectAgent}
+                  onAgentClick={handleAgentClick}
                   onDragStart={(e, agent, rank) =>
                     handleDragStart(e, agent, zone.role, rank)
                   }
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOverZone(e, zone.role)}
                   onDragLeave={handleDragLeaveZone}
-                  onDrop={(e) => handleDropOnZone(e, zone.role, zone.agents.length)}
+                  onDrop={(e) =>
+                    handleDropOnZone(e, zone.role, zone.agents.length)
+                  }
                 />
               ))}
             </div>
@@ -296,9 +464,11 @@ export function GridView({ config }: { config: GridConfig }) {
                         key={ea.agent.nh_id}
                         ea={ea}
                         rank={idx}
-                        isSource={dragSourceNhId === ea.agent.nh_id}
+                        connMode={connMode}
+                        connSource={connSource}
                         isSelected={selectedAgent?.nh_id === ea.agent.nh_id}
-                        onSelect={() => handleSelectAgent(ea.agent)}
+                        isSource={dragSourceNhId === ea.agent.nh_id}
+                        onClick={() => handleAgentClick(ea.agent)}
                         onDragStart={(e) =>
                           handleDragStart(e, ea.agent, "governance", ea.rank)
                         }
@@ -310,15 +480,36 @@ export function GridView({ config }: { config: GridConfig }) {
               </div>
             </div>
           )}
+
+          {/* Staged connections list */}
+          {draft.connections.length > 0 && (
+            <StagedConnectionsList
+              connections={draft.connections}
+              onRemove={(id) => dispatchDraft({ type: "REMOVE_CONNECTION", id })}
+            />
+          )}
         </div>
 
-        {/* ── Property panel ── */}
+        {/* ── Right panel ── */}
         <div className="w-80 flex-shrink-0">
           <div className="sticky top-6">
-            {selectedAgent ? (
+            {connMode ? (
+              <ConnectHint
+                connType={connType}
+                connSource={connSource}
+                stagedCount={draft.connections.length}
+              />
+            ) : selectedAgent ? (
               <PropertyPanel
                 agent={selectedAgent}
                 isDraft={Boolean(draft.overrides[selectedAgent.nh_id])}
+                connectionCount={
+                  draft.connections.filter(
+                    (c) =>
+                      c.sourceNhId === selectedAgent.nh_id ||
+                      c.targetNhId === selectedAgent.nh_id,
+                  ).length
+                }
                 onClose={() => setSelectedAgent(null)}
               />
             ) : (
@@ -326,20 +517,217 @@ export function GridView({ config }: { config: GridConfig }) {
             )}
           </div>
         </div>
-
       </div>
 
-      {/* ── Draft banner (sticky bottom, only when changes exist) ── */}
+      {/* ── Draft banner ── */}
       {hasDraft && (
         <DraftBanner
-          changeCount={draft.changes.length}
+          positionChanges={draft.changes.length}
+          connectionChanges={draft.connections.length}
+          onPropose={handlePropose}
           onDiscard={() => {
             dispatchDraft({ type: "DISCARD" });
             setSelectedAgent(null);
+            setConnSource(null);
           }}
         />
       )}
+
+      {showDiff && diffYaml !== null && (
+        <DiffModal
+          yaml={diffYaml}
+          onClose={() => setShowDiff(false)}
+        />
+      )}
     </main>
+  );
+}
+
+// ── ConnectModeBar ────────────────────────────────────────────────────────────
+
+function ConnectModeBar({
+  connType,
+  connSource,
+  connError,
+  onSelectType,
+  onClearSource,
+  onExit,
+}: {
+  connType: ConnectionType | null;
+  connSource: AgencyAgent | null;
+  connError: string | null;
+  onSelectType: (t: ConnectionType) => void;
+  onClearSource: () => void;
+  onExit: () => void;
+}) {
+  return (
+    <div className="rounded-lg border border-teal-800/50 bg-teal-950/30 px-4 py-3 mb-2">
+      <div className="flex flex-wrap items-center gap-4 text-xs">
+
+        {/* Type selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wide text-gray-500">
+            Type
+          </span>
+          {(["handoff", "governance"] as ConnectionType[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => onSelectType(t)}
+              className={`rounded-md border px-2.5 py-1 text-[11px] capitalize transition-colors ${
+                connType === t
+                  ? "border-teal-600 bg-teal-900/60 text-teal-100"
+                  : "border-gray-700 bg-zinc-900 text-gray-400 hover:border-gray-600 hover:text-gray-200"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Source indicator */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] uppercase tracking-wide text-gray-500">
+            Source
+          </span>
+          {connSource ? (
+            <div className="flex items-center gap-1.5 rounded border border-teal-700/60 bg-teal-900/30 px-2 py-0.5">
+              <span className="text-teal-200">{connSource.label}</span>
+              <span className="font-mono text-[10px] text-teal-500">
+                {connSource.nh_id}
+              </span>
+              <button
+                onClick={onClearSource}
+                className="text-teal-600 hover:text-teal-300 leading-none ml-1"
+                aria-label="Clear source"
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <span className="text-gray-600 italic">
+              {connType ? "click an agent" : "choose type first"}
+            </span>
+          )}
+        </div>
+
+        {/* Exit */}
+        <button
+          onClick={onExit}
+          className="ml-auto rounded-md border border-gray-700 px-2.5 py-1 text-[11px] text-gray-400 hover:border-gray-600 hover:text-gray-200 transition-colors"
+        >
+          Exit ×
+        </button>
+      </div>
+
+      {/* Inline error */}
+      {connError && (
+        <div className="mt-2 rounded border border-red-800/60 bg-red-950/40 px-3 py-1.5 text-[11px] text-red-300">
+          {connError}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ConnectHint (right panel in connect mode) ────────────────────────────────
+
+function ConnectHint({
+  connType,
+  connSource,
+  stagedCount,
+}: {
+  connType: ConnectionType | null;
+  connSource: AgencyAgent | null;
+  stagedCount: number;
+}) {
+  const step = !connType ? 1 : !connSource ? 2 : 3;
+
+  return (
+    <div className="rounded-lg border border-teal-800/40 bg-zinc-950 p-4">
+      <div className="mb-3 text-xs font-medium text-teal-300">
+        Connect Mode
+      </div>
+      <ol className="space-y-2 text-[11px]">
+        <li className={step === 1 ? "text-teal-200" : "text-gray-600"}>
+          <span className="font-mono mr-1">{step === 1 ? "→" : "✓"}</span>
+          Choose type: Handoff or Governance
+        </li>
+        <li className={step === 2 ? "text-teal-200" : step > 2 ? "text-gray-600" : "text-gray-700"}>
+          <span className="font-mono mr-1">{step === 2 ? "→" : step > 2 ? "✓" : " "}</span>
+          Click source agent
+        </li>
+        <li className={step === 3 ? "text-teal-200" : "text-gray-700"}>
+          <span className="font-mono mr-1">{step === 3 ? "→" : " "}</span>
+          Click target agent
+        </li>
+      </ol>
+      {stagedCount > 0 && (
+        <div className="mt-3 border-t border-gray-800 pt-3 text-[11px] text-gray-500">
+          {stagedCount} connection{stagedCount !== 1 ? "s" : ""} staged
+        </div>
+      )}
+      <div className="mt-3 text-[10px] text-gray-700">
+        ESC or Exit to leave connection mode
+      </div>
+    </div>
+  );
+}
+
+// ── StagedConnectionsList ────────────────────────────────────────────────────
+
+function StagedConnectionsList({
+  connections,
+  onRemove,
+}: {
+  connections: ConnectionChange[];
+  onRemove: (id: string) => void;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2">
+        Staged connections ({connections.length})
+      </p>
+      <div className="rounded-lg border border-gray-800 bg-zinc-950 overflow-hidden">
+        {connections.map((conn, idx) => (
+          <div
+            key={conn.id}
+            className={`flex items-center justify-between gap-3 px-3 py-2 text-xs ${
+              idx < connections.length - 1
+                ? "border-b border-gray-900"
+                : ""
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-gray-300 truncate">{conn.sourceLabel}</span>
+              <span className="text-gray-600 flex-shrink-0">→</span>
+              <span
+                className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] flex-shrink-0 ${
+                  conn.type === "handoff"
+                    ? "bg-amber-900/40 text-amber-300"
+                    : "bg-sky-900/40 text-sky-300"
+                }`}
+              >
+                {conn.type}
+              </span>
+              <span className="text-gray-600 flex-shrink-0">→</span>
+              <span className="text-gray-300 truncate">{conn.targetLabel}</span>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="font-mono text-[10px] text-gray-700">
+                {conn.id}
+              </span>
+              <button
+                onClick={() => onRemove(conn.id)}
+                className="text-gray-700 hover:text-red-400 transition-colors text-sm leading-none"
+                aria-label={`Remove connection ${conn.id}`}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -348,9 +736,11 @@ export function GridView({ config }: { config: GridConfig }) {
 function ZoneCard({
   zone,
   selectedNhId,
+  connSource,
+  connMode,
   dragSourceNhId,
   isDragTarget,
-  onSelectAgent,
+  onAgentClick,
   onDragStart,
   onDragEnd,
   onDragOver,
@@ -359,9 +749,11 @@ function ZoneCard({
 }: {
   zone: EffectiveZone;
   selectedNhId: string | null;
+  connSource: AgencyAgent | null;
+  connMode: boolean;
   dragSourceNhId: string | null;
   isDragTarget: boolean;
-  onSelectAgent: (agent: AgencyAgent) => void;
+  onAgentClick: (agent: AgencyAgent) => void;
   onDragStart: (e: React.DragEvent, agent: AgencyAgent, rank: number) => void;
   onDragEnd: () => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -375,11 +767,10 @@ function ZoneCard({
       className={`rounded-lg border bg-zinc-950 transition-colors ${
         isDragTarget ? colors.dragOver : colors.border
       }`}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
+      onDragOver={connMode ? undefined : onDragOver}
+      onDragLeave={connMode ? undefined : onDragLeave}
+      onDrop={connMode ? undefined : onDrop}
     >
-      {/* Zone header */}
       <div className="px-3 py-2 border-b border-gray-800/80">
         <div className="flex items-center justify-between">
           <span className={`text-xs font-semibold ${colors.header}`}>
@@ -394,21 +785,22 @@ function ZoneCard({
         <p className="text-[10px] text-gray-600 mt-0.5">{zone.description}</p>
       </div>
 
-      {/* Agent list */}
       <div className="p-2 space-y-1 min-h-[3rem]">
         {zone.agents.length === 0 ? (
           <p className="text-[11px] text-gray-700 px-1 py-2 text-center">
-            {isDragTarget ? "Drop here" : "No agents"}
+            {isDragTarget && !connMode ? "Drop here" : "No agents"}
           </p>
         ) : (
           zone.agents.map((ea, idx) => (
-            <DraggableAgentRow
+            <AgentRow
               key={ea.agent.nh_id}
               ea={ea}
               rank={idx}
               isSelected={selectedNhId === ea.agent.nh_id}
-              isSource={dragSourceNhId === ea.agent.nh_id}
-              onSelect={() => onSelectAgent(ea.agent)}
+              isConnSource={connSource?.nh_id === ea.agent.nh_id}
+              isDragSource={dragSourceNhId === ea.agent.nh_id}
+              connMode={connMode}
+              onClick={() => onAgentClick(ea.agent)}
               onDragStart={(e) => onDragStart(e, ea.agent, ea.rank)}
               onDragEnd={onDragEnd}
             />
@@ -419,46 +811,69 @@ function ZoneCard({
   );
 }
 
-// ── DraggableAgentRow ────────────────────────────────────────────────────────
+// ── AgentRow ─────────────────────────────────────────────────────────────────
 
-function DraggableAgentRow({
+function AgentRow({
   ea,
   rank: _rank,
   isSelected,
-  isSource,
-  onSelect,
+  isConnSource,
+  isDragSource,
+  connMode,
+  onClick,
   onDragStart,
   onDragEnd,
 }: {
   ea: EffectiveAgent;
   rank: number;
   isSelected: boolean;
-  isSource: boolean;
-  onSelect: () => void;
+  isConnSource: boolean;
+  isDragSource: boolean;
+  connMode: boolean;
+  onClick: () => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
 }) {
-  const { agent, isDraft } = ea;
+  const { agent, isDraft, connectionCount } = ea;
+
+  let rowClass =
+    "w-full text-left rounded px-2 py-1.5 text-xs select-none transition-colors ";
+
+  if (connMode) {
+    rowClass += "cursor-crosshair ";
+  } else {
+    rowClass += "cursor-grab active:cursor-grabbing ";
+  }
+
+  if (isDragSource) {
+    rowClass += "opacity-30 border border-dashed border-gray-600";
+  } else if (isConnSource) {
+    rowClass += "border border-teal-600 bg-teal-900/30 text-teal-100";
+  } else if (isSelected) {
+    rowClass += "border border-sky-700/50 bg-sky-900/30 text-sky-100";
+  } else if (isDraft) {
+    rowClass += "border border-amber-800/60 bg-amber-950/30 text-amber-100";
+  } else {
+    rowClass +=
+      "border border-transparent text-gray-300 hover:border-gray-700 hover:bg-zinc-800";
+  }
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onSelect}
-      className={`w-full text-left rounded px-2 py-1.5 text-xs cursor-grab active:cursor-grabbing transition-opacity select-none ${
-        isSource
-          ? "opacity-30 border border-dashed border-gray-600"
-          : isSelected
-            ? "border border-sky-700/50 bg-sky-900/30 text-sky-100"
-            : isDraft
-              ? "border border-amber-800/60 bg-amber-950/30 text-amber-100"
-              : "border border-transparent text-gray-300 hover:border-gray-700 hover:bg-zinc-800"
-      }`}
+      draggable={!connMode}
+      onDragStart={connMode ? undefined : onDragStart}
+      onDragEnd={connMode ? undefined : onDragEnd}
+      onClick={onClick}
+      className={rowClass}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium truncate">{agent.label}</span>
         <div className="flex items-center gap-1 flex-shrink-0">
+          {connectionCount > 0 && (
+            <span className="inline-flex items-center rounded bg-teal-900/50 px-1 py-0.5 text-[9px] text-teal-300">
+              {connectionCount}⟷
+            </span>
+          )}
           {isDraft && (
             <span className="inline-flex items-center rounded bg-amber-900/50 px-1 py-0.5 text-[9px] text-amber-300">
               draft
@@ -479,40 +894,54 @@ function DraggableAgentRow({
 function DraggableGovernanceChip({
   ea,
   rank: _rank,
-  isSource,
+  connMode,
+  connSource,
   isSelected,
-  onSelect,
+  isSource,
+  onClick,
   onDragStart,
   onDragEnd,
 }: {
   ea: EffectiveAgent;
   rank: number;
-  isSource: boolean;
+  connMode: boolean;
+  connSource: AgencyAgent | null;
   isSelected: boolean;
-  onSelect: () => void;
+  isSource: boolean;
+  onClick: () => void;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: () => void;
 }) {
-  const { agent, isDraft } = ea;
+  const { agent, isDraft, connectionCount } = ea;
+  const isConnSource = connSource?.nh_id === agent.nh_id;
 
   return (
     <div
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onClick={onSelect}
-      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] cursor-grab active:cursor-grabbing select-none transition-opacity ${
+      draggable={!connMode}
+      onDragStart={connMode ? undefined : onDragStart}
+      onDragEnd={connMode ? undefined : onDragEnd}
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] select-none transition-colors ${
+        connMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"
+      } ${
         isSource
           ? "opacity-30 border-dashed border-gray-600"
-          : isSelected
-            ? "border-sky-600 bg-sky-900/30 text-sky-200"
-            : isDraft
-              ? "border-amber-700/60 bg-amber-950/30 text-amber-200"
-              : "border-gray-700 bg-zinc-900 text-gray-300 hover:border-gray-600 hover:bg-zinc-800"
+          : isConnSource
+            ? "border-teal-600 bg-teal-900/30 text-teal-200"
+            : isSelected
+              ? "border-sky-600 bg-sky-900/30 text-sky-200"
+              : isDraft
+                ? "border-amber-700/60 bg-amber-950/30 text-amber-200"
+                : "border-gray-700 bg-zinc-900 text-gray-300 hover:border-gray-600 hover:bg-zinc-800"
       }`}
     >
       <span className="font-mono text-[10px] text-gray-500">{agent.nh_id}</span>
       <span>{agent.label}</span>
+      {connectionCount > 0 && (
+        <span className="inline-flex items-center rounded bg-teal-900/50 px-1 py-0.5 text-[9px] text-teal-300">
+          {connectionCount}⟷
+        </span>
+      )}
       {isDraft && (
         <span className="inline-flex items-center rounded bg-amber-900/50 px-1 py-0.5 text-[9px] text-amber-300">
           draft
@@ -527,10 +956,12 @@ function DraggableGovernanceChip({
 function PropertyPanel({
   agent,
   isDraft,
+  connectionCount,
   onClose,
 }: {
   agent: AgencyAgent;
   isDraft: boolean;
+  connectionCount: number;
   onClose: () => void;
 }) {
   const v2 = asV2(agent);
@@ -545,13 +976,18 @@ function PropertyPanel({
     >
       <div className="flex items-start justify-between gap-2 px-4 py-3 border-b border-gray-800">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="text-sm font-medium text-gray-100 truncate">
               {agent.label}
             </div>
             {isDraft && (
               <span className="inline-flex items-center rounded bg-amber-900/50 px-1.5 py-0.5 text-[9px] text-amber-300 flex-shrink-0">
                 draft position
+              </span>
+            )}
+            {connectionCount > 0 && (
+              <span className="inline-flex items-center rounded bg-teal-900/50 px-1.5 py-0.5 text-[9px] text-teal-300 flex-shrink-0">
+                {connectionCount} connection{connectionCount !== 1 ? "s" : ""}
               </span>
             )}
           </div>
@@ -685,7 +1121,7 @@ function EmptyPanel({ isDragging }: { isDragging: boolean }) {
       <p className="text-[11px] text-gray-700">
         {isDragging
           ? "Release over any zone to stage the move."
-          : "Click to view properties. Drag to stage a zone reassignment."}
+          : "Click to view properties. Drag to stage a zone reassignment. Use Draw Connection to stage connections."}
       </p>
     </div>
   );
@@ -694,30 +1130,126 @@ function EmptyPanel({ isDragging }: { isDragging: boolean }) {
 // ── DraftBanner ──────────────────────────────────────────────────────────────
 
 function DraftBanner({
-  changeCount,
+  positionChanges,
+  connectionChanges,
+  onPropose,
   onDiscard,
 }: {
-  changeCount: number;
+  positionChanges: number;
+  connectionChanges: number;
+  onPropose: () => void;
   onDiscard: () => void;
 }) {
+  const parts: string[] = [];
+  if (positionChanges > 0)
+    parts.push(
+      `${positionChanges} position${positionChanges !== 1 ? "s" : ""}`,
+    );
+  if (connectionChanges > 0)
+    parts.push(
+      `${connectionChanges} connection${connectionChanges !== 1 ? "s" : ""}`,
+    );
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-amber-800/50 bg-amber-950/90 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-3">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-2 w-2 rounded-full bg-amber-400" />
           <span className="text-sm text-amber-200">
-            {changeCount} staged change{changeCount !== 1 ? "s" : ""} · not written
-          </span>
-          <span className="text-[11px] text-amber-600">
-            Propose Changes available in a later slice
+            {parts.join(" · ")} staged · not written
           </span>
         </div>
-        <button
-          onClick={onDiscard}
-          className="rounded-md border border-amber-700/60 bg-amber-900/40 px-3 py-1.5 text-xs text-amber-200 hover:bg-amber-900/70 transition-colors"
-        >
-          Discard Draft
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onPropose}
+            className="rounded-md border border-amber-600/70 bg-amber-900/60 px-3 py-1.5 text-xs text-amber-100 hover:bg-amber-800/80 transition-colors"
+          >
+            Propose Changes
+          </button>
+          <button
+            onClick={onDiscard}
+            className="rounded-md border border-amber-700/60 bg-transparent px-3 py-1.5 text-xs text-amber-400 hover:text-amber-200 hover:border-amber-600 transition-colors"
+          >
+            Discard Draft
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DiffModal ─────────────────────────────────────────────────────────────────
+//
+// Displays the serialized motion-draft YAML for operator copy.
+// No file writes — output is copy-only.
+
+function DiffModal({
+  yaml,
+  onClose,
+}: {
+  yaml: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(yaml).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-6"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="w-full max-w-2xl rounded-xl border border-amber-800/50 bg-zinc-950 flex flex-col max-h-[80vh]">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800">
+          <div>
+            <div className="text-sm font-medium text-amber-200">
+              Motion Draft — Structural Diff
+            </div>
+            <div className="text-[11px] text-gray-600 mt-0.5">
+              Copy this block into a motion proposal. No file has been written.
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-600 hover:text-gray-300 text-xl leading-none ml-4"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* YAML block */}
+        <div className="overflow-auto flex-1 p-4">
+          <pre className="text-[11px] font-mono text-gray-300 whitespace-pre leading-relaxed">
+            {yaml}
+          </pre>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-800">
+          <span className="text-[11px] text-gray-600">
+            Paste into <span className="font-mono">.nexus/motions/motion-XXXX/proposal.md</span>
+          </span>
+          <button
+            onClick={handleCopy}
+            className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
+              copied
+                ? "border-emerald-700 bg-emerald-900/40 text-emerald-200"
+                : "border-gray-700 bg-zinc-800 text-gray-300 hover:border-gray-600 hover:bg-zinc-700"
+            }`}
+          >
+            {copied ? "Copied ✓" : "Copy YAML"}
+          </button>
+        </div>
       </div>
     </div>
   );
