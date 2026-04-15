@@ -24,6 +24,7 @@
     "grid:ingest": "node portal/scripts/grid-ingest-bundle.mjs",
     "grid:review": "node portal/scripts/grid-review-motion-package.mjs",
     "grid:preflight": "node portal/scripts/grid-council-run-preconditions.mjs"
+    "grid:review": "node portal/scripts/grid-review-motion-package.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
