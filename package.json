@@ -21,7 +21,8 @@
     "code:pack": "node portal/scripts/generate-task-code-pack.mjs",
     "snapshot:motions": "node portal/scripts/snapshot-motion-full.mjs --manifest",
     "bootstrap:gen": "node portal/scripts/generate-bootstrap.mjs",
-    "grid:ingest": "node portal/scripts/grid-ingest-bundle.mjs"
+    "grid:ingest": "node portal/scripts/grid-ingest-bundle.mjs",
+    "grid:review": "node portal/scripts/grid-review-motion-package.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
