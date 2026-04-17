@@ -1,7 +1,7 @@
 protocol_version: "0.3.8"
 motion_id: motion-0135
 kind: builder-proof
-status: open
+status: ratified
 title: "JAI Grid Vote Preparation Ergonomics v0: explicit pre-council vote scaffold and guidance"
 program: q2-corpus-v2-live-value-loop
 proposer_nh_id: "6.0.1"
