@@ -1,0 +1,15 @@
+services:
+  syncd:
+    build: .
+    container_name: jai-nexus-syncd
+    environment:
+      SOURCE_ROOT: /repo
+      DATA_ROOT: /data
+      INTERVAL_SEC: "60"
+    volumes:
+      - /home/jerryingram/dev/jai-nexus:/repo:ro
+      - jai_nexus_syncd_data:/data
+    restart: unless-stopped
+
+volumes:
+  jai_nexus_syncd_data:
