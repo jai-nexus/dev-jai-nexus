@@ -25,7 +25,8 @@
     "grid:review": "node portal/scripts/grid-review-motion-package.mjs",
     "grid:preflight": "node portal/scripts/grid-council-run-preconditions.mjs",
     "grid:vote-prep": "node portal/scripts/grid-vote-prep.mjs",
-    "grid:launch": "node portal/scripts/grid-launch.mjs"
+    "grid:launch": "node portal/scripts/grid-launch.mjs",
+    "grid:status": "node portal/scripts/grid-status.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
