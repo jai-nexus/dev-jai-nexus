@@ -71,16 +71,29 @@ function normalizeStatus(status) {
     return typeof status === "string" ? status.trim().toLowerCase() : null;
 }
 
+function parseEmbeddedJson(stdout) {
+    if (!stdout) return null;
+    const startIndex = stdout.indexOf("{");
+    const endIndex = stdout.lastIndexOf("}");
+    if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) return null;
+    const candidate = stdout.slice(startIndex, endIndex + 1);
+    try {
+        return JSON.parse(candidate);
+    } catch {
+        return null;
+    }
+}
+
 function runPnpmGridReview(motionId) {
     if (process.platform === "win32") {
-        return spawnSync("cmd.exe", ["/d", "/s", "/c", `pnpm grid:review --motion ${motionId}`], {
+        return spawnSync("cmd.exe", ["/d", "/s", "/c", `pnpm grid:review --motion ${motionId} --json`], {
             cwd: process.cwd(),
             encoding: "utf8",
             stdio: "pipe",
         });
     }
 
-    return spawnSync("pnpm", ["grid:review", "--motion", motionId], {
+    return spawnSync("pnpm", ["grid:review", "--motion", motionId, "--json"], {
         cwd: process.cwd(),
         encoding: "utf8",
         stdio: "pipe",
@@ -158,16 +171,22 @@ function main() {
     if (!failedCheck) {
         const reviewResult = runPnpmGridReview(args.motion);
         const reviewOk = reviewResult.status === 0;
-        const reviewOutput = [reviewResult.stdout?.trim(), reviewResult.stderr?.trim()]
-            .filter(Boolean)
-            .join(" | ");
+        const reviewParsed = parseEmbeddedJson(reviewResult.stdout?.trim() ?? "");
+
+        let reviewDetail;
+        if (reviewOk) {
+            reviewDetail = "grid:review passed";
+        } else if (reviewParsed?.verdict) {
+            reviewDetail = `grid:review exited ${reviewResult.status ?? 1} — verdict=${reviewParsed.verdict}${reviewParsed.failed_check ? `, failed_check=${reviewParsed.failed_check}` : ""}`;
+        } else {
+            const raw = [reviewResult.stdout?.trim(), reviewResult.stderr?.trim()].filter(Boolean).join(" | ");
+            reviewDetail = `grid:review exited ${reviewResult.status ?? 1}${raw ? ` — ${raw}` : ""}`;
+        }
 
         checks.push({
             name: "REVIEW_READY",
             ok: reviewOk,
-            detail: reviewOk
-                ? `grid:review passed${reviewOutput ? ` - ${reviewOutput}` : ""}`
-                : `grid:review exited ${reviewResult.status ?? 1}${reviewOutput ? ` - ${reviewOutput}` : ""}`,
+            detail: reviewDetail,
         });
 
         if (!reviewOk) {

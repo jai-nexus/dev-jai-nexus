@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0",
+  "motion": "motion-0139",
+  "_notes": "Static JSON output contract documentation for the five grid governance read-only commands. Each entry documents the success_token field and value, plus one representative pass and one representative fail example. _notes fields are annotation only and are not part of the runtime contract.",
+  "commands": {
+    "grid:preflight": {
+      "_notes": "pnpm grid:preflight --motion <id> --json. Checks: DIR_EXISTS, REVIEW_READY, MOTION_STATUS_READY, VOTE_ARTIFACT_STATE, NEXT_STEP_GUIDANCE. Exit 0 on ready.",
+      "success_token": "verdict",
+      "success_value": "READY_TO_INVOKE_COUNCIL_RUN",
+      "pass_example": {
+        "ready": true,
+        "verdict": "READY_TO_INVOKE_COUNCIL_RUN",
+        "failed_check": null,
+        "motion_id": "motion-0139",
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "REVIEW_READY", "ok": true, "detail": "grid:review passed" },
+          { "name": "MOTION_STATUS_READY", "ok": true, "detail": "status=open" },
+          { "name": "VOTE_ARTIFACT_STATE", "ok": true, "detail": "vote.json present - council-run will evaluate existing votes in .nexus\\motions\\motion-0139\\vote.json" },
+          { "name": "NEXT_STEP_GUIDANCE", "ok": true, "detail": "Run pnpm council:run motion-0139" }
+        ],
+        "next_step": "Run pnpm council:run motion-0139"
+      },
+      "fail_example": {
+        "_notes": "REVIEW_READY failure with structured detail after motion-0139 hardening.",
+        "ready": false,
+        "verdict": "BLOCKED_PRECONDITION(REVIEW_READY)",
+        "failed_check": "REVIEW_READY",
+        "motion_id": "motion-0139",
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "REVIEW_READY", "ok": false, "detail": "grid:review exited 1 — verdict=NOT_READY, failed_check=REQUIRED_FILES" },
+          { "name": "NEXT_STEP_GUIDANCE", "ok": false, "detail": "Fix the review failure, rerun pnpm grid:review --motion motion-0139, then rerun pnpm grid:preflight --motion motion-0139" }
+        ],
+        "next_step": "Fix the review failure, rerun pnpm grid:review --motion motion-0139, then rerun pnpm grid:preflight --motion motion-0139"
+      }
+    },
+    "grid:vote-prep": {
+      "_notes": "pnpm grid:vote-prep --motion <id> --json. Checks: DIR_EXISTS, MOTION_STATE, COUNCIL_CONFIG, PREFLIGHT_READY, VOTE_ARTIFACT, VOTE_JSON_PARSE, VOTE_JSON_SCHEMA. Exit 0 on ready.",
+      "success_token": "outcome",
+      "success_value": "VOTE_READY",
+      "pass_example": {
+        "motion_id": "motion-0139",
+        "outcome": "VOTE_READY",
+        "ready": true,
+        "failed_check": null,
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "MOTION_STATE", "ok": true, "detail": "status=open" },
+          { "name": "COUNCIL_CONFIG", "ok": true, "detail": "vote_mode=unanimous_consent; required_roles=proposer, challenger, arbiter" },
+          { "name": "PREFLIGHT_READY", "ok": true, "detail": "grid:preflight passed" },
+          { "name": "VOTE_ARTIFACT", "ok": true, "detail": "found .nexus\\motions\\motion-0139\\vote.json" },
+          { "name": "VOTE_JSON_PARSE", "ok": true, "detail": "parsed .nexus\\motions\\motion-0139\\vote.json successfully" },
+          { "name": "VOTE_JSON_SCHEMA", "ok": true, "detail": "vote.json structure is valid" }
+        ],
+        "next_step": "Run pnpm council:run motion-0139"
+      },
+      "fail_example": {
+        "_notes": "PREFLIGHT_READY failure with structured detail after motion-0139 hardening.",
+        "motion_id": "motion-0139",
+        "outcome": "BLOCKED_WRONG_STATE",
+        "ready": false,
+        "failed_check": "PREFLIGHT_READY",
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "MOTION_STATE", "ok": true, "detail": "status=open" },
+          { "name": "COUNCIL_CONFIG", "ok": true, "detail": "vote_mode=unanimous_consent; required_roles=proposer, challenger, arbiter" },
+          { "name": "PREFLIGHT_READY", "ok": false, "detail": "grid:preflight exited 1 — verdict=BLOCKED_PRECONDITION(REVIEW_READY), failed_check=REVIEW_READY" }
+        ],
+        "next_step": "Fix the preflight failure, rerun pnpm grid:preflight --motion motion-0139, then rerun pnpm grid:vote-prep --motion motion-0139"
+      }
+    },
+    "grid:launch": {
+      "_notes": "pnpm grid:launch --motion <id> --json. Checks: DIR_EXISTS, MOTION_STATE, REVIEW_READY, PREFLIGHT_READY, VOTE_READY. Exit 0 on ready.",
+      "success_token": "outcome",
+      "success_value": "LAUNCH_READY",
+      "pass_example": {
+        "motion_id": "motion-0139",
+        "outcome": "LAUNCH_READY",
+        "ready": true,
+        "failed_check": null,
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "MOTION_STATE", "ok": true, "detail": "status=open" },
+          { "name": "REVIEW_READY", "ok": true, "detail": "grid:review returned READY_FOR_COUNCIL_RUN" },
+          { "name": "PREFLIGHT_READY", "ok": true, "detail": "grid:preflight returned READY_TO_INVOKE_COUNCIL_RUN" },
+          { "name": "VOTE_READY", "ok": true, "detail": "grid:vote-prep returned VOTE_READY" }
+        ],
+        "next_step": "Run pnpm council:run motion-0139"
+      },
+      "fail_example": {
+        "motion_id": "motion-0139",
+        "outcome": "BLOCKED_VOTE_NOT_READY",
+        "ready": false,
+        "failed_check": "VOTE_READY",
+        "checks": [
+          { "name": "DIR_EXISTS", "ok": true, "detail": "found .nexus\\motions\\motion-0139" },
+          { "name": "MOTION_STATE", "ok": true, "detail": "status=open" },
+          { "name": "REVIEW_READY", "ok": true, "detail": "grid:review returned READY_FOR_COUNCIL_RUN" },
+          { "name": "PREFLIGHT_READY", "ok": true, "detail": "grid:preflight returned READY_TO_INVOKE_COUNCIL_RUN" },
+          { "name": "VOTE_READY", "ok": false, "detail": "outcome=BLOCKED_MISSING_VOTE | next_step=Run pnpm grid:vote-prep --motion motion-0139 --scaffold" }
+        ],
+        "next_step": "Run pnpm grid:vote-prep --motion motion-0139 --scaffold; rerun pnpm grid:launch --motion motion-0139 afterwards"
+      }
+    },
+    "grid:status": {
+      "_notes": "pnpm grid:status --motion <id> --json. Reads decision.yaml, verify.json, vote.json, policy.yaml. Exit 0 only on EXECUTION_RATIFIED.",
+      "success_token": "execution_state",
+      "success_value": "EXECUTION_RATIFIED",
+      "pass_example": {
+        "motion_id": "motion-0139",
+        "execution_state": "EXECUTION_RATIFIED",
+        "ready": true,
+        "decision": {
+          "status": "RATIFIED",
+          "ratified_by": "voter",
+          "notes": "RATIFIED: vote_mode=unanimous_consent",
+          "last_updated": "2026-04-20T00:00:00.000Z"
+        },
+        "gates": {
+          "total": 3,
+          "passing": 3,
+          "failing": 0,
+          "required_ok": true,
+          "gates": [
+            { "gate": "validate_motion", "ok": true, "status": 0 },
+            { "gate": "validate_agency", "ok": true, "status": 0 },
+            { "gate": "typecheck", "ok": true, "status": 0 }
+          ]
+        },
+        "vote": {
+          "vote_mode": "unanimous_consent",
+          "required_roles": ["proposer", "challenger", "arbiter"],
+          "filled_votes": 3,
+          "total_votes": 3,
+          "outcome": {
+            "result": "PASS",
+            "yes": 3,
+            "no": 0,
+            "abstain": 0,
+            "yes_with_reservations": 0,
+            "missing_required_roles": []
+          },
+          "empty_votes": []
+        },
+        "policy": {
+          "vote_mode": "unanimous_consent",
+          "eligible_to_vote": true,
+          "required_ok": true,
+          "recommended_vote": "yes",
+          "blocking_reasons": [],
+          "warnings": []
+        },
+        "next_step": "No further governance action required"
+      },
+      "fail_example": {
+        "_notes": "EXECUTION_NOT_STARTED — decision.yaml absent.",
+        "motion_id": "motion-0139",
+        "execution_state": "EXECUTION_NOT_STARTED",
+        "ready": false,
+        "decision": null,
+        "gates": null,
+        "vote": null,
+        "policy": null,
+        "next_step": "Run pnpm grid:launch --motion motion-0139, then pnpm council:run motion-0139"
+      }
+    },
+    "grid:operator": {
+      "_notes": "pnpm grid:operator --motion <id> --json. Composes grid:vote-prep, grid:preflight, grid:launch, grid:status. Exit 0 on READY or EXECUTED.",
+      "success_token": "cockpit_state",
+      "success_value": "READY",
+      "pass_example": {
+        "_notes": "READY: all pre-council gates pass. council_run_command shown as boundary text, never invoked.",
+        "motion_id": "motion-0139",
+        "cockpit_state": "READY",
+        "council_run_ready": true,
+        "council_run_command": "pnpm council:run motion-0139",
+        "stages": {
+          "vote_prep": { "state": "READY", "detail": "vote.json valid and all roles present", "next_step": "Run pnpm council:run motion-0139" },
+          "preflight": { "state": "READY", "detail": "council-run preconditions met", "next_step": "Run pnpm council:run motion-0139" },
+          "launch":    { "state": "READY", "detail": "review, preflight, and vote-prep all pass", "next_step": "Run pnpm council:run motion-0139" },
+          "status":    { "state": "INCOMPLETE", "detail": "execution_state=EXECUTION_NOT_STARTED", "next_step": "Run pnpm grid:launch --motion motion-0139, then pnpm council:run motion-0139" }
+        },
+        "next_step": "Run pnpm council:run motion-0139"
+      },
+      "fail_example": {
+        "_notes": "EXECUTED: motion ratified. Exit 0.",
+        "motion_id": "motion-0139",
+        "cockpit_state": "EXECUTED",
+        "council_run_ready": false,
+        "council_run_command": null,
+        "stages": {
+          "vote_prep": { "state": "BLOCKED", "detail": "BLOCKED_ALREADY_RATIFIED", "next_step": "Do not run pnpm council:run motion-0139; inspect existing governance artifacts in .nexus\\motions\\motion-0139" },
+          "preflight": { "state": "BLOCKED", "detail": "MOTION_STATUS_READY", "next_step": "Do not run pnpm council:run motion-0139; inspect .nexus\\motions\\motion-0139\\motion.yaml and existing governance artifacts first" },
+          "launch":    { "state": "BLOCKED", "detail": "BLOCKED_ALREADY_RATIFIED", "next_step": "Do not run pnpm council:run motion-0139; inspect existing governance artifacts in .nexus\\motions\\motion-0139" },
+          "status":    { "state": "EXECUTED", "detail": "motion ratified", "next_step": "No further governance action required" }
+        },
+        "next_step": "Motion motion-0139 is ratified. No further governance action required."
+      }
+    }
+  }
+}
