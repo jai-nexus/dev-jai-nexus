@@ -26,7 +26,8 @@
     "grid:preflight": "node portal/scripts/grid-council-run-preconditions.mjs",
     "grid:vote-prep": "node portal/scripts/grid-vote-prep.mjs",
     "grid:launch": "node portal/scripts/grid-launch.mjs",
-    "grid:status": "node portal/scripts/grid-status.mjs"
+    "grid:status": "node portal/scripts/grid-status.mjs",
+    "grid:operator": "node portal/scripts/grid-operator.mjs"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
