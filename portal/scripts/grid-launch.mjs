@@ -184,7 +184,7 @@ function main() {
     const checks = [];
     let outcome = "LAUNCH_READY";
     let failedCheck = null;
-    let nextStep = `pnpm council:run ${args.motion}`;
+    let nextStep = `Run pnpm council:run ${args.motion}`;
 
     const dirExists = fs.existsSync(motionDir) && fs.statSync(motionDir).isDirectory();
     checks.push({

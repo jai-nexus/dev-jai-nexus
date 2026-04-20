@@ -80,6 +80,19 @@ function normalizeStatus(status) {
     return typeof status === "string" ? status.trim().toLowerCase() : null;
 }
 
+function parseEmbeddedJson(stdout) {
+    if (!stdout) return null;
+    const startIndex = stdout.indexOf("{");
+    const endIndex = stdout.lastIndexOf("}");
+    if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) return null;
+    const candidate = stdout.slice(startIndex, endIndex + 1);
+    try {
+        return JSON.parse(candidate);
+    } catch {
+        return null;
+    }
+}
+
 function readCouncilConfig(configPath) {
     const raw = fs.readFileSync(configPath, "utf8");
     const data = yaml.load(raw);
@@ -97,14 +110,14 @@ function readCouncilConfig(configPath) {
 
 function runPnpmGridPreflight(motionId) {
     if (process.platform === "win32") {
-        return spawnSync("cmd.exe", ["/d", "/s", "/c", `pnpm grid:preflight --motion ${motionId}`], {
+        return spawnSync("cmd.exe", ["/d", "/s", "/c", `pnpm grid:preflight --motion ${motionId} --json`], {
             cwd: process.cwd(),
             encoding: "utf8",
             stdio: "pipe",
         });
     }
 
-    return spawnSync("pnpm", ["grid:preflight", "--motion", motionId], {
+    return spawnSync("pnpm", ["grid:preflight", "--motion", motionId, "--json"], {
         cwd: process.cwd(),
         encoding: "utf8",
         stdio: "pipe",
@@ -327,16 +340,22 @@ function main() {
     if (!failedCheck) {
         const preflightResult = runPnpmGridPreflight(args.motion);
         const preflightOk = preflightResult.status === 0;
-        const preflightOutput = [preflightResult.stdout?.trim(), preflightResult.stderr?.trim()]
-            .filter(Boolean)
-            .join(" | ");
+        const preflightParsed = parseEmbeddedJson(preflightResult.stdout?.trim() ?? "");
+
+        let preflightDetail;
+        if (preflightOk) {
+            preflightDetail = "grid:preflight passed";
+        } else if (preflightParsed?.verdict) {
+            preflightDetail = `grid:preflight exited ${preflightResult.status ?? 1} — verdict=${preflightParsed.verdict}${preflightParsed.failed_check ? `, failed_check=${preflightParsed.failed_check}` : ""}`;
+        } else {
+            const raw = [preflightResult.stdout?.trim(), preflightResult.stderr?.trim()].filter(Boolean).join(" | ");
+            preflightDetail = `grid:preflight exited ${preflightResult.status ?? 1}${raw ? ` — ${raw}` : ""}`;
+        }
 
         checks.push({
             name: "PREFLIGHT_READY",
             ok: preflightOk,
-            detail: preflightOk
-                ? `grid:preflight passed${preflightOutput ? ` - ${preflightOutput}` : ""}`
-                : `grid:preflight exited ${preflightResult.status ?? 1}${preflightOutput ? ` - ${preflightOutput}` : ""}`,
+            detail: preflightDetail,
         });
 
         if (!preflightOk) {
