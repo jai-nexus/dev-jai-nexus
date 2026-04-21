@@ -1,121 +1,235 @@
-# Passalong Schema — dev-jai-nexus
+# Passalong Schema - dev-jai-nexus
 
-**Version:** 1.0
+**Version:** 1.1
 **Established:** motion-0106
-**Date:** 2026-03-31
+**Updated:** motion-0140
+**Date:** 2026-04-20
 
 ---
 
 ## 1. What a passalong is
 
-A passalong is an **interpretive handoff document** — authored by the current
-session, structured for a specific audience, and designed to reduce
-recontextualization cost for the receiving session.
+A passalong is a continuity artifact authored by the current session for the next
+receiving session.
 
-A passalong is NOT:
-- A machine-generated context bundle (`generate-context-bundle.mjs` does that)
-- A motion status report (`/motion-status` does that)
-- A ratification artifact (`/motion-ratify` does that)
-- A full motion history dump
+Its purpose is to reduce recontextualization cost while preserving the boundary
+between:
 
-A passalong is:
-- A narrative state summary anchored in real governance artifacts
-- A single, concrete next direction
-- Audience-scoped (orchestrator vs. dev)
-- Short enough to load in one message
+- the `CONTROL_THREAD` coordination surface
+- the receiving routing target (`ORCHESTRATOR`, `REPO_EXECUTION`, or `EXPLORATION`)
+- the canonical governance artifacts that remain authoritative
+
+A passalong does the following:
+
+- carries forward the current baseline
+- distinguishes what is settled from what remains open
+- records tasks, risks, routing targets, and exact prompt starters
+- clarifies the next bounded direction without performing that direction
+
+A passalong does not do the following:
+
+- it does not execute work
+- it does not mutate repo state
+- it does not mutate runtime state
+- it does not replace repo-local judgment
+- it does not replace motion packages, `decision.yaml`, or other canonical artifacts
+- it does not sync a thread by itself
+
+A passalong is a documentary continuity layer, not an execution mechanism.
 
 ---
 
-## 2. Audience types
+## 2. Scope and routing model
+
+### `CONTROL_THREAD`
+
+`CONTROL_THREAD` is the top-level coordination scope. A passalong written from this
+scope preserves canon, tracks active work, and names the next bounded routing target.
+
+### `ORCHESTRATOR`
+
+`ORCHESTRATOR` is the routing target that receives continuity state for control-thread
+level coordination and next-direction decisions.
+
+### `REPO_EXECUTION`
+
+`REPO_EXECUTION` is the routing target that receives a bounded repo-local work item
+and is expected to interpret the active motion locally.
+
+### `EXPLORATION`
+
+`EXPLORATION` is the routing target used when framing or research is still needed
+before bounded execution can resume.
+
+---
+
+## 3. Audience kinds
 
 ### `orchestrator`
 
-The receiving session manages the **program arc**. It needs to know:
-- What motions/milestones closed in the outgoing session
-- What arc or objective was completed
-- What program constraints remain active
-- What the next motion class or program objective should be
+The `orchestrator` document kind is used when the receiving session is expected to
+operate in the `CONTROL_THREAD` scope or as the `ORCHESTRATOR` routing target.
 
-The orchestrator passalong does NOT include working tree detail or specific commands.
+It should emphasize:
+
+- current baseline and settled canon
+- active work, open items, and deferred scope
+- routing choices and next bounded direction
+
+It should not include:
+
+- working-tree detail
+- implementation commands
+- repo-local patch narrative unless it changes routing
 
 ### `dev`
 
-The receiving session implements a **bounded task** — a single motion slice,
-a specific file change, a proof run. It needs to know:
-- Current branch and motion identity
-- Exact working tree state
-- The one concrete next step (command or file)
-- Any session-specific gotchas the next session must not rediscover
+The `dev` document kind is used when the receiving session is expected to operate as
+the `REPO_EXECUTION` routing target.
 
-The dev passalong does NOT include program-level arc narrative.
+It should emphasize:
+
+- current repo-thread baseline
+- what is settled vs. still open in the bounded work item
+- concrete tasks, risks, and next step
+- how the repo thread will sync back to the control thread when finished
+
+It should not include:
+
+- broad program-arc narrative beyond what the receiving repo thread needs
+- claims that sync-back already occurred unless the required conditions are true
 
 ---
 
-## 3. Required sections
+## 4. Required frontmatter
+
+All passalong v1.1 documents should include the following frontmatter fields:
+
+| Field | Required | Notes |
+|---|---|---|
+| `passalong_kind` | yes | `orchestrator` or `dev` |
+| `schema_version` | yes | `passalong-1.1` for new documents; v1.0 remains valid by compatibility rule |
+| `date` | yes | ISO date |
+| `repo` | yes | repo identity |
+| `branch` | yes | active branch |
+| `scope` | yes | `CONTROL_THREAD` or `REPO_EXECUTION`; `EXPLORATION` allowed when applicable |
+| `current_motion` | yes | active motion id when one exists |
+| `program` or `motion_status` | yes | `program` for orchestrator, `motion_status` for dev |
+| `generated_by` | recommended | provenance label such as `manual`, `manual-example`, or `/motion-passalong` |
+
+---
+
+## 5. Required structure
 
 ### Orchestrator passalong
 
 | Section | Required | Content |
 |---|---|---|
-| Frontmatter | yes | kind, schema_version, date, branch, current_motion, program |
-| `## State summary` | yes | What closed. Which motions ratified. What arc completed. Anchored in real governance state. |
-| `## Active constraints` | yes | Bulleted list of hard limits still in effect. |
-| `## Next direction` | yes | ONE next motion class or program objective. One paragraph. |
-| `## Reference layers` | yes | Ratified motions, last commit hash + subject, branch. |
-| `## Handoff note` | optional | Anything the next orchestrator session needs that is not in the above. |
+| `## Current baseline` | yes | Current control-thread state, motion, branch, and governing boundary. |
+| `## What is settled` | yes | Facts that are already stable and should not be re-decided in the next session. |
+| `## Active work` | yes | Work currently in progress inside the program arc. |
+| `## What remains open` | yes | Open items that still block closure or next routing. |
+| `## Deferred` | recommended | Explicit out-of-scope items preserved for later motions. |
+| `## Tasks` | yes | Discrete next actions for the receiving session, formatted as a checklist. |
+| `## Risks` | yes | Open risks and mitigations relevant to the receiving session. |
+| `## Routing targets` | yes | Named targets such as `ORCHESTRATOR`, `REPO_EXECUTION`, `EXPLORATION`, with why each may be used. |
+| `## Next direction` | yes | One bounded routing decision or next objective. One paragraph. |
+| `## Next chat prompts` | yes | Exact prompt starters for the receiving session. |
+| `## Reference layers` | yes | Canonical files and motions the next session should anchor to. |
+| `## Handoff note` | optional | Remaining context that does not fit the sections above. |
 
 ### Dev passalong
 
 | Section | Required | Content |
 |---|---|---|
-| Frontmatter | yes | kind, schema_version, date, branch, current_motion, motion_status |
-| `## State summary` | yes | Current motion, its governance status, what was just done this session. |
-| `## Working tree` | yes | `git status --short` output or equivalent summary. |
-| `## Next step` | yes | ONE concrete action: a command to run or a file to write. One paragraph. |
-| `## Reference layers` | yes | Motion files consulted, last commit hash + subject, branch. |
-| `## Handoff note` | optional | Session-specific context the next dev session needs. |
+| `## Current baseline` | yes | Current repo-thread state, branch, motion, and boundary. |
+| `## What is settled` | yes | Facts that are already stable inside the bounded work item. |
+| `## What remains open` | yes | Work still required before closure or sync-back. |
+| `## Tasks` | yes | Discrete next actions for the receiving session, formatted as a checklist. |
+| `## Risks` | yes | Open risks and mitigations relevant to the receiving session. |
+| `## Routing targets` | yes | Named targets for subsequent routing, including when to return to `ORCHESTRATOR`. |
+| `## Next step` | yes | One concrete next action. One paragraph only. |
+| `## Next chat prompts` | yes | Exact prompt starters for the receiving session. |
+| `## Reference layers` | yes | Canonical files and motions the next session should anchor to. |
+| `## Handoff note` | optional | Remaining context that does not fit the sections above. |
 
 ---
 
-## 4. Document template
+## 6. Document templates
 
 ### Orchestrator
 
 ```markdown
 ---
 passalong_kind: orchestrator
-schema_version: "passalong-1.0"
+schema_version: "passalong-1.1"
 date: YYYY-MM-DD
+repo: dev-jai-nexus
 branch: {branch}
+scope: CONTROL_THREAD
 current_motion: {motionId}
 program: {programName}
-generated_by: /motion-passalong
+generated_by: {manual | /motion-passalong}
 ---
 
-## State summary
+## Current baseline
 
-{What closed in this session. Which motions are RATIFIED. What arc is complete.
-Must be anchored in decision.yaml status — do not claim RATIFIED for DRAFT motions.}
+{State the active control-thread baseline, motion, branch, and scope boundary.}
 
-## Active constraints
+## What is settled
 
-- {constraint}
-- {constraint}
+- {settled fact}
+- {settled fact}
+
+## Active work
+
+- {active item}
+- {active item}
+
+## What remains open
+
+- {open item}
+- {open item}
+
+## Deferred
+
+- {out-of-scope item}
+- {out-of-scope item}
+
+## Tasks
+
+- [ ] {task}
+- [ ] {task}
+
+## Risks
+
+- Risk: {risk}
+  Mitigation: {mitigation}
+
+## Routing targets
+
+- `ORCHESTRATOR` - {why}
+- `REPO_EXECUTION` - {why}
+- `EXPLORATION` - {why, if needed}
 
 ## Next direction
 
-{One paragraph. One motion class or objective. Grounded in what is actually
-pending — do not invent next steps not implied by current governance state.}
+{One bounded routing decision only. Do not list multiple competing directions.}
+
+## Next chat prompts
+
+- `{prompt starter}`
+- `{prompt starter}`
 
 ## Reference layers
 
-- Motions ratified: {motionId}, {motionId}, ...
-- Last commit: {hash} {subject}
+- Motion: {motionId} (`.nexus/motions/{motionId}/`)
+- Canon: {path}
 - Branch: {branch}
 
 ## Handoff note
 
-{Optional. Session-specific context only. Omit if nothing material to add.}
+{Optional. Only add if the receiving session would lose important context without it.}
 ```
 
 ### Dev
@@ -123,59 +237,108 @@ pending — do not invent next steps not implied by current governance state.}
 ```markdown
 ---
 passalong_kind: dev
-schema_version: "passalong-1.0"
+schema_version: "passalong-1.1"
 date: YYYY-MM-DD
+repo: dev-jai-nexus
 branch: {branch}
+scope: REPO_EXECUTION
 current_motion: {motionId}
 motion_status: {DRAFT | RATIFIED}
-generated_by: /motion-passalong
+generated_by: {manual | /motion-passalong}
 ---
 
-## State summary
+## Current baseline
 
-{Current motion, its governance status from decision.yaml, what the session
-accomplished. Must reflect actual status — do not invent completion.}
+{State the active repo-thread baseline, motion, branch, and scope boundary.}
 
-## Working tree
+## What is settled
 
-{git status --short output. If clean, say "Working tree: clean."}
+- {settled fact}
+- {settled fact}
+
+## What remains open
+
+- {open item}
+- {open item}
+
+## Tasks
+
+- [ ] {task}
+- [ ] {task}
+
+## Risks
+
+- Risk: {risk}
+  Mitigation: {mitigation}
+
+## Routing targets
+
+- `ORCHESTRATOR` - {when to route back}
+- `REPO_EXECUTION` - {when work remains local}
+- `EXPLORATION` - {when more framing is needed}
 
 ## Next step
 
-{One concrete action: exact command or file to write. One paragraph only.
-Must be grounded in current working tree and motion state.}
+{One concrete next action only. It must match the current repo-thread state.}
+
+## Next chat prompts
+
+- `{prompt starter}`
+- `{prompt starter}`
 
 ## Reference layers
 
-- Motion: {motionId} (.nexus/motions/{motionId}/)
-- Last commit: {hash} {subject}
+- Motion: {motionId} (`.nexus/motions/{motionId}/`)
+- Canon: {path}
 - Branch: {branch}
 
 ## Handoff note
 
-{Optional. Only if there is session-specific gotcha the next session needs.}
+{Optional. Only add if the receiving session would lose important context without it.}
 ```
 
 ---
 
-## 5. Output convention
+## 7. Compatibility
 
-The `/motion-passalong` skill prints the passalong to stdout and recommends:
+Passalong v1.1 is additive.
 
-```
-Save as: surfaces/chat-context/{date}_passalong_{kind}_{motionId}.md
-```
+Compatibility rules are:
 
-The skill does NOT write the file automatically. The user or Codex saves it.
+- all `passalong-1.0` documents remain valid
+- v1.0 documents are not required to add `repo`, `scope`, `tasks`, `risks`,
+  `routing_targets`, or `next_chat_prompts`
+- new v1.1 documents should use the expanded frontmatter and section set above
+- the schema upgrade does not, by itself, require changes to existing passalong files
+
+The following surfaces remain intentionally unchanged in motion-0140:
+
+- `.claude/commands/motion-passalong.md`
+- `.nexus/codex/evals/motion-passalong-eval.yaml`
+
+Those surfaces may be upgraded in a later motion once the v1.1 canon is in use.
 
 ---
 
-## 6. Hard constraints
+## 8. Output convention
 
-- **Do NOT** claim a motion is RATIFIED if `decision.yaml status` is `DRAFT`.
-- **Do NOT** describe work as complete if there are unstaged or uncommitted changes.
-- **Do NOT** invent a next direction not grounded in current governance state.
-- **Do NOT** include fabricated SoT events, packet states, or agent outputs.
-- **Do NOT** summarize more than the current motion and its immediate parent context.
-- **Do NOT** replace the context bundle or motion package — those are authoritative.
-- **Do NOT** commit or ratify anything as part of generating a passalong.
+When a passalong is produced for cross-session continuity, the recommended save path is:
+
+```text
+surfaces/chat-context/{date}_passalong_{kind}_{motionId}.md
+```
+
+The continuity file may be saved manually. The schema does not require any automatic
+write behavior.
+
+---
+
+## 9. Hard constraints
+
+- Do NOT claim a motion is RATIFIED if `decision.yaml status` is `DRAFT`.
+- Do NOT describe work as synced back unless ratification and recorded passalong both exist.
+- Do NOT invent a next direction or next step that is not grounded in current governance state.
+- Do NOT include fabricated events, packet states, or agent outputs.
+- Do NOT replace the motion package, `decision.yaml`, or ratification artifacts with passalong text.
+- Do NOT use passalong content as a trigger for repo mutation, runtime mutation, routing automation, or task creation.
+- Do NOT commit or ratify anything as part of generating a passalong.
