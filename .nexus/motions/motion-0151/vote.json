@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0151",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Required gates passed, implementation bounded to contract and ledger hardening within the proven motion-0150 runtime path.",
+      "No automation widening, no selector dispatch added, no bounded_write proof required; operator smoke checks passed and human review is complete."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-22T17:11:54.736Z"
+}

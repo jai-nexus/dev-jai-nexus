@@ -1,0 +1,14 @@
+motion_id: motion-0151
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Agent Task Contract and Run Ledger v0"
+subtitle: "bounded execution envelope, run metadata, result states, and operator review posture"
+kind: builder-proof
+program: q2-agent-operationalization-v0
+basis: motion-0150
+status: open
+created_at: null
+decided_at: null
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR

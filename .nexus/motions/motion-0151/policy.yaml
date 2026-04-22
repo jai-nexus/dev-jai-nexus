@@ -1,0 +1,20 @@
+protocol_version: "0.3.8"
+motion_id: motion-0151
+evaluated_at: "2026-04-22T17:11:54.736Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.10
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Ratification is limited to contract and ledger hardening within the proven motion-0150 runtime path; bounded_write proof is deferred to motion-0152."
+escalation_state: null
