@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import type { TaskContract } from "./taskContract.ts";
+import {
+  resolveTaskContract,
+  type ResolvedTaskContract,
+  type TaskContract,
+} from "./taskContract.ts";
 
 const SLOT_CONFIG_PATH = path.join(process.cwd(), ".nexus", "model-slots.yaml");
 const OPENAI_ENV_VAR_NAME = "OPENAI_API_KEY";
@@ -12,6 +16,16 @@ type ParsedSlotConfig = {
   model?: string;
   notes?: string;
 };
+
+type InputRefSectionResult =
+  | {
+      ok: true;
+      section: string | null;
+    }
+  | {
+      ok: false;
+      failure_note: string;
+    };
 
 export type SlotConfig = {
   slot: string;
@@ -89,21 +103,23 @@ export function resolveSlotConfig(slotName: string): SlotResolution {
 export async function dispatchSlot(
   taskContract: TaskContract,
 ): Promise<DispatchResult> {
-  if (taskContract.slot.endsWith("_SELECTOR")) {
+  const resolvedTaskContract = resolveTaskContract(taskContract);
+
+  if (resolvedTaskContract.slot.endsWith("_SELECTOR")) {
     return {
       ok: false,
       failure_note: "selector slots excluded from dispatch",
     };
   }
 
-  if (taskContract.provider !== "openai") {
+  if (resolvedTaskContract.provider !== "openai") {
     return {
       ok: false,
-      failure_note: `unsupported provider: ${taskContract.provider}`,
+      failure_note: `unsupported provider: ${resolvedTaskContract.provider}`,
     };
   }
 
-  return dispatchOpenAI(taskContract);
+  return dispatchOpenAI(resolvedTaskContract);
 }
 
 function parseModelSlots(source: string): Record<string, ParsedSlotConfig> {
@@ -169,13 +185,21 @@ function parseYamlScalar(rawValue: string): string {
 }
 
 async function dispatchOpenAI(
-  taskContract: TaskContract,
+  taskContract: ResolvedTaskContract,
 ): Promise<DispatchResult> {
   const apiKey = process.env[OPENAI_ENV_VAR_NAME];
   if (!apiKey) {
     return {
       ok: false,
       failure_note: `provider credentials not set: ${OPENAI_ENV_VAR_NAME}`,
+    };
+  }
+
+  const inputRefSection = loadInputRefSection(taskContract);
+  if (!inputRefSection.ok) {
+    return {
+      ok: false,
+      failure_note: inputRefSection.failure_note,
     };
   }
 
@@ -188,7 +212,7 @@ async function dispatchOpenAI(
       },
       body: JSON.stringify({
         model: taskContract.model,
-        input: buildDispatchInput(taskContract),
+        input: buildDispatchInput(taskContract, inputRefSection.section),
       }),
       signal: AbortSignal.timeout(60_000),
     });
@@ -236,16 +260,103 @@ async function dispatchOpenAI(
   }
 }
 
-function buildDispatchInput(taskContract: TaskContract): string {
+function loadInputRefSection(
+  taskContract: ResolvedTaskContract,
+): InputRefSectionResult {
+  if (taskContract.input_ref === null) {
+    return {
+      ok: true,
+      section: null,
+    };
+  }
+
+  const repoRoot = path.resolve(process.cwd());
+  const absolutePath = path.resolve(repoRoot, taskContract.input_ref);
+  const normalizedRepoRoot = `${repoRoot}${path.sep}`;
+
+  if (
+    absolutePath !== repoRoot &&
+    !absolutePath.startsWith(normalizedRepoRoot)
+  ) {
+    return {
+      ok: false,
+      failure_note: `input_ref not readable: ${taskContract.input_ref}`,
+    };
+  }
+
+  try {
+    const content = readFileSync(absolutePath, "utf8");
+    const repoRelativePath = normalizePathForDisplay(
+      path.relative(repoRoot, absolutePath),
+    );
+
+    return {
+      ok: true,
+      section: [
+        "Embedded operator-supplied input_ref file:",
+        `Path: ${repoRelativePath}`,
+        "--- BEGIN input_ref content ---",
+        content,
+        "--- END input_ref content ---",
+      ].join("\n"),
+    };
+  } catch {
+    return {
+      ok: false,
+      failure_note: `input_ref not readable: ${taskContract.input_ref}`,
+    };
+  }
+}
+
+function buildDispatchInput(
+  taskContract: ResolvedTaskContract,
+  inputRefSection: string | null,
+): string {
   return [
-    "You are executing one bounded JAI NEXUS task contract.",
-    "Operate only within the contract.",
-    "Do not claim repo mutation, commits, PR creation, or background execution.",
-    "Return only the human-reviewable result content for the operator.",
+    ...buildExecutionEnvelope(taskContract),
+    "",
+    `Execution mode: ${taskContract.execution_mode}`,
+    `Objective: ${taskContract.objective || "No bounded objective recorded."}`,
+    `Expected output: ${taskContract.expected_output}`,
+    "",
+    "Allowed scope:",
+    ...formatBulletList(taskContract.allowed_scope),
+    "",
+    "Forbidden actions:",
+    ...formatBulletList(taskContract.forbidden_actions),
     "",
     "Task contract:",
     JSON.stringify(taskContract, null, 2),
+    ...(inputRefSection ? ["", inputRefSection] : []),
   ].join("\n");
+}
+
+function buildExecutionEnvelope(
+  taskContract: ResolvedTaskContract,
+): string[] {
+  if (taskContract.execution_mode === "bounded_write") {
+    return [
+      "You are executing one bounded JAI NEXUS task contract.",
+      "Produce output only. Any implementation-class content must remain inside the output artifact for operator review and manual application.",
+      "You may produce bounded implementation output, including code, patch text, or file content, when it stays within the contract.",
+      "Do not claim direct file writes, commits, pushes, pull requests, merges, or background execution.",
+    ];
+  }
+
+  return [
+    "You are executing one bounded JAI NEXUS task contract.",
+    "Operate only within the contract.",
+    "Do not claim repo mutation, direct file writes, commits, pull requests, merges, or background execution.",
+    "Return only the human-reviewable result content for the operator.",
+  ];
+}
+
+function formatBulletList(items: string[]): string[] {
+  if (items.length === 0) {
+    return ["- No additional scope items recorded."];
+  }
+
+  return items.map((item) => `- ${item}`);
 }
 
 function extractOpenAIErrorMessage(payload: unknown): string {
@@ -336,6 +447,10 @@ function extractOutputText(payload: unknown): string | null {
 
   const joined = chunks.join("").trim();
   return joined || null;
+}
+
+function normalizePathForDisplay(targetPath: string): string {
+  return targetPath.split(path.sep).join("/");
 }
 
 function getErrorMessage(error: unknown): string {

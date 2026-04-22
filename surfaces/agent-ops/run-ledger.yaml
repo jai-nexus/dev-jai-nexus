@@ -1,5 +1,5 @@
-# Agent ops run ledger for motion-0150 runtime-minimum dispatch runs.
-# Append one top-level YAML sequence entry per operator-invoked dispatch.
+# JAI NEXUS agent ops run ledger.
+# Append one top-level YAML sequence entry per operator-invoked run.
 - run_id: "motion-0150--slot_builder_01--20260422T150643Z--mh4bmf"
   ts: "2026-04-22T15:06:43.311Z"
   slot: "SLOT_BUILDER_01"
