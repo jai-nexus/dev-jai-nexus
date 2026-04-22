@@ -1,0 +1,14 @@
+motion_id: motion-0153
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Single-Slot Agent Proof Attestation v0"
+subtitle: "harden the review-step attestation chain by closing three concrete gaps in the run ledger"
+kind: builder-proof
+program: q2-proof-hardening-execution-attestation
+basis: motion-0152
+status: ratified
+created_at: "2026-04-22T00:00:00.000Z"
+decided_at: "2026-04-22T22:43:04.464Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR

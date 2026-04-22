@@ -13,6 +13,7 @@ type ParsedArgs =
       runId: string;
       status: ReviewUpdateStatus;
       ledgerPath: string;
+      appliedFile: string | null;
     }
   | {
       ok: false;
@@ -21,11 +22,15 @@ type ParsedArgs =
 
 const USAGE = [
   "Usage:",
-  "  mark-run-reviewed.ts --run-id <run-id> --status <reviewed|approved|rejected> [--ledger <repo-relative-path>]",
+  "  mark-run-reviewed.ts --run-id <run-id> --status <reviewed|approved|rejected> [--ledger <repo-relative-path>] [--applied-file <repo-relative-path>]",
   "",
   "Required:",
-  "  --run-id   target run identifier in the ledger",
-  "  --status   one of reviewed, approved, rejected",
+  "  --run-id       target run identifier in the ledger",
+  "  --status       one of reviewed, approved, rejected",
+  "",
+  "Optional:",
+  "  --ledger       repo-relative path to the ledger file (defaults to surfaces/agent-ops/run-ledger.yaml)",
+  "  --applied-file repo-relative path of the file the operator applied; not allowed with --status rejected",
 ].join("\n");
 
 async function main(): Promise<void> {
@@ -43,15 +48,23 @@ async function main(): Promise<void> {
     return;
   }
 
+  const reviewedAt = new Date().toISOString();
+
   try {
     const updatedLedgerPath = updateRunReviewStatus(
       parsedArgs.runId,
       parsedArgs.status,
+      reviewedAt,
+      parsedArgs.appliedFile,
       parsedArgs.ledgerPath,
     );
 
     console.log(`run_id: ${parsedArgs.runId}`);
     console.log(`human_review_status: ${parsedArgs.status}`);
+    console.log(`reviewed_at: ${reviewedAt}`);
+    if (parsedArgs.appliedFile) {
+      console.log(`applied_file: ${parsedArgs.appliedFile}`);
+    }
     console.log(`ledger_path: ${normalizePathForDisplay(updatedLedgerPath)}`);
   } catch (error) {
     console.error(getErrorMessage(error));
@@ -106,11 +119,33 @@ function parseArgs(argv: string[]): ParsedArgs {
     ? path.resolve(process.cwd(), ledgerArg)
     : RUN_LEDGER_PATH;
 
+  const appliedFileArg = args.get("--applied-file");
+
+  if (status === "rejected" && appliedFileArg !== undefined) {
+    return {
+      ok: false,
+      error: "--applied-file is not allowed with --status rejected",
+    };
+  }
+
+  let appliedFile: string | null = null;
+  if (appliedFileArg !== undefined) {
+    const appliedFileResolution = resolveAppliedFile(appliedFileArg);
+    if (!appliedFileResolution.ok) {
+      return {
+        ok: false,
+        error: appliedFileResolution.error,
+      };
+    }
+    appliedFile = appliedFileResolution.repoRelativePath;
+  }
+
   return {
     ok: true,
     runId,
     status,
     ledgerPath,
+    appliedFile,
   };
 }
 
@@ -120,6 +155,26 @@ function isReviewUpdateStatus(value: string): value is ReviewUpdateStatus {
     value === "approved" ||
     value === "rejected"
   );
+}
+
+function resolveAppliedFile(
+  rawPath: string,
+): { ok: true; repoRelativePath: string } | { ok: false; error: string } {
+  const repoRoot = path.resolve(process.cwd());
+  const absolutePath = path.resolve(repoRoot, rawPath);
+  const normalizedRepoRoot = `${repoRoot}${path.sep}`;
+
+  if (absolutePath !== repoRoot && !absolutePath.startsWith(normalizedRepoRoot)) {
+    return {
+      ok: false,
+      error: `applied_file must remain inside the repo: ${rawPath}`,
+    };
+  }
+
+  return {
+    ok: true,
+    repoRelativePath: normalizePathForDisplay(path.relative(repoRoot, absolutePath)),
+  };
 }
 
 function normalizePathForDisplay(targetPath: string): string {

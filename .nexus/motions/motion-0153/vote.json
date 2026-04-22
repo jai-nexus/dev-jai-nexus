@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0153",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Required gates passed and all twelve acceptance checks confirmed: reviewed_at and applied_file are correctly written, old entries default to null without corruption, and all error paths exit 1 with legible messages.",
+      "Live-ledger proof closures confirmed on real motion-0152 entries: c281lr annotated with reviewed_at and applied_file, ngswlb formally closed as rejected with reviewed_at and applied_file: null."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-22T22:43:04.464Z"
+}

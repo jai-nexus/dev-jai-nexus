@@ -33,6 +33,8 @@ type LegacyRunRecordInput = Omit<RunRecord, "task_id"> & {
 
 type StoredLedgerEntry = RunRecord & {
   task_field_name: "task_id" | "task_ref";
+  reviewed_at: string | null;
+  applied_file: string | null;
 };
 
 const LEDGER_DIR_PATH = path.join(process.cwd(), "surfaces", "agent-ops");
@@ -72,6 +74,8 @@ export function appendRunRecord(
 export function updateRunReviewStatus(
   runId: string,
   status: ReviewUpdateStatus,
+  reviewedAt: string,
+  appliedFile: string | null,
   ledgerPath: string = RUN_LEDGER_PATH,
 ): string {
   let source: string;
@@ -91,6 +95,8 @@ export function updateRunReviewStatus(
   }
 
   targetEntry.human_review_status = status;
+  targetEntry.reviewed_at = reviewedAt;
+  targetEntry.applied_file = appliedFile;
   writeFileSync(ledgerPath, formatLedgerFile(entries), "utf8");
 
   return ledgerPath;
@@ -129,6 +135,8 @@ function normalizeRunRecordInput(
     failure_note: runRecord.failure_note,
     human_review_status: runRecord.human_review_status,
     task_field_name: hasCanonicalTaskId ? "task_id" : "task_ref",
+    reviewed_at: null,
+    applied_file: null,
   };
 }
 
@@ -232,6 +240,12 @@ function applyParsedField(
     case "human_review_status":
       entry.human_review_status = expectReviewStatus(parsedValue);
       return;
+    case "reviewed_at":
+      entry.reviewed_at = parsedValue;
+      return;
+    case "applied_file":
+      entry.applied_file = parsedValue;
+      return;
     default:
       return;
   }
@@ -266,6 +280,8 @@ function finalizeParsedEntry(
     failure_note: entry.failure_note ?? null,
     human_review_status: entry.human_review_status,
     task_field_name: entry.task_field_name ?? "task_id",
+    reviewed_at: entry.reviewed_at ?? null,
+    applied_file: entry.applied_file ?? null,
   };
 }
 
@@ -297,6 +313,8 @@ function formatRunRecordBlock(runRecord: StoredLedgerEntry): string {
     `  result_status: ${yamlScalar(runRecord.result_status)}`,
     `  failure_note: ${yamlNullableScalar(runRecord.failure_note)}`,
     `  human_review_status: ${yamlScalar(runRecord.human_review_status)}`,
+    `  reviewed_at: ${yamlNullableScalar(runRecord.reviewed_at)}`,
+    `  applied_file: ${yamlNullableScalar(runRecord.applied_file)}`,
   ].join("\n");
 }
 
