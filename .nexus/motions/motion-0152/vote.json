@@ -1,0 +1,38 @@
+{
+  "motion_id": "motion-0152",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Required gates passed, one real provider-backed bounded_write dispatch run succeeded, and a durable reviewed artifact was captured for human review.",
+      "The successful run ledger entry is marked human_review_status: reviewed and the reviewed content was applied as the bounded repo artifact .nexus/docs/task-contract-v0.md."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-22T19:28:47.4852034Z"
+}

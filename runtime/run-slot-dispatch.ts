@@ -15,6 +15,7 @@ import {
   MAX_SCOPE_CHARS,
   boundScope,
   buildScopeSummary,
+  type ExecutionMode,
   type TaskContract,
 } from "./taskContract.ts";
 
@@ -25,6 +26,7 @@ type ParsedArgs =
       motion_id: string;
       task_id: string;
       scope: string;
+      execution_mode: ExecutionMode;
       input_ref: string | null;
       output_path: string | null;
     }
@@ -35,13 +37,14 @@ type ParsedArgs =
 
 const USAGE = [
   "Usage:",
-  "  run-slot-dispatch.ts --slot <SLOT_NAME> --motion <motion-id> --task <task-id> --scope <statement> [--input-ref <ref>] [--output <repo-relative-path>]",
+  "  run-slot-dispatch.ts --slot <SLOT_NAME> --motion <motion-id> --task <task-id> --scope <statement> [--input-ref <ref>] [--output <repo-relative-path>] [--execution-mode <review_only|bounded_write>]",
   "",
   "Required:",
   "  --slot     non-selector executor slot from .nexus/model-slots.yaml",
   "  --motion   motion identifier for the bounded task contract",
   "  --task     bounded task identifier for ledger and auditability",
   `  --scope    operator-supplied bounded scope statement (max ${MAX_SCOPE_CHARS} chars after truncation)`,
+  "  --execution-mode   optional; one of review_only or bounded_write (defaults to review_only)",
 ].join("\n");
 
 async function main(): Promise<void> {
@@ -107,6 +110,7 @@ async function main(): Promise<void> {
       model: slotResolution.slot.model,
       motion_id: parsedArgs.motion_id,
       scope: boundedScope.scope,
+      execution_mode: parsedArgs.execution_mode,
       input_ref: parsedArgs.input_ref,
       output_artifact_path: outputPathResolution.repoRelativePath,
       human_review_required: true,
@@ -132,7 +136,7 @@ async function main(): Promise<void> {
     provider,
     model,
     motion_id: parsedArgs.motion_id,
-    task_ref: parsedArgs.task_id,
+    task_id: parsedArgs.task_id,
     scope_summary: scopeSummary,
     output_artifact_path: outputArtifactPath,
     result_status: resultStatus,
@@ -192,6 +196,7 @@ function parseArgs(argv: string[]): ParsedArgs {
   const motionId = args.get("--motion");
   const taskId = args.get("--task");
   const scope = args.get("--scope");
+  const executionModeArg = args.get("--execution-mode");
 
   if (!slot || !motionId || !taskId || !scope) {
     return {
@@ -201,15 +206,31 @@ function parseArgs(argv: string[]): ParsedArgs {
     };
   }
 
+  if (
+    executionModeArg !== undefined &&
+    !isExecutionMode(executionModeArg)
+  ) {
+    return {
+      ok: false,
+      error:
+        `invalid --execution-mode value: ${executionModeArg}; expected review_only or bounded_write`,
+    };
+  }
+
   return {
     ok: true,
     slot,
     motion_id: motionId,
     task_id: taskId,
     scope,
+    execution_mode: executionModeArg ?? "review_only",
     input_ref: args.get("--input-ref") ?? null,
     output_path: args.get("--output") ?? null,
   };
+}
+
+function isExecutionMode(value: string): value is ExecutionMode {
+  return value === "review_only" || value === "bounded_write";
 }
 
 function buildRunId(motionId: string, slot: string): string {
@@ -304,6 +325,7 @@ function buildOutputArtifact(
     `- run_id: ${taskContract.run_id}`,
     `- motion_id: ${taskContract.motion_id}`,
     `- task_id: ${taskContract.task_id}`,
+    `- execution_mode: ${taskContract.execution_mode ?? "review_only"}`,
     `- slot: ${taskContract.slot}`,
     `- provider: ${taskContract.provider}`,
     `- model: ${taskContract.model}`,

@@ -1,0 +1,14 @@
+motion_id: motion-0152
+version: "0.1"
+protocol_version: "0.3.8"
+title: "First Agent-Executed Motion v0"
+subtitle: "one real bounded repo task executed through the ratified agent runtime path under human review"
+kind: builder-proof
+program: q2-agent-operationalization-v0
+basis: motion-0151
+status: ratified
+created_at: "2026-04-22T00:00:00.000Z"
+decided_at: "2026-04-22T19:28:47.4852034Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
