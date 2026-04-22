@@ -12,6 +12,8 @@
   result_status: "failure"
   failure_note: "provider credentials not set: OPENAI_API_KEY"
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0150--slot_builder_01--20260422T151102Z--m914mx"
   ts: "2026-04-22T15:11:02.639Z"
   slot: "SLOT_BUILDER_01"
@@ -24,6 +26,8 @@
   result_status: "failure"
   failure_note: "provider credentials not set: OPENAI_API_KEY"
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0150--slot_builder_01--20260422T152135Z--unvwma"
   ts: "2026-04-22T15:21:35.010Z"
   slot: "SLOT_BUILDER_01"
@@ -36,6 +40,8 @@
   result_status: "success"
   failure_note: null
   human_review_status: "reviewed"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T180554Z--d1scaj"
   ts: "2026-04-22T18:05:54.178Z"
   slot: "SLOT_BUILDER_01"
@@ -48,6 +54,8 @@
   result_status: "failure"
   failure_note: "provider credentials not set: OPENAI_API_KEY"
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T184433Z--hsw0ng"
   ts: "2026-04-22T18:44:33.250Z"
   slot: "SLOT_BUILDER_01"
@@ -60,6 +68,8 @@
   result_status: "failure"
   failure_note: "provider credentials not set: OPENAI_API_KEY"
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T184910Z--ngswlb"
   ts: "2026-04-22T18:49:10.982Z"
   slot: "SLOT_BUILDER_01"
@@ -71,7 +81,9 @@
   output_artifact_path: "surfaces/agent-ops/results/motion-0152--slot_builder_01--20260422T184910Z--ngswlb.md"
   result_status: "success"
   failure_note: null
-  human_review_status: "pending"
+  human_review_status: "rejected"
+  reviewed_at: "2026-04-22T22:42:53.865Z"
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T190407Z--dhgd0t"
   ts: "2026-04-22T19:04:07.008Z"
   slot: "SLOT_BUILDER_01"
@@ -84,6 +96,8 @@
   result_status: "failure"
   failure_note: "provider credentials not set: OPENAI_API_KEY"
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T190639Z--luk0i6"
   ts: "2026-04-22T19:06:39.543Z"
   slot: "SLOT_BUILDER_01"
@@ -96,6 +110,8 @@
   result_status: "failure"
   failure_note: "openai dispatch failed (401): Incorrect API key provided: sk-...yo**********y.... You can find your API key at https://platform.openai.com/account/api-keys."
   human_review_status: "pending"
+  reviewed_at: null
+  applied_file: null
 - run_id: "motion-0152--slot_builder_01--20260422T190831Z--c281lr"
   ts: "2026-04-22T19:08:31.587Z"
   slot: "SLOT_BUILDER_01"
@@ -108,3 +124,5 @@
   result_status: "success"
   failure_note: null
   human_review_status: "reviewed"
+  reviewed_at: "2026-04-22T22:42:35.920Z"
+  applied_file: ".nexus/docs/task-contract-v0.md"
