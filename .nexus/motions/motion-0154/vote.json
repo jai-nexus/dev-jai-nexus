@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0154",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Ratification is limited to the bounded two-file runtime diff in runtime/runLedger.ts and runtime/run-slot-dispatch.ts.",
+      "Acceptance checks A-01 through A-14 passed and the required gates validate-motion, validate-agency, and typecheck passed.",
+      "No scope widening, orchestration generalization, or changes outside the declared motion-0154 boundary were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-24T04:47:59.4485792Z"
+}
