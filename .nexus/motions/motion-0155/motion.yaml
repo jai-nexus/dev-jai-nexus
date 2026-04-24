@@ -1,0 +1,14 @@
+motion_id: motion-0155
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Single-Slot Preflight Admissibility Enforcement v0"
+subtitle: "fail fast on invalid rerun lineage before dispatch in the existing single-slot proof path"
+kind: builder-proof
+program: q2-proof-hardening-preflight-admissibility
+basis: motion-0154
+status: ratified
+created_at: "2026-04-24T00:00:00.000Z"
+decided_at: "2026-04-24T23:47:03.3267499Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
