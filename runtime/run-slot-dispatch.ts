@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 
 import {
   appendRunRecord,
+  checkDispatchAdmissibility,
   type RunRecord,
 } from "./runLedger.ts";
 import {
@@ -46,7 +47,7 @@ const USAGE = [
   "  --task     bounded task identifier for ledger and auditability",
   `  --scope    operator-supplied bounded scope statement (max ${MAX_SCOPE_CHARS} chars after truncation)`,
   "  --execution-mode   optional; one of review_only or bounded_write (defaults to review_only)",
-  "  --supersedes       optional; run-id of a prior ledger entry this run explicitly supersedes",
+  "  --supersedes       required when a prior non-superseded entry exists for the same motion/task lineage; otherwise omit it",
 ].join("\n");
 
 async function main(): Promise<void> {
@@ -76,6 +77,17 @@ async function main(): Promise<void> {
     console.warn(
       `scope_note: supplied scope exceeded ${MAX_SCOPE_CHARS} chars and was truncated before dispatch`,
     );
+  }
+
+  const admissibility = checkDispatchAdmissibility(
+    parsedArgs.motion_id,
+    parsedArgs.task_id,
+    parsedArgs.supersedes,
+  );
+  if (!admissibility.ok) {
+    console.error(admissibility.reason);
+    process.exitCode = 1;
+    return;
   }
 
   const runId = buildRunId(parsedArgs.motion_id, parsedArgs.slot);

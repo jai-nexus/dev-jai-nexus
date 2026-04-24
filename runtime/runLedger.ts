@@ -9,6 +9,9 @@ import path from "node:path";
 export type ResultStatus = "success" | "failure" | "partial";
 export type ReviewStatus = "pending" | "reviewed" | "approved" | "rejected";
 export type ReviewUpdateStatus = Exclude<ReviewStatus, "pending">;
+export type PreflightResult =
+  | { ok: true }
+  | { ok: false; reason: string };
 
 export type RunRecord = {
   run_id: string;
@@ -49,6 +52,7 @@ const LEDGER_HEADER_LINES = [
 ];
 
 const EMPTY_LEDGER_CONTENT = `${LEDGER_HEADER_LINES.join("\n")}\n[]\n`;
+const FINAL_ACCEPTED_REVIEW_STATUSES: ReviewStatus[] = ["reviewed", "approved"];
 
 export function appendRunRecord(
   runRecord: RunRecord | LegacyRunRecordInput,
@@ -90,6 +94,94 @@ export function appendRunRecord(
   writeFileSync(RUN_LEDGER_PATH, formatLedgerFile(allEntries), "utf8");
 
   return RUN_LEDGER_PATH;
+}
+
+export function checkDispatchAdmissibility(
+  motionId: string | null,
+  taskId: string,
+  supersedes: string | null,
+  ledgerPath: string = RUN_LEDGER_PATH,
+): PreflightResult {
+  let entries: StoredLedgerEntry[] = [];
+
+  if (existsSync(ledgerPath)) {
+    let source: string;
+    try {
+      source = readFileSync(ledgerPath, "utf8");
+    } catch (error) {
+      return preflightFailure(
+        `run ledger not readable: ${ledgerPath} (${getErrorMessage(error)})`,
+      );
+    }
+
+    try {
+      entries = isEmptyLedger(source) ? [] : parseLedgerSequence(source);
+    } catch (error) {
+      return preflightFailure(
+        `run ledger parse failed: ${getErrorMessage(error)}`,
+      );
+    }
+  }
+
+  const liveEntries = getLiveLineageEntries(entries, motionId, taskId);
+
+  if (liveEntries.length === 0) {
+    if (supersedes !== null) {
+      return preflightFailure(
+        "no active entry for this task; --supersedes is not valid here",
+      );
+    }
+
+    return { ok: true };
+  }
+
+  const latestLiveEntry = getLatestEntryByTimestamp(liveEntries);
+  if (!latestLiveEntry) {
+    return { ok: true };
+  }
+
+  if (supersedes === null) {
+    return preflightFailure(
+      `prior non-superseded entry exists for this task; supply --supersedes ${latestLiveEntry.run_id}`,
+    );
+  }
+
+  const supersededEntry = entries.find((entry) => entry.run_id === supersedes);
+  if (!supersededEntry) {
+    return preflightFailure(`supersedes run_id not found: ${supersedes}`);
+  }
+
+  if (supersededEntry.motion_id !== motionId) {
+    return preflightFailure(
+      `supersedes motion_id mismatch: expected ${motionId ?? "null"}, found ${supersededEntry.motion_id ?? "null"}`,
+    );
+  }
+
+  if (supersededEntry.task_id !== taskId) {
+    return preflightFailure(
+      `supersedes task_id mismatch: expected ${taskId}, found ${supersededEntry.task_id}`,
+    );
+  }
+
+  if (supersededEntry.superseded_by !== null) {
+    return preflightFailure(
+      `run-id ${supersedes} is already superseded; it cannot be used as a supersession target`,
+    );
+  }
+
+  if (supersededEntry.run_id !== latestLiveEntry.run_id) {
+    return preflightFailure(
+      `--supersedes must reference the latest non-superseded entry (latest: ${latestLiveEntry.run_id}, got: ${supersedes})`,
+    );
+  }
+
+  if (isAcceptedFinalReviewStatus(supersededEntry.human_review_status)) {
+    return preflightFailure(
+      `run-id ${supersedes} has review status "${supersededEntry.human_review_status}"; cannot supersede a reviewed or approved entry`,
+    );
+  }
+
+  return { ok: true };
 }
 
 export function updateRunReviewStatus(
@@ -185,6 +277,42 @@ function normalizeRunRecordInput(
     applied_file: null,
     superseded_by: null,
   };
+}
+
+function preflightFailure(reason: string): PreflightResult {
+  return {
+    ok: false,
+    reason: `preflight_failure: ${reason}`,
+  };
+}
+
+function getLiveLineageEntries(
+  entries: StoredLedgerEntry[],
+  motionId: string | null,
+  taskId: string,
+): StoredLedgerEntry[] {
+  return entries.filter(
+    (entry) =>
+      entry.motion_id === motionId &&
+      entry.task_id === taskId &&
+      entry.superseded_by === null,
+  );
+}
+
+function getLatestEntryByTimestamp(
+  entries: StoredLedgerEntry[],
+): StoredLedgerEntry | null {
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return entries.reduce((latest, current) =>
+    current.ts > latest.ts ? current : latest,
+  );
+}
+
+function isAcceptedFinalReviewStatus(status: ReviewStatus): boolean {
+  return FINAL_ACCEPTED_REVIEW_STATUSES.includes(status);
 }
 
 function isEmptyLedger(source: string): boolean {
