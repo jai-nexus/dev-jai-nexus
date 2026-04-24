@@ -29,6 +29,7 @@ type ParsedArgs =
       execution_mode: ExecutionMode;
       input_ref: string | null;
       output_path: string | null;
+      supersedes: string | null;
     }
   | {
       ok: false;
@@ -37,7 +38,7 @@ type ParsedArgs =
 
 const USAGE = [
   "Usage:",
-  "  run-slot-dispatch.ts --slot <SLOT_NAME> --motion <motion-id> --task <task-id> --scope <statement> [--input-ref <ref>] [--output <repo-relative-path>] [--execution-mode <review_only|bounded_write>]",
+  "  run-slot-dispatch.ts --slot <SLOT_NAME> --motion <motion-id> --task <task-id> --scope <statement> [--input-ref <ref>] [--output <repo-relative-path>] [--execution-mode <review_only|bounded_write>] [--supersedes <run-id>]",
   "",
   "Required:",
   "  --slot     non-selector executor slot from .nexus/model-slots.yaml",
@@ -45,6 +46,7 @@ const USAGE = [
   "  --task     bounded task identifier for ledger and auditability",
   `  --scope    operator-supplied bounded scope statement (max ${MAX_SCOPE_CHARS} chars after truncation)`,
   "  --execution-mode   optional; one of review_only or bounded_write (defaults to review_only)",
+  "  --supersedes       optional; run-id of a prior ledger entry this run explicitly supersedes",
 ].join("\n");
 
 async function main(): Promise<void> {
@@ -142,6 +144,7 @@ async function main(): Promise<void> {
     result_status: resultStatus,
     failure_note: failureNote,
     human_review_status: "pending",
+    supersedes: parsedArgs.supersedes,
   };
 
   let ledgerPath: string;
@@ -226,6 +229,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     execution_mode: executionModeArg ?? "review_only",
     input_ref: args.get("--input-ref") ?? null,
     output_path: args.get("--output") ?? null,
+    supersedes: args.get("--supersedes") ?? null,
   };
 }
 
