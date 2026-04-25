@@ -1,0 +1,14 @@
+motion_id: motion-0157
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Motion Operations Surface v0"
+subtitle: "add a read-only operator motions surface derived from existing motion packages"
+kind: builder-proof
+program: q2-motion-operations-surface-v0
+basis: motion-0156
+status: ratified
+created_at: "2026-04-25T00:00:00.000Z"
+decided_at: "2026-04-25T12:34:50.3906019Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR

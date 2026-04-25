@@ -1,0 +1,41 @@
+{
+  "motion_id": "motion-0157",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Ratification is limited to the bounded read-only portal diff in portal/src/lib/motion/motionSurface.ts, portal/src/app/operator/motions/page.tsx, and portal/src/components/operator/OperatorSubnav.tsx.",
+      "The /operator/motions route exists, the Operator subnav includes Motions, and the queue derives from existing .nexus/motions/** packages.",
+      "The known motion-0151 motion.yaml versus decision.yaml mismatch is surfaced as attention state read-only rather than repaired.",
+      "Required gates validate-motion, validate-agency, and portal typecheck passed.",
+      "The UI performs no .nexus/motions/** mutation and introduces no orchestration widening."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-25T12:34:50.3906019Z"
+}
