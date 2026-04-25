@@ -1,0 +1,14 @@
+motion_id: motion-0158
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Operator Motions Static Snapshot Fallback v0"
+subtitle: "add a deployment-safe bundled snapshot fallback for the read-only operator motions surface"
+kind: builder-proof
+program: q2-motion-operations-static-snapshot
+basis: motion-0157
+status: ratified
+created_at: "2026-04-25T00:00:00.000Z"
+decided_at: "2026-04-25T15:34:01.731Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
