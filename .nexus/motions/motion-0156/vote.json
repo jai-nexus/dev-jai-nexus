@@ -1,0 +1,40 @@
+{
+  "motion_id": "motion-0156",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Ratification is limited to the bounded read-only runtime diff in runtime/runLedger.ts and runtime/show-run-proof.ts.",
+      "Review-surface acceptance evidence passed for read-only reporting, reviewed and rejected displays, legacy display, single-run and superseded displays, latest live display, empty and missing ledger handling, missing run-id handling, and help text.",
+      "Required gates validate-motion, validate-agency, and typecheck passed.",
+      "The CLI performs no ledger, artifact, applied-file, or motion mutation, and no orchestration widening was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-25T11:44:58.1824251Z"
+}
