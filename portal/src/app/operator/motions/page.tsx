@@ -189,7 +189,7 @@ export default async function MotionsPage(props: {
     (item) => item.decision_status?.toUpperCase() === "RATIFIED",
   ).length;
   const mismatchCount = buildStatusMismatchCount(allItems);
-  const sourceLabel = queueIndex.motions_root ?? ".nexus/motions";
+  const sourceLabel = queueIndex.source_label;
 
   return (
     <main className="min-h-screen bg-black px-8 py-8 text-gray-100">
@@ -215,6 +215,9 @@ export default async function MotionsPage(props: {
             Source: <span className="font-mono text-gray-200">{sourceLabel}</span>
             <div className="mt-1">
               Repo: <span className="font-mono text-gray-200">dev-jai-nexus</span>
+            </div>
+            <div className="mt-1">
+              Mode: <span className="font-mono text-gray-200">{queueIndex.source_mode}</span>
             </div>
           </div>
         </header>
