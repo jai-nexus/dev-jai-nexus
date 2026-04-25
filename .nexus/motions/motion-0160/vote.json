@@ -1,0 +1,41 @@
+{
+  "motion_id": "motion-0160",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The primary queue now represents generated contenders instead of canonical motions, which restores the boundary that contenders are preview-only and not motions.",
+      "Canonical motions remain visible as a separate read-only reference section sourced from .nexus/motions/**.",
+      "Motion-0159 promotion guardrails were preserved unchanged, with no new write power or widened promotion behavior.",
+      "Acceptance checks Q-01 through Q-19 passed and the required gates passed.",
+      "No runtime proof files changed, no existing motion packages were mutated, and no orchestration widening was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-25T18:17:37.296Z"
+}
