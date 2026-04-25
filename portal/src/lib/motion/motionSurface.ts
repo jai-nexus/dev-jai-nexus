@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import yaml from "js-yaml";
+import motionSnapshotData from "./motionSnapshot.json" with { type: "json" };
 
 export type MotionQueueState =
   | "attention"
@@ -67,11 +68,37 @@ export type MotionDetailView = {
   chat_search_href: string;
 };
 
+export type MotionSourceMode = "live" | "snapshot";
+
 export type MotionQueueIndex = {
   repo_root: string | null;
   motions_root: string | null;
   items: MotionQueueItem[];
+  source_mode: MotionSourceMode;
+  source_label: string;
   warning: string | null;
+};
+
+export type MotionSnapshotEntry = {
+  motion_id: string;
+  item: MotionQueueItem;
+  core_artifacts: MotionArtifactView[];
+  secondary_artifacts: MotionSecondaryArtifact[];
+  execution_excerpt: string | null;
+  prompt_pack: string;
+  handoff_pack: string;
+  chat_search_href: string;
+};
+
+export type MotionSnapshot = {
+  snapshot_id: "operator-motions-snapshot-v0";
+  schema_version: "0.1.0";
+  generated_at: string;
+  source_repo: "dev-jai-nexus";
+  source_path: ".nexus/motions";
+  motion_count: number;
+  generator: string;
+  entries: MotionSnapshotEntry[];
 };
 
 type ParsedYaml = Record<string, unknown>;
@@ -111,6 +138,8 @@ const SECONDARY_ARTIFACT_KEYS = [
 
 const MODERN_MOTION_STATUSES = new Set(["open", "ratified"]);
 const DRAFT_LIKE_DECISION_STATUSES = new Set(["DRAFT", "PENDING", "PROPOSED"]);
+const SNAPSHOT_SOURCE_LABEL = "portal/src/lib/motion/motionSnapshot.json";
+const motionSnapshot = motionSnapshotData as MotionSnapshot;
 
 async function pathExists(targetPath: string): Promise<boolean> {
   try {
@@ -152,6 +181,30 @@ async function findMotionSourceFrom(startDir: string): Promise<MotionSource | nu
 
 function buildMotionSourceError(): string {
   return `Motion source not found: .nexus/motions could not be resolved from portal cwd (${process.cwd()})`;
+}
+
+function hasBundledMotionSnapshot(snapshot: MotionSnapshot): boolean {
+  return (
+    snapshot.snapshot_id === "operator-motions-snapshot-v0" &&
+    snapshot.schema_version === "0.1.0" &&
+    Array.isArray(snapshot.entries) &&
+    snapshot.entries.length > 0
+  );
+}
+
+function buildSnapshotQueueIndex(): MotionQueueIndex | null {
+  if (!hasBundledMotionSnapshot(motionSnapshot)) {
+    return null;
+  }
+
+  return {
+    repo_root: null,
+    motions_root: motionSnapshot.source_path,
+    items: motionSnapshot.entries.map((entry) => entry.item),
+    source_mode: "snapshot",
+    source_label: SNAPSHOT_SOURCE_LABEL,
+    warning: null,
+  };
 }
 
 async function resolveMotionSource(): Promise<MotionSource> {
@@ -520,55 +573,12 @@ async function scanMotion(motionId: string, repoRoot: string): Promise<MotionSur
   };
 }
 
-export async function listMotionQueue(): Promise<MotionQueueItem[]> {
-  const queueIndex = await loadMotionQueueIndex();
-  if (queueIndex.warning) {
-    throw new Error(queueIndex.warning);
-  }
-  return queueIndex.items;
-}
-
-export async function loadMotionQueueIndex(): Promise<MotionQueueIndex> {
-  let source: MotionSource;
-  try {
-    source = await resolveMotionSource();
-  } catch (error) {
-    return {
-      repo_root: null,
-      motions_root: null,
-      items: [],
-      warning: error instanceof Error ? error.message : buildMotionSourceError(),
-    };
-  }
-
-  const entries = await fs.readdir(source.motions_root, { withFileTypes: true });
-  const motionIds = entries
-    .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
-    .map((entry) => entry.name)
-    .sort((left, right) => parseMotionNumber(right) - parseMotionNumber(left));
-
-  const scans = await Promise.all(
-    motionIds.map((motionId) => scanMotion(motionId, source.repo_root)),
-  );
-
-  return {
-    repo_root: source.repo_root,
-    motions_root: source.motions_root,
-    items: scans.map((scan) => scan.item),
-    warning: null,
-  };
-}
-
-export async function loadMotionDetail(motionId: string): Promise<MotionDetailView> {
-  if (!/^motion-\d+$/i.test(motionId)) {
-    throw new Error(`Invalid motion id: ${motionId}`);
-  }
-
-  const source = await resolveMotionSource();
-  const scan = await scanMotion(motionId, source.repo_root);
+function buildMotionDetailView(scan: MotionSurfaceScan): MotionDetailView {
   const artifactPaths = scan.core_artifacts.map((artifact) => artifact.path);
   const executionArtifact = scan.core_artifacts.find((artifact) => artifact.key === "execution.md");
-  const executionExcerpt = executionArtifact?.preview ? truncatePreview(executionArtifact.preview, 1600) : null;
+  const executionExcerpt = executionArtifact?.preview
+    ? truncatePreview(executionArtifact.preview, 1600)
+    : null;
 
   return {
     repo_root: scan.repo_root,
@@ -594,4 +604,89 @@ export async function loadMotionDetail(motionId: string): Promise<MotionDetailVi
     }),
     chat_search_href: `/operator/chats?q=${encodeURIComponent(scan.item.motion_id)}`,
   };
+}
+
+function buildSnapshotMotionDetail(motionId: string): MotionDetailView | null {
+  if (!hasBundledMotionSnapshot(motionSnapshot)) {
+    return null;
+  }
+
+  const entry = motionSnapshot.entries.find((snapshotEntry) => snapshotEntry.motion_id === motionId);
+  if (!entry) return null;
+
+  return {
+    repo_root: motionSnapshot.source_repo,
+    motions_root: motionSnapshot.source_path,
+    item: entry.item,
+    core_artifacts: entry.core_artifacts,
+    secondary_artifacts: entry.secondary_artifacts,
+    execution_excerpt: entry.execution_excerpt,
+    prompt_pack: entry.prompt_pack,
+    handoff_pack: entry.handoff_pack,
+    chat_search_href: entry.chat_search_href,
+  };
+}
+
+export async function listMotionQueue(): Promise<MotionQueueItem[]> {
+  const queueIndex = await loadMotionQueueIndex();
+  if (queueIndex.warning) {
+    throw new Error(queueIndex.warning);
+  }
+  return queueIndex.items;
+}
+
+export async function loadMotionQueueIndex(): Promise<MotionQueueIndex> {
+  let source: MotionSource;
+  try {
+    source = await resolveMotionSource();
+  } catch (error) {
+    const snapshotQueue = buildSnapshotQueueIndex();
+    if (snapshotQueue) {
+      return snapshotQueue;
+    }
+
+    return {
+      repo_root: null,
+      motions_root: null,
+      items: [],
+      source_mode: "snapshot",
+      source_label: SNAPSHOT_SOURCE_LABEL,
+      warning: error instanceof Error ? error.message : buildMotionSourceError(),
+    };
+  }
+
+  const entries = await fs.readdir(source.motions_root, { withFileTypes: true });
+  const motionIds = entries
+    .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
+    .map((entry) => entry.name)
+    .sort((left, right) => parseMotionNumber(right) - parseMotionNumber(left));
+
+  const scans = await Promise.all(
+    motionIds.map((motionId) => scanMotion(motionId, source.repo_root)),
+  );
+
+  return {
+    repo_root: source.repo_root,
+    motions_root: source.motions_root,
+    items: scans.map((scan) => scan.item),
+    source_mode: "live",
+    source_label: source.motions_root,
+    warning: null,
+  };
+}
+
+export async function loadMotionDetail(motionId: string): Promise<MotionDetailView> {
+  if (!/^motion-\d+$/i.test(motionId)) {
+    throw new Error(`Invalid motion id: ${motionId}`);
+  }
+
+  try {
+    const source = await resolveMotionSource();
+    const scan = await scanMotion(motionId, source.repo_root);
+    return buildMotionDetailView(scan);
+  } catch {
+    const snapshotDetail = buildSnapshotMotionDetail(motionId);
+    if (snapshotDetail) return snapshotDetail;
+    throw new Error(buildMotionSourceError());
+  }
 }
