@@ -12,6 +12,7 @@ const links = [
   { href: "/operator/work", label: "Work" },
   { href: "/operator/waves", label: "Waves" },
   { href: "/operator/chats", label: "Chats" },
+  { href: "/operator/motions", label: "Motions" },
   { href: "/operator/decisions", label: "Decisions" },
   { href: "/operator/dct", label: "DCT" },
   { href: "/operator/registry/coverage", label: "Registry" },
