@@ -7,6 +7,13 @@ export const MOTION_PROMOTION_TARGET_REPO = "jai-nexus/dev-jai-nexus";
 export const MOTION_PROMOTION_TARGET_DOMAIN = "dev.jai.nexus";
 export const MOTION_PROMOTION_DEFAULT_BASE_BRANCH = "main";
 
+export type ContenderQueueState =
+  | "preview_only"
+  | "ready_to_promote"
+  | "promotion_blocked"
+  | "stale_preview"
+  | "promoted";
+
 export type MotionContenderInput = {
   title: string;
   subtitle: string | null;
@@ -21,18 +28,34 @@ export type MotionContenderInput = {
   generatedFromMotionId: string | null;
 };
 
+export type MotionContenderPromotionResult = {
+  motion_id: string;
+  branch_name: string;
+  commit_sha: string;
+  compare_url: string | null;
+};
+
 export type MotionContenderPreview = {
   contender_id: string;
+  title: string;
+  subtitle: string | null;
   generated_at: string;
+  generated_from_motion_id: string | null;
+  basis_motion_id: string | null;
   target_repo: string;
   target_domain: string;
   base_branch: string;
+  provisional_motion_id_preview: string;
+  provisional_branch_name_preview: string;
+  write_root_preview: string;
+  written_paths_preview: string[];
   provisional_motion_id: string;
   provisional_branch_name: string;
   write_root: string;
   written_paths: string[];
-  queue_state: "preview_only" | "ready_to_promote";
+  queue_state: ContenderQueueState;
   blocking_reasons: string[];
+  promotion_result: MotionContenderPromotionResult | null;
   input: MotionContenderInput;
   draft_package: DraftMotionPackage;
 };
@@ -49,6 +72,10 @@ function normalizeTextBlock(value: string | null | undefined): string {
 
 function normalizeList(items: string[]): string[] {
   return items.map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeUniqueList(items: string[]): string[] {
+  return Array.from(new Set(normalizeList(items)));
 }
 
 function slugify(value: string): string {
@@ -89,6 +116,52 @@ export function normalizeMotionContenderInput(
     rationale: normalizeTextBlock(input.rationale),
     risks: normalizeList(input.risks),
     generatedFromMotionId: normalizeSingleLine(input.generatedFromMotionId),
+  };
+}
+
+export function syncMotionContenderAvailability(
+  contender: MotionContenderPreview,
+  args: {
+    promotionEnabled: boolean;
+    blockingReasons?: string[];
+  },
+): MotionContenderPreview {
+  if (
+    contender.queue_state === "promoted" ||
+    contender.queue_state === "stale_preview"
+  ) {
+    return contender;
+  }
+
+  return {
+    ...contender,
+    queue_state: args.promotionEnabled ? "ready_to_promote" : "promotion_blocked",
+    blocking_reasons: args.promotionEnabled
+      ? []
+      : normalizeUniqueList(args.blockingReasons ?? contender.blocking_reasons),
+  };
+}
+
+export function markMotionContenderStale(
+  contender: MotionContenderPreview,
+  reason: string,
+): MotionContenderPreview {
+  return {
+    ...contender,
+    queue_state: "stale_preview",
+    blocking_reasons: normalizeUniqueList([reason]),
+  };
+}
+
+export function markMotionContenderPromoted(
+  contender: MotionContenderPreview,
+  result: MotionContenderPromotionResult,
+): MotionContenderPreview {
+  return {
+    ...contender,
+    queue_state: "promoted",
+    blocking_reasons: [],
+    promotion_result: result,
   };
 }
 
@@ -137,16 +210,25 @@ export function buildMotionContenderPreview(args: {
 
   return {
     contender_id: buildContenderId(args.generatedAt, normalizedInput.title),
+    title: normalizedInput.title,
+    subtitle: normalizedInput.subtitle,
     generated_at: args.generatedAt,
+    generated_from_motion_id: normalizedInput.generatedFromMotionId,
+    basis_motion_id: normalizedInput.basisMotionId,
     target_repo: targetRepo,
     target_domain: targetDomain,
     base_branch: baseBranch,
+    provisional_motion_id_preview: provisionalMotionId,
+    provisional_branch_name_preview: provisionalBranchName,
+    write_root_preview: draftPackage.write_root,
+    written_paths_preview: draftPackage.files.map((file) => file.path),
     provisional_motion_id: provisionalMotionId,
     provisional_branch_name: provisionalBranchName,
     write_root: draftPackage.write_root,
     written_paths: draftPackage.files.map((file) => file.path),
-    queue_state: "ready_to_promote",
+    queue_state: "preview_only",
     blocking_reasons: [],
+    promotion_result: null,
     input: normalizedInput,
     draft_package: draftPackage,
   };

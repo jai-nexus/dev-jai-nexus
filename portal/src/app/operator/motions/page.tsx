@@ -212,57 +212,22 @@ export default async function MotionsPage(props: {
               JAI NEXUS Motions
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-gray-400">
-              Read-only motion operations surface derived directly from
-              <span className="mx-1 font-mono text-gray-300">.nexus/motions</span>
-              for this repo only. It surfaces queue state, package evidence, and
-              chat-ready review prompts without dispatch, voting, ratification, or file
-              mutation.
+              Contender-first motion operations surface for this repo only. Generated
+              contenders stay preview only until explicit guarded promotion, while
+              canonical motion packages remain below as a separate read-only reference
+              derived from
+              <span className="mx-1 font-mono text-gray-300">.nexus/motions</span>.
             </p>
           </div>
 
           <div className="rounded border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs text-gray-400">
-            Source: <span className="font-mono text-gray-200">{sourceLabel}</span>
+            Repo: <span className="font-mono text-gray-200">dev-jai-nexus</span>
             <div className="mt-1">
-              Repo: <span className="font-mono text-gray-200">dev-jai-nexus</span>
-            </div>
-            <div className="mt-1">
-              Mode: <span className="font-mono text-gray-200">{queueIndex.source_mode}</span>
+              Contenders:{" "}
+              <span className="font-mono text-gray-200">session-local preview only</span>
             </div>
           </div>
         </header>
-
-        {queueIndex.warning ? (
-          <section className="rounded border border-amber-900/60 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
-            {queueIndex.warning}
-          </section>
-        ) : null}
-
-        <section className="grid gap-3 md:grid-cols-4">
-          <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Total motions
-            </div>
-            <div className="mt-1 font-mono text-2xl text-gray-100">{totalCount}</div>
-          </div>
-          <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Attention
-            </div>
-            <div className="mt-1 font-mono text-2xl text-amber-300">{attentionCount}</div>
-          </div>
-          <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Ratified
-            </div>
-            <div className="mt-1 font-mono text-2xl text-emerald-300">{ratifiedCount}</div>
-          </div>
-          <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Status mismatches
-            </div>
-            <div className="mt-1 font-mono text-2xl text-amber-300">{mismatchCount}</div>
-          </div>
-        </section>
 
         <PromoteContenderForm
           highestMotionNumber={highestMotionNumber}
@@ -272,80 +237,139 @@ export default async function MotionsPage(props: {
           promotion={promotionAvailability}
         />
 
-        <form
-          method="GET"
-          className="flex flex-wrap items-end gap-3 rounded border border-zinc-800 bg-zinc-950/50 p-4"
-        >
-          <div>
-            <div className="mb-1 text-[11px] text-gray-500">search</div>
-            <input
-              name="q"
-              defaultValue={query ?? ""}
-              placeholder="motion id, title, program, basis"
-              className="w-[280px] rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100 placeholder:text-gray-600"
-            />
+        <section className="space-y-4 rounded border border-zinc-800 bg-zinc-950/40 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-gray-100">
+                Canonical Motion Reference
+              </div>
+              <div className="mt-1 max-w-3xl text-xs text-gray-500">
+                Existing motion packages under
+                <span className="mx-1 font-mono text-gray-300">.nexus/motions/**</span>
+                remain read-only here. This browser is reference state only, not the
+                primary contender queue and not a scheduler or governance authority.
+              </div>
+            </div>
+
+            <div className="rounded border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-gray-400">
+              Source: <span className="font-mono text-gray-200">{sourceLabel}</span>
+              <div className="mt-1">
+                Mode:{" "}
+                <span className="font-mono text-gray-200">{queueIndex.source_mode}</span>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <div className="mb-1 text-[11px] text-gray-500">queue state</div>
-            <select
-              name="state"
-              defaultValue={queueState ?? ""}
-              className="rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100"
+          {queueIndex.warning ? (
+            <div className="rounded border border-amber-900/60 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+              {queueIndex.warning}
+            </div>
+          ) : null}
+
+          <section className="grid gap-3 md:grid-cols-4">
+            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                Total canonical motions
+              </div>
+              <div className="mt-1 font-mono text-2xl text-gray-100">{totalCount}</div>
+            </div>
+            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                Attention
+              </div>
+              <div className="mt-1 font-mono text-2xl text-amber-300">{attentionCount}</div>
+            </div>
+            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                Ratified
+              </div>
+              <div className="mt-1 font-mono text-2xl text-emerald-300">{ratifiedCount}</div>
+            </div>
+            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                Status mismatches
+              </div>
+              <div className="mt-1 font-mono text-2xl text-amber-300">{mismatchCount}</div>
+            </div>
+          </section>
+
+          <form
+            method="GET"
+            className="flex flex-wrap items-end gap-3 rounded border border-zinc-800 bg-zinc-950/50 p-4"
+          >
+            <div>
+              <div className="mb-1 text-[11px] text-gray-500">search</div>
+              <input
+                name="q"
+                defaultValue={query ?? ""}
+                placeholder="motion id, title, program, basis"
+                className="w-[280px] rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100 placeholder:text-gray-600"
+              />
+            </div>
+
+            <div>
+              <div className="mb-1 text-[11px] text-gray-500">queue state</div>
+              <select
+                name="state"
+                defaultValue={queueState ?? ""}
+                className="rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100"
+              >
+                <option value="">ANY</option>
+                <option value="attention">attention</option>
+                <option value="draft">draft</option>
+                <option value="ready_for_vote">ready_for_vote</option>
+                <option value="ratified">ratified</option>
+                <option value="settled">settled</option>
+                <option value="unknown">unknown</option>
+              </select>
+            </div>
+
+            <label className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs text-gray-300">
+              <input
+                type="checkbox"
+                name="attention"
+                value="1"
+                defaultChecked={attentionOnly}
+                className="rounded border-zinc-700 bg-black"
+              />
+              attention only
+            </label>
+
+            <button
+              type="submit"
+              className="rounded border border-zinc-800 bg-sky-900/40 px-3 py-2 text-xs text-sky-100 hover:bg-sky-900/60"
             >
-              <option value="">ANY</option>
-              <option value="attention">attention</option>
-              <option value="draft">draft</option>
-              <option value="ready_for_vote">ready_for_vote</option>
-              <option value="ratified">ratified</option>
-              <option value="settled">settled</option>
-              <option value="unknown">unknown</option>
-            </select>
-          </div>
+              Apply
+            </button>
 
-          <label className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs text-gray-300">
-            <input
-              type="checkbox"
-              name="attention"
-              value="1"
-              defaultChecked={attentionOnly}
-              className="rounded border-zinc-700 bg-black"
-            />
-            attention only
-          </label>
+            <Link
+              href="/operator/motions"
+              className="rounded border border-zinc-800 px-3 py-2 text-xs text-gray-400 hover:bg-zinc-900 hover:text-gray-200"
+            >
+              Clear
+            </Link>
 
-          <button
-            type="submit"
-            className="rounded border border-zinc-800 bg-sky-900/40 px-3 py-2 text-xs text-sky-100 hover:bg-sky-900/60"
-          >
-            Apply
-          </button>
+            <div className="ml-auto text-xs text-gray-500">
+              Showing <span className="font-mono text-gray-200">{filteredItems.length}</span>{" "}
+              of <span className="font-mono text-gray-200">{totalCount}</span>{" "}
+              canonical motions
+            </div>
+          </form>
 
-          <Link
-            href="/operator/motions"
-            className="rounded border border-zinc-800 px-3 py-2 text-xs text-gray-400 hover:bg-zinc-900 hover:text-gray-200"
-          >
-            Clear
-          </Link>
-
-          <div className="ml-auto text-xs text-gray-500">
-            Showing <span className="font-mono text-gray-200">{filteredItems.length}</span>{" "}
-            of <span className="font-mono text-gray-200">{totalCount}</span>
-          </div>
-        </form>
-
-        <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+          <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div className="rounded border border-zinc-800 bg-zinc-950/40">
             <div className="border-b border-zinc-800 px-4 py-3">
-              <div className="text-sm font-semibold text-gray-200">Motion queue</div>
+              <div className="text-sm font-semibold text-gray-200">
+                Canonical motion browser
+              </div>
               <div className="mt-1 text-xs text-gray-500">
-                Attention-first view over read-only motion packages.
+                Read-only reference view over existing motion packages.
               </div>
             </div>
 
             {filteredItems.length === 0 ? (
               <div className="px-4 py-5 text-sm text-gray-400">
-                No motions matched the current filters.
+                No canonical motions matched the current filters.
               </div>
             ) : (
               <div className="max-h-[70vh] space-y-3 overflow-y-auto p-3">
@@ -423,7 +447,7 @@ export default async function MotionsPage(props: {
           <div className="rounded border border-zinc-800 bg-zinc-950/40">
             {!detail ? (
               <div className="px-6 py-8 text-sm text-gray-400">
-                Select a motion from the queue to inspect its current package state.
+                Select a canonical motion to inspect its current read-only package state.
               </div>
             ) : (
               <div className="space-y-6 p-6">
@@ -672,6 +696,7 @@ export default async function MotionsPage(props: {
               </div>
             )}
           </div>
+          </section>
         </section>
       </div>
     </main>
