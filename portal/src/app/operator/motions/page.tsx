@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { getServerAuthSession } from "@/auth";
+import { PromoteContenderForm } from "./PromoteContenderForm";
+import { parseMotionNumber } from "@/lib/motion/motionContenders";
+import { readMotionPromotionAvailability } from "@/lib/motion/motionPromotion";
 import {
   loadMotionQueueIndex,
   loadMotionDetail,
@@ -164,6 +168,7 @@ export default async function MotionsPage(props: {
     sanitizeArtifact(firstParam(sp.artifact)) ?? "motion.yaml";
 
   const queueIndex = await loadMotionQueueIndex();
+  const session = await getServerAuthSession();
   const allItems = queueIndex.items;
   const filteredItems = allItems.filter((item) => {
     if (!matchesSearch(item, query)) return false;
@@ -190,6 +195,10 @@ export default async function MotionsPage(props: {
   ).length;
   const mismatchCount = buildStatusMismatchCount(allItems);
   const sourceLabel = queueIndex.source_label;
+  const highestMotionNumber = allItems.reduce((currentMax, item) => {
+    return Math.max(currentMax, parseMotionNumber(item.motion_id));
+  }, 0);
+  const promotionAvailability = readMotionPromotionAvailability(session?.user?.email ?? null);
 
   return (
     <main className="min-h-screen bg-black px-8 py-8 text-gray-100">
@@ -254,6 +263,14 @@ export default async function MotionsPage(props: {
             <div className="mt-1 font-mono text-2xl text-amber-300">{mismatchCount}</div>
           </div>
         </section>
+
+        <PromoteContenderForm
+          highestMotionNumber={highestMotionNumber}
+          selectedMotionId={detail?.item.motion_id ?? selectedMotionId ?? null}
+          selectedMotionTitle={detail?.item.title ?? null}
+          selectedMotionProgram={detail?.item.program ?? null}
+          promotion={promotionAvailability}
+        />
 
         <form
           method="GET"
