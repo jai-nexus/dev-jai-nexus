@@ -1,6 +1,6 @@
 protocol_version: "0.3.8"
 motion_id: motion-0161
-evaluated_at: "2026-04-25T18:53:51.351Z"
+evaluated_at: "2026-04-25T19:22:25.664Z"
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
@@ -15,7 +15,7 @@ required_ok: true
 eligible_to_vote: false
 recommended_vote: null
 blocking_reasons:
-  - "Authenticated deployed operator-session verification is incomplete; GV-02 through GV-10 and GV-12 through GV-14 remain unverified."
+  - "Authenticated deployed operator-session verification is blocked; repo-discoverable seeded admin and agent credentials both returned CredentialsSignin and GV-03 through GV-12 and GV-14 through GV-16 remain incomplete."
 warnings:
   - "Scope is limited to deployed guardrail verification only and introduces no new product capability."
 escalation_state: null

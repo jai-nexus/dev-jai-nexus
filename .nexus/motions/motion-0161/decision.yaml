@@ -7,5 +7,5 @@ target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_gates: [validate_motion, validate_agency, typecheck]
-last_updated: "2026-04-25T18:53:51.351Z"
+last_updated: "2026-04-25T19:22:25.664Z"
 notes: "DRAFT: bounded deployed verification recorded; authenticated deployed operator pass remains incomplete."

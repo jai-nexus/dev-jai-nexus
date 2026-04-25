@@ -51,35 +51,52 @@ JAI NEXUS · Login
 Sign in as admin@jai.nexus or agent@jai.nexus.
 ```
 
+Text capture from attempted credential sign-in using repo-discoverable seeded passwords:
+
+```text
+HTTP/1.1 401 Unauthorized
+{"url":"https://dev.jai.nexus/api/auth/error?error=CredentialsSignin&provider=credentials"}
+```
+
+Text capture from attempted non-admin credential sign-in using repo-discoverable seeded passwords:
+
+```text
+HTTP/1.1 401 Unauthorized
+{"url":"https://dev.jai.nexus/api/auth/error?error=CredentialsSignin&provider=credentials"}
+```
+
 Confirmed from deployed observation:
 
 - the deployed `/operator/motions` route exists
 - unauthenticated access is redirected to `/login?next=%2Foperator%2Fmotions`
 - the deployed surface remains behind the expected auth/session boundary
+- repo-discoverable seeded credentials did not establish an authenticated deployed admin session
+- repo-discoverable seeded credentials did not establish an authenticated deployed non-admin session
 - no write action, promotion action, or PR action was executed in this pass
 
 ---
 
 ## GV matrix
 
-- `GV-01` PASS: deployed `/operator/motions` responds and redirects to login instead of 404/500
-- `GV-02` UNVERIFIED: contender-first queue not inspected on deployed because no authenticated session was used
-- `GV-03` UNVERIFIED: deployed contender labels were not inspected because no authenticated session was used
-- `GV-04` UNVERIFIED: deployed canonical read-only reference was not inspected because no authenticated session was used
-- `GV-05` UNVERIFIED: deployed snapshot/source-mode badge was not inspected because no authenticated session was used
-- `GV-06` UNVERIFIED: deployed canonical reference data was not inspected because no authenticated session was used
-- `GV-07` UNVERIFIED: deployed surfacing of the `motion-0151` mismatch was not inspected because no authenticated session was used
-- `GV-08` UNVERIFIED: deployed disabled-promotion state under missing env was not inspected because no authenticated session was used
-- `GV-09` UNVERIFIED: no non-admin session was available for deployed verification
-- `GV-10` UNVERIFIED: admin/feature/env guard copy inside the motions page was not inspected because no authenticated session was used
-- `GV-11` PASS (bounded): normal unauthenticated page use caused a redirect only and no observed branch/write activity
-- `GV-12` UNVERIFIED: no authenticated deployed session was used to inspect whether PR creation controls are absent
-- `GV-13` UNVERIFIED: no authenticated deployed session was used to inspect whether vote/ratify controls are absent
-- `GV-14` UNVERIFIED: no authenticated deployed session was used to inspect whether dispatch controls are absent
-- `GV-15` PASS (bounded): this pass performed no DB, runtime, or proof mutation and executed no write-capable feature path
-- `GV-16` PASS: `pnpm -C portal typecheck`
-- `GV-17` PASS: `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml`
-- `GV-18` PASS: `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`
+- `GV-01` PASS: deployed `/operator/motions` loads and auth-redirects correctly
+- `GV-02` PASS: unauthenticated users redirect to `/login?next=%2Foperator%2Fmotions`
+- `GV-03` BLOCKED: authenticated operator could not reach the page because deployed session access was unavailable
+- `GV-04` BLOCKED: primary queue could not be inspected on deployed because authenticated session access was unavailable
+- `GV-05` BLOCKED: preview-only / non-canonical contender labels could not be inspected on deployed because authenticated session access was unavailable
+- `GV-06` BLOCKED: canonical motions as a separate read-only reference could not be inspected on deployed because authenticated session access was unavailable
+- `GV-07` BLOCKED: deployed source mode / snapshot fallback badge could not be inspected because authenticated session access was unavailable
+- `GV-08` BLOCKED: canonical reference data rendering could not be inspected because authenticated session access was unavailable
+- `GV-09` BLOCKED: deployed surfacing of the `motion-0151` mismatch could not be inspected because authenticated session access was unavailable
+- `GV-10` BLOCKED: disabled-promotion state under missing env could not be inspected because authenticated session access was unavailable
+- `GV-11` BLOCKED: non-admin cannot promote could not be inspected in-page because non-admin deployed session access was unavailable; repo-discoverable non-admin credentials returned `CredentialsSignin`
+- `GV-12` BLOCKED: admin / feature / env guard copy inside the motions page could not be inspected because authenticated session access was unavailable
+- `GV-13` PASS (bounded): normal page use in this pass created no branch/write and executed no promotion path
+- `GV-14` BLOCKED: no authenticated deployed session was available to inspect whether PR creation controls are absent
+- `GV-15` BLOCKED: no authenticated deployed session was available to inspect whether vote/ratify controls are absent
+- `GV-16` BLOCKED: no authenticated deployed session was available to inspect whether dispatch controls are absent
+- `GV-17` PASS: `pnpm -C portal typecheck`
+- `GV-18` PASS: `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml`
+- `GV-19` PASS: `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`
 
 ---
 
@@ -93,7 +110,8 @@ Confirmed from deployed observation:
 
 ## Caveats
 
-- No authenticated deployed operator session was used in this pass.
+- No authenticated deployed operator session was available in this pass.
+- Bounded sign-in attempts using repo-discoverable seeded admin and agent credentials both returned `401 CredentialsSignin` on the deployed environment.
 - No browser/manual UI smoke test was run.
 - No live GitHub branch promotion was executed.
 - Snapshot fallback was not directly visible in deployed UI because the motions page remained auth-gated in this pass.
@@ -106,7 +124,7 @@ Confirmed from deployed observation:
 No concrete defect was found from the bounded deployed verification performed here.
 
 Motion-0161 remains DRAFT because authenticated deployed verification of the contender-first
-surface was not completed, so the evidence set is intentionally incomplete.
+surface was blocked by unavailable authenticated session access, so the evidence set is intentionally incomplete.
 
 ---
 
