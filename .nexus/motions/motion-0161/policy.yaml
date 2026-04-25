@@ -1,0 +1,21 @@
+protocol_version: "0.3.8"
+motion_id: motion-0161
+evaluated_at: "2026-04-25T18:53:51.351Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.09
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: false
+recommended_vote: null
+blocking_reasons:
+  - "Authenticated deployed operator-session verification is incomplete; GV-02 through GV-10 and GV-12 through GV-14 remain unverified."
+warnings:
+  - "Scope is limited to deployed guardrail verification only and introduces no new product capability."
+escalation_state: null

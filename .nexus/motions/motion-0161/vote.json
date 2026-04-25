@@ -1,0 +1,41 @@
+{
+  "motion_id": "motion-0161",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "pending"
+    },
+    {
+      "role": "challenger",
+      "vote": "pending"
+    },
+    {
+      "role": "arbiter",
+      "vote": "pending"
+    }
+  ],
+  "outcome": {
+    "yes": 0,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PENDING",
+    "reasons": [
+      "DRAFT: bounded deployed verification is recorded, but authenticated deployed operator evidence remains incomplete."
+    ],
+    "missing_required_roles": [
+      "proposer",
+      "challenger",
+      "arbiter"
+    ]
+  },
+  "last_updated": "2026-04-25T18:53:51.351Z"
+}
