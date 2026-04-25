@@ -1,0 +1,20 @@
+protocol_version: "0.3.8"
+motion_id: motion-0159
+evaluated_at: "2026-04-25T17:18:07.300Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.12
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Scope is limited to DRAFT-only branch promotion with v0 session/admin, feature-flag, and GitHub-env guardrails."
+escalation_state: null

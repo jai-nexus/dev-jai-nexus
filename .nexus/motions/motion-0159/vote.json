@@ -1,0 +1,41 @@
+{
+  "motion_id": "motion-0159",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Bounded portal diff is confined to deterministic contender builders, the preview surface, one guarded promotion route, and the motion-0159 package.",
+      "Contender generation remains preview-only until explicit operator confirmation and writes no repo state.",
+      "The promotion path is guarded, same-repo only, branch-only, and cannot write directly to main/default branch.",
+      "Acceptance checks P-01 through P-20 passed and the required gates passed.",
+      "No runtime proof files changed, no existing motion packages were mutated, and no orchestration widening was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-25T17:18:07.300Z"
+}
