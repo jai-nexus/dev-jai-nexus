@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  listMotionQueue,
+  loadMotionQueueIndex,
   loadMotionDetail,
   type MotionArtifactKey,
   type MotionQueueItem,
@@ -163,7 +163,8 @@ export default async function MotionsPage(props: {
   const selectedArtifactKey =
     sanitizeArtifact(firstParam(sp.artifact)) ?? "motion.yaml";
 
-  const allItems = await listMotionQueue();
+  const queueIndex = await loadMotionQueueIndex();
+  const allItems = queueIndex.items;
   const filteredItems = allItems.filter((item) => {
     if (!matchesSearch(item, query)) return false;
     if (queueState && item.queue_state !== queueState) return false;
@@ -188,6 +189,7 @@ export default async function MotionsPage(props: {
     (item) => item.decision_status?.toUpperCase() === "RATIFIED",
   ).length;
   const mismatchCount = buildStatusMismatchCount(allItems);
+  const sourceLabel = queueIndex.motions_root ?? ".nexus/motions";
 
   return (
     <main className="min-h-screen bg-black px-8 py-8 text-gray-100">
@@ -210,12 +212,18 @@ export default async function MotionsPage(props: {
           </div>
 
           <div className="rounded border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs text-gray-400">
-            Source: <span className="font-mono text-gray-200">.nexus/motions</span>
+            Source: <span className="font-mono text-gray-200">{sourceLabel}</span>
             <div className="mt-1">
               Repo: <span className="font-mono text-gray-200">dev-jai-nexus</span>
             </div>
           </div>
         </header>
+
+        {queueIndex.warning ? (
+          <section className="rounded border border-amber-900/60 bg-amber-950/20 px-4 py-3 text-sm text-amber-200">
+            {queueIndex.warning}
+          </section>
+        ) : null}
 
         <section className="grid gap-3 md:grid-cols-4">
           <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
