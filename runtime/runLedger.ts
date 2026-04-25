@@ -12,6 +12,36 @@ export type ReviewUpdateStatus = Exclude<ReviewStatus, "pending">;
 export type PreflightResult =
   | { ok: true }
   | { ok: false; reason: string };
+export type RunProofSurface = {
+  run_id: string;
+  motion_id: string | null;
+  task_id: string;
+  slot: string;
+  provider: string;
+  model: string;
+  ts: string;
+  current_run_state: "latest_live" | "historical_live_not_latest" | "superseded";
+  result_status: ResultStatus;
+  failure_note: string | null;
+  output_artifact_path: string | null;
+  output_artifact_exists: boolean | null;
+  human_review_status: ReviewStatus;
+  reviewed_at: string | null;
+  applied_file: string | null;
+  applied_file_exists: boolean | null;
+  attempt: number | null;
+  attempt_display: string;
+  supersedes: string | null;
+  superseded_by: string | null;
+  latest_live_run_id: string | null;
+  latest_live_ts: string | null;
+  admissibility_state_now:
+    | "fresh_start_allowed"
+    | "requires_supersedes"
+    | "blocked_review_final";
+  admissibility_reason_now: string;
+  lineage_note: string | null;
+};
 
 export type RunRecord = {
   run_id: string;
@@ -103,24 +133,10 @@ export function checkDispatchAdmissibility(
   ledgerPath: string = RUN_LEDGER_PATH,
 ): PreflightResult {
   let entries: StoredLedgerEntry[] = [];
-
-  if (existsSync(ledgerPath)) {
-    let source: string;
-    try {
-      source = readFileSync(ledgerPath, "utf8");
-    } catch (error) {
-      return preflightFailure(
-        `run ledger not readable: ${ledgerPath} (${getErrorMessage(error)})`,
-      );
-    }
-
-    try {
-      entries = isEmptyLedger(source) ? [] : parseLedgerSequence(source);
-    } catch (error) {
-      return preflightFailure(
-        `run ledger parse failed: ${getErrorMessage(error)}`,
-      );
-    }
+  try {
+    entries = readLedgerEntriesIfPresent(ledgerPath);
+  } catch (error) {
+    return preflightFailure(getErrorMessage(error));
   }
 
   const liveEntries = getLiveLineageEntries(entries, motionId, taskId);
@@ -182,6 +198,74 @@ export function checkDispatchAdmissibility(
   }
 
   return { ok: true };
+}
+
+export function buildRunProofSurface(
+  runId: string,
+  ledgerPath: string = RUN_LEDGER_PATH,
+): RunProofSurface {
+  const entries = readLedgerEntries(ledgerPath);
+
+  if (entries.length === 0) {
+    throw new Error("run ledger contains no run entries");
+  }
+
+  const targetEntry = entries.find((entry) => entry.run_id === runId);
+  if (!targetEntry) {
+    throw new Error(`run_id not found: ${runId}`);
+  }
+
+  const lineageEntries = entries.filter(
+    (entry) =>
+      entry.motion_id === targetEntry.motion_id &&
+      entry.task_id === targetEntry.task_id,
+  );
+  const liveEntries = getLiveLineageEntries(
+    entries,
+    targetEntry.motion_id,
+    targetEntry.task_id,
+  );
+  const latestLiveEntry = getLatestEntryByTimestamp(liveEntries);
+  const currentRunState = getCurrentRunState(targetEntry, latestLiveEntry);
+  const admissibility = buildAdmissibilityState(latestLiveEntry);
+
+  return {
+    run_id: targetEntry.run_id,
+    motion_id: targetEntry.motion_id,
+    task_id: targetEntry.task_id,
+    slot: targetEntry.slot,
+    provider: targetEntry.provider,
+    model: targetEntry.model,
+    ts: targetEntry.ts,
+    current_run_state: currentRunState,
+    result_status: targetEntry.result_status,
+    failure_note: targetEntry.failure_note,
+    output_artifact_path: targetEntry.output_artifact_path,
+    output_artifact_exists: getRepoRelativePathExists(
+      targetEntry.output_artifact_path,
+    ),
+    human_review_status: targetEntry.human_review_status,
+    reviewed_at: targetEntry.reviewed_at,
+    applied_file: targetEntry.applied_file,
+    applied_file_exists: getRepoRelativePathExists(targetEntry.applied_file),
+    attempt: targetEntry.attempt,
+    attempt_display:
+      targetEntry.attempt === null
+        ? "legacy/not-recorded"
+        : String(targetEntry.attempt),
+    supersedes: targetEntry.supersedes,
+    superseded_by: targetEntry.superseded_by,
+    latest_live_run_id: latestLiveEntry?.run_id ?? null,
+    latest_live_ts: latestLiveEntry?.ts ?? null,
+    admissibility_state_now: admissibility.state,
+    admissibility_reason_now: admissibility.reason,
+    lineage_note: buildLineageNote(
+      targetEntry,
+      latestLiveEntry,
+      currentRunState,
+      lineageEntries.length,
+    ),
+  };
 }
 
 export function updateRunReviewStatus(
@@ -279,11 +363,112 @@ function normalizeRunRecordInput(
   };
 }
 
+function readLedgerEntriesIfPresent(ledgerPath: string): StoredLedgerEntry[] {
+  if (!existsSync(ledgerPath)) {
+    return [];
+  }
+
+  return readLedgerEntries(ledgerPath);
+}
+
+function readLedgerEntries(ledgerPath: string): StoredLedgerEntry[] {
+  let source: string;
+  try {
+    source = readFileSync(ledgerPath, "utf8");
+  } catch (error) {
+    throw new Error(
+      `run ledger not readable: ${ledgerPath} (${getErrorMessage(error)})`,
+    );
+  }
+
+  try {
+    return isEmptyLedger(source) ? [] : parseLedgerSequence(source);
+  } catch (error) {
+    throw new Error(`run ledger parse failed: ${getErrorMessage(error)}`);
+  }
+}
+
 function preflightFailure(reason: string): PreflightResult {
   return {
     ok: false,
     reason: `preflight_failure: ${reason}`,
   };
+}
+
+function getCurrentRunState(
+  targetEntry: StoredLedgerEntry,
+  latestLiveEntry: StoredLedgerEntry | null,
+): RunProofSurface["current_run_state"] {
+  if (targetEntry.superseded_by !== null) {
+    return "superseded";
+  }
+
+  if (latestLiveEntry?.run_id === targetEntry.run_id) {
+    return "latest_live";
+  }
+
+  return "historical_live_not_latest";
+}
+
+function buildAdmissibilityState(
+  latestLiveEntry: StoredLedgerEntry | null,
+): {
+  state: RunProofSurface["admissibility_state_now"];
+  reason: string;
+} {
+  if (!latestLiveEntry) {
+    return {
+      state: "fresh_start_allowed",
+      reason:
+        "No live entry exists for this motion/task lineage; a fresh dispatch may proceed without --supersedes.",
+    };
+  }
+
+  if (isAcceptedFinalReviewStatus(latestLiveEntry.human_review_status)) {
+    return {
+      state: "blocked_review_final",
+      reason: `run-id ${latestLiveEntry.run_id} has review status "${latestLiveEntry.human_review_status}"; cannot supersede a reviewed or approved entry`,
+    };
+  }
+
+  return {
+    state: "requires_supersedes",
+    reason: `prior non-superseded entry exists for this task; supply --supersedes ${latestLiveEntry.run_id}`,
+  };
+}
+
+function buildLineageNote(
+  targetEntry: StoredLedgerEntry,
+  latestLiveEntry: StoredLedgerEntry | null,
+  currentRunState: RunProofSurface["current_run_state"],
+  lineageEntryCount: number,
+): string | null {
+  const notes: string[] = [];
+
+  if (targetEntry.attempt === null) {
+    notes.push(
+      "Legacy pre-motion-0154 entry: attempt lineage fields were not recorded at write time.",
+    );
+  }
+
+  if (currentRunState === "superseded" && targetEntry.superseded_by) {
+    notes.push(`This run has been superseded by ${targetEntry.superseded_by}.`);
+  } else if (
+    currentRunState === "historical_live_not_latest" &&
+    latestLiveEntry
+  ) {
+    notes.push(
+      `This run remains live but is not the latest live entry; latest live run is ${latestLiveEntry.run_id}.`,
+    );
+  } else if (currentRunState === "latest_live") {
+    notes.push("This run is the latest live entry for its lineage.");
+  }
+
+  if (lineageEntryCount > 1) {
+    notes.push(`Lineage entry count: ${lineageEntryCount}.`);
+  }
+
+  return notes.length > 0 ? notes.join(" ") : null;
 }
 
 function getLiveLineageEntries(
@@ -313,6 +498,25 @@ function getLatestEntryByTimestamp(
 
 function isAcceptedFinalReviewStatus(status: ReviewStatus): boolean {
   return FINAL_ACCEPTED_REVIEW_STATUSES.includes(status);
+}
+
+function getRepoRelativePathExists(rawPath: string | null): boolean | null {
+  if (rawPath === null) {
+    return null;
+  }
+
+  const repoRoot = path.resolve(process.cwd());
+  const absolutePath = path.resolve(repoRoot, rawPath);
+  const normalizedRepoRoot = `${repoRoot}${path.sep}`;
+
+  if (
+    absolutePath !== repoRoot &&
+    !absolutePath.startsWith(normalizedRepoRoot)
+  ) {
+    return false;
+  }
+
+  return existsSync(absolutePath);
 }
 
 function isEmptyLedger(source: string): boolean {
