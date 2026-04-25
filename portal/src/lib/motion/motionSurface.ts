@@ -67,6 +67,13 @@ export type MotionDetailView = {
   chat_search_href: string;
 };
 
+export type MotionQueueIndex = {
+  repo_root: string | null;
+  motions_root: string | null;
+  items: MotionQueueItem[];
+  warning: string | null;
+};
+
 type ParsedYaml = Record<string, unknown>;
 type ParsedJson = Record<string, unknown>;
 
@@ -74,6 +81,11 @@ type MotionSurfaceScan = {
   item: MotionQueueItem;
   core_artifacts: MotionArtifactView[];
   secondary_artifacts: MotionSecondaryArtifact[];
+  repo_root: string;
+  motions_root: string;
+};
+
+type MotionSource = {
   repo_root: string;
   motions_root: string;
 };
@@ -109,11 +121,25 @@ async function pathExists(targetPath: string): Promise<boolean> {
   }
 }
 
-async function findRepoRoot(startDir: string): Promise<string | null> {
-  let currentDir = startDir;
-  for (let index = 0; index < 10; index += 1) {
-    if (await pathExists(path.join(currentDir, ".nexus"))) {
-      return currentDir;
+function uniquePaths(paths: Array<string | null | undefined>): string[] {
+  return Array.from(
+    new Set(
+      paths
+        .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+        .map((value) => path.resolve(value)),
+    ),
+  );
+}
+
+async function findMotionSourceFrom(startDir: string): Promise<MotionSource | null> {
+  let currentDir = path.resolve(startDir);
+  for (let index = 0; index < 25; index += 1) {
+    const motionsRoot = path.join(currentDir, ".nexus", "motions");
+    if (await pathExists(motionsRoot)) {
+      return {
+        repo_root: currentDir,
+        motions_root: motionsRoot,
+      };
     }
 
     const parentDir = path.dirname(currentDir);
@@ -122,6 +148,23 @@ async function findRepoRoot(startDir: string): Promise<string | null> {
   }
 
   return null;
+}
+
+function buildMotionSourceError(): string {
+  return `Motion source not found: .nexus/motions could not be resolved from portal cwd (${process.cwd()})`;
+}
+
+async function resolveMotionSource(): Promise<MotionSource> {
+  const moduleDir =
+    typeof __dirname === "string" && __dirname.trim().length > 0 ? __dirname : null;
+  const candidateRoots = uniquePaths([process.cwd(), process.env.INIT_CWD, moduleDir]);
+
+  for (const candidateRoot of candidateRoots) {
+    const resolved = await findMotionSourceFrom(candidateRoot);
+    if (resolved) return resolved;
+  }
+
+  throw new Error(buildMotionSourceError());
 }
 
 function normalizeNewlines(text: string): string {
@@ -478,20 +521,42 @@ async function scanMotion(motionId: string, repoRoot: string): Promise<MotionSur
 }
 
 export async function listMotionQueue(): Promise<MotionQueueItem[]> {
-  const repoRoot = await findRepoRoot(process.cwd());
-  if (!repoRoot) return [];
+  const queueIndex = await loadMotionQueueIndex();
+  if (queueIndex.warning) {
+    throw new Error(queueIndex.warning);
+  }
+  return queueIndex.items;
+}
 
-  const motionsRoot = path.join(repoRoot, ".nexus", "motions");
-  if (!(await pathExists(motionsRoot))) return [];
+export async function loadMotionQueueIndex(): Promise<MotionQueueIndex> {
+  let source: MotionSource;
+  try {
+    source = await resolveMotionSource();
+  } catch (error) {
+    return {
+      repo_root: null,
+      motions_root: null,
+      items: [],
+      warning: error instanceof Error ? error.message : buildMotionSourceError(),
+    };
+  }
 
-  const entries = await fs.readdir(motionsRoot, { withFileTypes: true });
+  const entries = await fs.readdir(source.motions_root, { withFileTypes: true });
   const motionIds = entries
     .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
     .map((entry) => entry.name)
     .sort((left, right) => parseMotionNumber(right) - parseMotionNumber(left));
 
-  const scans = await Promise.all(motionIds.map((motionId) => scanMotion(motionId, repoRoot)));
-  return scans.map((scan) => scan.item);
+  const scans = await Promise.all(
+    motionIds.map((motionId) => scanMotion(motionId, source.repo_root)),
+  );
+
+  return {
+    repo_root: source.repo_root,
+    motions_root: source.motions_root,
+    items: scans.map((scan) => scan.item),
+    warning: null,
+  };
 }
 
 export async function loadMotionDetail(motionId: string): Promise<MotionDetailView> {
@@ -499,12 +564,8 @@ export async function loadMotionDetail(motionId: string): Promise<MotionDetailVi
     throw new Error(`Invalid motion id: ${motionId}`);
   }
 
-  const repoRoot = await findRepoRoot(process.cwd());
-  if (!repoRoot) {
-    throw new Error("Repo root not found (missing .nexus directory).");
-  }
-
-  const scan = await scanMotion(motionId, repoRoot);
+  const source = await resolveMotionSource();
+  const scan = await scanMotion(motionId, source.repo_root);
   const artifactPaths = scan.core_artifacts.map((artifact) => artifact.path);
   const executionArtifact = scan.core_artifacts.find((artifact) => artifact.key === "execution.md");
   const executionExcerpt = executionArtifact?.preview ? truncatePreview(executionArtifact.preview, 1600) : null;
