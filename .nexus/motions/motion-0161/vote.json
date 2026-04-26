@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0161",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Post-#110 deployed verification confirmed the contender-first queue and the separate canonical read-only reference.",
+      "Deployed snapshot-backed preview no longer presents an existing canonical motion id as the provisional write target.",
+      "Promotion remained disabled or guarded in observed deployed UI, with visible server-confirmation copy and no new write power enabled.",
+      "GV-01 through GV-19 were satisfied for ratification, with GV-09 and GV-11 treated as non-blocking unverified observations.",
+      "Required local gates passed, no runtime proof files changed, and no existing motion packages were mutated.",
+      "No orchestration widening, PR creation, voting, ratification, dispatch, scheduler behavior, readiness scoring, or DB writes were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-26T02:37:12.065Z"
+}
