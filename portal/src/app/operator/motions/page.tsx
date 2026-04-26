@@ -231,6 +231,11 @@ export default async function MotionsPage(props: {
 
         <PromoteContenderForm
           highestMotionNumber={highestMotionNumber}
+          motionIdStrategy={
+            queueIndex.source_mode === "live"
+              ? "derive_from_canonical_live_state"
+              : "assign_at_promotion"
+          }
           selectedMotionId={detail?.item.motion_id ?? selectedMotionId ?? null}
           selectedMotionTitle={detail?.item.title ?? null}
           selectedMotionProgram={detail?.item.program ?? null}

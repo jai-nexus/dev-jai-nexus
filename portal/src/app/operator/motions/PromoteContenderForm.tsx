@@ -8,6 +8,7 @@ import {
   parseMotionNumber,
   syncMotionContenderAvailability,
   type ContenderQueueState,
+  type MotionContenderIdStrategy,
   type MotionContenderInput,
   type MotionContenderPreview,
   type MotionContenderPromotionResult,
@@ -18,6 +19,7 @@ const SESSION_STORAGE_KEY = "jai.motion-contenders.v0";
 
 type PromoteContenderFormProps = {
   highestMotionNumber: number;
+  motionIdStrategy: MotionContenderIdStrategy;
   selectedMotionId: string | null;
   selectedMotionTitle: string | null;
   selectedMotionProgram: string | null;
@@ -95,6 +97,17 @@ function queueStateLabel(queueState: ContenderQueueState) {
   }
 }
 
+function motionIdResolutionLabel(contender: MotionContenderPreview) {
+  switch (contender.motion_id_resolution) {
+    case "assigned_at_promotion":
+      return "assigned at promotion";
+    case "server_confirmed":
+      return "server-confirmed";
+    default:
+      return "provisional from live canonical state";
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -129,6 +142,7 @@ function readPromotionResult(value: unknown): MotionContenderPromotionResult | n
 function normalizeStoredContender(
   value: unknown,
   promotion: MotionPromotionAvailability,
+  motionIdStrategy: MotionContenderIdStrategy,
 ): MotionContenderPreview | null {
   if (!isRecord(value) || !isRecord(value.input)) {
     return null;
@@ -143,6 +157,13 @@ function normalizeStoredContender(
   const provisionalMotionId =
     readString(value.provisional_motion_id_preview) ??
     readString(value.provisional_motion_id);
+  const storedResolution = readString(value.motion_id_resolution);
+  const rebuildMotionIdStrategy: MotionContenderIdStrategy =
+    storedResolution === "server_confirmed"
+      ? "server_confirmed"
+      : storedResolution === "assigned_at_promotion"
+        ? "assign_at_promotion"
+        : motionIdStrategy;
 
   const rebuilt = buildMotionContenderPreview({
     highestMotionNumber: Math.max(0, parseMotionNumber(provisionalMotionId) - 1),
@@ -150,6 +171,16 @@ function normalizeStoredContender(
     baseBranch: readString(value.base_branch) ?? promotion.base_branch,
     targetRepo: readString(value.target_repo) ?? promotion.target_repo,
     targetDomain: readString(value.target_domain),
+    motionIdStrategy: rebuildMotionIdStrategy,
+    confirmedMotionId:
+      storedResolution === "server_confirmed"
+        ? readString(value.provisional_motion_id) ?? provisionalMotionId
+        : null,
+    confirmedBranchName:
+      storedResolution === "server_confirmed"
+        ? readString(value.provisional_branch_name) ??
+          readString(value.provisional_branch_name_preview)
+        : null,
     input: {
       title: readString(inputRecord.title) ?? "",
       subtitle: readString(inputRecord.subtitle),
@@ -197,6 +228,7 @@ function countByQueueState(
 
 export function PromoteContenderForm({
   highestMotionNumber,
+  motionIdStrategy,
   selectedMotionId,
   selectedMotionTitle,
   selectedMotionProgram,
@@ -231,7 +263,7 @@ export function PromoteContenderForm({
       if (!Array.isArray(parsed)) return;
 
       const hydrated = parsed
-        .map((entry) => normalizeStoredContender(entry, promotion))
+        .map((entry) => normalizeStoredContender(entry, promotion, motionIdStrategy))
         .filter((entry): entry is MotionContenderPreview => entry !== null);
 
       setContenders(hydrated);
@@ -239,7 +271,13 @@ export function PromoteContenderForm({
     } catch {
       window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }
-  }, []);
+  }, [
+    motionIdStrategy,
+    promotion.base_branch,
+    promotion.target_repo,
+    promotion.enabled,
+    promotionBlockingKey,
+  ]);
 
   useEffect(() => {
     window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(contenders));
@@ -289,6 +327,10 @@ export function PromoteContenderForm({
     contenders.find((contender) => contender.contender_id === selectedContenderId) ??
     contenders[0] ??
     null;
+  const selectedContenderCanPromote =
+    !!selectedContender &&
+    promotion.enabled &&
+    !selectedContender.requires_server_id_confirmation;
 
   const summary = useMemo(
     () => ({
@@ -343,6 +385,7 @@ export function PromoteContenderForm({
         highestMotionNumber: nextPreviewBase(),
         generatedAt: new Date().toISOString(),
         baseBranch: promotion.base_branch,
+        motionIdStrategy,
         input: buildInput(),
       }),
       {
@@ -411,6 +454,9 @@ export function PromoteContenderForm({
                   parseMotionNumber(errorPayload.expected_motion_id) - 1,
                 generatedAt: selectedContender.generated_at,
                 baseBranch: promotion.base_branch,
+                motionIdStrategy: "server_confirmed",
+                confirmedMotionId: errorPayload.expected_motion_id,
+                confirmedBranchName: errorPayload.expected_branch_name,
                 input: selectedContender.input,
               }),
               {
@@ -579,6 +625,10 @@ export function PromoteContenderForm({
 
                         <div className="mt-3 text-[11px] text-gray-500">
                           not a motion package yet
+                        </div>
+
+                        <div className="mt-2 text-[11px] text-gray-400">
+                          {motionIdResolutionLabel(contender)}
                         </div>
 
                         <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-400">
@@ -768,7 +818,7 @@ export function PromoteContenderForm({
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                     <div className="rounded border border-zinc-800 bg-black/20 p-3">
                       <div className="text-[11px] uppercase tracking-wide text-gray-500">
-                        Provisional motion id
+                        Motion id preview
                       </div>
                       <div className="mt-1 font-mono text-sm text-gray-100">
                         {selectedContender.provisional_motion_id_preview}
@@ -780,6 +830,14 @@ export function PromoteContenderForm({
                       </div>
                       <div className="mt-1 font-mono text-sm text-gray-100">
                         {selectedContender.provisional_branch_name_preview}
+                      </div>
+                    </div>
+                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
+                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                        Id resolution
+                      </div>
+                      <div className="mt-1 font-mono text-sm text-gray-100">
+                        {motionIdResolutionLabel(selectedContender)}
                       </div>
                     </div>
                     <div className="rounded border border-zinc-800 bg-black/20 p-3">
@@ -814,6 +872,10 @@ export function PromoteContenderForm({
                         {selectedContender.write_root_preview}
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded border border-zinc-800 bg-zinc-950/30 px-3 py-3 text-xs text-gray-300">
+                    {selectedContender.motion_id_notice}
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -856,7 +918,9 @@ export function PromoteContenderForm({
                       Exact DRAFT package preview
                     </div>
                     <div className="mt-1 text-xs text-gray-500">
-                      Promotion writes exactly these 8 files if explicitly confirmed.
+                      {selectedContender.requires_server_id_confirmation
+                        ? "Preview shows placeholder paths because the real motion id is assigned only after server confirmation at promotion."
+                        : "Promotion writes exactly these 8 files if explicitly confirmed."}
                     </div>
                     <div className="mt-4 space-y-3">
                       {selectedContender.draft_package.files.map((file) => (
@@ -891,37 +955,47 @@ export function PromoteContenderForm({
                     <div className="text-sm font-semibold text-gray-200">
                       Promotion confirmation
                     </div>
-                    <div className="mt-2 text-xs text-gray-500">
-                      Type{" "}
-                      <span className="font-mono text-gray-200">
-                        {selectedContender.provisional_motion_id_preview}
-                      </span>{" "}
-                      to confirm guarded branch-only promotion. The server recomputes the
-                      latest motion id at promotion time and rejects stale previews with
-                      HTTP 409.
-                    </div>
+                    {selectedContender.requires_server_id_confirmation ? (
+                      <div className="mt-2 rounded border border-violet-900/50 bg-violet-950/20 px-3 py-3 text-xs text-violet-200">
+                        This preview does not claim a real motion id or write target. The
+                        next motion id must be confirmed server-side at promotion time
+                        before branch creation can be allowed.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mt-2 text-xs text-gray-500">
+                          Type{" "}
+                          <span className="font-mono text-gray-200">
+                            {selectedContender.provisional_motion_id_preview}
+                          </span>{" "}
+                          to confirm guarded branch-only promotion. The server
+                          recomputes the latest motion id at promotion time and rejects
+                          stale previews with HTTP 409.
+                        </div>
 
-                    <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
-                      <input
-                        value={confirmationText}
-                        onChange={(event) => setConfirmationText(event.target.value)}
-                        placeholder={selectedContender.provisional_motion_id_preview}
-                        className="rounded border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-sm text-gray-100"
-                      />
-                      <button
-                        type="button"
-                        onClick={handlePromoteSelectedContender}
-                        disabled={
-                          submitting ||
-                          !promotion.enabled ||
-                          confirmationText.trim() !==
-                            selectedContender.provisional_motion_id_preview
-                        }
-                        className="rounded border border-emerald-800/60 bg-emerald-900/20 px-3 py-2 text-xs text-emerald-100 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/40 disabled:text-gray-500"
-                      >
-                        {submitting ? "Promoting..." : "Promote to draft branch"}
-                      </button>
-                    </div>
+                        <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+                          <input
+                            value={confirmationText}
+                            onChange={(event) => setConfirmationText(event.target.value)}
+                            placeholder={selectedContender.provisional_motion_id_preview}
+                            className="rounded border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-sm text-gray-100"
+                          />
+                          <button
+                            type="button"
+                            onClick={handlePromoteSelectedContender}
+                            disabled={
+                              submitting ||
+                              !selectedContenderCanPromote ||
+                              confirmationText.trim() !==
+                                selectedContender.provisional_motion_id_preview
+                            }
+                            className="rounded border border-emerald-800/60 bg-emerald-900/20 px-3 py-2 text-xs text-emerald-100 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/40 disabled:text-gray-500"
+                          >
+                            {submitting ? "Promoting..." : "Promote to draft branch"}
+                          </button>
+                        </div>
+                      </>
+                    )}
 
                     {!promotion.enabled ? (
                       <div className="mt-4 rounded border border-amber-900/50 bg-amber-950/20 px-3 py-3 text-xs text-amber-200">
@@ -931,6 +1005,13 @@ export function PromoteContenderForm({
                             <li key={reason}>{reason}</li>
                           ))}
                         </ul>
+                      </div>
+                    ) : null}
+
+                    {promotion.enabled && selectedContender.requires_server_id_confirmation ? (
+                      <div className="mt-4 rounded border border-amber-900/50 bg-amber-950/20 px-3 py-3 text-xs text-amber-200">
+                        Promotion remains blocked until the next motion id can be
+                        confirmed server-side from the latest canonical state.
                       </div>
                     ) : null}
 

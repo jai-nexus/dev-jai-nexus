@@ -14,6 +14,16 @@ export type ContenderQueueState =
   | "stale_preview"
   | "promoted";
 
+export type MotionContenderIdStrategy =
+  | "derive_from_canonical_live_state"
+  | "assign_at_promotion"
+  | "server_confirmed";
+
+export type MotionContenderIdResolution =
+  | "provisional_live"
+  | "assigned_at_promotion"
+  | "server_confirmed";
+
 export type MotionContenderInput = {
   title: string;
   subtitle: string | null;
@@ -45,6 +55,9 @@ export type MotionContenderPreview = {
   target_repo: string;
   target_domain: string;
   base_branch: string;
+  motion_id_resolution: MotionContenderIdResolution;
+  motion_id_notice: string;
+  requires_server_id_confirmation: boolean;
   provisional_motion_id_preview: string;
   provisional_branch_name_preview: string;
   write_root_preview: string;
@@ -100,6 +113,9 @@ export function buildDraftMotionBranchName(motionId: string, title: string): str
   return `operator/motion-draft/${motionId}-${slugify(title)}`;
 }
 
+const ASSIGNED_AT_PROMOTION_LABEL = "assigned at promotion";
+const ASSIGNED_AT_PROMOTION_TOKEN = "<assigned-at-promotion>";
+
 export function normalizeMotionContenderInput(
   input: MotionContenderInput,
 ): MotionContenderInput {
@@ -133,12 +149,19 @@ export function syncMotionContenderAvailability(
     return contender;
   }
 
+  const previewBlockingReasons = contender.requires_server_id_confirmation
+    ? [contender.motion_id_notice]
+    : [];
+  const blockingReasons = normalizeUniqueList([
+    ...previewBlockingReasons,
+    ...(args.blockingReasons ?? contender.blocking_reasons),
+  ]);
+  const canPromote = args.promotionEnabled && !contender.requires_server_id_confirmation;
+
   return {
     ...contender,
-    queue_state: args.promotionEnabled ? "ready_to_promote" : "promotion_blocked",
-    blocking_reasons: args.promotionEnabled
-      ? []
-      : normalizeUniqueList(args.blockingReasons ?? contender.blocking_reasons),
+    queue_state: canPromote ? "ready_to_promote" : "promotion_blocked",
+    blocking_reasons: canPromote ? [] : blockingReasons,
   };
 }
 
@@ -177,20 +200,59 @@ export function buildMotionContenderPreview(args: {
   baseBranch?: string | null;
   targetRepo?: string | null;
   targetDomain?: string | null;
+  motionIdStrategy?: MotionContenderIdStrategy | null;
+  confirmedMotionId?: string | null;
+  confirmedBranchName?: string | null;
   input: MotionContenderInput;
 }): MotionContenderPreview {
   const normalizedInput = normalizeMotionContenderInput(args.input);
-  const nextMotionNumber = Math.max(1, args.highestMotionNumber + 1);
-  const provisionalMotionId = formatMotionId(nextMotionNumber);
   const targetRepo = normalizeSingleLine(args.targetRepo) ?? MOTION_PROMOTION_TARGET_REPO;
   const targetDomain =
     normalizeSingleLine(args.targetDomain) ?? MOTION_PROMOTION_TARGET_DOMAIN;
   const baseBranch =
     normalizeSingleLine(args.baseBranch) ?? MOTION_PROMOTION_DEFAULT_BASE_BRANCH;
-  const provisionalBranchName = buildDraftMotionBranchName(
+  const motionIdStrategy = args.motionIdStrategy ?? "derive_from_canonical_live_state";
+  const nextMotionNumber = Math.max(1, args.highestMotionNumber + 1);
+  const nextMotionId = formatMotionId(nextMotionNumber);
+
+  let motionIdResolution: MotionContenderIdResolution = "provisional_live";
+  let provisionalMotionId = nextMotionId;
+  let provisionalMotionIdPreview = nextMotionId;
+  let provisionalBranchName = buildDraftMotionBranchName(
     provisionalMotionId,
     normalizedInput.title,
   );
+  let provisionalBranchNamePreview = provisionalBranchName;
+  let motionIdNotice =
+    "Forecast from live canonical motion state. The promotion route still recomputes the latest motion id server-side.";
+  let requiresServerIdConfirmation = false;
+
+  if (motionIdStrategy === "assign_at_promotion") {
+    motionIdResolution = "assigned_at_promotion";
+    provisionalMotionId = ASSIGNED_AT_PROMOTION_TOKEN;
+    provisionalMotionIdPreview = ASSIGNED_AT_PROMOTION_LABEL;
+    provisionalBranchName = buildDraftMotionBranchName(
+      ASSIGNED_AT_PROMOTION_TOKEN,
+      normalizedInput.title,
+    );
+    provisionalBranchNamePreview = provisionalBranchName;
+    motionIdNotice =
+      "Snapshot-backed canonical data may be stale. The real motion id is assigned only after server confirmation at promotion.";
+    requiresServerIdConfirmation = true;
+  } else if (motionIdStrategy === "server_confirmed") {
+    const confirmedMotionId = normalizeSingleLine(args.confirmedMotionId) ?? nextMotionId;
+    const confirmedBranchName =
+      normalizeSingleLine(args.confirmedBranchName) ??
+      buildDraftMotionBranchName(confirmedMotionId, normalizedInput.title);
+    motionIdResolution = "server_confirmed";
+    provisionalMotionId = confirmedMotionId;
+    provisionalMotionIdPreview = confirmedMotionId;
+    provisionalBranchName = confirmedBranchName;
+    provisionalBranchNamePreview = confirmedBranchName;
+    motionIdNotice =
+      "Server-confirmed from the latest canonical state. The promotion route still recomputes the latest motion id and rejects stale previews with HTTP 409.";
+  }
+
   const draftPackage = buildDraftMotionPackage({
     motionId: provisionalMotionId,
     title: normalizedInput.title,
@@ -218,8 +280,11 @@ export function buildMotionContenderPreview(args: {
     target_repo: targetRepo,
     target_domain: targetDomain,
     base_branch: baseBranch,
-    provisional_motion_id_preview: provisionalMotionId,
-    provisional_branch_name_preview: provisionalBranchName,
+    motion_id_resolution: motionIdResolution,
+    motion_id_notice: motionIdNotice,
+    requires_server_id_confirmation: requiresServerIdConfirmation,
+    provisional_motion_id_preview: provisionalMotionIdPreview,
+    provisional_branch_name_preview: provisionalBranchNamePreview,
     write_root_preview: draftPackage.write_root,
     written_paths_preview: draftPackage.files.map((file) => file.path),
     provisional_motion_id: provisionalMotionId,
