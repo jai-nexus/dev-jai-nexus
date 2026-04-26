@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0165",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The old /operator/work execution queue was replaced with a read-only draft work packet surface linked to configured JAI agents.",
+      "All seed packets link to configured named agents, render repo-scope compatibility, and show requested action status without enabling execution.",
+      "Shared alias behavior remains view-only and non-assignable as an execution identity.",
+      "Credential posture is visible by env var name only, with no values rendered or committed.",
+      "Required gates passed, no runtime or proof files changed, and no existing motion packages were modified.",
+      "No branch writes, PR creation, dispatch, scheduler behavior, DB writes, API mutation, or runtime changes were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-26T05:37:39.028Z"
+}
