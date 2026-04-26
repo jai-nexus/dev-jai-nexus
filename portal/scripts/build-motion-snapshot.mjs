@@ -8,9 +8,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "../..");
 const MOTIONS_ROOT = path.join(REPO_ROOT, ".nexus", "motions");
-const SNAPSHOT_PATH = path.join(REPO_ROOT, "portal", "src", "lib", "motion", "motionSnapshot.json");
-// v0 is intentionally bounded to deployed canon through motion-0157.
-const SNAPSHOT_MAX_MOTION_NUMBER = 157;
+const SNAPSHOT_PATH = path.join(
+  REPO_ROOT,
+  "portal",
+  "src",
+  "lib",
+  "motion",
+  "motionSnapshot.json",
+);
 
 const CORE_ARTIFACT_KEYS = [
   "motion.yaml",
@@ -33,6 +38,35 @@ const SECONDARY_ARTIFACT_KEYS = [
 
 const MODERN_MOTION_STATUSES = new Set(["open", "ratified"]);
 const DRAFT_LIKE_DECISION_STATUSES = new Set(["DRAFT", "PENDING", "PROPOSED"]);
+const FALLBACK_GENERATED_AT = "1970-01-01T00:00:00.000Z";
+
+function printUsage() {
+  console.log("Usage:");
+  console.log("  node portal/scripts/build-motion-snapshot.mjs --write");
+  console.log("  node portal/scripts/build-motion-snapshot.mjs --check");
+  console.log("");
+  console.log("Notes:");
+  console.log("  --write regenerates portal/src/lib/motion/motionSnapshot.json");
+  console.log("  --check exits 0 when the committed snapshot matches generated canon");
+  console.log("  Running with no flag defaults to --write for backward compatibility.");
+}
+
+function parseCli(argv) {
+  const args = new Set(argv);
+  if (args.has("--help") || args.has("-h")) {
+    return { mode: "help" };
+  }
+
+  const wantsWrite = args.has("--write");
+  const wantsCheck = args.has("--check");
+  if (wantsWrite && wantsCheck) {
+    throw new Error("Choose either --write or --check, not both.");
+  }
+
+  return {
+    mode: wantsCheck ? "check" : "write",
+  };
+}
 
 function normalizeNewlines(text) {
   return String(text ?? "").replace(/\r\n/g, "\n");
@@ -109,6 +143,16 @@ function newestTimestamp(timestamps) {
   }, 0);
 
   return newest > 0 ? new Date(newest).toISOString() : null;
+}
+
+function newestIsoTimestamp(values) {
+  const newest = values.reduce((currentMax, value) => {
+    if (!value) return currentMax;
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? Math.max(currentMax, parsed) : currentMax;
+  }, 0);
+
+  return newest > 0 ? new Date(newest).toISOString() : FALLBACK_GENERATED_AT;
 }
 
 async function countPanelDirs(panelsPath) {
@@ -398,11 +442,10 @@ async function scanMotion(motionId) {
   };
 }
 
-async function main() {
+async function buildSnapshot() {
   const entries = await fs.readdir(MOTIONS_ROOT, { withFileTypes: true });
   const motionIds = entries
     .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
-    .filter((entry) => parseMotionNumber(entry.name) <= SNAPSHOT_MAX_MOTION_NUMBER)
     .map((entry) => entry.name)
     .sort((left, right) => parseMotionNumber(right) - parseMotionNumber(left));
 
@@ -411,34 +454,178 @@ async function main() {
     snapshotEntries.push(await scanMotion(motionId));
   }
 
-  const snapshot = {
+  return {
     snapshot_id: "operator-motions-snapshot-v0",
     schema_version: "0.1.0",
-    generated_at: new Date().toISOString(),
+    generated_at: newestIsoTimestamp(snapshotEntries.map((entry) => entry.item.updated_at)),
     source_repo: "dev-jai-nexus",
     source_path: ".nexus/motions",
     motion_count: snapshotEntries.length,
     generator: "portal/scripts/build-motion-snapshot.mjs",
     entries: snapshotEntries,
   };
-
-  await fs.writeFile(SNAPSHOT_PATH, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
-
-  const has0157 = snapshotEntries.some((entry) => entry.motion_id === "motion-0157");
-  const motion0151 = snapshotEntries.find((entry) => entry.motion_id === "motion-0151");
-  const has0151Mismatch =
-    motion0151?.item.attention_flags.includes(
-      "status mismatch: motion.yaml=open while decision.yaml=RATIFIED",
-    ) ?? false;
-
-  console.log(`snapshot_path: ${path.relative(REPO_ROOT, SNAPSHOT_PATH).replace(/\\/g, "/")}`);
-  console.log(`motion_count: ${snapshot.motion_count}`);
-  console.log(`has_motion_0157: ${has0157}`);
-  console.log(`motion_0151_mismatch_present: ${has0151Mismatch}`);
 }
 
-main().catch((error) => {
+function serializeSnapshot(snapshot) {
+  return `${JSON.stringify(snapshot, null, 2)}\n`;
+}
+
+function parseExistingSnapshotText(text) {
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function buildSnapshotSummary(snapshot) {
+  const motionIds = Array.isArray(snapshot?.entries)
+    ? snapshot.entries.map((entry) => entry.motion_id).filter((value) => typeof value === "string")
+    : [];
+  const motion0151 = Array.isArray(snapshot?.entries)
+    ? snapshot.entries.find((entry) => entry.motion_id === "motion-0151")
+    : null;
+
+  return {
+    motion_count: motionIds.length,
+    latest_motion_id: motionIds[0] ?? null,
+    has_motion_0161: motionIds.includes("motion-0161"),
+    motion_0151_mismatch_present:
+      motion0151?.item?.attention_flags?.includes(
+        "status mismatch: motion.yaml=open while decision.yaml=RATIFIED",
+      ) ?? false,
+    motion_ids: motionIds,
+  };
+}
+
+function buildDriftReport(currentSnapshot, nextSnapshot) {
+  const currentSummary = buildSnapshotSummary(currentSnapshot);
+  const nextSummary = buildSnapshotSummary(nextSnapshot);
+  const currentIds = new Set(currentSummary.motion_ids);
+  const nextIds = new Set(nextSummary.motion_ids);
+  const missingMotionIds = nextSummary.motion_ids.filter((motionId) => !currentIds.has(motionId));
+  const unexpectedMotionIds = currentSummary.motion_ids.filter((motionId) => !nextIds.has(motionId));
+
+  const mismatchedMotionIds = [];
+  if (Array.isArray(currentSnapshot?.entries) && Array.isArray(nextSnapshot?.entries)) {
+    const currentEntries = new Map(
+      currentSnapshot.entries.map((entry) => [entry.motion_id, JSON.stringify(entry)]),
+    );
+    for (const entry of nextSnapshot.entries) {
+      const currentEntry = currentEntries.get(entry.motion_id);
+      if (currentEntry && currentEntry !== JSON.stringify(entry)) {
+        mismatchedMotionIds.push(entry.motion_id);
+      }
+    }
+  }
+
+  return {
+    currentSummary,
+    nextSummary,
+    missingMotionIds,
+    unexpectedMotionIds,
+    mismatchedMotionIds,
+  };
+}
+
+function printSnapshotSummary({ mode, status, snapshotPath, currentSnapshot, nextSnapshot }) {
+  const currentSummary = currentSnapshot ? buildSnapshotSummary(currentSnapshot) : null;
+  const nextSummary = buildSnapshotSummary(nextSnapshot);
+
+  console.log(`mode: ${mode}`);
+  console.log(`status: ${status}`);
+  console.log(`snapshot_path: ${path.relative(REPO_ROOT, snapshotPath).replace(/\\/g, "/")}`);
+  if (currentSummary) {
+    console.log(`snapshot_count_before: ${currentSummary.motion_count}`);
+  }
+  console.log(`snapshot_count_after: ${nextSummary.motion_count}`);
+  console.log(`latest_motion_id_after: ${nextSummary.latest_motion_id ?? "null"}`);
+  console.log(`has_motion_0161: ${nextSummary.has_motion_0161}`);
+  console.log(`motion_0151_mismatch_present: ${nextSummary.motion_0151_mismatch_present}`);
+}
+
+function printDriftReport(report) {
+  console.log("drift: stale snapshot detected");
+  console.log(`current_motion_count: ${report.currentSummary.motion_count}`);
+  console.log(`expected_motion_count: ${report.nextSummary.motion_count}`);
+  console.log(`current_latest_motion_id: ${report.currentSummary.latest_motion_id ?? "null"}`);
+  console.log(`expected_latest_motion_id: ${report.nextSummary.latest_motion_id ?? "null"}`);
+  console.log(
+    `missing_motion_ids: ${report.missingMotionIds.length > 0 ? report.missingMotionIds.join(", ") : "none"}`,
+  );
+  console.log(
+    `unexpected_motion_ids: ${report.unexpectedMotionIds.length > 0 ? report.unexpectedMotionIds.join(", ") : "none"}`,
+  );
+  console.log(
+    `mismatched_motion_ids: ${report.mismatchedMotionIds.length > 0 ? report.mismatchedMotionIds.join(", ") : "none"}`,
+  );
+}
+
+async function run() {
+  const cli = parseCli(process.argv.slice(2));
+  if (cli.mode === "help") {
+    printUsage();
+    return;
+  }
+
+  const nextSnapshot = await buildSnapshot();
+  const nextText = serializeSnapshot(nextSnapshot);
+  const currentText = await safeReadText(SNAPSHOT_PATH);
+  const currentSnapshot = parseExistingSnapshotText(currentText);
+
+  if (cli.mode === "check") {
+    if (currentText === null) {
+      printSnapshotSummary({
+        mode: "check",
+        status: "stale",
+        snapshotPath: SNAPSHOT_PATH,
+        currentSnapshot: null,
+        nextSnapshot,
+      });
+      console.log("drift: committed snapshot file is missing");
+      process.exit(1);
+    }
+
+    if (normalizeNewlines(currentText) === normalizeNewlines(nextText)) {
+      printSnapshotSummary({
+        mode: "check",
+        status: "current",
+        snapshotPath: SNAPSHOT_PATH,
+        currentSnapshot,
+        nextSnapshot,
+      });
+      return;
+    }
+
+    printSnapshotSummary({
+      mode: "check",
+      status: "stale",
+      snapshotPath: SNAPSHOT_PATH,
+      currentSnapshot,
+      nextSnapshot,
+    });
+    printDriftReport(buildDriftReport(currentSnapshot, nextSnapshot));
+    process.exit(1);
+  }
+
+  await fs.writeFile(SNAPSHOT_PATH, nextText, "utf8");
+  const status =
+    currentText !== null && normalizeNewlines(currentText) === normalizeNewlines(nextText)
+      ? "current"
+      : "updated";
+
+  printSnapshotSummary({
+    mode: "write",
+    status,
+    snapshotPath: SNAPSHOT_PATH,
+    currentSnapshot,
+    nextSnapshot,
+  });
+}
+
+run().catch((error) => {
   console.error("[build-motion-snapshot] FAILED");
-  console.error(error);
+  console.error(error instanceof Error ? error.message : error);
   process.exit(1);
 });
