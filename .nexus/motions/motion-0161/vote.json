@@ -29,7 +29,7 @@
     "yes_with_reservations": 0,
     "result": "PENDING",
     "reasons": [
-      "DRAFT: bounded deployed verification is recorded, but authenticated deployed operator evidence remains incomplete."
+      "DRAFT: authenticated admin deployed evidence is partially recorded, but required contender-surface and disabled-control verification remains incomplete."
     ],
     "missing_required_roles": [
       "proposer",
@@ -37,5 +37,5 @@
       "arbiter"
     ]
   },
-  "last_updated": "2026-04-25T19:22:25.664Z"
+  "last_updated": "2026-04-26T01:48:07.655Z"
 }
