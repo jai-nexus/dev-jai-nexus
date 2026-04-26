@@ -1,12 +1,622 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-25T15:35:28.504Z",
+  "generated_at": "2026-04-26T03:48:34.732Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 157,
+  "motion_count": 162,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0162",
+      "item": {
+        "motion_id": "motion-0162",
+        "title": "Operator Motions Snapshot Refresh Automation v0",
+        "subtitle": "add deterministic write/check snapshot refresh tooling so deployed bundled motion canon does not silently lag merged .nexus/motions state",
+        "program": "q2-motion-snapshot-refresh-automation",
+        "kind": "builder-proof",
+        "basis": "motion-0161",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-26T03:47:43.344Z",
+        "updated_at": "2026-04-26T03:48:34.732Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0162/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0162\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Operator Motions Snapshot Refresh Automation v0\"\nsubtitle: \"add deterministic write/check snapshot refresh tooling so deployed bundled motion canon does not silently lag merged .nexus/motions state\"\nkind: builder-proof\nprogram: q2-motion-snapshot-refresh-automation\nbasis: motion-0161\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-26T03:47:43.344Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0162/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0162\nstatus: RATIFIED\ndecided_at: \"2026-04-26T03:47:43.344Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-26T03:47:43.344Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0162/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0162\nevaluated_at: \"2026-04-26T03:47:43.344Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.09\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to deterministic snapshot refresh/check tooling and bundled snapshot freshness only.\"\n  - \"Refreshed snapshot count is 162 on this branch because the current canonical tree includes motion-0162 in addition to merged canon through motion-0161.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0162/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0162\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T03:47:43.344Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0162/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T03:47:43.344Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T03:47:43.344Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-26T03:47:43.344Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0162/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0162\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The bundled motions snapshot now refreshes deterministically from current .nexus/motions/** with explicit --write and --check modes.\",\n      \"The refreshed snapshot no longer lags merged canon at motion-0157 and now includes motion-0161 in the bundled artifact.\",\n      \"Check mode passes when current and fails with clear drift details when the snapshot is stale.\",\n      \"The motion-0151 status mismatch remains surfaced in the snapshot rather than being normalized away.\",\n      \"Required gates passed, no runtime/proof files changed, and no existing motion packages were mutated.\",\n      \"No runtime fetch, DB writes, API mutation, promotion enablement, or orchestration widening was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-26T03:47:43.344Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0162/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Operator Motions Snapshot Refresh Automation v0\n\n**Motion:** motion-0162\n**Kind:** builder-proof\n**Program:** q2-motion-snapshot-refresh-automation\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `.nexus/motions/motion-0162/**`\n\nNo changes were made to:\n\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- `portal/src/lib/motion/motionSurface.ts`\n- any existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0161`\n\n---\n\n## Ratified evidence record\n\nMotion-0162 adds a deterministic refresh/check seam for the bundled motions snapshot.\n\nThe generator now supports:\n\n- `node portal/scripts/build-motion-snapshot.mjs --write`\n- `node portal/scripts/build-motion-snapshot.mjs --check`\n\n`--write` regenerates `portal/src/lib/motion/motionSnapshot.json` from current\n`.nexus/motions/**`.\n\n`--check` exits `0` when the committed snapshot matches current canon and exits nonzero with\nclear drift details when stale.\n\nThe generator no longer truncates bundled canon at `motion-0157`.\n\nThe snapshot schema consumed by `/operator/motions` remains unchanged, so snapshot mode\nstays supported without changing the read-only canonical reference surface.\n\n---\n\n## Acceptance evidence\n\n- `SR-01` PASS: snapshot regenerated from current `.nexus/motions/**`\n- `SR-02` PASS: refreshed snapshot includes merged canon through `motion-0161`\n- `SR-03` PASS: refreshed snapshot count equals current canonical motion count on this branch\n- `SR-04` PASS: `motion-0161` appears in the refreshed snapshot\n- `SR-05` PASS: the `motion-0151` status mismatch remains surfaced\n- `SR-06` PASS: repeated `--write` is deterministic and produced no diff\n- `SR-07` PASS: `--check` passes when the committed snapshot is current\n- `SR-08` PASS: `--check` failed on a simulated stale snapshot with clear drift output\n- `SR-09` PASS: the generator did not mutate `.nexus/motions/**`\n- `SR-10` PASS: no runtime or proof files changed\n- `SR-11` PASS: `/operator/motions` snapshot mode remains supported because the bundled snapshot schema stayed compatible and the consumer was unchanged\n- `SR-12` PASS: `pnpm -C portal typecheck`\n- `SR-13` PASS: `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0162/motion.yaml`\n- `SR-14` PASS: `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n\nObserved counts:\n\n- snapshot count before refresh: `157`\n- snapshot count after refresh: `162`\n\nObserved presence:\n\n- `motion-0161` appears in the refreshed snapshot\n- `motion-0162` also appears because the current branch-local canonical tree includes this motion package\n\nObserved drift-check behavior:\n\n- current snapshot: `status: current`\n- simulated stale snapshot: `status: stale`\n- stale run exited with `check_exit_code: 1`\n\n---\n\n## Final gates\n\n- `node portal/scripts/build-motion-snapshot.mjs --write` passed\n- `node portal/scripts/build-motion-snapshot.mjs --check` passed when current\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0162/motion.yaml` passed\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n- `pnpm -C portal typecheck` passed\n\n---\n\n## Boundary confirmation\n\nThis seam does not add:\n\n- runtime GitHub fetch\n- Vercel config restructuring\n- CI workflow changes\n- DB writes\n- API mutation\n- promotion enablement\n- PR creation, voting, ratification, dispatch, scheduler behavior, or readiness scoring\n\nThe canonical reference in `/operator/motions` remains read-only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0162/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Operator Motions Snapshot Refresh Automation v0\n\n**Motion:** motion-0162\n**Kind:** builder-proof\n**Program:** q2-motion-snapshot-refresh-automation\n**Basis:** motion-0161\n\n---\n\n## 1. Problem statement\n\nDeployed `/operator/motions` uses the bundled snapshot at\n`portal/src/lib/motion/motionSnapshot.json`. That keeps the read-only canonical reference\nworking on Vercel, but it can silently lag merged `.nexus/motions/**` canon unless the\nsnapshot is refreshed deliberately.\n\nMotion-0162 adds the narrowest deterministic refresh/check seam:\n\n- `--write` regenerates the bundled snapshot from current `.nexus/motions/**`\n- `--check` fails when the committed snapshot is stale\n- no runtime GitHub fetch\n- no DB writes\n- no API mutation\n- no change to the read-only canonical reference model\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `.nexus/motions/motion-0162/**`\n\nNot in scope:\n\n- `runtime/**`\n- mutation of existing `.nexus/motions/**`\n- DB writes\n- API mutation\n- promotion enablement\n- orchestration\n- Vercel config restructuring\n- CI workflow changes\n- status label alignment\n\n---\n\n## 3. Acceptance criteria\n\n- snapshot regenerates deterministically from current `.nexus/motions/**`\n- refreshed snapshot includes merged canon through `motion-0161`\n- `motion-0151` mismatch remains surfaced if still present\n- repeated `--write` produces no diff\n- `--check` passes when current\n- `--check` fails clearly when stale\n- required local gates pass\n\n---\n\n## 4. Non-goals\n\nNo runtime fetch path, no workflow automation in this seam, no feature change to\n`/operator/motions`, and no write-path expansion."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0162/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Operator Motions Snapshot Refresh Automation v0\n\n**Motion:** motion-0162\n\n---\n\n## 1. Key risks\n\n- the refreshed snapshot could still be non-deterministic, causing noisy diffs\n- `--check` could fail without useful drift detail, reducing operator confidence\n- the seam could accidentally widen into runtime refresh or deployment orchestration\n- snapshot regeneration could mutate anything outside the bundled snapshot artifact\n\n---\n\n## 2. Required protections\n\n- keep generation deterministic for unchanged canon\n- restrict mutation to `portal/src/lib/motion/motionSnapshot.json`\n- make `--check` exit nonzero on drift and print clear summary details\n- preserve the current snapshot schema consumed by `/operator/motions`\n- keep the canonical reference read-only\n\n---\n\n## 3. Out of scope\n\n- runtime GitHub fetch\n- Vercel config restructuring\n- CI workflow changes\n- promotion enablement\n- PR creation, voting, ratification, dispatch, scheduler behavior, or readiness scoring\n- DB writes\n- mutation of existing motions"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0162/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0162/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0162/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0162/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0162/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0162/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Operator Motions Snapshot Refresh Automation v0\n\n**Motion:** motion-0162\n**Kind:** builder-proof\n**Program:** q2-motion-snapshot-refresh-automation\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `.nexus/motions/motion-0162/**`\n\nNo changes were made to:\n\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- `portal/src/lib/motion/motionSurface.ts`\n- any existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0161`\n\n---\n\n## Ratified evidence record\n\nMotion-0162 adds a deterministic refresh/check seam for the bundled motions snapshot.\n\nThe generator now supports:\n\n- `node portal/scripts/build-motion-snapshot.mjs --write`\n- `node portal/scripts/build-motion-snapshot.mjs --check`\n\n`--write` regenerates `portal/src/lib/motion/motionSnapshot.json` from current\n`.nexus/motions/**`.\n\n`--check` exits `0` when the committed snapshot matches current canon and exits nonzero with\nclear drift details when stale.\n\nThe generator no longer truncates bundled canon at `motion-0157`.\n\nThe snapshot schema consumed by `/operator/motions` remains unchanged, so snapshot mode\nstays supported without changing the read-only canonical reference surface.\n\n---\n\n## Acceptance evidence\n\n- `SR-01` PASS: snapshot regenerated from current `.nexus/motions/**`\n- `SR-02` PASS: refreshed snapshot includes merged canon through `motion-0161`\n- `SR-03` PASS: refreshed snapshot count equals current canonical motion count on this branch\n- `SR-04` PASS: `motion-0161` appears i\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0162\nTitle: Operator Motions Snapshot Refresh Automation v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0162/motion.yaml\n2. .nexus/motions/motion-0162/decision.yaml\n3. .nexus/motions/motion-0162/policy.yaml\n4. .nexus/motions/motion-0162/verify.json\n5. .nexus/motions/motion-0162/vote.json\n6. .nexus/motions/motion-0162/execution.md\n7. .nexus/motions/motion-0162/proposal.md\n8. .nexus/motions/motion-0162/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0162\n\nCore artifact paths:\n- .nexus/motions/motion-0162/motion.yaml\n- .nexus/motions/motion-0162/decision.yaml\n- .nexus/motions/motion-0162/policy.yaml\n- .nexus/motions/motion-0162/verify.json\n- .nexus/motions/motion-0162/vote.json\n- .nexus/motions/motion-0162/execution.md\n- .nexus/motions/motion-0162/proposal.md\n- .nexus/motions/motion-0162/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0162",
+      "chat_search_href": "/operator/chats?q=motion-0162"
+    },
+    {
+      "motion_id": "motion-0161",
+      "item": {
+        "motion_id": "motion-0161",
+        "title": "Deployed Motion Operations Guardrail Verification v0",
+        "subtitle": "record the post-#110 deployed verification pass for the contender-first operator motions surface without adding product capability",
+        "program": "q2-motion-operations-guardrail-verification",
+        "kind": "evidence-proof",
+        "basis": "motion-0160",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-26T02:37:12.065Z",
+        "updated_at": "2026-04-26T03:38:43.736Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0161/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0161\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Deployed Motion Operations Guardrail Verification v0\"\nsubtitle: \"record the post-#110 deployed verification pass for the contender-first operator motions surface without adding product capability\"\nkind: evidence-proof\nprogram: q2-motion-operations-guardrail-verification\nbasis: motion-0160\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-26T02:37:12.065Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0161/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0161\nstatus: RATIFIED\ndecided_at: \"2026-04-26T02:37:12.065Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-26T02:37:12.065Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0161/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0161\nevaluated_at: \"2026-04-26T02:37:12.065Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.07\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"GV-09 is non-blocking and remains unverified in this pass because the motion-0151 mismatch was not specifically re-captured.\"\n  - \"GV-11 is non-blocking and remains unverified in this pass because no non-admin deployed session was tested.\"\n  - \"Scope is limited to deployed guardrail verification only and introduces no new product capability.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0161/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0161\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T02:37:12.065Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T02:37:12.065Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T02:37:12.065Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-26T02:37:12.065Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0161/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0161\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Post-#110 deployed verification confirmed the contender-first queue and the separate canonical read-only reference.\",\n      \"Deployed snapshot-backed preview no longer presents an existing canonical motion id as the provisional write target.\",\n      \"Promotion remained disabled or guarded in observed deployed UI, with visible server-confirmation copy and no new write power enabled.\",\n      \"GV-01 through GV-19 were satisfied for ratification, with GV-09 and GV-11 treated as non-blocking unverified observations.\",\n      \"Required local gates passed, no runtime proof files changed, and no existing motion packages were mutated.\",\n      \"No orchestration widening, PR creation, voting, ratification, dispatch, scheduler behavior, readiness scoring, or DB writes were introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-26T02:37:12.065Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0161/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Deployed Motion Operations Guardrail Verification v0\n\n**Motion:** motion-0161\n**Kind:** evidence-proof\n**Program:** q2-motion-operations-guardrail-verification\n**Status:** RATIFIED\n\n---\n\n## Verification scope\n\nMotion-0161 is an evidence motion only. No product capability was added.\n\nTouched files:\n\n- `.nexus/motions/motion-0161/motion.yaml`\n- `.nexus/motions/motion-0161/proposal.md`\n- `.nexus/motions/motion-0161/challenge.md`\n- `.nexus/motions/motion-0161/execution.md`\n- `.nexus/motions/motion-0161/decision.yaml`\n- `.nexus/motions/motion-0161/policy.yaml`\n- `.nexus/motions/motion-0161/verify.json`\n- `.nexus/motions/motion-0161/vote.json`\n\nNo portal implementation files were changed in this verification pass.\n\n---\n\n## Deployed target checked\n\n- URL: `https://dev.jai.nexus/operator/motions`\n- environment: deployed `dev.jai.nexus` on Vercel\n- verification date: `2026-04-25`\n\n---\n\n## Post-#110 deployed observations\n\nAuthenticated admin deployed evidence confirmed:\n\n- deployed `/operator/motions` is reachable after admin login\n- the primary queue is the contender queue\n- contenders are explicitly labeled `preview only`\n- contenders are explicitly labeled `not a motion package yet`\n- canonical motions are rendered in a separate read-only reference section\n- deployed source mode is snapshot-backed and visibly separate from local live canonical state\n- canonical reference renders motion data and shows `157` canonical motions\n- deployed canonical list includes `motion-0157` and earlier ratified motions\n- contender preview no longer claims an existing canonical motion id\n- contender preview shows:\n  - motion id preview: `assigned at promotion`\n  - id resolution: `assigned at promotion`\n  - queue state: `promotion_blocked`\n  - write root preview: `.nexus/motions/<assigned-at-promotion>`\n  - branch preview: `operator/motion-draft/<assigned-at-promotion>-...`\n- explicit guard copy is visible:\n  - snapshot-backed canonical data may be stale\n  - real motion id is assigned only after server confirmation at promotion\n  - exact DRAFT package preview uses placeholder paths\n- no Create PR control is present\n- no Vote or Ratify controls are present\n- no Dispatch or Run controls are present\n\nNo live promotion, branch creation, PR creation, voting, ratification, dispatch, or run\naction was executed in this pass.\n\n---\n\n## GV matrix\n\n- `GV-01` PASS: deployed `/operator/motions` loads or auth-redirects correctly\n- `GV-02` PASS: unauthenticated users redirect to login\n- `GV-03` PASS: authenticated admin/operator reached `/operator/motions`\n- `GV-04` PASS: primary queue is generated contenders\n- `GV-05` PASS: contenders are labeled preview-only and non-canonical\n- `GV-06` PASS: canonical motions are separate read-only reference\n- `GV-07` PASS: deployed source mode / snapshot fallback is visible and correct\n- `GV-08` PASS: canonical reference renders expected motion data\n- `GV-09` UNVERIFIED/NON-BLOCKING: the `motion-0151` mismatch was not specifically re-captured in this pass, although the canonical reference itself rendered correctly\n- `GV-10` PASS: promotion is disabled/blocked/guarded in snapshot mode and env-disabled mode\n- `GV-11` UNVERIFIED/NON-BLOCKING: no non-admin deployed session was tested in this pass\n- `GV-12` PASS: admin / feature / env / server-confirmation guard copy is visible\n- `GV-13` PASS: normal page use created no branch/write\n- `GV-14` PASS: no PR creation control exists in the observed UI\n- `GV-15` PASS: no vote/ratify controls exist in the observed UI\n- `GV-16` PASS: no dispatch/run controls exist in the observed UI\n- `GV-17` PASS: `pnpm -C portal typecheck`\n- `GV-18` PASS: `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml`\n- `GV-19` PASS: `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n\n---\n\n## Final gates\n\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml` passed\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n- `pnpm -C portal typecheck` passed\n\n---\n\n## Follow-up observations only\n\nThese items do not block motion-0161 ratification and are not fixed here:\n\n- deployed bundled snapshot currently shows `157` canonical motions until snapshot refresh automation is added\n- local branch live mode is ahead of deployed snapshot-backed canonical state\n- canonical status badge currently displays `settled`\n- operator preference is `ratified` unless `settled` has a distinct governance meaning\n\n---\n\n## Ratified evidence conclusion\n\nMotion-0161 ratifies the deployed guardrail verification pass for the contender-first\nMotion Operations surface.\n\n- the stale snapshot contender-id defect is no longer present in deployed preview\n- the preview no longer presents an existing canonical motion id as a valid new target\n- promotion remains guarded and disabled when env is unavailable\n- no new product capability, write power, or governance authority was introduced\n\n---\n\n## No-touch boundaries\n\n- `portal/src/app/operator/motions/**`\n- `portal/src/lib/motion/**`\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0160`\n- `portal/prisma/**`\n- `.github/workflows/**`\n- `package.json`"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0161/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Deployed Motion Operations Guardrail Verification v0\n\n**Motion:** motion-0161\n**Kind:** evidence-proof\n**Program:** q2-motion-operations-guardrail-verification\n**Basis:** motion-0160\n\n---\n\n## 1. Problem statement\n\nMotion-0160 established the contender-first operator motions surface, but it was merged\nwithout a complete deployed guardrail verification pass. Motion-0161 closes that gap by\nrecording a bounded deployed verification of the live `/operator/motions` surface after\nthe stale snapshot contender-id fix from #110.\n\nThis motion is evidence-only. It does not add product capability.\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- verify deployed `/operator/motions` on `dev.jai.nexus`\n- confirm contender-first and canonical-reference boundaries in deployed UI\n- confirm snapshot-backed preview no longer claims an existing canonical motion id\n- confirm promotion remains disabled/guarded when env is unavailable\n- record `GV-01` through `GV-19`\n- `.nexus/motions/motion-0161/**`\n\nNot in scope:\n\n- portal implementation changes\n- live branch promotion\n- GitHub env enablement\n- PR creation\n- voting or ratification by the feature\n- dispatch, scheduler behavior, or readiness scoring\n- DB writes\n- runtime proof changes\n- mutation of existing motions\n\n---\n\n## 3. Acceptance criteria\n\n- deployed `/operator/motions` is reachable and auth-gated correctly\n- authenticated deployed admin evidence confirms contender-first UI boundaries\n- snapshot-backed preview shows `assigned at promotion` instead of an existing canonical motion id\n- promotion remains blocked/guarded when env is missing\n- no PR, vote, ratify, dispatch, or run controls are exposed\n- required local gates pass\n\n---\n\n## 4. Non-goals\n\nNo feature expansion, no write-path expansion, no snapshot refresh automation, and no\nstatus-label redesign are included here."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0161/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Deployed Motion Operations Guardrail Verification v0\n\n**Motion:** motion-0161\n\n---\n\n## 1. Key risks\n\n- deployed verification could over-claim evidence that was not directly observed\n- snapshot-backed data could be mistaken for current live canonical state\n- guardrail verification could accidentally widen into a feature or auth redesign\n- non-blocking observations could be mistaken for merge blockers\n\n---\n\n## 2. Required protections\n\n- keep motion-0161 evidence-only\n- record only deployed observations actually available in this pass\n- treat `GV-09` and `GV-11` as non-blocking if not directly observed\n- preserve the current v0 admin guard as-is without redesign\n- do not execute live promotion, create PRs, or mutate any existing motion package\n\n---\n\n## 3. Out of scope\n\n- portal implementation changes\n- GitHub env enablement\n- live branch promotion\n- PR creation\n- vote or ratify actions through the feature\n- dispatch or scheduler behavior\n- DB writes\n- runtime proof changes\n- snapshot refresh automation\n- canonical status label changes"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0161/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0161/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0161/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0161/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0161/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0161/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Deployed Motion Operations Guardrail Verification v0\n\n**Motion:** motion-0161\n**Kind:** evidence-proof\n**Program:** q2-motion-operations-guardrail-verification\n**Status:** RATIFIED\n\n---\n\n## Verification scope\n\nMotion-0161 is an evidence motion only. No product capability was added.\n\nTouched files:\n\n- `.nexus/motions/motion-0161/motion.yaml`\n- `.nexus/motions/motion-0161/proposal.md`\n- `.nexus/motions/motion-0161/challenge.md`\n- `.nexus/motions/motion-0161/execution.md`\n- `.nexus/motions/motion-0161/decision.yaml`\n- `.nexus/motions/motion-0161/policy.yaml`\n- `.nexus/motions/motion-0161/verify.json`\n- `.nexus/motions/motion-0161/vote.json`\n\nNo portal implementation files were changed in this verification pass.\n\n---\n\n## Deployed target checked\n\n- URL: `https://dev.jai.nexus/operator/motions`\n- environment: deployed `dev.jai.nexus` on Vercel\n- verification date: `2026-04-25`\n\n---\n\n## Post-#110 deployed observations\n\nAuthenticated admin deployed evidence confirmed:\n\n- deployed `/operator/motions` is reachable after admin login\n- the primary queue is the contender queue\n- contenders are explicitly labeled `preview only`\n- contenders are explicitly labeled `not a motion package yet`\n- canonical motions are rendered in a separate read-only reference section\n- deployed source mode is snapshot-backed and visibly separate from local live canonical state\n- canonical reference renders motion data and shows `157` canonical motions\n- deployed canonical list includes `motion-0157` and earlier ratified motions\n- contender preview no longer claims an existing canonical motion id\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0161\nTitle: Deployed Motion Operations Guardrail Verification v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0161/motion.yaml\n2. .nexus/motions/motion-0161/decision.yaml\n3. .nexus/motions/motion-0161/policy.yaml\n4. .nexus/motions/motion-0161/verify.json\n5. .nexus/motions/motion-0161/vote.json\n6. .nexus/motions/motion-0161/execution.md\n7. .nexus/motions/motion-0161/proposal.md\n8. .nexus/motions/motion-0161/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0161\n\nCore artifact paths:\n- .nexus/motions/motion-0161/motion.yaml\n- .nexus/motions/motion-0161/decision.yaml\n- .nexus/motions/motion-0161/policy.yaml\n- .nexus/motions/motion-0161/verify.json\n- .nexus/motions/motion-0161/vote.json\n- .nexus/motions/motion-0161/execution.md\n- .nexus/motions/motion-0161/proposal.md\n- .nexus/motions/motion-0161/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0161",
+      "chat_search_href": "/operator/chats?q=motion-0161"
+    },
+    {
+      "motion_id": "motion-0160",
+      "item": {
+        "motion_id": "motion-0160",
+        "title": "Motion Contender Queue v0",
+        "subtitle": "make contenders the primary operator queue and move canonical motions into a read-only reference section",
+        "program": "q2-motion-contender-queue-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0159",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-25T18:17:37.296Z",
+        "updated_at": "2026-04-25T18:38:11.781Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0160/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0160\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Motion Contender Queue v0\"\nsubtitle: \"make contenders the primary operator queue and move canonical motions into a read-only reference section\"\nkind: builder-proof\nprogram: q2-motion-contender-queue-v0\nbasis: motion-0159\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-25T18:17:37.296Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0160/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0160\nstatus: RATIFIED\ndecided_at: \"2026-04-25T18:17:37.296Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-25T18:17:37.296Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0160/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0160\nevaluated_at: \"2026-04-25T18:17:37.296Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.10\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to contender-first UI/IA correction only and introduces no new write power beyond the existing motion-0159 guarded DRAFT promotion path.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0160/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0160\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T18:17:37.296Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0160/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T18:17:37.296Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T18:17:37.296Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-25T18:17:37.296Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0160/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0160\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The primary queue now represents generated contenders instead of canonical motions, which restores the boundary that contenders are preview-only and not motions.\",\n      \"Canonical motions remain visible as a separate read-only reference section sourced from .nexus/motions/**.\",\n      \"Motion-0159 promotion guardrails were preserved unchanged, with no new write power or widened promotion behavior.\",\n      \"Acceptance checks Q-01 through Q-19 passed and the required gates passed.\",\n      \"No runtime proof files changed, no existing motion packages were mutated, and no orchestration widening was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-25T18:17:37.296Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0160/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Motion Contender Queue v0\n\n**Motion:** motion-0160\n**Kind:** builder-proof\n**Program:** q2-motion-contender-queue-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/lib/motion/motionContenders.ts`\n- `.nexus/motions/motion-0160/**`\n\n---\n\n## Ratified evidence record\n\nMotion-0160 is limited to an information-architecture correction only.\n\n- the primary queue now represents generated contenders\n- canonical motions are retained as a separate read-only reference\n- contenders are explicitly labeled `preview only`\n- contenders are explicitly labeled `not a motion package yet`\n- promotion remains the only path from contender to the first real DRAFT motion package\n- motion-0159 promotion guardrails were preserved unchanged\n- no changes were made to `portal/src/lib/motion/motionPromotion.ts`\n- no changes were made to `portal/src/app/api/operator/motions/promote/route.ts`\n\nThis seam does not add:\n\n- new write power\n- direct main/default-branch writes\n- PR creation\n- voting\n- ratification by the feature\n- dispatch\n- scheduler behavior\n- readiness scoring\n- DB writes\n- runtime proof changes\n- mutation of existing motions\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `Q-01` through `Q-19` passed, including:\n\n- `Q-01` primary queue shows contenders, not canonical motions\n- `Q-02` empty contender queue state is explicit\n- `Q-03` multiple session-local contenders render newest first\n- `Q-04` contender preview shows provisional motion id, provisional branch, target repo, base branch, and exact 8-file package\n- `Q-05` contender rows and previews are explicitly labeled preview-only and non-canonical\n- `Q-06` canonical motions remain visible in a separate read-only reference section\n- `Q-07` canonical reference still resolves in live mode\n- `Q-08` canonical reference still resolves in snapshot fallback mode\n- `Q-09` the motion-0151 mismatch remains surfaced in canonical reference state\n- `Q-10` through `Q-13` motion-0159 promotion guard behavior remains intact and unchanged\n- `Q-14` no `.nexus/candidates/**` writes occur\n- `Q-15` no DB writes occur\n- `Q-16` no existing motion packages were modified\n- `Q-17` `pnpm -C portal typecheck` passed\n- `Q-18` `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0160/motion.yaml` passed\n- `Q-19` `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n\nFinal gates passed:\n\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0160/motion.yaml`\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n- `pnpm -C portal typecheck`\n\n---\n\n## Caveats\n\n- No browser/manual UI smoke test was run in this turn.\n- No live GitHub branch promotion was executed in this turn.\n- Snapshot fallback remains at 157 motions, while branch-local live mode sees 160 because `.nexus/motions/motion-0160/**` exists on this branch.\n\n---\n\n## No-touch boundaries\n\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0159`\n- `portal/prisma/**`\n- `.github/workflows/**`\n- `package.json`"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0160/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Motion Contender Queue v0\n\n**Motion:** motion-0160\n**Kind:** builder-proof\n**Program:** q2-motion-contender-queue-v0\n**Basis:** motion-0159\n\n---\n\n## 1. Problem statement\n\n`/operator/motions` can now generate contender previews and promote them into guarded\nDRAFT motion packages, but the page still presents canonical motions as the primary queue.\nThat blurs the boundary that contenders are not motions and makes the queue read like a\ngovernance surface instead of a preview surface.\n\nMotion-0160 corrects that information architecture:\n\n- generated contenders become the primary queue\n- contender previews remain session-local and preview-only\n- canonical motions move into a clearly labeled read-only reference section\n- motion-0159 promotion guardrails remain intact\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/lib/motion/motionContenders.ts`\n- optional small UI refactors inside `portal/src/app/operator/motions/**` only if needed\n- `.nexus/motions/motion-0160/**`\n\nNot in scope:\n\n- new write powers\n- modification of promotion guardrails from motion-0159\n- direct writes to main/default branch\n- automatic PR creation\n- voting or ratification\n- dispatch, scheduler behavior, or orchestration\n- readiness scoring\n- DB writes\n- runtime proof changes\n- mutation of existing motions\n- `.nexus/candidates/**`\n\n---\n\n## 3. Implementation\n\n### 3.1 Contender-first queue\n\nMake the primary queue on `/operator/motions` represent generated contenders only. Each row\nmust make the boundary explicit:\n\n- preview only\n- not a motion package yet\n- promotion creates the first real DRAFT package\n\n### 3.2 Canonical motion reference\n\nMove the existing `.nexus/motions/**` browser/detail into a separate read-only reference\nsection. Canonical motions remain visible and searchable, but they are no longer presented\nas the primary queue.\n\n### 3.3 Guardrail preservation\n\nKeep motion-0159 guardrails unchanged:\n\n- authenticated session required\n- current v0 admin email guard\n- feature flag and GitHub env gating\n- same-repo branch-only write\n- DRAFT package creation only\n- no PR creation\n\n---\n\n## 4. Acceptance criteria\n\n- primary queue shows contenders, not canonical motions\n- contender rows and previews are explicitly labeled preview-only and non-canonical\n- canonical motions remain available in a separate read-only reference section\n- motion-0159 guarded promotion behavior remains intact\n- live and snapshot-backed canonical reference both continue to render\n- required gates pass\n\n---\n\n## 5. Non-goals\n\nNo PR creation, no voting, no ratification, no dispatch, no scheduler behavior, no\nreadiness scoring, no DB writes, no runtime proof changes, and no mutation of existing\nmotion packages."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0160/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Motion Contender Queue v0\n\n**Motion:** motion-0160\n\n---\n\n## 1. Key risks\n\n- The contender queue could still visually masquerade as canonical governance state.\n- Canonical motions could become harder to inspect if the reference section is buried or\n  weakened.\n- The UI change could accidentally widen motion-0159 promotion behavior instead of only\n  reframing it.\n- Session-local contender previews could be mistaken for durable repo state.\n\n---\n\n## 2. Required protections\n\n- keep contenders explicitly labeled preview-only and non-canonical\n- preserve canonical motion browsing as a separate read-only reference\n- keep motion-0159 promotion guardrails unchanged\n- keep all writes confined to explicit branch-only promotion\n- avoid any new authority cues such as scheduler, readiness score, or governance status\n\n---\n\n## 3. Out of scope\n\n- new promotion powers\n- direct writes to main/default branch\n- automatic PR creation\n- voting or ratification\n- dispatch, scheduler behavior, or orchestration\n- readiness-threshold work\n- DB writes\n- runtime proof changes\n- mutation of existing motions"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0160/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0160/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0160/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0160/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0160/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0160/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Motion Contender Queue v0\n\n**Motion:** motion-0160\n**Kind:** builder-proof\n**Program:** q2-motion-contender-queue-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/lib/motion/motionContenders.ts`\n- `.nexus/motions/motion-0160/**`\n\n---\n\n## Ratified evidence record\n\nMotion-0160 is limited to an information-architecture correction only.\n\n- the primary queue now represents generated contenders\n- canonical motions are retained as a separate read-only reference\n- contenders are explicitly labeled `preview only`\n- contenders are explicitly labeled `not a motion package yet`\n- promotion remains the only path from contender to the first real DRAFT motion package\n- motion-0159 promotion guardrails were preserved unchanged\n- no changes were made to `portal/src/lib/motion/motionPromotion.ts`\n- no changes were made to `portal/src/app/api/operator/motions/promote/route.ts`\n\nThis seam does not add:\n\n- new write power\n- direct main/default-branch writes\n- PR creation\n- voting\n- ratification by the feature\n- dispatch\n- scheduler behavior\n- readiness scoring\n- DB writes\n- runtime proof changes\n- mutation of existing motions\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `Q-01` through `Q-19` passed, including:\n\n- `Q-01` primary queue shows contenders, not canonical motions\n- `Q-02` empty contender queue state is explicit\n- `Q-03` multiple session-local contenders render newest first\n- `Q-04` contender preview shows provisio\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0160\nTitle: Motion Contender Queue v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0160/motion.yaml\n2. .nexus/motions/motion-0160/decision.yaml\n3. .nexus/motions/motion-0160/policy.yaml\n4. .nexus/motions/motion-0160/verify.json\n5. .nexus/motions/motion-0160/vote.json\n6. .nexus/motions/motion-0160/execution.md\n7. .nexus/motions/motion-0160/proposal.md\n8. .nexus/motions/motion-0160/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0160\n\nCore artifact paths:\n- .nexus/motions/motion-0160/motion.yaml\n- .nexus/motions/motion-0160/decision.yaml\n- .nexus/motions/motion-0160/policy.yaml\n- .nexus/motions/motion-0160/verify.json\n- .nexus/motions/motion-0160/vote.json\n- .nexus/motions/motion-0160/execution.md\n- .nexus/motions/motion-0160/proposal.md\n- .nexus/motions/motion-0160/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0160",
+      "chat_search_href": "/operator/chats?q=motion-0160"
+    },
+    {
+      "motion_id": "motion-0159",
+      "item": {
+        "motion_id": "motion-0159",
+        "title": "Motion Contender Queue and Draft Promotion v0",
+        "subtitle": "add deterministic contender previews and explicit branch-only DRAFT package promotion in the operator motions surface",
+        "program": "q2-motion-contender-draft-promotion-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0158",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-25T17:18:07.300Z",
+        "updated_at": "2026-04-25T17:30:36.133Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0159/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0159\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Motion Contender Queue and Draft Promotion v0\"\nsubtitle: \"add deterministic contender previews and explicit branch-only DRAFT package promotion in the operator motions surface\"\nkind: builder-proof\nprogram: q2-motion-contender-draft-promotion-v0\nbasis: motion-0158\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-25T17:18:07.300Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0159/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0159\nstatus: RATIFIED\ndecided_at: \"2026-04-25T17:18:07.300Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-25T17:18:07.300Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0159/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0159\nevaluated_at: \"2026-04-25T17:18:07.300Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.12\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to DRAFT-only branch promotion with v0 session/admin, feature-flag, and GitHub-env guardrails.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0159/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0159\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T17:18:07.300Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0159/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T17:18:07.300Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T17:18:07.300Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-25T17:18:07.300Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0159/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0159\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Bounded portal diff is confined to deterministic contender builders, the preview surface, one guarded promotion route, and the motion-0159 package.\",\n      \"Contender generation remains preview-only until explicit operator confirmation and writes no repo state.\",\n      \"The promotion path is guarded, same-repo only, branch-only, and cannot write directly to main/default branch.\",\n      \"Acceptance checks P-01 through P-20 passed and the required gates passed.\",\n      \"No runtime proof files changed, no existing motion packages were mutated, and no orchestration widening was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-25T17:18:07.300Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0159/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Motion Contender Queue and Draft Promotion v0\n\n**Motion:** motion-0159\n**Kind:** builder-proof\n**Program:** q2-motion-contender-draft-promotion-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/lib/motion/motionContenders.ts`\n- `portal/src/lib/motion/motionDraftPackage.ts`\n- `portal/src/lib/motion/motionPromotion.ts`\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/app/api/operator/motions/promote/route.ts`\n- `.nexus/motions/motion-0159/**`\n\n---\n\n## Ratified evidence record\n\nThe implemented feature is bounded to contender preview and explicit DRAFT package promotion only.\n\n- contender generation is deterministic and preview-only\n- generated output is a DRAFT/open motion package only\n- the promotion route runs in node runtime\n- promotion is same-repo only and branch-only\n- promotion never writes directly to main/default branch\n- promotion does not create a PR\n- promotion does not vote or ratify\n- promotion does not dispatch\n- promotion does not schedule work\n- promotion does not add readiness scoring\n- promotion does not add DB writes\n- promotion does not change runtime proof files\n- promotion does not mutate existing motions\n\n---\n\n## Guard behavior\n\nThe promotion path is guarded by:\n\n- authenticated operator session\n- the current v0 admin email check: `session.user.email === \"admin@jai.nexus\"`\n- feature flag `JAI_ENABLE_MOTION_PROMOTION=1`\n- required GitHub env/config\n- same-repo allow-listing to `jai-nexus/dev-jai-nexus`\n- explicit typed confirmation of the provisional motion id\n- server-side recomputation of the latest motion id at promotion time\n\nIf the feature flag or GitHub env is missing, promotion remains disabled and preview-only mode still works.\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `P-01` through `P-20` passed, including:\n\n- `P-01` auth/session gate exists and unauthenticated users cannot access write controls\n- `P-02` non-admin users can inspect but cannot promote\n- `P-03` missing feature flag or GitHub env keeps promotion disabled and preview-only\n- `P-04` contender generation writes nothing\n- `P-05` multiple contenders can exist in a session-local queue\n- `P-06` preview shows provisional motion id, provisional branch, and exact 8-file package\n- `P-07` promotion requires explicit typed confirmation\n- `P-08` promotion writes to a new same-repo branch, never main/default branch\n- `P-09` promotion writes only `.nexus/motions/<new-motion-id>/**`\n- `P-10` existing motions remain unchanged\n- `P-11` no `.nexus/candidates/**` writes occur\n- `P-12` no DB writes occur\n- `P-13` no runtime proof files change\n- `P-14` no PR is created automatically\n- `P-15` generated DRAFT `motion.yaml` shape passes local fixture validation\n- `P-16` `/operator/motions` still renders correctly in both live and snapshot read modes\n- `P-17` `pnpm -C portal typecheck` passed\n- `P-18` `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0159/motion.yaml` passed\n- `P-19` `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n- `P-20` stale provisional motion id returns `409` and requires re-confirmation\n\nFinal gates passed:\n\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0159/motion.yaml`\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n- `pnpm -C portal typecheck`\n\n---\n\n## Caveats\n\n- No live GitHub branch promotion was executed because the feature flag/token are intentionally absent in this local environment.\n- Promotion is correctly preview-only in the current local environment.\n- No browser/manual UI smoke test was run in this turn.\n- The admin email guard is v0-only and is not generalized RBAC.\n\n---\n\n## No-touch boundaries\n\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0158`\n- `portal/prisma/**`\n- `.github/workflows/**`\n- `package.json`"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0159/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Motion Contender Queue and Draft Promotion v0\n\n**Motion:** motion-0159\n**Kind:** builder-proof\n**Program:** q2-motion-contender-draft-promotion-v0\n**Basis:** motion-0158\n\n---\n\n## 1. Problem statement\n\nThe Operator Motions surface can now inspect live and snapshot-backed motion state, but it\ncannot stage a bounded follow-on motion candidate or promote one into a real DRAFT/open\nmotion package. That leaves a gap between operator review and the first formal governance\nartifact for new work.\n\nMotion-0159 closes that gap with one narrow write-capable seam:\n\n- deterministic contender generation inside `/operator/motions`\n- preview-only DRAFT package inspection\n- explicit operator-confirmed promotion into `.nexus/motions/<new-motion-id>/**`\n- same-repo GitHub branch write only\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/src/lib/motion/motionContenders.ts`\n- `portal/src/lib/motion/motionDraftPackage.ts`\n- `portal/src/lib/motion/motionPromotion.ts`\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/app/api/operator/motions/promote/route.ts`\n- `.nexus/motions/motion-0159/**`\n\nNot in scope:\n\n- modification of existing motion packages\n- `.nexus/candidates/**`\n- direct writes to main/default branch\n- automatic PR creation\n- voting or ratification\n- dispatch, scheduler behavior, or orchestration\n- DB writes\n- runtime proof changes\n- readiness scoring\n\n---\n\n## 3. Implementation\n\n### 3.1 Pure contender and package builders\n\nAdd deterministic builders for:\n\n- contender previews\n- provisional motion ids and branch names\n- exact 8-file DRAFT/open motion packages\n\nThese builders must perform no file writes, no DB access, and no LLM calls.\n\n### 3.2 Session-local contender queue\n\nAdd a preview-only contender queue inside `/operator/motions`:\n\n- multiple contenders allowed\n- newest first\n- session-local only\n- no persistent contender storage\n\nThe preview must show:\n\n- provisional motion id\n- provisional branch name\n- target repo\n- base branch\n- exact 8 files that would be written\n- write root `.nexus/motions/<new-motion-id>/**`\n\n### 3.3 Explicit branch-only promotion\n\nPromotion must:\n\n- require authenticated admin session using the current v0 email guard\n- require `JAI_ENABLE_MOTION_PROMOTION=1`\n- require GitHub write env/config\n- target only `jai-nexus/dev-jai-nexus`\n- write only to a new same-repo branch\n- write only `.nexus/motions/<new-motion-id>/**`\n- never create a PR automatically\n- fail on stale provisional motion ids and require re-confirmation\n\n---\n\n## 4. Acceptance criteria\n\n- contender generation remains preview-only and write-free\n- multiple contenders can exist in a session-local queue\n- promotion stays disabled when auth, feature flag, or GitHub env requirements are not met\n- promotion requires typed confirmation\n- promotion writes only to a new same-repo branch, never to main/default branch\n- generated DRAFT package shape validates\n- `/operator/motions` still renders correctly in both live and snapshot read modes\n- required gates pass\n\n---\n\n## 5. Non-goals\n\nNo automatic PR creation, no voting, no ratification, no dispatch, no scheduler behavior,\nno readiness scoring, no cross-repo writes, no DB writes, and no mutation of existing\nmotions."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0159/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Motion Contender Queue and Draft Promotion v0\n\n**Motion:** motion-0159\n\n---\n\n## 1. Key risks\n\n- Promotion could accidentally look like generalized motion orchestration instead of one\n  bounded DRAFT package writer.\n- The deployed path could fall back to local filesystem writes, which are not durable on\n  Vercel.\n- The promotion path could drift outside `.nexus/motions/<new-motion-id>/**`.\n- A stale provisional motion id could be silently rewritten instead of forcing operator\n  re-confirmation.\n- The current admin email guard could be mistaken for generalized RBAC.\n\n---\n\n## 2. Required protections\n\n- keep contender generation deterministic and preview-only until promotion\n- require explicit typed confirmation for promotion\n- use same-repo GitHub branch writes only\n- never write directly to main/default branch\n- never mutate existing motions\n- keep the admin email check documented as a v0 guard, not generalized RBAC\n\n---\n\n## 3. Out of scope\n\n- `.nexus/candidates/**`\n- automatic PR creation\n- voting or ratification\n- dispatch, scheduler behavior, or orchestration\n- readiness-threshold work\n- DB writes\n- runtime proof changes"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0159/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0159/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0159/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0159/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0159/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0159/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Motion Contender Queue and Draft Promotion v0\n\n**Motion:** motion-0159\n**Kind:** builder-proof\n**Program:** q2-motion-contender-draft-promotion-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/lib/motion/motionContenders.ts`\n- `portal/src/lib/motion/motionDraftPackage.ts`\n- `portal/src/lib/motion/motionPromotion.ts`\n- `portal/src/app/operator/motions/page.tsx`\n- `portal/src/app/operator/motions/PromoteContenderForm.tsx`\n- `portal/src/app/api/operator/motions/promote/route.ts`\n- `.nexus/motions/motion-0159/**`\n\n---\n\n## Ratified evidence record\n\nThe implemented feature is bounded to contender preview and explicit DRAFT package promotion only.\n\n- contender generation is deterministic and preview-only\n- generated output is a DRAFT/open motion package only\n- the promotion route runs in node runtime\n- promotion is same-repo only and branch-only\n- promotion never writes directly to main/default branch\n- promotion does not create a PR\n- promotion does not vote or ratify\n- promotion does not dispatch\n- promotion does not schedule work\n- promotion does not add readiness scoring\n- promotion does not add DB writes\n- promotion does not change runtime proof files\n- promotion does not mutate existing motions\n\n---\n\n## Guard behavior\n\nThe promotion path is guarded by:\n\n- authenticated operator session\n- the current v0 admin email check: `session.user.email === \"admin@jai.nexus\"`\n- feature flag `JAI_ENABLE_MOTION_PROMOTION=1`\n- required GitHub env/config\n- same-repo allow-listing to `jai-nexus/dev-jai-nexus`\n- explicit typed co\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0159\nTitle: Motion Contender Queue and Draft Promotion v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0159/motion.yaml\n2. .nexus/motions/motion-0159/decision.yaml\n3. .nexus/motions/motion-0159/policy.yaml\n4. .nexus/motions/motion-0159/verify.json\n5. .nexus/motions/motion-0159/vote.json\n6. .nexus/motions/motion-0159/execution.md\n7. .nexus/motions/motion-0159/proposal.md\n8. .nexus/motions/motion-0159/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0159\n\nCore artifact paths:\n- .nexus/motions/motion-0159/motion.yaml\n- .nexus/motions/motion-0159/decision.yaml\n- .nexus/motions/motion-0159/policy.yaml\n- .nexus/motions/motion-0159/verify.json\n- .nexus/motions/motion-0159/vote.json\n- .nexus/motions/motion-0159/execution.md\n- .nexus/motions/motion-0159/proposal.md\n- .nexus/motions/motion-0159/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0159",
+      "chat_search_href": "/operator/chats?q=motion-0159"
+    },
+    {
+      "motion_id": "motion-0158",
+      "item": {
+        "motion_id": "motion-0158",
+        "title": "Operator Motions Static Snapshot Fallback v0",
+        "subtitle": "add a deployment-safe bundled snapshot fallback for the read-only operator motions surface",
+        "program": "q2-motion-operations-static-snapshot",
+        "kind": "builder-proof",
+        "basis": "motion-0157",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-25T15:34:01.731Z",
+        "updated_at": "2026-04-25T16:37:47.418Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0158/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0158\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Operator Motions Static Snapshot Fallback v0\"\nsubtitle: \"add a deployment-safe bundled snapshot fallback for the read-only operator motions surface\"\nkind: builder-proof\nprogram: q2-motion-operations-static-snapshot\nbasis: motion-0157\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-25T15:34:01.731Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0158/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0158\nstatus: RATIFIED\ndecided_at: \"2026-04-25T15:34:01.731Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-25T15:34:01.731Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0158/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0158\nevaluated_at: \"2026-04-25T15:34:01.731Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.10\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to the deployment-safe static snapshot fallback for the existing read-only Operator Motions surface.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0158/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0158\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T15:34:01.731Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0158/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T15:34:01.731Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-25T15:34:01.731Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-25T15:34:01.731Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0158/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0158\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Bounded portal diff is confined to the snapshot generator, bundled snapshot, live-first loader, and read-only Motions page.\",\n      \"Fallback evidence confirms sourceMode=snapshot with 157 motions, motion-0157 present, and the motion-0151 mismatch preserved.\",\n      \"Required gates passed: validate-motion, validate-agency, and portal typecheck.\",\n      \"The surface performs no .nexus/motions mutation and introduces no DB write or API mutation path.\",\n      \"No orchestration widening, runtime proof change, dispatch, voting, ratification, scheduler behavior, or readiness scoring was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-25T15:34:01.731Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0158/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Operator Motions Static Snapshot Fallback v0\n\n**Motion:** motion-0158\n**Kind:** builder-proof\n**Program:** q2-motion-operations-static-snapshot\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `portal/src/lib/motion/motionSurface.ts`\n- `portal/src/app/operator/motions/page.tsx`\n\nGovernance packaging is confined to:\n\n- `.nexus/motions/motion-0158/**`\n\n---\n\n## Ratified evidence record\n\nRequired checks passed:\n\n- `node portal/scripts/build-motion-snapshot.mjs`\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0158/motion.yaml`\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n- `pnpm -C portal typecheck`\n\nLive-first behavior remains intact locally:\n\n- live loader from repo root passes against repo-root `.nexus/motions`\n- live loader from `portal/` cwd also passes against repo-root `.nexus/motions`\n\nBundled snapshot behavior remains fallback-only:\n\n- bundled snapshot path is `portal/src/lib/motion/motionSnapshot.json`\n- bundled snapshot count is `157`\n- `motion-0157` is present in fallback mode\n- the known `motion-0151` mismatch remains surfaced in fallback mode:\n  `status mismatch: motion.yaml=open while decision.yaml=RATIFIED`\n\nSimulated missing live source yields:\n\n- `sourceMode: \"snapshot\"`\n- `sourceLabel: \"portal/src/lib/motion/motionSnapshot.json\"`\n- count `157`\n- `motion-0157` present\n- `motion-0151` mismatch preserved\n- `warning: null`\n\nFailure posture is explicit:\n\n- no false successful `0` motions state occurs when live source is unavailable\n\nRead-only and no-widening boundaries held:\n\n- no `.nexus/motions/**` mutation\n- no runtime proof changes\n- no DB writes\n- no API mutation\n- no dispatch, vote, ratify, or scheduler behavior\n- no readiness scoring\n- no orchestration widening\n\n---\n\n## No-touch boundaries\n\n- `runtime/**`\n- `surfaces/agent-ops/**`\n- existing `.nexus/motions/motion-0001` through `.nexus/motions/motion-0157`\n- `portal/prisma/**`\n- `.github/workflows/**`\n- `package.json`"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0158/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Operator Motions Static Snapshot Fallback v0\n\n**Motion:** motion-0158\n**Kind:** builder-proof\n**Program:** q2-motion-operations-static-snapshot\n**Basis:** motion-0157\n\n---\n\n## 1. Problem statement\n\nThe read-only Operator Motions surface now works locally because the portal can resolve\nrepo-root `.nexus/motions`. Deployed `dev.jai.nexus` cannot rely on that live repo path\nbecause Vercel runs from `/var/task/portal` and only has portal-bundled files.\n\nThe current deployed warning is accurate:\n\n- `Motion source not found: .nexus/motions could not be resolved from portal cwd (/var/task/portal)`\n\nMotion-0158 closes that deployment gap by keeping live repo-root `.nexus/motions`\npreferred in local/dev while adding one bundled static snapshot fallback for deployment.\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `portal/src/lib/motion/motionSurface.ts`\n- `portal/src/app/operator/motions/page.tsx`\n- `.nexus/motions/motion-0158/**`\n\nNot in scope:\n\n- mutation of `.nexus/motions/**`\n- runtime proof files\n- `surfaces/agent-ops/**`\n- database writes\n- API mutation\n- dispatch, vote, ratify, scheduler behavior\n- readiness scoring\n- orchestration widening\n\n---\n\n## 3. Implementation\n\n### 3.1 Deterministic snapshot generator\n\nAdd:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n\nThe script reads repo-root `.nexus/motions/motion-*`, derives the queue and detail fields\nalready used by `/operator/motions`, and writes one deterministic bundled JSON snapshot:\n\n- `portal/src/lib/motion/motionSnapshot.json`\n\nThe snapshot keeps:\n\n- all current motion entries\n- queue state\n- attention flags\n- core artifact previews\n- secondary artifact presence\n- execution excerpt\n- prompt pack and handoff pack\n\nIt does not repair or normalize motion packages.\n\n### 3.2 Live-first, snapshot-fallback loader behavior\n\nKeep local/dev preference for live repo-root `.nexus/motions`.\n\nIf live source resolution fails, fall back to the bundled snapshot for:\n\n- motion queue\n- motion detail\n- prompt/handoff content\n\n### 3.3 Read-only boundary\n\nThe fallback remains read-only. It does not mutate motion packages, proof artifacts, DB\nstate, or any other repo surface.\n\n---\n\n## 4. Acceptance criteria\n\n- snapshot generator writes `portal/src/lib/motion/motionSnapshot.json`\n- bundled snapshot count is `157`\n- `motion-0157` appears in the bundled snapshot\n- `motion-0151` mismatch remains surfaced as attention\n- local/dev still resolves live repo-root `.nexus/motions`\n- simulated missing live source returns snapshot mode rather than a false empty queue\n- no false successful `0` motions state\n- required gates pass\n\n---\n\n## 5. Non-goals\n\nNo `.nexus/motions/**` mutation, no runtime proof changes, no DB writes, no API mutation,\nno dispatch, no voting, no ratification, no scheduler behavior, no readiness scoring, and\nno orchestration widening."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0158/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Operator Motions Static Snapshot Fallback v0\n\n**Motion:** motion-0158\n\n---\n\n## 1. Key risks\n\n- The snapshot could drift from the live queue/detail shape and make deployment behavior\n  inconsistent with local/dev.\n- The fallback could silently normalize package defects instead of preserving them.\n- The page could fail open to an empty queue instead of surfacing a real fallback path.\n- The generator could widen into a broader export system instead of staying tightly scoped\n  to the existing Operator Motions surface.\n\n---\n\n## 2. Required protections\n\n- Keep live repo-root `.nexus/motions` preferred when available.\n- Use the bundled snapshot only as fallback.\n- Preserve the known `motion-0151` mismatch exactly as surfaced attention.\n- Keep the fallback read-only.\n- Avoid DB writes, API mutation, or runtime-proof changes.\n\n---\n\n## 3. Out of scope\n\n- motion repair or normalization\n- runtime proof behavior changes\n- dispatch, voting, ratification, or scheduling behavior\n- readiness-threshold work\n- orchestration widening"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0158/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0158/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0158/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0158/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0158/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0158/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Operator Motions Static Snapshot Fallback v0\n\n**Motion:** motion-0158\n**Kind:** builder-proof\n**Program:** q2-motion-operations-static-snapshot\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/scripts/build-motion-snapshot.mjs`\n- `portal/src/lib/motion/motionSnapshot.json`\n- `portal/src/lib/motion/motionSurface.ts`\n- `portal/src/app/operator/motions/page.tsx`\n\nGovernance packaging is confined to:\n\n- `.nexus/motions/motion-0158/**`\n\n---\n\n## Ratified evidence record\n\nRequired checks passed:\n\n- `node portal/scripts/build-motion-snapshot.mjs`\n- `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0158/motion.yaml`\n- `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`\n- `pnpm -C portal typecheck`\n\nLive-first behavior remains intact locally:\n\n- live loader from repo root passes against repo-root `.nexus/motions`\n- live loader from `portal/` cwd also passes against repo-root `.nexus/motions`\n\nBundled snapshot behavior remains fallback-only:\n\n- bundled snapshot path is `portal/src/lib/motion/motionSnapshot.json`\n- bundled snapshot count is `157`\n- `motion-0157` is present in fallback mode\n- the known `motion-0151` mismatch remains surfaced in fallback mode:\n  `status mismatch: motion.yaml=open while decision.yaml=RATIFIED`\n\nSimulated missing live source yields:\n\n- `sourceMode: \"snapshot\"`\n- `sourceLabel: \"portal/src/lib/motion/motionSnapshot.json\"`\n- count `157`\n- `motion-0157` present\n- `motion-0151` mismatch preserved\n- `warning: null`\n\nFailure posture is explicit:\n\n- no\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0158\nTitle: Operator Motions Static Snapshot Fallback v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0158/motion.yaml\n2. .nexus/motions/motion-0158/decision.yaml\n3. .nexus/motions/motion-0158/policy.yaml\n4. .nexus/motions/motion-0158/verify.json\n5. .nexus/motions/motion-0158/vote.json\n6. .nexus/motions/motion-0158/execution.md\n7. .nexus/motions/motion-0158/proposal.md\n8. .nexus/motions/motion-0158/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0158\n\nCore artifact paths:\n- .nexus/motions/motion-0158/motion.yaml\n- .nexus/motions/motion-0158/decision.yaml\n- .nexus/motions/motion-0158/policy.yaml\n- .nexus/motions/motion-0158/verify.json\n- .nexus/motions/motion-0158/vote.json\n- .nexus/motions/motion-0158/execution.md\n- .nexus/motions/motion-0158/proposal.md\n- .nexus/motions/motion-0158/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0158",
+      "chat_search_href": "/operator/chats?q=motion-0158"
+    },
     {
       "motion_id": "motion-0157",
       "item": {
