@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0166",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Draft work packets now generate deterministic preview-only task prompts with assigned agent, repo, surface, branch suggestion, path boundaries, and operator guardrails.",
+      "Prompt previews remain copy-only and explicitly instruct that execution requires separate operator authorization.",
+      "The builder validates named agent existence, blocks shared alias use, and surfaces repo-scope or capability incompatibility as warnings or blocked reasons.",
+      "Verification commands, evidence expectations, and credential posture are included without enabling execution or exposing secrets.",
+      "Required gates passed, no runtime or proof files changed, and no existing motion packages were modified.",
+      "No branch writes, PR creation, dispatch, scheduler behavior, DB writes, API mutation, or runtime changes were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-26T06:02:29.367Z"
+}

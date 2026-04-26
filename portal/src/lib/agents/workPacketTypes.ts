@@ -36,7 +36,11 @@ export interface DraftWorkPacketSeed {
   summary: string;
   agent_key: string;
   repo_scope: AgentRegistryRepoScope;
+  target_surface: string;
   requested_actions: DraftWorkPacketAction[];
+  allowed_paths: string[];
+  blocked_paths: string[];
+  verification_commands: string[];
   human_gates: string[];
   evidence_expectations: string[];
 }
@@ -46,9 +50,34 @@ export interface DraftWorkPacket {
   title: string;
   summary: string;
   repo_scope: AgentRegistryRepoScope;
+  target_surface: string;
   requested_actions: DraftWorkPacketAction[];
+  allowed_paths: string[];
+  blocked_paths: string[];
+  verification_commands: string[];
   agent: AgentRegistryAgent;
   compatibility: DraftWorkPacketCompatibility;
   human_gates: string[];
   evidence_expectations: string[];
+}
+
+export interface DraftWorkPacketTaskPromptValidation {
+  agent_exists: boolean;
+  assigned_agent_is_shared_alias: boolean;
+  repo_scope_compatible: boolean;
+  requested_actions_compatible: boolean;
+}
+
+export interface DraftWorkPacketTaskPrompt {
+  prompt_id: string;
+  packet_id: string;
+  assigned_agent_key: string;
+  assigned_agent_label: string;
+  branch_name_suggestion: string;
+  branch_suggestion_note: string;
+  status: "ready_preview" | "warning" | "blocked";
+  warnings: string[];
+  blocked_reasons: string[];
+  validation: DraftWorkPacketTaskPromptValidation;
+  prompt_text: string;
 }

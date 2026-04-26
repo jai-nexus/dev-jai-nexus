@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getDraftWorkPackets } from "@/lib/agents/workPackets";
+import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacket,
   DraftWorkPacketActionCompatibility,
@@ -94,7 +95,15 @@ function compatibilityLabel(
   return "verify";
 }
 
+function promptTone(status: "ready_preview" | "warning" | "blocked") {
+  if (status === "ready_preview") return "emerald";
+  if (status === "warning") return "amber";
+  return "rose";
+}
+
 function PacketCard({ packet }: { packet: DraftWorkPacket }) {
+  const prompt = buildDraftWorkPacketTaskPrompt(packet);
+
   return (
     <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -254,6 +263,68 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               </li>
             </ul>
           </div>
+
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-gray-100">
+                Task prompt preview
+              </h4>
+              <ToneBadge tone={promptTone(prompt.status)}>
+                {prompt.status}
+              </ToneBadge>
+              <ToneBadge tone="amber">copy only</ToneBadge>
+            </div>
+            <p className="mt-2 text-xs text-gray-400">
+              Prompt previews are deterministic and copy-only. Do not execute
+              unless separately authorized by the operator.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ToneBadge tone="slate">
+                {prompt.assigned_agent_key} · {prompt.assigned_agent_label}
+              </ToneBadge>
+              <ToneBadge tone="sky">
+                branch suggestion: {prompt.branch_name_suggestion}
+              </ToneBadge>
+            </div>
+
+            {prompt.warnings.length > 0 ? (
+              <div className="mt-4 rounded-lg border border-amber-800 bg-amber-950/40 p-3">
+                <div className="text-xs font-medium uppercase tracking-wide text-amber-300">
+                  Warnings
+                </div>
+                <ul className="mt-2 space-y-1 text-xs text-amber-100">
+                  {prompt.warnings.map((warning) => (
+                    <li key={warning}>- {warning}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {prompt.blocked_reasons.length > 0 ? (
+              <div className="mt-4 rounded-lg border border-rose-800 bg-rose-950/40 p-3">
+                <div className="text-xs font-medium uppercase tracking-wide text-rose-300">
+                  Blocked reasons
+                </div>
+                <ul className="mt-2 space-y-1 text-xs text-rose-100">
+                  {prompt.blocked_reasons.map((reason) => (
+                    <li key={reason}>- {reason}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className="mt-4 rounded-lg border border-gray-800 bg-zinc-950/70 p-3">
+              <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                Prompt text
+              </div>
+              <textarea
+                readOnly
+                value={prompt.prompt_text}
+                rows={24}
+                className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </article>
@@ -312,6 +383,11 @@ export default function WorkPage() {
             label="Execution posture"
             value="blocked"
             detail="All packets remain human-gated and draft-only in v0."
+          />
+          <SummaryCard
+            label="Task prompts"
+            value={String(packets.length)}
+            detail="Every initial draft work packet now generates a deterministic preview-only task prompt."
           />
         </section>
 
