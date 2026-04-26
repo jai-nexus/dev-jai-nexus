@@ -15,7 +15,6 @@ const links = [
   { href: "/operator/motions", label: "Motions" },
   { href: "/operator/decisions", label: "Decisions" },
   { href: "/operator/dct", label: "DCT" },
-  { href: "/operator/registry/coverage", label: "Registry" },
 ];
 
 export function OperatorSubnav() {
