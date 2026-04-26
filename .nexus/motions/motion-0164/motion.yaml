@@ -1,0 +1,19 @@
+motion_id: motion-0164
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Agent Configuration Registry v0"
+subtitle: "add a read-only operator registry for named JAI agent configurations before any execution enablement"
+kind: builder-proof
+program: q2-agent-configuration-registry-v0
+basis: motion-0162
+status: ratified
+created_at: "2026-04-25T00:00:00.000Z"
+decided_at: "2026-04-26T04:38:09.616Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []

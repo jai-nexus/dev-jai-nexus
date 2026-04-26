@@ -1,308 +1,369 @@
-// portal/src/app/operator/agents/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-import Link from "next/link";
-import React from "react";
-import {
-  getAgencyConfig,
-  type AgencyAgent,
-  type DelegationRule,
-} from "@/lib/agencyConfig";
+import type { ReactNode } from "react";
+import { getAgentConfigurationRegistry } from "@/lib/agents/agentRegistry";
+import type {
+  AgentRegistryAgent,
+  AgentRegistryCapabilityKey,
+  AgentRegistryCapabilityState,
+  AgentRegistryIdentity,
+  AgentRegistryRepoScope,
+} from "@/lib/agents/types";
 
-type AgentV2Shape = {
-  type?: string; // OWNER | ARCHITECT | BUILDER | VERIFIER | LIBRARIAN | OPERATOR | ...
-  capabilities?: string[]; // ["plan","patch","verify","docs","approve", ...]
-  constraints?: {
-    canEditCode?: boolean;
-    canRunCommands?: boolean;
-    canWriteDocs?: boolean;
-    requiresEvidence?: boolean;
-  };
-  scopeMode?: string; // "repo" | "domain" | "nhPrefix" (optional)
-};
-
-function asV2(agent: AgencyAgent): AgentV2Shape {
-  return agent as unknown as AgentV2Shape;
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
+        <p className="text-sm text-gray-400">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
 }
 
-function Chip({
+function SummaryCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
+      <p className="mt-2 text-sm text-gray-400">{detail}</p>
+    </div>
+  );
+}
+
+function ToneBadge({
   children,
   tone,
 }: {
-  children: React.ReactNode;
-  tone: "slate" | "emerald" | "sky" | "amber" | "purple";
+  children: ReactNode;
+  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
 }) {
-  const cls =
-    tone === "emerald"
-      ? "bg-emerald-900/50 text-emerald-200 border-emerald-800"
-      : tone === "sky"
-        ? "bg-sky-900/50 text-sky-200 border-sky-800"
-        : tone === "amber"
-          ? "bg-amber-900/40 text-amber-200 border-amber-800"
-          : tone === "purple"
-            ? "bg-purple-900/50 text-purple-200 border-purple-800"
-            : "bg-zinc-900 text-gray-200 border-gray-800";
+  const toneClass =
+    tone === "sky"
+      ? "border-sky-800 bg-sky-950 text-sky-200"
+      : tone === "amber"
+        ? "border-amber-800 bg-amber-950 text-amber-200"
+        : tone === "emerald"
+          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
+          : tone === "rose"
+            ? "border-rose-800 bg-rose-950 text-rose-200"
+            : "border-gray-800 bg-zinc-900 text-gray-200";
 
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] ${cls}`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
     >
       {children}
     </span>
   );
 }
 
-function typeTone(t?: string) {
-  const x = (t ?? "").toUpperCase();
-  if (x === "OWNER") return "emerald" as const;
-  if (x === "OPERATOR") return "sky" as const;
-  if (x === "ARCHITECT") return "purple" as const;
-  if (x === "BUILDER") return "amber" as const;
-  if (x === "VERIFIER") return "slate" as const;
-  if (x === "LIBRARIAN") return "slate" as const;
-  return "slate" as const;
+function capabilityTone(
+  state: AgentRegistryCapabilityState,
+): "emerald" | "amber" | "rose" {
+  if (state === "enabled") return "emerald";
+  if (state === "preview_only") return "amber";
+  return "rose";
 }
 
-function capabilityTone(c: string) {
-  const x = c.toLowerCase();
-  if (x === "approve") return "sky" as const;
-  if (x === "plan") return "purple" as const;
-  if (x === "patch") return "amber" as const;
-  if (x === "verify") return "slate" as const;
-  if (x === "docs") return "slate" as const;
-  return "slate" as const;
+function capabilityLabel(key: AgentRegistryCapabilityKey): string {
+  if (key === "view_only") return "view only";
+  if (key === "draft_plan") return "draft plan";
+  if (key === "draft_files_preview") return "draft files";
+  if (key === "branch_write") return "branch write";
+  if (key === "propose_pr") return "propose PR";
+  return "execute runtime";
 }
 
-function formatConstraints(v2: AgentV2Shape) {
-  const c = v2.constraints;
-  if (!c) return "—";
+function scopeLabel(scope: AgentRegistryRepoScope): string {
+  return scope;
+}
 
-  const parts: string[] = [];
-  if (typeof c.canEditCode === "boolean")
-    parts.push(`edit:${c.canEditCode ? "✓" : "—"}`);
-  if (typeof c.canRunCommands === "boolean")
-    parts.push(`run:${c.canRunCommands ? "✓" : "—"}`);
-  if (typeof c.canWriteDocs === "boolean")
-    parts.push(`docs:${c.canWriteDocs ? "✓" : "—"}`);
-  if (typeof c.requiresEvidence === "boolean")
-    parts.push(`evidence:${c.requiresEvidence ? "✓" : "—"}`);
+function IdentityCard({ identity }: { identity: AgentRegistryIdentity }) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-100">{identity.label}</h3>
+        <ToneBadge tone={identity.kind === "shared_alias" ? "amber" : "sky"}>
+          {identity.kind === "shared_alias" ? "shared alias" : "human operator"}
+        </ToneBadge>
+        <ToneBadge tone="rose">execution disabled</ToneBadge>
+      </div>
+      <div className="mt-2 font-mono text-xs text-gray-400">
+        {identity.handle}
+      </div>
+      <p className="mt-3 text-sm text-gray-300">{identity.summary}</p>
+      <ul className="mt-3 space-y-1 text-xs text-gray-400">
+        {identity.notes.map((note) => (
+          <li key={note}>- {note}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
-  return parts.length ? parts.join(" · ") : "—";
+function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-100">{agent.label}</h3>
+        <ToneBadge tone="slate">named JAI agent</ToneBadge>
+        <ToneBadge tone="rose">execution disabled</ToneBadge>
+      </div>
+      <div className="mt-2 font-mono text-xs text-gray-400">{agent.handle}</div>
+      <p className="mt-3 text-sm text-gray-300">{agent.summary}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {agent.repo_scopes.map((scope) => (
+          <ToneBadge key={scope} tone="sky">
+            {scope}
+          </ToneBadge>
+        ))}
+      </div>
+      <ul className="mt-3 space-y-1 text-xs text-gray-400">
+        {agent.notes.map((note) => (
+          <li key={note}>- {note}</li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default function AgentsPage() {
-  const agency = getAgencyConfig();
-
-  const agents: AgencyAgent[] = [...agency.agents].sort((a, b) => {
-    if (a.tier !== b.tier) return a.tier - b.tier;
-    return a.nh_id.localeCompare(b.nh_id);
-  });
+  const registry = getAgentConfigurationRegistry();
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-semibold">JAI NEXUS · Agency</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          NH-based agent map for dev.jai.nexus and attached projects.
-        </p>
-
-        <div className="mt-4 inline-flex items-center gap-3 rounded-lg border border-gray-800 bg-zinc-950 px-4 py-3">
-          <div>
-            <div className="text-xs uppercase tracking-wide text-gray-500">
-              Owner
-            </div>
-            <div className="text-sm font-medium">
-              {agency.owner.name}{" "}
-              <span className="text-gray-500">
-                ({agency.owner.handle}, root {agency.owner.nh_root})
-              </span>
-            </div>
+    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <header className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-semibold">JAI NEXUS · Agent Registry</h1>
+            <ToneBadge tone="sky">configuration only</ToneBadge>
+            <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
           </div>
-          <span className="inline-flex items-center rounded-full bg-sky-900/40 px-2 py-1 text-[11px] font-medium text-sky-200">
-            schema v{agency.schema_version.toFixed(1)}
-          </span>
-        </div>
-      </header>
-
-      <section className="mb-10">
-        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-lg font-medium">Agents</h2>
-          <p className="text-xs text-gray-400">
-            Tip: If schema ≥ 0.2, agents can expose{" "}
-            <span className="font-mono">type</span>,{" "}
-            <span className="font-mono">capabilities</span>, and{" "}
-            <span className="font-mono">constraints</span> (UI falls back safely
-            if missing).
+          <p className="max-w-3xl text-sm text-gray-400">
+            Read-only operator registry for human operator identities, shared
+            alias posture, and named JAI agent configurations before any live
+            execution is enabled.
           </p>
-        </div>
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+            <p>
+              This surface does not execute agents, write branches, open PRs,
+              run runtime actions, or read secret values. Credential posture is
+              shown as env variable names only.
+            </p>
+          </div>
+        </header>
 
-        <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
-          <table className="w-full text-sm border-collapse">
-            <thead className="bg-zinc-950 border-b border-gray-800 text-left">
-              <tr>
-                <th className="py-2 px-3 text-xs text-gray-400">NH</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Agent</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Tier</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Type</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Role</th>
-                <th className="py-2 px-3 text-xs text-gray-400">
-                  Capabilities
-                </th>
-                <th className="py-2 px-3 text-xs text-gray-400">Constraints</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Scope</th>
-                <th className="py-2 px-3 text-xs text-gray-400">
-                  Delegates to
-                </th>
-                <th className="py-2 px-3 text-xs text-gray-400">
-                  GitHub labels
-                </th>
-                <th className="py-2 px-3 text-xs text-gray-400">Actions</th>
-              </tr>
-            </thead>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <SummaryCard
+            label="Named agents"
+            value={String(registry.named_agents.length)}
+            detail="Separate future JAI identities are visible here before any execution enablement."
+          />
+          <SummaryCard
+            label="Human and alias identities"
+            value={String(
+              registry.human_operators.length + registry.shared_aliases.length,
+            )}
+            detail="Human operator and shared alias behavior are explicitly separated from named agents."
+          />
+          <SummaryCard
+            label="Repo scopes"
+            value={String(registry.repo_scopes.length)}
+            detail="Registry includes explicit scope metadata for each named agent."
+          />
+          <SummaryCard
+            label="Write and execute posture"
+            value="disabled"
+            detail="branch write, PR proposals, and runtime execution remain off in v0."
+          />
+        </section>
 
-            <tbody>
-              {agents.map((agent: AgencyAgent) => {
-                const v2 = asV2(agent);
-                const t = v2.type?.toUpperCase() ?? "—";
-                const caps = Array.isArray(v2.capabilities)
-                  ? v2.capabilities
-                  : [];
-                const constraints = formatConstraints(v2);
-
-                const scopeList = agent.scope ?? [];
-                const delegates = agent.delegates_to ?? [];
-                const labels = agent.github_labels ?? [];
-
-                const qs = new URLSearchParams({
-                  assigneeNhId: agent.nh_id,
-                  agentKey: agent.agent_key ?? "",
-                  scope: scopeList.join(","),
-                  githubLabels: labels.join(","),
-                });
-
-                const href = `/operator/work/new?${qs.toString()}`;
-
-                return (
-                  <tr
-                    key={agent.nh_id}
-                    className="border-b border-gray-900 hover:bg-zinc-900/60"
-                  >
-                    <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-300">
-                      {agent.nh_id}
-                      {agent.parent_nh_id && (
-                        <span className="ml-1 text-[10px] text-gray-500">
-                          (parent {agent.parent_nh_id})
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{agent.label}</span>
-                        <span className="text-xs text-gray-500">{agent.id}</span>
-                      </div>
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${agent.tier === 0
-                            ? "bg-emerald-900/60 text-emerald-200"
-                            : agent.tier === 1
-                              ? "bg-sky-900/60 text-sky-200"
-                              : "bg-purple-900/60 text-purple-200"
-                          }`}
-                      >
-                        Tier {agent.tier}
-                      </span>
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {t === "—" ? (
-                        <span className="text-gray-500">—</span>
-                      ) : (
-                        <Chip tone={typeTone(t)}>{t}</Chip>
-                      )}
-                      {v2.scopeMode ? (
-                        <span className="ml-2 text-[10px] text-gray-500">
-                          ({v2.scopeMode})
-                        </span>
-                      ) : null}
-                    </td>
-
-                    <td className="py-2 px-3 text-xs max-w-xs">{agent.role}</td>
-
-                    <td className="py-2 px-3 text-xs">
-                      {caps.length === 0 ? (
-                        <span className="text-gray-500">—</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1">
-                          {caps.map((c) => (
-                            <Chip key={c} tone={capabilityTone(c)}>
-                              {c}
-                            </Chip>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="py-2 px-3 text-xs whitespace-nowrap font-mono text-gray-300">
-                      {constraints}
-                    </td>
-
-                    <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {scopeList.length ? scopeList.join(", ") : "—"}
-                    </td>
-
-                    <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {delegates.length ? delegates.join(", ") : "—"}
-                    </td>
-
-                    <td className="py-2 px-3 text-xs whitespace-nowrap">
-                      {labels.length ? labels.join(", ") : "—"}
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <Link
-                        href={href}
-                        className="inline-flex items-center rounded-md border border-gray-700 bg-zinc-950 px-2 py-1 text-xs text-gray-200 hover:bg-zinc-900"
-                      >
-                        Delegate → Work
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-medium mb-3">Delegation rules</h2>
-        <div className="space-y-3">
-          {agency.delegation_rules.map((rule: DelegationRule) => (
-            <div
-              key={rule.id}
-              className="rounded-lg border border-gray-800 bg-zinc-950 p-4"
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold">Rule: {rule.id}</span>
+        <Section
+          title="Identity boundaries"
+          description="Human operator identities, shared aliases, and named JAI agent identities are intentionally distinct."
+        >
+          <div className="grid gap-4 lg:grid-cols-3">
+            {registry.human_operators.map((identity) => (
+              <IdentityCard key={identity.id} identity={identity} />
+            ))}
+            {registry.shared_aliases.map((identity) => (
+              <IdentityCard key={identity.id} identity={identity} />
+            ))}
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">
+                  Named JAI agent identities
+                </h3>
+                <ToneBadge tone="slate">future identities</ToneBadge>
+                <ToneBadge tone="rose">non-execution in v0</ToneBadge>
               </div>
-
-              <p className="text-xs text-gray-400 mb-2">
-                {rule.description.trim()}
+              <p className="mt-3 text-sm text-gray-300">
+                Named agents are separate future identities such as{" "}
+                <span className="font-mono">jai-builder@jai.nexus</span>. They
+                are visible and configurable here, but none of them can execute
+                or mutate repositories in this registry v0 seam.
               </p>
-
-              <ul className="text-xs text-gray-300 list-disc list-inside space-y-1">
-                {rule.constraints.map((c: string, idx: number) => (
-                  <li key={idx}>{c}</li>
-                ))}
+              <ul className="mt-3 space-y-1 text-xs text-gray-400">
+                <li>- execution_identity is false for every named agent</li>
+                <li>- draft_files is preview only and cannot mutate the repo</li>
+                <li>- promotion or runtime execution is not enabled here</li>
               </ul>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </Section>
+
+        <Section
+          title="Named JAI agents"
+          description="Initial named configurations are registry-only records with explicit capability and scope posture."
+        >
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {registry.named_agents.map((agent) => (
+              <AgentCard key={agent.key} agent={agent} />
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          title="Capability matrix"
+          description="Capabilities may be view-only or preview-only, while write and execution capability remain explicitly disabled."
+        >
+          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
+            <table className="min-w-full divide-y divide-gray-800 text-sm">
+              <thead className="bg-zinc-950">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Agent
+                  </th>
+                  {registry.capability_keys.map((capability) => (
+                    <th
+                      key={capability}
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500"
+                    >
+                      {capabilityLabel(capability)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-900">
+                {registry.named_agents.map((agent) => (
+                  <tr key={agent.key}>
+                    <td className="px-4 py-3 align-top">
+                      <div className="font-medium text-gray-100">{agent.label}</div>
+                      <div className="font-mono text-xs text-gray-500">
+                        {agent.handle}
+                      </div>
+                    </td>
+                    {registry.capability_keys.map((capability) => (
+                      <td key={`${agent.key}-${capability}`} className="px-4 py-3">
+                        <ToneBadge
+                          tone={capabilityTone(agent.capabilities[capability])}
+                        >
+                          {agent.capabilities[capability]}
+                        </ToneBadge>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        <Section
+          title="Repo scope matrix"
+          description="Repo scopes express where a named agent may be configured and reviewed. They do not grant execution or write power."
+        >
+          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
+            <table className="min-w-full divide-y divide-gray-800 text-sm">
+              <thead className="bg-zinc-950">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Agent
+                  </th>
+                  {registry.repo_scopes.map((scope) => (
+                    <th
+                      key={scope}
+                      className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500"
+                    >
+                      {scopeLabel(scope)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-900">
+                {registry.named_agents.map((agent) => (
+                  <tr key={`${agent.key}-scope`}>
+                    <td className="px-4 py-3 font-medium text-gray-100">
+                      {agent.label}
+                    </td>
+                    {registry.repo_scopes.map((scope) => (
+                      <td key={`${agent.key}-${scope}`} className="px-4 py-3">
+                        {agent.repo_scopes.includes(scope) ? (
+                          <ToneBadge tone="emerald">in scope</ToneBadge>
+                        ) : (
+                          <span className="text-xs text-gray-600">out</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        <Section
+          title="Credential posture"
+          description="Env variable names are shown for future execution posture only. No values are rendered or committed."
+        >
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {registry.named_agents.map((agent) => (
+              <div
+                key={`${agent.key}-credentials`}
+                className="rounded-xl border border-gray-800 bg-zinc-950 p-4"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-100">
+                    {agent.label}
+                  </h3>
+                  <ToneBadge tone="amber">env names only</ToneBadge>
+                </div>
+                <ul className="mt-3 space-y-3">
+                  {agent.credential_posture.map((credential) => (
+                    <li key={credential.key} className="space-y-1">
+                      <div className="font-mono text-xs text-sky-200">
+                        {credential.env_var}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {credential.purpose}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </Section>
+      </div>
     </main>
   );
 }

@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0164",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The old /operator/agents agency page was replaced with a read-only registry for named JAI agent configuration only.",
+      "Human operator identity, shared alias behavior, and named future agent identities are explicitly distinguished.",
+      "The capability matrix renders preview-only planning posture while branch_write, propose_pr, and execute_runtime remain disabled.",
+      "Repo-scope metadata and credential posture render without exposing secret values.",
+      "Required gates passed, no runtime or proof files changed, and no existing motion package was modified.",
+      "No API route, DB write, execution enablement, branch write, PR creation, dispatch, scheduler behavior, or runtime change was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-26T04:38:09.616Z"
+}
