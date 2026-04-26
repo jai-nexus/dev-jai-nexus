@@ -20,7 +20,22 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft a homepage refresh plan and preview-only file edits for the main jai-nexus landing page.",
     agent_key: "jai-landing-page-agent",
     repo_scope: "jai-nexus",
+    target_surface: "homepage landing experience",
     requested_actions: ["draft_plan", "draft_files_preview"],
+    allowed_paths: [
+      "app/(marketing)/**",
+      "components/landing/**",
+      "content/homepage/**",
+    ],
+    blocked_paths: [
+      "runtime/**",
+      "surfaces/agent-ops/**",
+      ".github/**",
+    ],
+    verification_commands: [
+      "# operator must supply jai-nexus repo-local verification command before any execution is authorized",
+      "# do not execute repository commands from this prompt without separate operator authorization",
+    ],
     human_gates: [
       "Human operator must confirm scope before any branch or runtime action is considered.",
       "Human operator must review all draft text and file previews before follow-up work opens.",
@@ -39,7 +54,22 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft an intake-map plan for the customer-portal without opening implementation or execution paths.",
     agent_key: "jai-customer-portal-agent",
     repo_scope: "customer-portal",
+    target_surface: "customer intake and intake-map flow",
     requested_actions: ["draft_plan"],
+    allowed_paths: [
+      "app/intake/**",
+      "components/intake/**",
+      "lib/intake/**",
+    ],
+    blocked_paths: [
+      "runtime/**",
+      "surfaces/agent-ops/**",
+      ".github/**",
+    ],
+    verification_commands: [
+      "# operator must supply customer-portal repo-local verification command before any execution is authorized",
+      "# do not execute repository commands from this prompt without separate operator authorization",
+    ],
     human_gates: [
       "Human operator must confirm the intake-flow scope and target repo before any follow-up motion.",
       "Human operator must validate that the plan remains documentation-only in this seam.",
@@ -56,7 +86,22 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft a governance follow-up plan for the agent registry without changing execution posture.",
     agent_key: "jai-governance-agent",
     repo_scope: "dev-jai-nexus",
+    target_surface: "operator agents registry and registry follow-up governance",
     requested_actions: ["draft_plan"],
+    allowed_paths: [
+      "portal/src/app/operator/agents/**",
+      "portal/src/lib/agents/**",
+      "docs/**",
+    ],
+    blocked_paths: [
+      "runtime/**",
+      "surfaces/agent-ops/**",
+      "portal/src/app/api/**",
+    ],
+    verification_commands: [
+      "pnpm -C portal typecheck",
+      "node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus",
+    ],
     human_gates: [
       "Human operator must confirm the follow-up remains governance-only.",
       "Human operator must review evidence expectations before any new motion is opened.",
@@ -73,7 +118,22 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft a read-only API contract review packet for api-nexus, combining verification and planning posture only.",
     agent_key: "jai-verifier",
     repo_scope: "api-nexus",
+    target_surface: "API contract surface and schema review",
     requested_actions: ["verify", "draft_plan"],
+    allowed_paths: [
+      "openapi/**",
+      "src/contracts/**",
+      "docs/api/**",
+    ],
+    blocked_paths: [
+      "runtime/**",
+      "surfaces/agent-ops/**",
+      ".github/**",
+    ],
+    verification_commands: [
+      "# operator must supply api-nexus repo-local verification command before any execution is authorized",
+      "# do not execute repository commands from this prompt without separate operator authorization",
+    ],
     human_gates: [
       "Human operator must confirm the contract review remains read-only.",
       "Human operator must approve any follow-up design or implementation motion separately.",
@@ -185,7 +245,11 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
       title: seed.title,
       summary: seed.summary,
       repo_scope: seed.repo_scope,
+      target_surface: seed.target_surface,
       requested_actions: seed.requested_actions,
+      allowed_paths: seed.allowed_paths,
+      blocked_paths: seed.blocked_paths,
+      verification_commands: seed.verification_commands,
       agent,
       compatibility: {
         agent_exists: true,
