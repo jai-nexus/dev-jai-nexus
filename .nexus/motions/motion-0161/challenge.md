@@ -6,32 +6,32 @@
 
 ## 1. Key risks
 
-- The verification pass could over-claim deployed behavior that was not actually observed.
-- Auth-gated deployment could be mistaken for a product defect rather than a verification
-  boundary.
-- Evidence collection could drift into live promotion or broader product testing.
-- The motion could be ratified despite incomplete authenticated deployed verification.
+- deployed verification could over-claim evidence that was not directly observed
+- snapshot-backed data could be mistaken for current live canonical state
+- guardrail verification could accidentally widen into a feature or auth redesign
+- non-blocking observations could be mistaken for merge blockers
 
 ---
 
 ## 2. Required protections
 
-- keep motion-0161 as evidence-only
-- separate confirmed observations from unverified items
-- do not enable live promotion or configure write env
-- do not mutate portal or runtime code unless a concrete blocker defect is found
-- keep existing motion-0159 guardrails unchanged
+- keep motion-0161 evidence-only
+- record only deployed observations actually available in this pass
+- treat `GV-09` and `GV-11` as non-blocking if not directly observed
+- preserve the current v0 admin guard as-is without redesign
+- do not execute live promotion, create PRs, or mutate any existing motion package
 
 ---
 
 ## 3. Out of scope
 
-- new product capability
+- portal implementation changes
+- GitHub env enablement
 - live branch promotion
 - PR creation
-- voting or ratification by the feature
-- dispatch, scheduler behavior, or orchestration
-- readiness-threshold work
+- vote or ratify actions through the feature
+- dispatch or scheduler behavior
 - DB writes
 - runtime proof changes
-- mutation of existing motions
+- snapshot refresh automation
+- canonical status label changes

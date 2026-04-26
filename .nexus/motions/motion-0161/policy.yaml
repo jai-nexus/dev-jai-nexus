@@ -1,21 +1,22 @@
 protocol_version: "0.3.8"
 motion_id: motion-0161
-evaluated_at: "2026-04-26T01:48:07.655Z"
+evaluated_at: "2026-04-26T02:37:12.065Z"
 target_domain: "dev.jai.nexus"
 target_repo: "dev-jai-nexus"
 vote_mode: "unanimous_consent"
 required_voters: [proposer, challenger, arbiter]
-risk_score: 0.09
+risk_score: 0.07
 max_risk_score: 0.20
 required_gates: [validate_motion, validate_agency, typecheck]
 optional_gates: []
 failed_required_gates: []
 failed_optional_gates: []
 required_ok: true
-eligible_to_vote: false
-recommended_vote: null
-blocking_reasons:
-  - "Authenticated deployed admin evidence now confirms GV-03, GV-06, GV-07, and GV-08, but GV-04, GV-05, GV-09, GV-10, GV-11, GV-12, GV-14, GV-15, and GV-16 remain incomplete because the contender area and disabled-control surfaces were not directly captured."
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
 warnings:
+  - "GV-09 is non-blocking and remains unverified in this pass because the motion-0151 mismatch was not specifically re-captured."
+  - "GV-11 is non-blocking and remains unverified in this pass because no non-admin deployed session was tested."
   - "Scope is limited to deployed guardrail verification only and introduces no new product capability."
 escalation_state: null

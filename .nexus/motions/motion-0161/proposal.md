@@ -9,12 +9,12 @@
 
 ## 1. Problem statement
 
-The contender-first Motion Operations surface is implemented and merged, but the deployed
-guardrails on `dev.jai.nexus` still need a bounded verification pass that records what was
-actually observed in deployment versus what remains unverified without an authenticated
-operator session.
+Motion-0160 established the contender-first operator motions surface, but it was merged
+without a complete deployed guardrail verification pass. Motion-0161 closes that gap by
+recording a bounded deployed verification of the live `/operator/motions` surface after
+the stale snapshot contender-id fix from #110.
 
-Motion-0161 is an evidence motion only. It does not add feature scope.
+This motion is evidence-only. It does not add product capability.
 
 ---
 
@@ -22,55 +22,39 @@ Motion-0161 is an evidence motion only. It does not add feature scope.
 
 In scope:
 
-- deployed verification of `https://dev.jai.nexus/operator/motions`
-- unauthenticated route and login-page observation
-- confirmation that the deployed surface remains behind the expected auth boundary
-- recording `GV-01` through `GV-18`
-- local required gates
+- verify deployed `/operator/motions` on `dev.jai.nexus`
+- confirm contender-first and canonical-reference boundaries in deployed UI
+- confirm snapshot-backed preview no longer claims an existing canonical motion id
+- confirm promotion remains disabled/guarded when env is unavailable
+- record `GV-01` through `GV-19`
 - `.nexus/motions/motion-0161/**`
 
 Not in scope:
 
-- portal implementation changes unless a concrete blocker defect is found
-- enabling live promotion
-- configuring GitHub write env
-- performing live branch promotion
-- adding RBAC
+- portal implementation changes
+- live branch promotion
+- GitHub env enablement
 - PR creation
 - voting or ratification by the feature
-- dispatch, scheduler behavior, or orchestration
-- readiness scoring
+- dispatch, scheduler behavior, or readiness scoring
 - DB writes
 - runtime proof changes
 - mutation of existing motions
 
 ---
 
-## 3. Verification method
+## 3. Acceptance criteria
 
-Use a bounded deployed pass:
-
-- fetch the deployed route directly
-- record redirect and login-page evidence
-- distinguish confirmed observations from unverified items that require an authenticated
-  operator session
-- rerun local required gates for the evidence package
-
----
-
-## 4. Acceptance criteria
-
-- motion-0161 remains an evidence package
-- no new product capability is introduced
-- deployed observations are recorded honestly
-- unverified items are called out explicitly
-- if no concrete defect is found, do not widen scope
-- required gates pass
+- deployed `/operator/motions` is reachable and auth-gated correctly
+- authenticated deployed admin evidence confirms contender-first UI boundaries
+- snapshot-backed preview shows `assigned at promotion` instead of an existing canonical motion id
+- promotion remains blocked/guarded when env is missing
+- no PR, vote, ratify, dispatch, or run controls are exposed
+- required local gates pass
 
 ---
 
-## 5. Non-goals
+## 4. Non-goals
 
-No portal feature changes, no live promotion, no PR creation, no voting, no ratification by
-the feature, no dispatch, no scheduler behavior, no readiness scoring, no DB writes, and no
-runtime proof changes.
+No feature expansion, no write-path expansion, no snapshot refresh automation, and no
+status-label redesign are included here.

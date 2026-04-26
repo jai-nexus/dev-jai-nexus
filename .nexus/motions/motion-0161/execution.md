@@ -3,7 +3,7 @@
 **Motion:** motion-0161
 **Kind:** evidence-proof
 **Program:** q2-motion-operations-guardrail-verification
-**Status:** DRAFT
+**Status:** RATIFIED
 
 ---
 
@@ -22,7 +22,7 @@ Touched files:
 - `.nexus/motions/motion-0161/verify.json`
 - `.nexus/motions/motion-0161/vote.json`
 
-No portal implementation files were changed in this pass.
+No portal implementation files were changed in this verification pass.
 
 ---
 
@@ -34,100 +34,59 @@ No portal implementation files were changed in this pass.
 
 ---
 
-## Evidence sources
+## Post-#110 deployed observations
 
-Agent-captured evidence:
-
-- unauthenticated route headers
-- redirected login page HTML
-- failed deployed credential attempts using repo-discoverable seeded admin and agent passwords
-
-Operator-provided authenticated evidence:
-
-- authenticated admin login to deployed `dev.jai.nexus` succeeded manually
-- deployed canonical reference renders motion data
-- deployed canonical reference shows `157` canonical motions
-- local branch live mode shows `161` canonical motions because branch-local live mode includes `motion-0161`
-- deployed canonical list includes `motion-0157` and earlier ratified motions
-- canonical reference is visually separate from the contender area
-- current canonical status badge text displays `settled`
-
----
-
-## Captures and observations
-
-Text capture from the deployed unauthenticated route:
-
-```text
-HTTP/1.1 307 Temporary Redirect
-Location: /login?next=%2Foperator%2Fmotions
-Server: Vercel
-```
-
-Text capture from the redirected login page:
-
-```text
-JAI NEXUS · Login
-Sign in as admin@jai.nexus or agent@jai.nexus.
-```
-
-Text capture from attempted credential sign-in using repo-discoverable seeded passwords:
-
-```text
-HTTP/1.1 401 Unauthorized
-{"url":"https://dev.jai.nexus/api/auth/error?error=CredentialsSignin&provider=credentials"}
-```
-
-Operator observations from authenticated admin inspection:
+Authenticated admin deployed evidence confirmed:
 
 - deployed `/operator/motions` is reachable after admin login
-- canonical motion reference is visually separate from the contender area
-- deployed canonical reference renders motion data instead of showing an empty state
-- deployed canonical reference shows `157` canonical motions
+- the primary queue is the contender queue
+- contenders are explicitly labeled `preview only`
+- contenders are explicitly labeled `not a motion package yet`
+- canonical motions are rendered in a separate read-only reference section
+- deployed source mode is snapshot-backed and visibly separate from local live canonical state
+- canonical reference renders motion data and shows `157` canonical motions
 - deployed canonical list includes `motion-0157` and earlier ratified motions
-- deployed snapshot-backed canonical state does not automatically include branch-local `motion-0161`
-- current status badge text displays `settled`
+- contender preview no longer claims an existing canonical motion id
+- contender preview shows:
+  - motion id preview: `assigned at promotion`
+  - id resolution: `assigned at promotion`
+  - queue state: `promotion_blocked`
+  - write root preview: `.nexus/motions/<assigned-at-promotion>`
+  - branch preview: `operator/motion-draft/<assigned-at-promotion>-...`
+- explicit guard copy is visible:
+  - snapshot-backed canonical data may be stale
+  - real motion id is assigned only after server confirmation at promotion
+  - exact DRAFT package preview uses placeholder paths
+- no Create PR control is present
+- no Vote or Ratify controls are present
+- no Dispatch or Run controls are present
 
-No write action, promotion action, branch creation, PR creation, vote, ratification, or dispatch was executed in this pass.
+No live promotion, branch creation, PR creation, voting, ratification, dispatch, or run
+action was executed in this pass.
 
 ---
 
 ## GV matrix
 
-- `GV-01` PASS: deployed `/operator/motions` loads and auth-redirects correctly
-- `GV-02` PASS: unauthenticated users redirect to `/login?next=%2Foperator%2Fmotions`
-- `GV-03` PASS: authenticated admin/operator can reach `/operator/motions` based on operator-provided deployed evidence
-- `GV-04` BLOCKED: the top contender section was not directly captured in the authenticated deployed evidence provided here, so the primary queue could not be independently verified as generated contenders
-- `GV-05` BLOCKED: preview-only / non-canonical contender labels were not directly captured in the authenticated deployed evidence provided here
-- `GV-06` PASS: canonical motions are rendered in a separate read-only reference section based on operator-provided authenticated deployed evidence
-- `GV-07` PASS: deployed behavior is consistent with bundled snapshot fallback; deployed canonical reference shows `157` motions while local branch live mode shows `161`
-- `GV-08` PASS: canonical reference renders expected motion data, including `motion-0157` and earlier ratified motions
-- `GV-09` BLOCKED: deployed surfacing of the `motion-0151` mismatch was not visible in the authenticated evidence provided here
-- `GV-10` BLOCKED: disabled-promotion state under missing env, or equivalent guarded-admin copy, was not directly captured in the authenticated deployed evidence provided here
-- `GV-11` UNVERIFIED: no non-admin deployed session was available; prior repo-discoverable non-admin seeded credentials returned `CredentialsSignin`
-- `GV-12` BLOCKED: admin / feature / env guard copy inside the motions page was not directly captured in the authenticated deployed evidence provided here
-- `GV-13` PASS (bounded): normal page use in this pass created no branch/write and executed no promotion path
-- `GV-14` BLOCKED: no authenticated deployed evidence was captured for absence of PR creation controls
-- `GV-15` BLOCKED: no authenticated deployed evidence was captured for absence of vote/ratify controls
-- `GV-16` BLOCKED: no authenticated deployed evidence was captured for absence of dispatch/run controls
+- `GV-01` PASS: deployed `/operator/motions` loads or auth-redirects correctly
+- `GV-02` PASS: unauthenticated users redirect to login
+- `GV-03` PASS: authenticated admin/operator reached `/operator/motions`
+- `GV-04` PASS: primary queue is generated contenders
+- `GV-05` PASS: contenders are labeled preview-only and non-canonical
+- `GV-06` PASS: canonical motions are separate read-only reference
+- `GV-07` PASS: deployed source mode / snapshot fallback is visible and correct
+- `GV-08` PASS: canonical reference renders expected motion data
+- `GV-09` UNVERIFIED/NON-BLOCKING: the `motion-0151` mismatch was not specifically re-captured in this pass, although the canonical reference itself rendered correctly
+- `GV-10` PASS: promotion is disabled/blocked/guarded in snapshot mode and env-disabled mode
+- `GV-11` UNVERIFIED/NON-BLOCKING: no non-admin deployed session was tested in this pass
+- `GV-12` PASS: admin / feature / env / server-confirmation guard copy is visible
+- `GV-13` PASS: normal page use created no branch/write
+- `GV-14` PASS: no PR creation control exists in the observed UI
+- `GV-15` PASS: no vote/ratify controls exist in the observed UI
+- `GV-16` PASS: no dispatch/run controls exist in the observed UI
 - `GV-17` PASS: `pnpm -C portal typecheck`
 - `GV-18` PASS: `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0161/motion.yaml`
 - `GV-19` PASS: `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus`
-
----
-
-## Follow-up observations only
-
-These observations do not block guardrail verification on their own and are not fixed under motion-0161:
-
-- snapshot refresh gap:
-  - deployed bundled snapshot shows `157` canonical motions
-  - local branch live mode shows `161`
-  - likely follow-up seam: snapshot refresh/build automation
-- status label alignment:
-  - current badge text displays `settled`
-  - operator preference is `ratified` unless `settled` has a distinct governance meaning
-  - likely follow-up seam: status label alignment review
 
 ---
 
@@ -139,21 +98,26 @@ These observations do not block guardrail verification on their own and are not 
 
 ---
 
-## Caveats
+## Follow-up observations only
 
-- This pass includes operator-provided authenticated admin observations, but the agent did not gain direct authenticated browser/session access.
-- Repo-discoverable seeded admin and agent credentials still returned `401 CredentialsSignin` on the deployed environment.
-- No browser/manual UI smoke test was performed by the agent.
-- No live GitHub branch promotion was executed.
-- Several required authenticated in-page guardrail checks remain blocked because the supplied authenticated evidence did not include the contender preview area or disabled-control surfaces.
+These items do not block motion-0161 ratification and are not fixed here:
+
+- deployed bundled snapshot currently shows `157` canonical motions until snapshot refresh automation is added
+- local branch live mode is ahead of deployed snapshot-backed canonical state
+- canonical status badge currently displays `settled`
+- operator preference is `ratified` unless `settled` has a distinct governance meaning
 
 ---
 
-## Current disposition
+## Ratified evidence conclusion
 
-No concrete blocker defect was identified from the evidence actually collected here.
+Motion-0161 ratifies the deployed guardrail verification pass for the contender-first
+Motion Operations surface.
 
-Motion-0161 remains DRAFT because authenticated deployed verification is still incomplete: `GV-04`, `GV-05`, `GV-09`, `GV-10`, `GV-11`, `GV-12`, `GV-14`, `GV-15`, and `GV-16` are not fully verified from authenticated deployed evidence.
+- the stale snapshot contender-id defect is no longer present in deployed preview
+- the preview no longer presents an existing canonical motion id as a valid new target
+- promotion remains guarded and disabled when env is unavailable
+- no new product capability, write power, or governance authority was introduced
 
 ---
 

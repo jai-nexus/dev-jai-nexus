@@ -2,13 +2,13 @@ motion_id: motion-0161
 version: "0.1"
 protocol_version: "0.3.8"
 title: "Deployed Motion Operations Guardrail Verification v0"
-subtitle: "record a bounded deployed verification pass for the contender-first operator motions surface without adding product capability"
+subtitle: "record the post-#110 deployed verification pass for the contender-first operator motions surface without adding product capability"
 kind: evidence-proof
 program: q2-motion-operations-guardrail-verification
 basis: motion-0160
-status: open
+status: ratified
 created_at: "2026-04-25T00:00:00.000Z"
-decided_at: null
+decided_at: "2026-04-26T02:37:12.065Z"
 proposer: ARCHITECT
 challenger: VERIFIER
 arbiter: OPERATOR
