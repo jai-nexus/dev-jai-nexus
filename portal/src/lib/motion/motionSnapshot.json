@@ -1,12 +1,378 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-04-26T03:48:34.732Z",
+  "generated_at": "2026-04-26T22:18:41.944Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 162,
+  "motion_count": 165,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0166",
+      "item": {
+        "motion_id": "motion-0166",
+        "title": "Agent Work Packet to Task Prompt v0",
+        "subtitle": "add deterministic preview-only task prompt generation for draft work packets without enabling execution",
+        "program": "q2-agent-work-packet-task-prompt-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0165",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-26T00:00:00.000Z",
+        "decided_at": "2026-04-26T06:02:29.367Z",
+        "updated_at": "2026-04-26T22:18:41.944Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0166/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0166\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Work Packet to Task Prompt v0\"\nsubtitle: \"add deterministic preview-only task prompt generation for draft work packets without enabling execution\"\nkind: builder-proof\nprogram: q2-agent-work-packet-task-prompt-v0\nbasis: motion-0165\nstatus: ratified\ncreated_at: \"2026-04-26T00:00:00.000Z\"\ndecided_at: \"2026-04-26T06:02:29.367Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0166/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0166\nstatus: RATIFIED\ndecided_at: \"2026-04-26T06:02:29.367Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-26T06:02:29.367Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0166/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0166\nevaluated_at: \"2026-04-26T06:02:29.367Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.10\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to preview-only task prompt generation for draft work packets.\"\n  - \"Execution, branch write, PR creation, dispatch, runtime execution, and DB writes remain disabled.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0166/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0166\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T06:02:29.367Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0166/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T06:02:29.367Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T06:02:29.367Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-26T06:02:29.367Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0166/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0166\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Draft work packets now generate deterministic preview-only task prompts with assigned agent, repo, surface, branch suggestion, path boundaries, and operator guardrails.\",\n      \"Prompt previews remain copy-only and explicitly instruct that execution requires separate operator authorization.\",\n      \"The builder validates named agent existence, blocks shared alias use, and surfaces repo-scope or capability incompatibility as warnings or blocked reasons.\",\n      \"Verification commands, evidence expectations, and credential posture are included without enabling execution or exposing secrets.\",\n      \"Required gates passed, no runtime or proof files changed, and no existing motion packages were modified.\",\n      \"No branch writes, PR creation, dispatch, scheduler behavior, DB writes, API mutation, or runtime changes were introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-26T06:02:29.367Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0166/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Work Packet to Task Prompt v0\n\n**Motion:** motion-0166\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-task-prompt-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `portal/src/lib/agents/workPacketTaskPrompts.ts`\n- `.nexus/motions/motion-0166/**`\n\n---\n\n## Ratified evidence record\n\nThe draft-only work packet surface now renders deterministic task prompt\npreviews for every initial seed packet.\n\nEach prompt includes:\n\n- assigned agent key and display name\n- target repo and target surface\n- branch suggestion labeled suggestion-only\n- allowed and blocked paths\n- compatibility summary\n- human gates\n- verification commands\n- evidence expectations\n- credential posture using env var names only\n- explicit operator guardrail text:\n  - do not execute unless separately authorized by the operator\n\nPrompt generation is bounded and preview-only:\n\n- no run, dispatch, or execute controls were added\n- no branch write or PR creation controls were added\n- no API or DB mutation path was added\n- no runtime changes were introduced\n\nThe prompt builder validates:\n\n- assigned agent exists in the named agent registry\n- assigned identity is not the shared alias `agent@jai.nexus`\n- requested repo is in scope\n- requested capability state is compatible, preview-only, or blocked\n\nObserved prompt outputs:\n\n- `prompt-wp-landing-homepage-refresh`\n  - assigned agent: `jai-landing-page-agent`\n  - target repo: `jai-nexus`\n  - branch suggestion: `draft/jai-landing-page-agent/wp-landing-homepage-refresh`\n  - status: `warning` because `draft_files_preview` remains preview-only\n- `prompt-wp-customer-intake-map`\n  - assigned agent: `jai-customer-portal-agent`\n  - target repo: `customer-portal`\n  - branch suggestion: `draft/jai-customer-portal-agent/wp-customer-intake-map`\n  - status: `ready_preview`\n- `prompt-wp-agent-registry-follow-up`\n  - assigned agent: `jai-governance-agent`\n  - target repo: `dev-jai-nexus`\n  - branch suggestion: `draft/jai-governance-agent/wp-agent-registry-follow-up`\n  - status: `ready_preview`\n- `prompt-wp-api-contract-review`\n  - assigned agent: `jai-verifier`\n  - target repo: `api-nexus`\n  - branch suggestion: `draft/jai-verifier/wp-api-contract-review`\n  - status: `ready_preview`\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `TP-01` through `TP-18` passed:\n\n- `TP-01` `/operator/work` renders task prompt previews\n- `TP-02` every initial work packet can generate a prompt\n- `TP-03` prompt includes assigned agent id and display name\n- `TP-04` prompt blocks shared alias as execution identity\n- `TP-05` prompt includes target repo and surface\n- `TP-06` prompt includes branch name suggestion labeled suggestion-only\n- `TP-07` prompt includes allowed and blocked paths\n- `TP-08` prompt includes human gate text and explicit do-not-execute language\n- `TP-09` prompt includes verification commands and evidence expectations\n- `TP-10` prompt warns or blocks on incompatible capability or repo scope\n- `TP-11` no run, dispatch, or execute controls exist\n- `TP-12` no branch write or PR creation controls exist\n- `TP-13` no API route or DB write was added\n- `TP-14` no runtime or proof files changed\n- `TP-15` no existing motions were modified\n- `TP-16` `pnpm -C portal typecheck` passed\n- `TP-17` `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0166/motion.yaml` passed\n- `TP-18` `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n\n---\n\n## Guardrails preserved\n\n- no execution\n- no branch writes\n- no PR creation\n- no dispatch\n- no scheduler\n- no DB writes\n- no API mutation\n- no credentials or secret values\n- no runtime changes\n- no cross-repo mutation\n\n---\n\n## Caveats\n\n- No browser or manual UI smoke test was run in this turn.\n- Prompt previews are copy-only and do not include clipboard or execution affordances."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0166/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Work Packet to Task Prompt v0\n\n**Motion:** motion-0166\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-task-prompt-v0\n**Basis:** motion-0165\n\n---\n\n## 1. Problem statement\n\nThe repo now has a draft-only work packet surface, but there is not yet a\nstandardized task prompt layer that turns those packets into copyable,\ndeterministic operator prompts for future agent use.\n\nThe missing seam is a preview-only prompt builder that includes:\n\n- assigned agent identity\n- target repo and surface\n- branch suggestion as suggestion-only\n- allowed and blocked paths\n- compatibility and execution-blocked posture\n- human gates, verification commands, evidence expectations\n- credential posture by env var name only\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `portal/src/lib/agents/workPacketTaskPrompts.ts`\n- `.nexus/motions/motion-0166/**`\n\nOut of scope:\n\n- execution enablement\n- branch writes\n- PR creation\n- dispatch or scheduler behavior\n- DB writes\n- API mutation\n- runtime changes\n- mutation of existing motion packages\n\n---\n\n## 3. Implementation\n\nAdd a deterministic task prompt schema and builder for draft work packets and\nrender prompt previews directly on `/operator/work`.\n\nPrompts remain preview/copy only and must explicitly say:\n\n- do not execute unless separately authorized by the operator\n\nThe prompt builder must validate assigned agent identity and compatibility\nagainst the existing agent registry and work packet compatibility model.\n\n---\n\n## 4. Acceptance criteria\n\n- `/operator/work` renders task prompt previews\n- every initial work packet can generate a prompt\n- prompts include agent id, target repo/surface, branch suggestion, allowed and blocked paths\n- prompts include human gates, verification commands, evidence expectations, and credential posture\n- prompts block shared alias assignment and warn or block on incompatible scope/capability\n- no execution or write controls are introduced\n- required gates pass"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0166/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Work Packet to Task Prompt v0\n\n**Motion:** motion-0166\n\n---\n\n## C-1: Does this enable execution?\n\nNo. Prompts are preview and copy only. They explicitly state that execution\nrequires separate operator authorization.\n\n## C-2: Does this add write or PR behavior?\n\nNo. Branch names are suggestion-only and no write or PR control is added.\n\n## C-3: Does this leak credentials?\n\nNo. Credential posture uses env variable names only, never values.\n\n## C-4: Does this bypass identity boundaries?\n\nNo. The builder validates that the assigned identity exists in the named agent\nregistry and is not the shared alias."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0166/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0166/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0166/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0166/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0166/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0166/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Work Packet to Task Prompt v0\n\n**Motion:** motion-0166\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-task-prompt-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `portal/src/lib/agents/workPacketTaskPrompts.ts`\n- `.nexus/motions/motion-0166/**`\n\n---\n\n## Ratified evidence record\n\nThe draft-only work packet surface now renders deterministic task prompt\npreviews for every initial seed packet.\n\nEach prompt includes:\n\n- assigned agent key and display name\n- target repo and target surface\n- branch suggestion labeled suggestion-only\n- allowed and blocked paths\n- compatibility summary\n- human gates\n- verification commands\n- evidence expectations\n- credential posture using env var names only\n- explicit operator guardrail text:\n  - do not execute unless separately authorized by the operator\n\nPrompt generation is bounded and preview-only:\n\n- no run, dispatch, or execute controls were added\n- no branch write or PR creation controls were added\n- no API or DB mutation path was added\n- no runtime changes were introduced\n\nThe prompt builder validates:\n\n- assigned agent exists in the named agent registry\n- assigned identity is not the shared alias `agent@jai.nexus`\n- requested repo is in scope\n- requested capability state is compatible, preview-only, or blocked\n\nObserved prompt outputs:\n\n- `prompt-wp-landing-homepage-refresh`\n  - assigned agent: `jai-landing-page-agent`\n  - target repo: `jai-nex\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0166\nTitle: Agent Work Packet to Task Prompt v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0166/motion.yaml\n2. .nexus/motions/motion-0166/decision.yaml\n3. .nexus/motions/motion-0166/policy.yaml\n4. .nexus/motions/motion-0166/verify.json\n5. .nexus/motions/motion-0166/vote.json\n6. .nexus/motions/motion-0166/execution.md\n7. .nexus/motions/motion-0166/proposal.md\n8. .nexus/motions/motion-0166/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0166\n\nCore artifact paths:\n- .nexus/motions/motion-0166/motion.yaml\n- .nexus/motions/motion-0166/decision.yaml\n- .nexus/motions/motion-0166/policy.yaml\n- .nexus/motions/motion-0166/verify.json\n- .nexus/motions/motion-0166/vote.json\n- .nexus/motions/motion-0166/execution.md\n- .nexus/motions/motion-0166/proposal.md\n- .nexus/motions/motion-0166/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0166",
+      "chat_search_href": "/operator/chats?q=motion-0166"
+    },
+    {
+      "motion_id": "motion-0165",
+      "item": {
+        "motion_id": "motion-0165",
+        "title": "Agent Work Packet Drafting v0",
+        "subtitle": "add a draft-only operator work packet surface that links configured JAI agents to proposed repo work without enabling execution",
+        "program": "q2-agent-work-packet-drafting-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0164",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-26T00:00:00.000Z",
+        "decided_at": "2026-04-26T05:37:39.028Z",
+        "updated_at": "2026-04-26T05:57:49.439Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0165/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0165\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Work Packet Drafting v0\"\nsubtitle: \"add a draft-only operator work packet surface that links configured JAI agents to proposed repo work without enabling execution\"\nkind: builder-proof\nprogram: q2-agent-work-packet-drafting-v0\nbasis: motion-0164\nstatus: ratified\ncreated_at: \"2026-04-26T00:00:00.000Z\"\ndecided_at: \"2026-04-26T05:37:39.028Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0165/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0165\nstatus: RATIFIED\ndecided_at: \"2026-04-26T05:37:39.028Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-26T05:37:39.028Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0165/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0165\nevaluated_at: \"2026-04-26T05:37:39.028Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.10\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to read-only draft work packet configuration only.\"\n  - \"Execution, branch write, PR creation, dispatch, runtime execution, and DB writes remain disabled.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0165/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0165\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T05:37:39.028Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0165/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T05:37:39.028Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T05:37:39.028Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-26T05:37:39.028Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0165/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0165\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The old /operator/work execution queue was replaced with a read-only draft work packet surface linked to configured JAI agents.\",\n      \"All seed packets link to configured named agents, render repo-scope compatibility, and show requested action status without enabling execution.\",\n      \"Shared alias behavior remains view-only and non-assignable as an execution identity.\",\n      \"Credential posture is visible by env var name only, with no values rendered or committed.\",\n      \"Required gates passed, no runtime or proof files changed, and no existing motion packages were modified.\",\n      \"No branch writes, PR creation, dispatch, scheduler behavior, DB writes, API mutation, or runtime changes were introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-26T05:37:39.028Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0165/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Work Packet Drafting v0\n\n**Motion:** motion-0165\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-drafting-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `.nexus/motions/motion-0165/**`\n\n---\n\n## Ratified evidence record\n\nThe old DB-backed `/operator/work` execution queue was replaced with a\nread-only draft work packet surface linked to the configuration-only Agent\nRegistry.\n\nInitial seed packets implemented:\n\n- landing page homepage refresh\n- customer portal intake map\n- agent registry follow-up\n- API contract review\n\nEach packet links to a configured named JAI agent and renders:\n\n- assigned agent identity and registry link\n- requested action compatibility\n- repo-scope compatibility\n- explicit execution-blocked posture\n- human gates\n- evidence expectations\n- credential posture using env var names only\n\nThe surface explicitly preserves the v0 boundary:\n\n- no run, dispatch, or execute controls\n- no branch write controls\n- no PR creation controls\n- no API or DB mutation\n- no runtime changes\n- shared alias `agent@jai.nexus` remains non-assignable as an execution identity\n\nFor requested action compatibility:\n\n- `draft_plan` derives from registry capability `draft_plan`\n- `draft_files_preview` derives from registry capability `draft_files_preview`\n- `verify` remains read-only and is linked to `view_only` posture for the named\n  verifier identity only\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `WP-01` through `WP-17` passed:\n\n- `WP-01` `/operator/work` route renders and compiles under portal typecheck\n- `WP-02` initial packet list includes all seed packets\n- `WP-03` every packet links to a configured named agent\n- `WP-04` shared alias `agent@jai.nexus` is not assignable as execution identity\n- `WP-05` repo-scope compatibility is shown\n- `WP-06` requested capability status is shown\n- `WP-07` execution is explicitly disabled for every packet\n- `WP-08` no run, dispatch, or execute controls exist\n- `WP-09` no branch write or PR creation controls exist\n- `WP-10` human gates and evidence expectations render\n- `WP-11` credential posture shows env var names only and no values\n- `WP-12` no API route or DB write was added\n- `WP-13` no runtime or proof files changed\n- `WP-14` no existing motions were modified\n- `WP-15` `pnpm -C portal typecheck` passed\n- `WP-16` `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0165/motion.yaml` passed\n- `WP-17` `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n\nConcrete seed packet evidence:\n\n- `wp-landing-homepage-refresh` -> `jai-landing-page-agent` on `jai-nexus`\n- `wp-customer-intake-map` -> `jai-customer-portal-agent` on `customer-portal`\n- `wp-agent-registry-follow-up` -> `jai-governance-agent` on `dev-jai-nexus`\n- `wp-api-contract-review` -> `jai-verifier` on `api-nexus`\n\n---\n\n## Guardrails preserved\n\n- no execution\n- no branch writes\n- no PR creation\n- no dispatch\n- no scheduler behavior\n- no DB writes\n- no API mutation\n- no credentials or secret values\n- no runtime changes\n- no cross-repo mutation\n\n---\n\n## Caveats\n\n- No browser or manual UI smoke test was run in this turn."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0165/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Work Packet Drafting v0\n\n**Motion:** motion-0165\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-drafting-v0\n**Basis:** motion-0164\n\n---\n\n## 1. Problem statement\n\nThe repo now has a configuration-only agent registry, but there is still no\ndraft-only operator surface that links those configured JAI agents to proposed\nrepo work.\n\nThe missing seam is a read-only work packet surface that shows:\n\n- which named JAI agent a packet targets\n- whether the repo is in scope\n- whether requested draft capabilities are compatible\n- that execution remains blocked in v0\n- what human gates and evidence are still required\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `.nexus/motions/motion-0165/**`\n\nOut of scope:\n\n- execution enablement\n- branch writes\n- PR creation\n- dispatch or scheduler behavior\n- DB writes\n- API mutation\n- runtime changes\n- mutation of existing motion packages\n\n---\n\n## 3. Implementation\n\nReplace the old `/operator/work` execution queue with a read-only draft work\npacket registry linked to configured named JAI agents.\n\nInitial seed packets should cover:\n\n- landing page homepage refresh\n- customer portal intake map\n- agent registry follow-up\n- API contract review\n\nEach packet should show registry linkage, capability compatibility, human\ngates, evidence expectations, and credential posture by env var name only.\n\n---\n\n## 4. Acceptance criteria\n\n- `/operator/work` route renders\n- seed packets render\n- packets link to configured named agents\n- shared alias is not assignable as execution identity\n- repo-scope and requested capability status render\n- execution is explicitly disabled\n- no run/dispatch/execute or branch-write/PR controls exist\n- human gates and evidence expectations render\n- required gates pass"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0165/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Work Packet Drafting v0\n\n**Motion:** motion-0165\n\n---\n\n## C-1: Does this re-enable execution?\n\nNo. Every packet is draft-only, execution remains blocked, and no run or\ndispatch controls are present.\n\n## C-2: Does this revive branch-write or PR behavior?\n\nNo. The surface does not expose branch-write or PR creation controls.\n\n## C-3: Does this introduce DB or API mutation?\n\nNo. The work packet model is static and linked to the read-only agent\nregistry.\n\n## C-4: Does this make the shared alias executable?\n\nNo. `agent@jai.nexus` remains shared view-only and is explicitly non-assignable\nas an execution identity."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0165/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0165/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0165/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0165/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0165/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0165/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Work Packet Drafting v0\n\n**Motion:** motion-0165\n**Kind:** builder-proof\n**Program:** q2-agent-work-packet-drafting-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `.nexus/motions/motion-0165/**`\n\n---\n\n## Ratified evidence record\n\nThe old DB-backed `/operator/work` execution queue was replaced with a\nread-only draft work packet surface linked to the configuration-only Agent\nRegistry.\n\nInitial seed packets implemented:\n\n- landing page homepage refresh\n- customer portal intake map\n- agent registry follow-up\n- API contract review\n\nEach packet links to a configured named JAI agent and renders:\n\n- assigned agent identity and registry link\n- requested action compatibility\n- repo-scope compatibility\n- explicit execution-blocked posture\n- human gates\n- evidence expectations\n- credential posture using env var names only\n\nThe surface explicitly preserves the v0 boundary:\n\n- no run, dispatch, or execute controls\n- no branch write controls\n- no PR creation controls\n- no API or DB mutation\n- no runtime changes\n- shared alias `agent@jai.nexus` remains non-assignable as an execution identity\n\nFor requested action compatibility:\n\n- `draft_plan` derives from registry capability `draft_plan`\n- `draft_files_preview` derives from registry capability `draft_files_preview`\n- `verify` remains read-only and is linked to `view_only` posture for the named\n  verifier identity only\n\n---\n\n## Acceptance evidence\n\nAccep\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0165\nTitle: Agent Work Packet Drafting v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0165/motion.yaml\n2. .nexus/motions/motion-0165/decision.yaml\n3. .nexus/motions/motion-0165/policy.yaml\n4. .nexus/motions/motion-0165/verify.json\n5. .nexus/motions/motion-0165/vote.json\n6. .nexus/motions/motion-0165/execution.md\n7. .nexus/motions/motion-0165/proposal.md\n8. .nexus/motions/motion-0165/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0165\n\nCore artifact paths:\n- .nexus/motions/motion-0165/motion.yaml\n- .nexus/motions/motion-0165/decision.yaml\n- .nexus/motions/motion-0165/policy.yaml\n- .nexus/motions/motion-0165/verify.json\n- .nexus/motions/motion-0165/vote.json\n- .nexus/motions/motion-0165/execution.md\n- .nexus/motions/motion-0165/proposal.md\n- .nexus/motions/motion-0165/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0165",
+      "chat_search_href": "/operator/chats?q=motion-0165"
+    },
+    {
+      "motion_id": "motion-0164",
+      "item": {
+        "motion_id": "motion-0164",
+        "title": "JAI Agent Configuration Registry v0",
+        "subtitle": "add a read-only operator registry for named JAI agent configurations before any execution enablement",
+        "program": "q2-agent-configuration-registry-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0162",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-04-25T00:00:00.000Z",
+        "decided_at": "2026-04-26T04:38:09.616Z",
+        "updated_at": "2026-04-26T04:55:35.699Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0164/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0164\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"JAI Agent Configuration Registry v0\"\nsubtitle: \"add a read-only operator registry for named JAI agent configurations before any execution enablement\"\nkind: builder-proof\nprogram: q2-agent-configuration-registry-v0\nbasis: motion-0162\nstatus: ratified\ncreated_at: \"2026-04-25T00:00:00.000Z\"\ndecided_at: \"2026-04-26T04:38:09.616Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0164/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0164\nstatus: RATIFIED\ndecided_at: \"2026-04-26T04:38:09.616Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-04-26T04:38:09.616Z\"\nnotes: \"RATIFIED: vote_mode=unanimous_consent\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0164/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0164\nevaluated_at: \"2026-04-26T04:38:09.616Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.09\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"Scope is limited to read-only operator agent registry configuration only.\"\n  - \"Execution, branch write, PR creation, dispatch, runtime execution, and DB writes remain disabled.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0164/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0164\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T04:38:09.616Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0164/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T04:38:09.616Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-04-26T04:38:09.616Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-04-26T04:38:09.616Z\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0164/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0164\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The old /operator/agents agency page was replaced with a read-only registry for named JAI agent configuration only.\",\n      \"Human operator identity, shared alias behavior, and named future agent identities are explicitly distinguished.\",\n      \"The capability matrix renders preview-only planning posture while branch_write, propose_pr, and execute_runtime remain disabled.\",\n      \"Repo-scope metadata and credential posture render without exposing secret values.\",\n      \"Required gates passed, no runtime or proof files changed, and no existing motion package was modified.\",\n      \"No API route, DB write, execution enablement, branch write, PR creation, dispatch, scheduler behavior, or runtime change was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-04-26T04:38:09.616Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0164/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: JAI Agent Configuration Registry v0\n\n**Motion:** motion-0164\n**Kind:** builder-proof\n**Program:** q2-agent-configuration-registry-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/agents/page.tsx`\n- `portal/src/lib/agents/agentRegistry.ts`\n- `portal/src/lib/agents/types.ts`\n- `.nexus/motions/motion-0164/**`\n\n---\n\n## Ratified evidence record\n\nThe existing `/operator/agents` route was replaced with a configuration-only\nregistry surface. The route no longer presents delegation or execution actions.\n\nThe implemented registry distinguishes:\n\n- human operator identity: `admin@jai.nexus`\n- shared view-only alias: `agent@jai.nexus`\n- named JAI agent identities configured for future execution posture only\n\nInitial named JAI agent configurations included:\n\n- `jai-orchestrator`\n- `jai-builder`\n- `jai-verifier`\n- `jai-librarian`\n- `jai-landing-page-agent`\n- `jai-customer-portal-agent`\n- `jai-governance-agent`\n\nThe route now renders:\n\n- a configuration-only page header and execution-disabled posture banner\n- identity-boundary cards for human and alias behavior\n- named agent cards\n- a capability matrix\n- a repo-scope matrix\n- credential posture cards showing env var names only\n\nThe capability model is intentionally narrow:\n\n- `view_only`: enabled\n- `draft_plan`: enabled\n- `draft_files_preview`: preview_only\n- `branch_write`: disabled\n- `propose_pr`: disabled\n- `execute_runtime`: disabled\n\nOperator subnav already included `Agents`, so no subnav edit was required in\nthis seam.\n\n---\n\n## Acceptance evidence\n\nAcceptance checks `AR-01` through `AR-14` passed:\n\n- `AR-01` `/operator/agents` route exists and compiles under portal typecheck\n- `AR-02` Operator subnav includes `Agents`\n- `AR-03` registry includes all initial named agents\n- `AR-04` shared alias is marked view-only and non-execution\n- `AR-05` named agents show execution disabled\n- `AR-06` capability matrix renders and write/execute capabilities are disabled\n- `AR-07` repo-scope matrix renders\n- `AR-08` credential posture shows env var names only and no values\n- `AR-09` no API route or DB write was added\n- `AR-10` no runtime or proof files changed\n- `AR-11` no existing motions were modified\n- `AR-12` `pnpm -C portal typecheck` passed\n- `AR-13` `node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0164/motion.yaml` passed\n- `AR-14` `node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus` passed\n\nRegistry-shape verification also passed:\n\n- named agent count is `7`\n- human operator handle is `admin@jai.nexus`\n- shared alias handle is `agent@jai.nexus`\n- write and execute capabilities are disabled for every named agent\n- repo scope count is `5`\n\n---\n\n## Guardrails preserved\n\n- no execution enablement\n- no credentials committed\n- no secret values shown\n- no GitHub token enablement\n- no branch writes\n- no PR creation\n- no dispatch\n- no scheduler behavior\n- no DB writes\n- no API mutation\n- no runtime changes\n- no mutation of existing motion packages\n\n---\n\n## Caveats\n\n- No browser or manual UI smoke test was run in this turn.\n- The old agency/delegation surface was replaced for `/operator/agents`, but\n  no execution capability was carried forward into the new registry."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0164/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: JAI Agent Configuration Registry v0\n\n**Motion:** motion-0164\n**Kind:** builder-proof\n**Program:** q2-agent-configuration-registry-v0\n**Basis:** motion-0162\n\n---\n\n## 1. Problem statement\n\n`/operator/motions` makes motion state visible before live execution is\nenabled, but there is no equivalent read-only surface for named JAI agent\nconfiguration.\n\nToday the repo has partial identity clues:\n\n- `admin@jai.nexus` is the current human operator login\n- `agent@jai.nexus` is a shared alias\n- agent execution and write controls remain intentionally disabled\n\nWhat is missing is one explicit registry that shows:\n\n- which named JAI agents exist conceptually\n- how they differ from human operators and shared aliases\n- what repo scopes they are intended to cover\n- which capabilities are only view or preview posture\n- which credentials are reserved by env-var name only\n\n---\n\n## 2. Scope\n\nIn scope:\n\n- `portal/src/app/operator/agents/page.tsx`\n- `portal/src/lib/agents/agentRegistry.ts`\n- `portal/src/lib/agents/types.ts`\n- `.nexus/motions/motion-0164/**`\n\nOut of scope:\n\n- execution enablement\n- runtime changes\n- branch writes\n- PR creation\n- dispatch, scheduling, or orchestration\n- DB writes\n- API mutation\n- secret values\n- mutation of existing motion packages\n\n---\n\n## 3. Implementation\n\nAdd a read-only operator route at `/operator/agents` backed by a static\nregistry model. The surface should:\n\n- distinguish human operators from shared aliases and named JAI agents\n- show named agents as future identities with `execution_identity: false`\n- render a capability matrix with write and execute states disabled\n- render a repo-scope matrix for the initial agent set\n- render credential posture using env var names only\n\nThe registry is configuration-only. It does not grant live execution or\nGitHub write ability.\n\n---\n\n## 4. Acceptance criteria\n\n- `/operator/agents` route renders\n- Operator subnav includes `Agents`\n- initial named agent list renders\n- `agent@jai.nexus` is marked shared alias and view-only\n- named agents show execution disabled\n- capability and repo-scope matrices render\n- credential posture shows env var names only\n- no API route or DB write is added\n- required gates pass"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0164/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: JAI Agent Configuration Registry v0\n\n**Motion:** motion-0164\n\n---\n\n## C-1: Does this widen into execution?\n\nNo. The registry is read-only and explicitly marks execution, branch writes,\nPR proposals, and runtime execution as disabled in v0.\n\n## C-2: Does showing env vars leak secrets?\n\nNo. Only env variable names are shown. No values are rendered or committed.\n\n## C-3: Does this mutate existing motion or runtime state?\n\nNo. The seam is limited to one operator page, one static registry model, and\nthe motion package for motion-0164.\n\n## C-4: Does this replace the existing operator login model?\n\nNo. It only documents identity posture. The current shared alias and human\noperator behavior remain unchanged."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0164/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0164/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0164/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0164/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0164/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0164/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: JAI Agent Configuration Registry v0\n\n**Motion:** motion-0164\n**Kind:** builder-proof\n**Program:** q2-agent-configuration-registry-v0\n**Status:** RATIFIED\n\n---\n\n## Implementation scope\n\nImplementation is confined to:\n\n- `portal/src/app/operator/agents/page.tsx`\n- `portal/src/lib/agents/agentRegistry.ts`\n- `portal/src/lib/agents/types.ts`\n- `.nexus/motions/motion-0164/**`\n\n---\n\n## Ratified evidence record\n\nThe existing `/operator/agents` route was replaced with a configuration-only\nregistry surface. The route no longer presents delegation or execution actions.\n\nThe implemented registry distinguishes:\n\n- human operator identity: `admin@jai.nexus`\n- shared view-only alias: `agent@jai.nexus`\n- named JAI agent identities configured for future execution posture only\n\nInitial named JAI agent configurations included:\n\n- `jai-orchestrator`\n- `jai-builder`\n- `jai-verifier`\n- `jai-librarian`\n- `jai-landing-page-agent`\n- `jai-customer-portal-agent`\n- `jai-governance-agent`\n\nThe route now renders:\n\n- a configuration-only page header and execution-disabled posture banner\n- identity-boundary cards for human and alias behavior\n- named agent cards\n- a capability matrix\n- a repo-scope matrix\n- credential posture cards showing env var names only\n\nThe capability model is intentionally narrow:\n\n- `view_only`: enabled\n- `draft_plan`: enabled\n- `draft_files_preview`: preview_only\n- `branch_write`: disabled\n- `propose_pr`: disabled\n- `execute_runtime`: disabled\n\nOperator subnav already included `Agents`, so no subnav edit was required in\nthis seam.\n\n---\n\n## Acceptance evidence\n\nAccepta\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0164\nTitle: JAI Agent Configuration Registry v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0164/motion.yaml\n2. .nexus/motions/motion-0164/decision.yaml\n3. .nexus/motions/motion-0164/policy.yaml\n4. .nexus/motions/motion-0164/verify.json\n5. .nexus/motions/motion-0164/vote.json\n6. .nexus/motions/motion-0164/execution.md\n7. .nexus/motions/motion-0164/proposal.md\n8. .nexus/motions/motion-0164/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0164\n\nCore artifact paths:\n- .nexus/motions/motion-0164/motion.yaml\n- .nexus/motions/motion-0164/decision.yaml\n- .nexus/motions/motion-0164/policy.yaml\n- .nexus/motions/motion-0164/verify.json\n- .nexus/motions/motion-0164/vote.json\n- .nexus/motions/motion-0164/execution.md\n- .nexus/motions/motion-0164/proposal.md\n- .nexus/motions/motion-0164/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0164",
+      "chat_search_href": "/operator/chats?q=motion-0164"
+    },
     {
       "motion_id": "motion-0162",
       "item": {
@@ -23,7 +389,7 @@
         "vote_result": "PASS",
         "created_at": "2026-04-25T00:00:00.000Z",
         "decided_at": "2026-04-26T03:47:43.344Z",
-        "updated_at": "2026-04-26T03:48:34.732Z",
+        "updated_at": "2026-04-26T04:23:48.478Z",
         "queue_state": "settled",
         "attention_flags": [],
         "missing_files": []
