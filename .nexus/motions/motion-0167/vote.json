@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0167",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "A bundled repo-surface-project model now normalizes terminology across Agents, Work, Projects, and Repos without adding any execution or write power.",
+      "Customer portal now renders as a surface under jai-nexus/jai-nexus, and the five-key agent matrix now renders truthfully as a configured scope subset rather than as the full repo universe.",
+      "Draft work packets and task prompt previews now target actual repo-plus-surface destinations, with optional project overlays and unchanged execution guardrails.",
+      "Projects now render as workstreams spanning repos and surfaces, while /repos now presents the full repo registry and explains the difference from configured agent scope subset keys.",
+      "Required gates passed, no API or DB mutation was added, no runtime or proof files changed, and no existing motion packages were modified.",
+      "No execution, branch write, PR creation, dispatch, scheduler, or cross-repo mutation capability was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-26T07:08:18.441Z"
+}

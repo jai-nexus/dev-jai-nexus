@@ -1,0 +1,22 @@
+protocol_version: "0.3.8"
+motion_id: motion-0167
+evaluated_at: "2026-04-26T07:08:18.441Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.10
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Scope is limited to terminology and targeting-model clarity across read-only control-plane surfaces."
+  - "No execution, write, DB, API, runtime, or promotion behavior changed in this seam."
+  - "Planned project repo references such as jai-nexus/teacher-copilot-nexus remain visible as project links, not full repo-registry entries."
+escalation_state: null

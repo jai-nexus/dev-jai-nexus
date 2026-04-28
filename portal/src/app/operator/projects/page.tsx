@@ -1,143 +1,236 @@
-// portal/src/app/operator/projects/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 0;
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
-  getProjectsConfig,
-  type ProjectConfigEntry,
-} from "@/lib/projectsConfig";
+  getProjectCatalog,
+  getRepoEntry,
+  getSurfaceEntry,
+} from "@/lib/controlPlane/repoSurfaceModel";
+import type { ControlPlaneProjectEntry } from "@/lib/controlPlane/types";
+
+function SummaryCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
+      <p className="mt-2 text-sm text-gray-400">{detail}</p>
+    </div>
+  );
+}
+
+function ToneBadge({
+  children,
+  tone,
+}: {
+  children: ReactNode;
+  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
+}) {
+  const toneClass =
+    tone === "sky"
+      ? "border-sky-800 bg-sky-950 text-sky-200"
+      : tone === "amber"
+        ? "border-amber-800 bg-amber-950 text-amber-200"
+        : tone === "emerald"
+          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
+          : tone === "rose"
+            ? "border-rose-800 bg-rose-950 text-rose-200"
+            : "border-gray-800 bg-zinc-900 text-gray-200";
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function statusTone(status: ControlPlaneProjectEntry["status"]) {
+  if (status === "active") return "emerald";
+  if (status === "planned") return "sky";
+  if (status === "frozen") return "slate";
+  return "rose";
+}
 
 export default function ProjectsPage() {
-  const config = getProjectsConfig();
-
-  const projects: ProjectConfigEntry[] = [...config.projects].sort((a, b) => {
+  const projects = getProjectCatalog().sort((a, b) => {
     if (a.tier !== b.tier) return a.tier - b.tier;
     return a.root_nh_id.localeCompare(b.root_nh_id);
   });
 
+  const repoLinks = new Set(
+    projects.flatMap((project) => project.repo_full_names),
+  );
+  const surfaceLinks = new Set(
+    projects.flatMap((project) => project.surface_keys),
+  );
+
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-semibold">JAI NEXUS · Projects</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Project registry for dev.jai.nexus and attached repos.
-        </p>
+    <main className="min-h-screen bg-black p-8 text-gray-100">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <header className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-semibold">JAI NEXUS - Projects</h1>
+            <ToneBadge tone="sky">project registry</ToneBadge>
+            <ToneBadge tone="slate">read only</ToneBadge>
+          </div>
+          <p className="max-w-3xl text-sm text-gray-400">
+            Projects are workstreams. They map to one or more repos and one or
+            more surfaces, but they are not repos or surfaces themselves.
+          </p>
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+            <p>
+              Use <Link href="/repos" className="text-sky-300 underline">/repos</Link>{" "}
+              for the full repo registry. Use{" "}
+              <Link href="/operator/agents" className="text-sky-300 underline">
+                /operator/agents
+              </Link>{" "}
+              for the configured agent scope subset. This page shows project
+              overlays across both.
+            </p>
+          </div>
+        </header>
 
-        <div className="mt-4 inline-flex items-center gap-3 rounded-lg border border-gray-800 bg-zinc-950 px-4 py-3">
-          <span className="text-xs text-gray-300">
-            Total projects:{" "}
-            <span className="font-semibold">{projects.length}</span>
-          </span>
-          <span className="inline-flex items-center rounded-full bg-sky-900/40 px-2 py-1 text-[11px] font-medium text-sky-200">
-            schema v{config.schema_version.toFixed(1)}
-          </span>
-        </div>
-      </header>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <SummaryCard
+            label="Projects"
+            value={String(projects.length)}
+            detail="Current project/workstream records in the control-plane model."
+          />
+          <SummaryCard
+            label="Repo links"
+            value={String(repoLinks.size)}
+            detail="Project coverage can span multiple actual repos."
+          />
+          <SummaryCard
+            label="Surface links"
+            value={String(surfaceLinks.size)}
+            detail="Project coverage can span multiple product and operator surfaces."
+          />
+          <SummaryCard
+            label="Planned projects"
+            value={String(projects.filter((project) => project.status === "planned").length)}
+            detail="Projects may reference planned repos or surfaces before they are fully registered."
+          />
+        </section>
 
-      <section>
-        <h2 className="text-lg font-medium mb-3">Projects</h2>
-        <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
-          <table className="w-full text-sm border-collapse">
-            <thead className="bg-zinc-950 border-b border-gray-800 text-left">
-              <tr>
-                <th className="py-2 px-3 text-xs text-gray-400">NH</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Project</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Tier</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Status</th>
-                <th className="py-2 px-3 text-xs text-gray-400">Repo</th>
-                <th className="py-2 px-3 text-xs text-gray-400">
-                  Owner agent
-                </th>
-                <th className="py-2 px-3 text-xs text-gray-400">Events</th>
-                <th className="py-2 px-3 text-xs text-gray-400">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => (
-                <tr
-                  key={project.project_id}
-                  className="border-b border-gray-900 hover:bg-zinc-900/60"
-                >
-                  <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-300">
-                    {project.root_nh_id}
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    <div className="flex flex-col">
-                      {/* Project name → NH-scoped events */}
-                      <Link
-                        href={`/operator/events?nh=${encodeURIComponent(
-                          project.root_nh_id,
-                        )}`}
-                        className="font-medium text-sky-300 hover:text-sky-200 hover:underline"
-                        title={`View SoT events for NH ${project.root_nh_id}`}
-                      >
-                        {project.name}
-                      </Link>
-                      <span className="text-xs text-gray-500">
-                        {project.project_id}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-xs">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
-                        project.tier === 0
-                          ? "bg-emerald-900/60 text-emerald-200"
-                          : project.tier === 1
-                          ? "bg-sky-900/60 text-sky-200"
-                          : "bg-purple-900/60 text-purple-200"
-                      }`}
-                    >
-                      Tier {project.tier}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 whitespace-nowrap text-xs">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
-                        project.status === "active"
-                          ? "bg-emerald-900/60 text-emerald-200"
-                          : project.status === "planned"
-                          ? "bg-sky-900/60 text-sky-200"
-                          : project.status === "frozen"
-                          ? "bg-zinc-800 text-zinc-200"
-                          : "bg-red-900/60 text-red-200"
-                      }`}
-                    >
-                      {project.status}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 text-xs whitespace-nowrap">
-                    <code className="text-[11px] text-gray-300">
-                      {project.repo}
-                    </code>
-                  </td>
-                  <td className="py-2 px-3 text-xs whitespace-nowrap">
-                    {project.owner_agent_nh_id}
-                  </td>
-                  <td className="py-2 px-3 text-xs whitespace-nowrap">
-                    <Link
-                      href={`/operator/events?nh=${encodeURIComponent(
-                        project.root_nh_id,
-                      )}`}
-                      className="text-sky-400 hover:text-sky-300 underline"
-                    >
-                      View events
-                    </Link>
-                  </td>
-                  <td className="py-2 px-3 text-xs max-w-md">
-                    <span className="text-gray-300">
-                      {project.description}
-                    </span>
-                  </td>
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-lg font-medium text-gray-100">Project matrix</h2>
+            <p className="text-sm text-gray-400">
+              Each project is shown with its repo coverage, surface coverage,
+              and current planning posture.
+            </p>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
+            <table className="min-w-full divide-y divide-gray-800 text-sm">
+              <thead className="bg-zinc-950">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Project
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Tier
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Repo coverage
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Surface coverage
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Owner
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Summary
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody className="divide-y divide-gray-900">
+                {projects.map((project) => (
+                  <tr key={project.project_id}>
+                    <td className="px-4 py-3 align-top">
+                      <div className="font-medium text-gray-100">{project.name}</div>
+                      <div className="mt-1 font-mono text-xs text-gray-500">
+                        {project.project_id} - NH {project.root_nh_id}
+                      </div>
+                      <div className="mt-2">
+                        <ToneBadge tone="slate">
+                          priority {project.priority_level}
+                        </ToneBadge>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-top text-xs text-gray-300">
+                      Tier {project.tier}
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <ToneBadge tone={statusTone(project.status)}>
+                        {project.status}
+                      </ToneBadge>
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex flex-wrap gap-2">
+                        {project.repo_full_names.map((repoFullName) => {
+                          const repoEntry = getRepoEntry(repoFullName);
+
+                          return (
+                            <ToneBadge
+                              key={`${project.project_id}-${repoFullName}`}
+                              tone={repoEntry ? "sky" : "amber"}
+                            >
+                              {repoEntry ? repoFullName : `${repoFullName} (planned)`}
+                            </ToneBadge>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex flex-wrap gap-2">
+                        {project.surface_keys.map((surfaceKey) => {
+                          const surface = getSurfaceEntry(surfaceKey);
+
+                          return (
+                            <ToneBadge
+                              key={`${project.project_id}-${surfaceKey}`}
+                              tone="slate"
+                            >
+                              {surface?.label ?? surfaceKey}
+                            </ToneBadge>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-top text-xs text-gray-300">
+                      {project.owner}
+                    </td>
+                    <td className="px-4 py-3 align-top text-xs text-gray-300">
+                      <div>{project.summary}</div>
+                      <ul className="mt-2 space-y-1 text-gray-400">
+                        {project.notes.map((note) => (
+                          <li key={note}>- {note}</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

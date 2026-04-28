@@ -4,6 +4,11 @@ import type {
   AgentRegistryCapabilityKey,
   AgentRegistryCapabilityState,
 } from "@/lib/agents/types";
+import {
+  getConfiguredScopeEntry,
+  getProjectEntry,
+  getSurfaceEntry,
+} from "@/lib/controlPlane/repoSurfaceModel";
 import type {
   DraftWorkPacket,
   DraftWorkPacketAction,
@@ -19,8 +24,12 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     summary:
       "Draft a homepage refresh plan and preview-only file edits for the main jai-nexus landing page.",
     agent_key: "jai-landing-page-agent",
-    repo_scope: "jai-nexus",
-    target_surface: "homepage landing experience",
+    configured_scope_key: "jai-nexus",
+    target: {
+      repo_full_name: "jai-nexus/jai-nexus",
+      surface_key: "landing-page",
+      project_id: "jai-internal",
+    },
     requested_actions: ["draft_plan", "draft_files_preview"],
     allowed_paths: [
       "app/(marketing)/**",
@@ -33,7 +42,7 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       ".github/**",
     ],
     verification_commands: [
-      "# operator must supply jai-nexus repo-local verification command before any execution is authorized",
+      "# operator must supply jai-nexus/jai-nexus landing-page verification commands before any execution is authorized",
       "# do not execute repository commands from this prompt without separate operator authorization",
     ],
     human_gates: [
@@ -53,8 +62,12 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     summary:
       "Draft an intake-map plan for the customer-portal without opening implementation or execution paths.",
     agent_key: "jai-customer-portal-agent",
-    repo_scope: "customer-portal",
-    target_surface: "customer intake and intake-map flow",
+    configured_scope_key: "customer-portal",
+    target: {
+      repo_full_name: "jai-nexus/jai-nexus",
+      surface_key: "customer-portal",
+      project_id: "jai-internal",
+    },
     requested_actions: ["draft_plan"],
     allowed_paths: [
       "app/intake/**",
@@ -67,7 +80,7 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       ".github/**",
     ],
     verification_commands: [
-      "# operator must supply customer-portal repo-local verification command before any execution is authorized",
+      "# operator must supply jai-nexus/jai-nexus customer-portal verification commands before any execution is authorized",
       "# do not execute repository commands from this prompt without separate operator authorization",
     ],
     human_gates: [
@@ -76,7 +89,7 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     ],
     evidence_expectations: [
       "Draft intake-map plan with actors, flows, and UI sections.",
-      "Repo-scope note showing customer-portal compatibility.",
+      "Targeting note showing customer-portal as a surface under jai-nexus/jai-nexus.",
     ],
   },
   {
@@ -85,8 +98,12 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     summary:
       "Draft a governance follow-up plan for the agent registry without changing execution posture.",
     agent_key: "jai-governance-agent",
-    repo_scope: "dev-jai-nexus",
-    target_surface: "operator agents registry and registry follow-up governance",
+    configured_scope_key: "dev-jai-nexus",
+    target: {
+      repo_full_name: "jai-nexus/dev-jai-nexus",
+      surface_key: "operator-agents",
+      project_id: "jai-internal",
+    },
     requested_actions: ["draft_plan"],
     allowed_paths: [
       "portal/src/app/operator/agents/**",
@@ -117,8 +134,12 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     summary:
       "Draft a read-only API contract review packet for api-nexus, combining verification and planning posture only.",
     agent_key: "jai-verifier",
-    repo_scope: "api-nexus",
-    target_surface: "API contract surface and schema review",
+    configured_scope_key: "api-nexus",
+    target: {
+      repo_full_name: "jai-nexus/jai-nexus",
+      surface_key: "api-nexus",
+      project_id: "jai-internal",
+    },
     requested_actions: ["verify", "draft_plan"],
     allowed_paths: [
       "openapi/**",
@@ -131,7 +152,7 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       ".github/**",
     ],
     verification_commands: [
-      "# operator must supply api-nexus repo-local verification command before any execution is authorized",
+      "# operator must supply jai-nexus/jai-nexus API surface verification commands before any execution is authorized",
       "# do not execute repository commands from this prompt without separate operator authorization",
     ],
     human_gates: [
@@ -239,13 +260,34 @@ function deriveActionCompatibility(
 export function getDraftWorkPackets(): DraftWorkPacket[] {
   return WORK_PACKET_SEEDS.map((seed) => {
     const agent = getNamedAgent(seed.agent_key);
+    const configuredScope = getConfiguredScopeEntry(seed.configured_scope_key);
+    const surface = getSurfaceEntry(seed.target.surface_key);
+    const project = seed.target.project_id
+      ? (getProjectEntry(seed.target.project_id) ?? null)
+      : null;
+
+    if (!configuredScope) {
+      throw new Error(
+        `Configured agent scope key not found in control-plane model: ${seed.configured_scope_key}`,
+      );
+    }
+
+    if (!surface) {
+      throw new Error(
+        `Target surface not found in control-plane model: ${seed.target.surface_key}`,
+      );
+    }
 
     return {
       packet_id: seed.packet_id,
       title: seed.title,
       summary: seed.summary,
-      repo_scope: seed.repo_scope,
-      target_surface: seed.target_surface,
+      configured_scope_key: seed.configured_scope_key,
+      target: {
+        repo_full_name: seed.target.repo_full_name,
+        surface,
+        project,
+      },
       requested_actions: seed.requested_actions,
       allowed_paths: seed.allowed_paths,
       blocked_paths: seed.blocked_paths,
@@ -253,7 +295,13 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
       agent,
       compatibility: {
         agent_exists: true,
-        repo_scope_in_scope: agent.repo_scopes.includes(seed.repo_scope),
+        configured_scope_exists: true,
+        target_repo_in_scope:
+          agent.configured_scope_keys.includes(seed.configured_scope_key) &&
+          configuredScope.repo_full_name === seed.target.repo_full_name,
+        target_surface_in_scope:
+          agent.configured_scope_keys.includes(seed.configured_scope_key) &&
+          configuredScope.surface_keys.includes(seed.target.surface_key),
         execution_blocked: true,
         requested_action_statuses: seed.requested_actions.map((action) =>
           deriveActionCompatibility(agent, action),

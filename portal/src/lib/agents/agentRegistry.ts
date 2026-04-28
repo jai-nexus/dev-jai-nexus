@@ -3,18 +3,30 @@ import type {
   AgentRegistryAgent,
   AgentRegistryCapabilityKey,
   AgentRegistryCapabilityState,
+  AgentRegistryConfiguredScope,
   AgentRegistryCredentialPosture,
   AgentRegistryIdentity,
-  AgentRegistryRepoScope,
+  AgentRegistryScopeKey,
 } from "@/lib/agents/types";
+import {
+  getConfiguredAgentScopeSubset,
+  getSurfaceLabels,
+} from "@/lib/controlPlane/repoSurfaceModel";
 
-const REPO_SCOPES: AgentRegistryRepoScope[] = [
-  "dev-jai-nexus",
-  "jai-nexus",
-  "customer-portal",
-  "api-nexus",
-  "jai-format",
-];
+const CONFIGURED_SCOPES: AgentRegistryConfiguredScope[] =
+  getConfiguredAgentScopeSubset().map((scope) => ({
+    key: scope.key,
+    label: scope.label,
+    repo_full_name: scope.repo_full_name,
+    surface_keys: [...scope.surface_keys],
+    surface_labels: getSurfaceLabels(scope.surface_keys),
+    summary: scope.summary,
+    notes: [...scope.notes],
+  }));
+
+const CONFIGURED_SCOPE_KEYS: AgentRegistryScopeKey[] = CONFIGURED_SCOPES.map(
+  (scope) => scope.key,
+);
 
 const CAPABILITY_KEYS: AgentRegistryCapabilityKey[] = [
   "view_only",
@@ -67,7 +79,7 @@ function createNamedAgent(
   key: string,
   label: string,
   summary: string,
-  repoScopes: AgentRegistryRepoScope[],
+  configuredScopeKeys: AgentRegistryScopeKey[],
   notes: string[],
 ): AgentRegistryAgent {
   return {
@@ -77,7 +89,7 @@ function createNamedAgent(
     kind: "named_agent",
     summary,
     execution_identity: false,
-    repo_scopes: repoScopes,
+    configured_scope_keys: configuredScopeKeys,
     capabilities: createCapabilitySet(),
     credential_posture: createCredentialPosture(key),
     notes,
@@ -123,7 +135,7 @@ const NAMED_AGENTS: AgentRegistryAgent[] = [
     "jai-orchestrator",
     "JAI Orchestrator",
     "Future top-level coordination identity for planning and read-only orchestration views.",
-    REPO_SCOPES,
+    CONFIGURED_SCOPE_KEYS,
     [
       "Configuration only in v0.",
       "Execution identity is reserved, not enabled.",
@@ -133,7 +145,7 @@ const NAMED_AGENTS: AgentRegistryAgent[] = [
     "jai-builder",
     "JAI Builder",
     "Future implementation identity for drafting plans and previewing file changes.",
-    REPO_SCOPES,
+    CONFIGURED_SCOPE_KEYS,
     [
       "May draft files as preview only in v0.",
       "Repo mutation remains disabled.",
@@ -143,7 +155,7 @@ const NAMED_AGENTS: AgentRegistryAgent[] = [
     "jai-verifier",
     "JAI Verifier",
     "Future validation identity for review, checks, and evidence gathering.",
-    REPO_SCOPES,
+    CONFIGURED_SCOPE_KEYS,
     [
       "View and draft-plan posture only in v0.",
       "Runtime execution remains disabled.",
@@ -153,7 +165,7 @@ const NAMED_AGENTS: AgentRegistryAgent[] = [
     "jai-librarian",
     "JAI Librarian",
     "Future documentation and governance-reference identity for registry and corpus maintenance.",
-    REPO_SCOPES,
+    CONFIGURED_SCOPE_KEYS,
     [
       "Registry surface is read-only.",
       "No canonical motion mutation is enabled in v0.",
@@ -183,7 +195,7 @@ const NAMED_AGENTS: AgentRegistryAgent[] = [
     "jai-governance-agent",
     "JAI Governance Agent",
     "Future governance-focused identity for read-only policy review and draft-plan support.",
-    REPO_SCOPES,
+    CONFIGURED_SCOPE_KEYS,
     [
       "Intended for governance review metadata only in v0.",
       "It cannot vote, ratify, or mutate motion packages in this seam.",
@@ -197,7 +209,8 @@ const REGISTRY: AgentConfigurationRegistry = {
   human_operators: HUMAN_OPERATORS,
   shared_aliases: SHARED_ALIASES,
   named_agents: NAMED_AGENTS,
-  repo_scopes: REPO_SCOPES,
+  configured_scopes: CONFIGURED_SCOPES,
+  configured_scope_keys: CONFIGURED_SCOPE_KEYS,
   capability_keys: CAPABILITY_KEYS,
 };
 
