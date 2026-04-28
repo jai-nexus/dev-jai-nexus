@@ -2,19 +2,80 @@ wave_id: wave-q2m4-customer-portal-intake
 title: Q2M4 customer portal intake continuity wave
 status: planned
 repo: jai-nexus/jai-nexus
-surface: Customer portal
+surface: Customer portal / customer console
 project: JAI Internal / Spine
 related_motion_ids:
   - motion-0169
   - motion-0170
   - motion-0171
+  - motion-0172
 related_chat_ids:
   - 2026-04-28__operator-deliberation__customer-portal-intake-map
+  - 2026-04-28__repo-planning__customer-portal-intake-planning
 related_work_packet_ids:
   - wp-customer-intake-map
 related_candidate_ids:
   - candidate-wp-customer-intake-map
 deliberation_route: /operator/deliberation
+planning_sections:
+  current_repo_framing:
+    - Current repo truth is jai-nexus/jai-nexus.
+    - Customer portal and customer console are surfaces/product lanes inside jai-nexus/jai-nexus.
+    - The current seam does not edit jai-nexus and does not authorize code changes.
+  problem_statement:
+    - Customer portal intake reasoning exists across deliberation, chats, and waves, but it needs one refined planning spine before any repo execution seam opens.
+    - The planning spine must make repo truth, product boundaries, auth assumptions, billing assumptions, workspace creation, and first-session expectations explicit.
+  intake_thesis:
+    - Visitor/prospect reaches a public-site CTA or a direct customer-console entry.
+    - The user eventually creates or signs into an account, enters the customer console, creates or joins a workspace, creates a first project, and then receives a JAI assistant rail next action.
+  billing_assumptions_and_deferrals:
+    - JAI NEXUS, LLC exists, EIN is secured, and the business bank account is open.
+    - Stripe and billing setup are therefore actionable later, but not in this motion.
+    - No Stripe keys, webhooks, checkout, billing schema, pricing model, or production billing enablement are authorized here.
+  auth_assumptions_and_deferrals:
+    - The customer console will eventually require authenticated users.
+    - Account identity should eventually connect to workspace membership while keeping operator and customer identities separate.
+    - No auth provider choice, OAuth, magic-link, session middleware, account schema, or credentials are authorized here.
+  workspace_project_planning:
+    - Workspace is the customer/team/account container.
+    - Project is the primary unit of work inside a workspace.
+    - The first login flow should eventually support create-or-join workspace, create first project, choose project intent, enter project workspace, and receive a JAI assistant rail next action.
+  evidence_and_gates:
+    - Planning acceptance evidence must show repo/surface truth, intake map clarity, explicit Stripe/auth deferrals, and repo-facing handoff quality.
+    - Implementation readiness gates remain separate and will require a future jai-nexus execution seam, plus security/privacy and billing/auth readiness review.
+  deferred_execution_authority:
+    - No implementation authority is granted here.
+    - No Stripe, auth, or DB authority is granted here.
+    - Future jai-nexus execution handoff and future Agent PR Workflow dependency remain deferred.
+  repo_passalong_prompt: |-
+    # Repo-facing passalong for jai-nexus
+
+    Target repo: jai-nexus/jai-nexus
+    Target surfaces: customer portal / customer console
+    Planning status: motion-0172 planning only
+
+    Requested next seam:
+    - convert the current intake planning spine into a jai-nexus execution-scoped motion after operator review
+
+    Required repo framing:
+    - public-site entry should be considered from jai-nexus/apps/web
+    - direct customer-console entry should be considered from jai-nexus/apps/app
+    - customer portal remains a surface/product lane, not a standalone repo
+
+    Planning constraints:
+    - do not implement Stripe in this planning handoff
+    - do not implement auth/provider/session middleware in this planning handoff
+    - do not add DB schema or API routes in this planning handoff
+    - treat workspace and project creation as conceptual first-session flow only
+
+    Expected first-session thesis:
+    - visitor/prospect reaches a public-site CTA or direct console entry
+    - account creation/login will eventually gate the customer console
+    - user creates or joins a workspace
+    - user creates a first project and enters the project workspace
+    - JAI assistant rail suggests the next recommended action
+
+    Operator guardrail: Do not execute unless separately authorized by the operator.
 artifact_paths:
   wave_yaml: .nexus/waves/wave-q2m4-customer-portal-intake/wave.yaml
   plan_md: .nexus/waves/wave-q2m4-customer-portal-intake/plan.md
@@ -22,135 +83,669 @@ nodes:
   - nh_id: '0.0'
     title: Context and framing
     status: planned
-    summary: Capture the deliberation transcript outcome as the planning spine for the next customer portal motion.
+    summary: Use the current deliberation transcript and planning capture as the durable planning spine for the next customer portal motion.
     linked_motion_ids:
       - motion-0169
       - motion-0170
       - motion-0171
+      - motion-0172
     linked_chat_ids:
       - 2026-04-28__operator-deliberation__customer-portal-intake-map
+      - 2026-04-28__repo-planning__customer-portal-intake-planning
     linked_work_packet_ids:
       - wp-customer-intake-map
     linked_candidate_ids:
       - candidate-wp-customer-intake-map
     acceptance_notes:
-      - Transcript capture is durable and navigable.
+      - Transcript and planning captures are durable and navigable.
       - Operator authorization remains required before execution.
-    children: []
+    children:
+      - nh_id: '0.1'
+        title: Business readiness baseline
+        status: planned
+        summary: 'Business foundation is in place: JAI NEXUS, LLC exists, EIN is secured, and business banking is open.'
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Business readiness is documented as an assumption, not as billing enablement.
+        children: []
+      - nh_id: '0.2'
+        title: Product boundary and non-goals
+        status: planned
+        summary: This seam refines planning only and does not authorize jai-nexus implementation, Stripe setup, auth implementation, DB work, or API work.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Planning seam remains repo-native documentation only.
+        children: []
   - nh_id: '1.0'
     title: Target surface model
     status: planned
-    summary: Keep customer-portal represented as a surface under jai-nexus/jai-nexus.
+    summary: Clarify repo truth, customer console surface definition, and prototype/reference lane relationships.
     linked_motion_ids:
       - motion-0167
       - motion-0169
       - motion-0170
       - motion-0171
+      - motion-0172
     linked_chat_ids:
       - 2026-04-28__operator-deliberation__customer-portal-intake-map
+      - 2026-04-28__repo-planning__customer-portal-intake-planning
     linked_work_packet_ids:
       - wp-customer-intake-map
     linked_candidate_ids:
       - candidate-wp-customer-intake-map
     acceptance_notes:
       - Repo-plus-surface targeting stays explicit.
-      - No standalone customer-portal repo is implied.
+      - Customer portal remains a surface, not a standalone repo.
     children:
       - nh_id: '1.1'
-        title: Customer portal intake map
+        title: Repo and surface truth
         status: planned
-        summary: Use the current deliberation recommendation as the central planning node.
+        summary: jai-nexus/jai-nexus is the actual repo for landing page and customer portal/customer console surfaces.
         linked_motion_ids:
-          - motion-0169
-          - motion-0170
-          - motion-0171
+          - motion-0167
+          - motion-0172
         linked_chat_ids:
           - 2026-04-28__operator-deliberation__customer-portal-intake-map
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
         linked_work_packet_ids:
           - wp-customer-intake-map
         linked_candidate_ids:
           - candidate-wp-customer-intake-map
         acceptance_notes:
-          - Next motion title and prompt remain copy-only.
-        children:
-          - nh_id: 1.1.1
-            title: Auth/account entry
-            status: planned
-            summary: Clarify how customer entry points and account identity are framed in the intake path.
-            linked_motion_ids:
-              - motion-0170
-              - motion-0171
-            linked_chat_ids:
-              - 2026-04-28__operator-deliberation__customer-portal-intake-map
-            linked_work_packet_ids:
-              - wp-customer-intake-map
-            linked_candidate_ids:
-              - candidate-wp-customer-intake-map
-            acceptance_notes:
-              - Operator guidance stays planning-only.
-            children: []
-          - nh_id: 1.1.2
-            title: Stripe/customer billing assumptions
-            status: planned
-            summary: Document billing and customer-account assumptions before any implementation authority is considered.
-            linked_motion_ids:
-              - motion-0170
-              - motion-0171
-            linked_chat_ids:
-              - 2026-04-28__operator-deliberation__customer-portal-intake-map
-            linked_work_packet_ids:
-              - wp-customer-intake-map
-            linked_candidate_ids:
-              - candidate-wp-customer-intake-map
-            acceptance_notes:
-              - No payment integration action is enabled from this wave.
-            children: []
-          - nh_id: 1.1.3
-            title: Workspace/project creation
-            status: planned
-            summary: Capture workspace and project creation expectations as planned follow-up questions only.
-            linked_motion_ids:
-              - motion-0170
-              - motion-0171
-            linked_chat_ids:
-              - 2026-04-28__operator-deliberation__customer-portal-intake-map
-            linked_work_packet_ids:
-              - wp-customer-intake-map
-            linked_candidate_ids:
-              - candidate-wp-customer-intake-map
-            acceptance_notes:
-              - Execution authority remains deferred.
-            children: []
+          - No standalone customer-portal repo is implied.
+        children: []
+      - nh_id: '1.2'
+        title: Customer console surface definition
+        status: planned
+        summary: Customer portal/customer console is the authenticated customer-facing lane that eventually contains onboarding, workspace setup, and first-project setup.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Operator surfaces and customer surfaces remain separated.
+        children: []
+      - nh_id: '1.3'
+        title: Prototype/reference lane relationship
+        status: planned
+        summary: Reference and prototype concepts may inform the plan, but the actual repo execution lane remains jai-nexus/jai-nexus and is deferred here.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - No prototype lane is treated as execution authority.
+        children: []
   - nh_id: '2.0'
-    title: Evidence and gates
+    title: Customer portal intake map
     status: planned
-    summary: Carry forward the verification commands and evidence expectations from the work packet and deliberation prompt.
+    summary: Refine the prospect-to-customer-console journey into explicit entry, auth, billing, workspace, and first-session planning nodes.
     linked_motion_ids:
       - motion-0169
       - motion-0170
       - motion-0171
+      - motion-0172
     linked_chat_ids:
       - 2026-04-28__operator-deliberation__customer-portal-intake-map
+      - 2026-04-28__repo-planning__customer-portal-intake-planning
     linked_work_packet_ids:
       - wp-customer-intake-map
     linked_candidate_ids:
       - candidate-wp-customer-intake-map
     acceptance_notes:
-      - Typecheck and agency validation remain the minimum repo gates.
-    children: []
+      - The intake map remains planning-only and copy-only.
+    children:
+      - nh_id: '2.1'
+        title: Entry points
+        status: planned
+        summary: Document how customers reach the future customer console from public-site, direct app, or operator-assisted entry.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Entry points are planned, not implemented.
+        children:
+          - nh_id: 2.1.1
+            title: Public-site entry from jai-nexus/apps/web
+            status: planned
+            summary: Public-site CTA should eventually guide a visitor/prospect into account creation or login for the customer console.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No apps/web implementation is authorized here.
+            children: []
+          - nh_id: 2.1.2
+            title: Direct customer-console entry from jai-nexus/apps/app
+            status: planned
+            summary: Existing or future direct app entry should drop users into the customer console lane after auth is eventually available.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No apps/app implementation is authorized here.
+            children: []
+          - nh_id: 2.1.3
+            title: Operator-assisted onboarding path
+            status: planned
+            summary: Operator-assisted onboarding may bootstrap customer entry, but operator and customer identities must remain separate.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No operator-customer identity merge is implied.
+            children: []
+      - nh_id: '2.2'
+        title: Account/auth intake
+        status: planned
+        summary: Define account and session assumptions without choosing providers, credentials, or schema.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Auth planning is explicit and deferred from implementation.
+        children:
+          - nh_id: 2.2.1
+            title: User identity assumptions
+            status: planned
+            summary: The customer console will eventually require authenticated users with stable account identity.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No provider selection is made here.
+            children: []
+          - nh_id: 2.2.2
+            title: Organization/customer account assumptions
+            status: planned
+            summary: Account identity should eventually map to workspace membership and customer/team ownership.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Workspace membership remains conceptual only.
+            children: []
+          - nh_id: 2.2.3
+            title: Session/account state assumptions
+            status: planned
+            summary: The future customer console will need session and account state, but this seam does not authorize session middleware or account persistence.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No session implementation is authorized here.
+            children: []
+          - nh_id: 2.2.4
+            title: Deferred auth implementation
+            status: deferred
+            summary: No provider selection, OAuth, magic-link, middleware, account schema, or credentials are authorized in this planning seam.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Auth execution authority is deferred.
+            children: []
+      - nh_id: '2.3'
+        title: Billing/Stripe intake
+        status: planned
+        summary: Document billing assumptions now that the business foundation is in place, while deferring all Stripe integration.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Billing readiness is explicit and execution remains deferred.
+        children:
+          - nh_id: 2.3.1
+            title: Business account readiness
+            status: planned
+            summary: JAI NEXUS, LLC exists, EIN is secured, and the business bank account is open, making future Stripe setup actionable later.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Business readiness does not equal billing enablement.
+            children: []
+          - nh_id: 2.3.2
+            title: Stripe customer object assumptions
+            status: planned
+            summary: A future customer account will likely need a Stripe customer object relationship, but no schema or API decisions are made here.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No Stripe object implementation is authorized.
+            children: []
+          - nh_id: 2.3.3
+            title: Subscription/payment assumptions
+            status: planned
+            summary: Subscription and payment assumptions should be documented, but pricing, checkout, invoices, and production billing are out of scope.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No pricing or billing workflow is authorized here.
+            children: []
+          - nh_id: 2.3.4
+            title: Customer portal billing entry assumptions
+            status: planned
+            summary: Billing entry in the future customer console should be planned as a later lane tied to account/workspace context.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Customer-billing UX remains a planning topic only.
+            children: []
+          - nh_id: 2.3.5
+            title: Deferred Stripe integration
+            status: deferred
+            summary: No Stripe keys, webhooks, checkout, billing DB schema, pricing model, or production billing enablement are authorized here.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Stripe execution authority is deferred.
+            children: []
+      - nh_id: '2.4'
+        title: Workspace/project creation
+        status: planned
+        summary: Model the workspace and project creation sequence that a new customer should experience after first entry.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Workspace and project remain conceptual planning objects here.
+        children:
+          - nh_id: 2.4.1
+            title: Workspace creation concept
+            status: planned
+            summary: Workspace is the customer/team/account container that organizes later projects and members.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No workspace schema is authorized here.
+            children: []
+          - nh_id: 2.4.2
+            title: Project creation concept
+            status: planned
+            summary: Project is the primary unit of work created inside the workspace before the assistant rail begins next-action guidance.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No project schema or project APIs are authorized here.
+            children: []
+          - nh_id: 2.4.3
+            title: User-to-workspace relationship
+            status: planned
+            summary: User identity should eventually determine workspace membership and access posture.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Membership logic is planning-only here.
+            children: []
+          - nh_id: 2.4.4
+            title: Project-centric assistant rail relationship
+            status: planned
+            summary: The JAI assistant rail should eventually operate inside the selected project context rather than as a global unauthenticated lane.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Assistant behavior remains conceptual and execution-disabled.
+            children: []
+      - nh_id: '2.5'
+        title: First-session experience
+        status: planned
+        summary: Define the first-session user experience after account entry and before any deeper assistant execution capability exists.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - First-session planning remains repo-facing guidance only.
+        children:
+          - nh_id: 2.5.1
+            title: Empty state
+            status: planned
+            summary: A first-time user should land in a clear empty state that explains next setup steps and avoids operator-only terminology.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No UI implementation is authorized here.
+            children: []
+          - nh_id: 2.5.2
+            title: Guided intake
+            status: planned
+            summary: The user should be guided through workspace and first-project setup with explicit planning checkpoints.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Guidance remains planning-only.
+            children: []
+          - nh_id: 2.5.3
+            title: JAI assistant rail handoff
+            status: planned
+            summary: Once the project context is established, the customer-facing JAI assistant rail should eventually suggest the next recommended action.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No assistant execution is authorized here.
+            children: []
+          - nh_id: 2.5.4
+            title: Next recommended action
+            status: planned
+            summary: The first-session outcome should set up a clear next recommended action for the customer inside the project workspace.
+            linked_motion_ids:
+              - motion-0172
+            linked_chat_ids:
+              - 2026-04-28__repo-planning__customer-portal-intake-planning
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Next-action guidance remains a future execution seam.
+            children: []
   - nh_id: '3.0'
+    title: Evidence and gates
+    status: planned
+    summary: Define the evidence required to move from planning-only intake framing to a later jai-nexus implementation seam.
+    linked_motion_ids:
+      - motion-0169
+      - motion-0170
+      - motion-0171
+      - motion-0172
+    linked_chat_ids:
+      - 2026-04-28__operator-deliberation__customer-portal-intake-map
+      - 2026-04-28__repo-planning__customer-portal-intake-planning
+    linked_work_packet_ids:
+      - wp-customer-intake-map
+    linked_candidate_ids:
+      - candidate-wp-customer-intake-map
+    acceptance_notes:
+      - Evidence and gates remain explicit before implementation authority opens.
+    children:
+      - nh_id: '3.1'
+        title: Planning acceptance evidence
+        status: planned
+        summary: Planning acceptance must show repo framing, intake map clarity, billing/auth deferrals, workspace model, and passalong quality.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Planning evidence must be repo-facing and reviewable.
+        children: []
+      - nh_id: '3.2'
+        title: Implementation readiness gates
+        status: planned
+        summary: A future jai-nexus execution seam must define implementation gates separately before any apps/web or apps/app work begins.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - No implementation authority is implied by this planning wave.
+        children: []
+      - nh_id: '3.3'
+        title: Security/privacy review gates
+        status: planned
+        summary: A future implementation seam must address security and privacy review before customer auth or data handling is enabled.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Security/privacy review is deferred but explicit.
+        children: []
+      - nh_id: '3.4'
+        title: Billing/auth readiness gates
+        status: planned
+        summary: A future implementation seam must separately prove billing and auth readiness before Stripe or account work is opened.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Billing and auth readiness remain future gates, not current authority.
+        children: []
+  - nh_id: '4.0'
     title: Deferred execution authority
     status: deferred
-    summary: Any branch writes, PR creation, runtime actions, or execution authority must be opened in a separate later seam.
+    summary: Make the non-goals and future handoff path explicit so this wave remains planning-only.
     linked_motion_ids:
       - motion-0170
       - motion-0171
+      - motion-0172
     linked_chat_ids:
       - 2026-04-28__operator-deliberation__customer-portal-intake-map
+      - 2026-04-28__repo-planning__customer-portal-intake-planning
     linked_work_packet_ids:
       - wp-customer-intake-map
     linked_candidate_ids:
       - candidate-wp-customer-intake-map
     acceptance_notes:
       - This wave remains capture/index/planning only.
-    children: []
+    children:
+      - nh_id: '4.1'
+        title: No implementation authority
+        status: deferred
+        summary: No apps/web or apps/app implementation authority is granted by this motion.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - jai-nexus remains untouched in this seam.
+        children: []
+      - nh_id: '4.2'
+        title: No Stripe/auth/DB authority
+        status: deferred
+        summary: No Stripe integration, auth implementation, DB schema, or API route authority is granted by this motion.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Billing/auth/DB changes remain out of scope.
+        children: []
+      - nh_id: '4.3'
+        title: Future jai-nexus execution handoff
+        status: deferred
+        summary: The next repo-facing handoff should open a separate jai-nexus implementation seam using the passalong prompt captured here.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Repo-facing passalong is produced, not executed.
+        children: []
+      - nh_id: '4.4'
+        title: Future Agent PR Workflow dependency
+        status: deferred
+        summary: Any later agent-driven branch write or PR workflow remains dependent on a separate authority seam.
+        linked_motion_ids:
+          - motion-0172
+        linked_chat_ids:
+          - 2026-04-28__repo-planning__customer-portal-intake-planning
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - No branch-write or PR authority is introduced here.
+        children: []
