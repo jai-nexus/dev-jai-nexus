@@ -52,6 +52,17 @@ export interface WavePlan {
   related_candidate_ids: string[];
   deliberation_route: string;
   next_prompt_preview: string;
+  planning_sections: {
+    current_repo_framing: string[];
+    problem_statement: string[];
+    intake_thesis: string[];
+    billing_assumptions_and_deferrals: string[];
+    auth_assumptions_and_deferrals: string[];
+    workspace_project_planning: string[];
+    evidence_and_gates: string[];
+    deferred_execution_authority: string[];
+    repo_passalong_prompt: string;
+  };
   artifact_path_preview: {
     wave_yaml: string;
     plan_md: string;
