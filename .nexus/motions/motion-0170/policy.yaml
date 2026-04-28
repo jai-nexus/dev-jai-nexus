@@ -1,0 +1,21 @@
+protocol_version: "0.3.8"
+motion_id: motion-0170
+evaluated_at: "2026-04-28T15:02:44.3732412Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.12
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Scope remains capture/index/planning only with no automatic live capture or execution authority."
+  - "Existing imported archive browsing remains intact while seeded continuity records are layered above it."
+escalation_state: null
