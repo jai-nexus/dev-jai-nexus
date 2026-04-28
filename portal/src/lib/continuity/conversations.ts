@@ -24,6 +24,10 @@ export function buildConversationArtifactId(
   return `${date}__${source}__${slugify(topic)}`;
 }
 
+export function getConversationArtifactPath(chatId: string) {
+  return `.nexus/chats/${chatId}.md`;
+}
+
 export function getConversationSourceKindLabel(sourceKind: ConversationSourceKind) {
   if (sourceKind === "imported_archive") return "Imported archive";
   if (sourceKind === "operator_deliberation") return "Operator deliberation";
@@ -63,13 +67,13 @@ export function getSeededConversationRecords(): ConversationRecord[] {
       source_label: "/operator/deliberation transcript session",
       repo_full_name: recommendedCandidate.target.repo_full_name,
       surface_label: recommendedCandidate.target.surface.label,
-      related_motion_ids: ["motion-0169", "motion-0170"],
+      related_motion_ids: ["motion-0169", "motion-0170", "motion-0171"],
       related_wave_ids: ["wave-q2m4-customer-portal-intake"],
       related_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
       related_candidate_ids: [recommendedCandidate.candidate_id],
       status: "captured",
       captured_at: CAPTURED_AT,
-      artifact_path_preview: `.nexus/chats/${artifactId}.md`,
+      artifact_path_preview: getConversationArtifactPath(artifactId),
       summary:
         "Captured transcript record for the current best-next-motion recommendation from the operator deliberation session.",
       decisions: [

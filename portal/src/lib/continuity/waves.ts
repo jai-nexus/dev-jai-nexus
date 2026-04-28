@@ -3,6 +3,13 @@ import { getDraftWorkPackets } from "@/lib/agents/workPackets";
 import { getSeededConversationRecords } from "@/lib/continuity/conversations";
 import type { WavePlan } from "@/lib/continuity/types";
 
+export function getWaveArtifactPaths(waveId: string) {
+  return {
+    wave_yaml: `.nexus/waves/${waveId}/wave.yaml`,
+    plan_md: `.nexus/waves/${waveId}/plan.md`,
+  };
+}
+
 export function getSeededWavePlans(): WavePlan[] {
   const panel = getAgentDeliberationPanel();
   const recommendation = panel.transcript_session.recommendation;
@@ -30,17 +37,13 @@ export function getSeededWavePlans(): WavePlan[] {
       repo_full_name: recommendedCandidate.target.repo_full_name,
       surface_label: recommendedCandidate.target.surface.label,
       project_label: recommendedCandidate.target.project?.name ?? null,
-      related_motion_ids: ["motion-0169", "motion-0170"],
+      related_motion_ids: ["motion-0169", "motion-0170", "motion-0171"],
       related_chat_ids: [relatedConversation.chat_id],
       related_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
       related_candidate_ids: [recommendedCandidate.candidate_id],
       deliberation_route: "/operator/deliberation",
       next_prompt_preview: recommendation.prompt_text,
-      artifact_path_preview: {
-        wave_yaml:
-          ".nexus/waves/wave-q2m4-customer-portal-intake/wave.yaml",
-        plan_md: ".nexus/waves/wave-q2m4-customer-portal-intake/plan.md",
-      },
+      artifact_path_preview: getWaveArtifactPaths("wave-q2m4-customer-portal-intake"),
       nodes: [
         {
           nh_id: "0.0",
@@ -48,7 +51,7 @@ export function getSeededWavePlans(): WavePlan[] {
           status: "planned",
           summary:
             "Capture the deliberation transcript outcome as the planning spine for the next customer portal motion.",
-          linked_motion_ids: ["motion-0169", "motion-0170"],
+          linked_motion_ids: ["motion-0169", "motion-0170", "motion-0171"],
           linked_chat_ids: [relatedConversation.chat_id],
           linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
           linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -64,7 +67,7 @@ export function getSeededWavePlans(): WavePlan[] {
           status: "planned",
           summary:
             "Keep customer-portal represented as a surface under jai-nexus/jai-nexus.",
-          linked_motion_ids: ["motion-0167", "motion-0169", "motion-0170"],
+          linked_motion_ids: ["motion-0167", "motion-0169", "motion-0170", "motion-0171"],
           linked_chat_ids: [relatedConversation.chat_id],
           linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
           linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -79,7 +82,7 @@ export function getSeededWavePlans(): WavePlan[] {
               status: "planned",
               summary:
                 "Use the current deliberation recommendation as the central planning node.",
-              linked_motion_ids: ["motion-0169", "motion-0170"],
+              linked_motion_ids: ["motion-0169", "motion-0170", "motion-0171"],
               linked_chat_ids: [relatedConversation.chat_id],
               linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
               linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -93,7 +96,7 @@ export function getSeededWavePlans(): WavePlan[] {
                   status: "planned",
                   summary:
                     "Clarify how customer entry points and account identity are framed in the intake path.",
-                  linked_motion_ids: ["motion-0170"],
+                  linked_motion_ids: ["motion-0170", "motion-0171"],
                   linked_chat_ids: [relatedConversation.chat_id],
                   linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
                   linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -108,7 +111,7 @@ export function getSeededWavePlans(): WavePlan[] {
                   status: "planned",
                   summary:
                     "Document billing and customer-account assumptions before any implementation authority is considered.",
-                  linked_motion_ids: ["motion-0170"],
+                  linked_motion_ids: ["motion-0170", "motion-0171"],
                   linked_chat_ids: [relatedConversation.chat_id],
                   linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
                   linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -123,7 +126,7 @@ export function getSeededWavePlans(): WavePlan[] {
                   status: "planned",
                   summary:
                     "Capture workspace and project creation expectations as planned follow-up questions only.",
-                  linked_motion_ids: ["motion-0170"],
+                  linked_motion_ids: ["motion-0170", "motion-0171"],
                   linked_chat_ids: [relatedConversation.chat_id],
                   linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
                   linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -142,7 +145,7 @@ export function getSeededWavePlans(): WavePlan[] {
           status: "planned",
           summary:
             "Carry forward the verification commands and evidence expectations from the work packet and deliberation prompt.",
-          linked_motion_ids: ["motion-0169", "motion-0170"],
+          linked_motion_ids: ["motion-0169", "motion-0170", "motion-0171"],
           linked_chat_ids: [relatedConversation.chat_id],
           linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
           linked_candidate_ids: [recommendedCandidate.candidate_id],
@@ -157,7 +160,7 @@ export function getSeededWavePlans(): WavePlan[] {
           status: "deferred",
           summary:
             "Any branch writes, PR creation, runtime actions, or execution authority must be opened in a separate later seam.",
-          linked_motion_ids: ["motion-0170"],
+          linked_motion_ids: ["motion-0170", "motion-0171"],
           linked_chat_ids: [relatedConversation.chat_id],
           linked_work_packet_ids: relatedPacket ? [relatedPacket.packet_id] : [],
           linked_candidate_ids: [recommendedCandidate.candidate_id],
