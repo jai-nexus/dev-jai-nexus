@@ -1,0 +1,19 @@
+motion_id: motion-0171
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Conversation and Wave Artifact Export v0"
+subtitle: "export seeded continuity records into committed repo-native chat and wave artifacts with deterministic write/check behavior"
+kind: builder-proof
+program: q2-conversation-wave-artifact-export-v0
+basis: motion-0170
+status: ratified
+created_at: "2026-04-28T00:00:00.000Z"
+decided_at: "2026-04-28T15:25:23.9980808Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []
