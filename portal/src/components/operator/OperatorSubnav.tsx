@@ -10,6 +10,7 @@ const links = [
   { href: "/operator/grid", label: "Grid" },
   { href: "/operator/projects", label: "Projects" },
   { href: "/operator/work", label: "Work" },
+  { href: "/operator/deliberation", label: "Deliberation" },
   { href: "/operator/waves", label: "Waves" },
   { href: "/operator/chats", label: "Chats" },
   { href: "/operator/motions", label: "Motions" },

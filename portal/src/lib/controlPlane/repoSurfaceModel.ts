@@ -115,6 +115,16 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
     ],
   },
   {
+    key: "operator-deliberation",
+    label: "Operator deliberation",
+    repo_full_name: "jai-nexus/dev-jai-nexus",
+    summary:
+      "Advisory-only operator deliberation surface for non-binding agent reasoning and next-step prompts.",
+    configured_scope_keys: ["dev-jai-nexus"],
+    project_ids: ["jai-internal"],
+    notes: ["Control-plane operator surface."],
+  },
+  {
     key: "operator-motions",
     label: "Operator motions",
     repo_full_name: "jai-nexus/dev-jai-nexus",
@@ -222,6 +232,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
       "api-nexus",
       "jai-format",
       "operator-motions",
+      "operator-deliberation",
       "operator-agents",
       "operator-work",
       "operator-projects",
@@ -284,6 +295,7 @@ const CONFIGURED_AGENT_SCOPE_SUBSET: ControlPlaneConfiguredScopeEntry[] = [
     repo_full_name: "jai-nexus/dev-jai-nexus",
     surface_keys: [
       "operator-motions",
+      "operator-deliberation",
       "operator-agents",
       "operator-work",
       "operator-projects",
