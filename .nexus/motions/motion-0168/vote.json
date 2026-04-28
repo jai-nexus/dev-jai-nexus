@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0168",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "A new advisory-only deliberation surface now renders deterministic candidate actions from work packets, projects, motions, manual candidates, and planned toolchain targets.",
+      "Participating agents are loaded directly from the Agent Registry, and every candidate resolves to the existing repo-plus-surface-plus-optional-project targeting model.",
+      "Per-agent reasoning, non-binding advisory votes, consensus summaries, and copy-only next-step prompts are visible without enabling execution or mutation.",
+      "jai-pilot and vscode-nexus are represented only as planned toolchain targets, with no integration, credential enablement, or runtime execution path.",
+      "Required gates passed, no API or DB mutation was added, no runtime or proof files changed, and no existing motion packages were modified.",
+      "No execution, branch write, PR creation, dispatch, scheduler, or cross-repo mutation capability was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-27T14:12:33.500Z"
+}

@@ -1,0 +1,22 @@
+protocol_version: "0.3.8"
+motion_id: motion-0168
+evaluated_at: "2026-04-27T14:12:33.500Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.10
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Scope is limited to deterministic advisory deliberation and copy-only next-step prompts."
+  - "No execution, write, DB, API, runtime, or toolchain integration capability changed in this seam."
+  - "jai-pilot and vscode-nexus remain planned-only targets with no integration or execution enablement."
+escalation_state: null
