@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 export const revalidate = 0;
 
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { getSeededWavePlans } from "@/lib/continuity/waves";
@@ -124,6 +126,11 @@ function WaveNodeTree({ node, depth = 0 }: { node: WaveNode; depth?: number }) {
 }
 
 function WaveCard({ wave }: { wave: WavePlan }) {
+  const waveYamlPath = path.join(process.cwd(), wave.artifact_path_preview.wave_yaml);
+  const planMdPath = path.join(process.cwd(), wave.artifact_path_preview.plan_md);
+  const waveYamlExists = fs.existsSync(waveYamlPath);
+  const planMdExists = fs.existsSync(planMdPath);
+
   return (
     <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -132,6 +139,9 @@ function WaveCard({ wave }: { wave: WavePlan }) {
             <h3 className="text-base font-semibold text-gray-100">{wave.title}</h3>
             <ToneBadge tone={statusTone(wave.status)}>{wave.status}</ToneBadge>
             <ToneBadge tone="amber">planning spine</ToneBadge>
+            <ToneBadge tone={waveYamlExists && planMdExists ? "emerald" : "amber"}>
+              {waveYamlExists && planMdExists ? "committed artifacts present" : "artifact preview only"}
+            </ToneBadge>
           </div>
           <div className="flex flex-wrap gap-2">
             <ToneBadge tone="sky">{wave.repo_full_name}</ToneBadge>
@@ -159,6 +169,8 @@ function WaveCard({ wave }: { wave: WavePlan }) {
               <li>- wave id: {wave.wave_id}</li>
               <li>- wave.yaml: {wave.artifact_path_preview.wave_yaml}</li>
               <li>- plan.md: {wave.artifact_path_preview.plan_md}</li>
+              <li>- wave.yaml present: {waveYamlExists ? "yes" : "no"}</li>
+              <li>- plan.md present: {planMdExists ? "yes" : "no"}</li>
             </ul>
           </div>
 

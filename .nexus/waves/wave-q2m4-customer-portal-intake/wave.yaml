@@ -1,0 +1,156 @@
+wave_id: wave-q2m4-customer-portal-intake
+title: Q2M4 customer portal intake continuity wave
+status: planned
+repo: jai-nexus/jai-nexus
+surface: Customer portal
+project: JAI Internal / Spine
+related_motion_ids:
+  - motion-0169
+  - motion-0170
+  - motion-0171
+related_chat_ids:
+  - 2026-04-28__operator-deliberation__customer-portal-intake-map
+related_work_packet_ids:
+  - wp-customer-intake-map
+related_candidate_ids:
+  - candidate-wp-customer-intake-map
+deliberation_route: /operator/deliberation
+artifact_paths:
+  wave_yaml: .nexus/waves/wave-q2m4-customer-portal-intake/wave.yaml
+  plan_md: .nexus/waves/wave-q2m4-customer-portal-intake/plan.md
+nodes:
+  - nh_id: '0.0'
+    title: Context and framing
+    status: planned
+    summary: Capture the deliberation transcript outcome as the planning spine for the next customer portal motion.
+    linked_motion_ids:
+      - motion-0169
+      - motion-0170
+      - motion-0171
+    linked_chat_ids:
+      - 2026-04-28__operator-deliberation__customer-portal-intake-map
+    linked_work_packet_ids:
+      - wp-customer-intake-map
+    linked_candidate_ids:
+      - candidate-wp-customer-intake-map
+    acceptance_notes:
+      - Transcript capture is durable and navigable.
+      - Operator authorization remains required before execution.
+    children: []
+  - nh_id: '1.0'
+    title: Target surface model
+    status: planned
+    summary: Keep customer-portal represented as a surface under jai-nexus/jai-nexus.
+    linked_motion_ids:
+      - motion-0167
+      - motion-0169
+      - motion-0170
+      - motion-0171
+    linked_chat_ids:
+      - 2026-04-28__operator-deliberation__customer-portal-intake-map
+    linked_work_packet_ids:
+      - wp-customer-intake-map
+    linked_candidate_ids:
+      - candidate-wp-customer-intake-map
+    acceptance_notes:
+      - Repo-plus-surface targeting stays explicit.
+      - No standalone customer-portal repo is implied.
+    children:
+      - nh_id: '1.1'
+        title: Customer portal intake map
+        status: planned
+        summary: Use the current deliberation recommendation as the central planning node.
+        linked_motion_ids:
+          - motion-0169
+          - motion-0170
+          - motion-0171
+        linked_chat_ids:
+          - 2026-04-28__operator-deliberation__customer-portal-intake-map
+        linked_work_packet_ids:
+          - wp-customer-intake-map
+        linked_candidate_ids:
+          - candidate-wp-customer-intake-map
+        acceptance_notes:
+          - Next motion title and prompt remain copy-only.
+        children:
+          - nh_id: 1.1.1
+            title: Auth/account entry
+            status: planned
+            summary: Clarify how customer entry points and account identity are framed in the intake path.
+            linked_motion_ids:
+              - motion-0170
+              - motion-0171
+            linked_chat_ids:
+              - 2026-04-28__operator-deliberation__customer-portal-intake-map
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Operator guidance stays planning-only.
+            children: []
+          - nh_id: 1.1.2
+            title: Stripe/customer billing assumptions
+            status: planned
+            summary: Document billing and customer-account assumptions before any implementation authority is considered.
+            linked_motion_ids:
+              - motion-0170
+              - motion-0171
+            linked_chat_ids:
+              - 2026-04-28__operator-deliberation__customer-portal-intake-map
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - No payment integration action is enabled from this wave.
+            children: []
+          - nh_id: 1.1.3
+            title: Workspace/project creation
+            status: planned
+            summary: Capture workspace and project creation expectations as planned follow-up questions only.
+            linked_motion_ids:
+              - motion-0170
+              - motion-0171
+            linked_chat_ids:
+              - 2026-04-28__operator-deliberation__customer-portal-intake-map
+            linked_work_packet_ids:
+              - wp-customer-intake-map
+            linked_candidate_ids:
+              - candidate-wp-customer-intake-map
+            acceptance_notes:
+              - Execution authority remains deferred.
+            children: []
+  - nh_id: '2.0'
+    title: Evidence and gates
+    status: planned
+    summary: Carry forward the verification commands and evidence expectations from the work packet and deliberation prompt.
+    linked_motion_ids:
+      - motion-0169
+      - motion-0170
+      - motion-0171
+    linked_chat_ids:
+      - 2026-04-28__operator-deliberation__customer-portal-intake-map
+    linked_work_packet_ids:
+      - wp-customer-intake-map
+    linked_candidate_ids:
+      - candidate-wp-customer-intake-map
+    acceptance_notes:
+      - Typecheck and agency validation remain the minimum repo gates.
+    children: []
+  - nh_id: '3.0'
+    title: Deferred execution authority
+    status: deferred
+    summary: Any branch writes, PR creation, runtime actions, or execution authority must be opened in a separate later seam.
+    linked_motion_ids:
+      - motion-0170
+      - motion-0171
+    linked_chat_ids:
+      - 2026-04-28__operator-deliberation__customer-portal-intake-map
+    linked_work_packet_ids:
+      - wp-customer-intake-map
+    linked_candidate_ids:
+      - candidate-wp-customer-intake-map
+    acceptance_notes:
+      - This wave remains capture/index/planning only.
+    children: []

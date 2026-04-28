@@ -1,6 +1,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
@@ -99,6 +101,9 @@ function ToneBadge({
 }
 
 function ContinuityCard({ record }: { record: ConversationRecord }) {
+  const artifactAbsolutePath = path.join(process.cwd(), record.artifact_path_preview);
+  const artifactExists = fs.existsSync(artifactAbsolutePath);
+
   return (
     <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -109,6 +114,9 @@ function ContinuityCard({ record }: { record: ConversationRecord }) {
               {getConversationSourceKindLabel(record.source_kind)}
             </ToneBadge>
             <ToneBadge tone="rose">captured v0</ToneBadge>
+            <ToneBadge tone={artifactExists ? "emerald" : "amber"}>
+              {artifactExists ? "committed artifact present" : "artifact preview only"}
+            </ToneBadge>
           </div>
           <p className="max-w-4xl text-sm text-gray-300">{record.summary}</p>
         </div>
@@ -130,6 +138,7 @@ function ContinuityCard({ record }: { record: ConversationRecord }) {
               <li>- source label: {record.source_label}</li>
               <li>- captured at: {record.captured_at}</li>
               <li>- artifact path preview: {record.artifact_path_preview}</li>
+              <li>- committed artifact present: {artifactExists ? "yes" : "no"}</li>
             </ul>
           </div>
 
