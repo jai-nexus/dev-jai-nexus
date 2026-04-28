@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0172",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The wave planning spine is refined with the required nh_id hierarchy, intake map, billing and auth deferrals, workspace and project planning, and explicit deferred execution authority.",
+      "A repo-native planning chat and updated wave artifacts were exported from the bundled continuity model and the export drift check is current.",
+      "A repo-facing passalong prompt for jai-nexus is captured without opening implementation authority, branch writes, PR creation, API mutation, DB work, or execution."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-28T16:19:23.5852427Z"
+}
