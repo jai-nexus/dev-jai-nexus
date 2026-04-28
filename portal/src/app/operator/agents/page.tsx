@@ -8,8 +8,9 @@ import type {
   AgentRegistryCapabilityKey,
   AgentRegistryCapabilityState,
   AgentRegistryIdentity,
-  AgentRegistryRepoScope,
+  AgentRegistryScopeKey,
 } from "@/lib/agents/types";
+import { getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
 
 function Section({
   title,
@@ -93,7 +94,7 @@ function capabilityLabel(key: AgentRegistryCapabilityKey): string {
   return "execute runtime";
 }
 
-function scopeLabel(scope: AgentRegistryRepoScope): string {
+function scopeLabel(scope: AgentRegistryScopeKey): string {
   return scope;
 }
 
@@ -121,8 +122,16 @@ function IdentityCard({ identity }: { identity: AgentRegistryIdentity }) {
 }
 
 function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
+  const registry = getAgentConfigurationRegistry();
+  const scopeEntries = registry.configured_scopes.filter((scope) =>
+    agent.configured_scope_keys.includes(scope.key),
+  );
+
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+    <div
+      id={agent.key}
+      className="rounded-xl border border-gray-800 bg-zinc-950 p-4"
+    >
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-sm font-semibold text-gray-100">{agent.label}</h3>
         <ToneBadge tone="slate">named JAI agent</ToneBadge>
@@ -131,11 +140,29 @@ function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
       <div className="mt-2 font-mono text-xs text-gray-400">{agent.handle}</div>
       <p className="mt-3 text-sm text-gray-300">{agent.summary}</p>
       <div className="mt-3 flex flex-wrap gap-2">
-        {agent.repo_scopes.map((scope) => (
+        {agent.configured_scope_keys.map((scope) => (
           <ToneBadge key={scope} tone="sky">
             {scope}
           </ToneBadge>
         ))}
+      </div>
+      <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-3">
+        <div className="text-xs uppercase tracking-wide text-gray-500">
+          Configured scope subset targets
+        </div>
+        <ul className="mt-2 space-y-2 text-xs text-gray-300">
+          {scopeEntries.map((scope) => (
+            <li key={`${agent.key}-${scope.key}`}>
+              <div className="font-medium text-gray-100">{scope.key}</div>
+              <div className="font-mono text-[11px] text-sky-200">
+                {scope.repo_full_name}
+              </div>
+              <div className="text-gray-400">
+                surfaces: {scope.surface_labels.join(", ")}
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
       <ul className="mt-3 space-y-1 text-xs text-gray-400">
         {agent.notes.map((note) => (
@@ -148,13 +175,14 @@ function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
 
 export default function AgentsPage() {
   const registry = getAgentConfigurationRegistry();
+  const fullRepoRegistry = getFullRepoRegistry();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
       <div className="mx-auto max-w-7xl space-y-10">
         <header className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS · Agent Registry</h1>
+            <h1 className="text-3xl font-semibold">JAI NEXUS - Agent Registry</h1>
             <ToneBadge tone="sky">configuration only</ToneBadge>
             <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
           </div>
@@ -165,14 +193,15 @@ export default function AgentsPage() {
           </p>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
-              This surface does not execute agents, write branches, open PRs,
-              run runtime actions, or read secret values. Credential posture is
-              shown as env variable names only.
+              This page shows the configured agent scope subset, not the full
+              repo registry. Full repos live in <span className="font-mono">/repos</span>,
+              while agent scope keys resolve to a bounded subset of repos and
+              surfaces reviewed here.
             </p>
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
             label="Named agents"
             value={String(registry.named_agents.length)}
@@ -186,9 +215,14 @@ export default function AgentsPage() {
             detail="Human operator and shared alias behavior are explicitly separated from named agents."
           />
           <SummaryCard
-            label="Repo scopes"
-            value={String(registry.repo_scopes.length)}
-            detail="Registry includes explicit scope metadata for each named agent."
+            label="Configured scope subset"
+            value={String(registry.configured_scope_keys.length)}
+            detail="These scope keys are a configured subset, not the full repo registry."
+          />
+          <SummaryCard
+            label="Full repo registry"
+            value={String(fullRepoRegistry.length)}
+            detail="Actual repos are modeled separately and surfaced on /repos."
           />
           <SummaryCard
             label="Write and execute posture"
@@ -233,7 +267,7 @@ export default function AgentsPage() {
 
         <Section
           title="Named JAI agents"
-          description="Initial named configurations are registry-only records with explicit capability and scope posture."
+          description="Initial named configurations are registry-only records with explicit capability posture and configured scope subset targets."
         >
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {registry.named_agents.map((agent) => (
@@ -289,8 +323,52 @@ export default function AgentsPage() {
         </Section>
 
         <Section
-          title="Repo scope matrix"
-          description="Repo scopes express where a named agent may be configured and reviewed. They do not grant execution or write power."
+          title="Configured scope subset"
+          description="Configured agent scope keys resolve to actual repos and surfaces. They are not the same thing as the full repo registry."
+        >
+          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
+            <table className="min-w-full divide-y divide-gray-800 text-sm">
+              <thead className="bg-zinc-950">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Scope key
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Actual repo
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Surfaces
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                    Meaning
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-900">
+                {registry.configured_scopes.map((scope) => (
+                  <tr key={scope.key}>
+                    <td className="px-4 py-3">
+                      <ToneBadge tone="sky">{scope.key}</ToneBadge>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-300">
+                      {scope.repo_full_name}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-300">
+                      {scope.surface_labels.join(", ")}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400">
+                      {scope.summary}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        <Section
+          title="Named agent scope matrix"
+          description="This matrix shows which configured subset keys each agent can review. It does not grant execution or write power."
         >
           <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
             <table className="min-w-full divide-y divide-gray-800 text-sm">
@@ -299,7 +377,7 @@ export default function AgentsPage() {
                   <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
                     Agent
                   </th>
-                  {registry.repo_scopes.map((scope) => (
+                  {registry.configured_scope_keys.map((scope) => (
                     <th
                       key={scope}
                       className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500"
@@ -315,9 +393,9 @@ export default function AgentsPage() {
                     <td className="px-4 py-3 font-medium text-gray-100">
                       {agent.label}
                     </td>
-                    {registry.repo_scopes.map((scope) => (
+                    {registry.configured_scope_keys.map((scope) => (
                       <td key={`${agent.key}-${scope}`} className="px-4 py-3">
-                        {agent.repo_scopes.includes(scope) ? (
+                        {agent.configured_scope_keys.includes(scope) ? (
                           <ToneBadge tone="emerald">in scope</ToneBadge>
                         ) : (
                           <span className="text-xs text-gray-600">out</span>

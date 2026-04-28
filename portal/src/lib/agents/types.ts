@@ -1,3 +1,8 @@
+import type {
+  ConfiguredAgentScopeKey,
+  ControlPlaneSurfaceKey,
+} from "@/lib/controlPlane/types";
+
 export type AgentRegistryIdentityKind =
   | "human_operator"
   | "shared_alias"
@@ -16,12 +21,8 @@ export type AgentRegistryCapabilityState =
   | "preview_only"
   | "disabled";
 
-export type AgentRegistryRepoScope =
-  | "dev-jai-nexus"
-  | "jai-nexus"
-  | "customer-portal"
-  | "api-nexus"
-  | "jai-format";
+export type AgentRegistryScopeKey = ConfiguredAgentScopeKey;
+export type AgentRegistryRepoScope = AgentRegistryScopeKey;
 
 export interface AgentRegistryIdentity {
   id: string;
@@ -41,6 +42,16 @@ export interface AgentRegistryCredentialPosture {
   enabled_in_v0: false;
 }
 
+export interface AgentRegistryConfiguredScope {
+  key: AgentRegistryScopeKey;
+  label: string;
+  repo_full_name: string;
+  surface_keys: ControlPlaneSurfaceKey[];
+  surface_labels: string[];
+  summary: string;
+  notes: string[];
+}
+
 export interface AgentRegistryAgent {
   key: string;
   label: string;
@@ -48,7 +59,7 @@ export interface AgentRegistryAgent {
   kind: "named_agent";
   summary: string;
   execution_identity: false;
-  repo_scopes: AgentRegistryRepoScope[];
+  configured_scope_keys: AgentRegistryScopeKey[];
   capabilities: Record<
     AgentRegistryCapabilityKey,
     AgentRegistryCapabilityState
@@ -63,6 +74,7 @@ export interface AgentConfigurationRegistry {
   human_operators: AgentRegistryIdentity[];
   shared_aliases: AgentRegistryIdentity[];
   named_agents: AgentRegistryAgent[];
-  repo_scopes: AgentRegistryRepoScope[];
+  configured_scopes: AgentRegistryConfiguredScope[];
+  configured_scope_keys: AgentRegistryScopeKey[];
   capability_keys: AgentRegistryCapabilityKey[];
 }

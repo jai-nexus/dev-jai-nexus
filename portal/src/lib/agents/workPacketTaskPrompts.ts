@@ -23,7 +23,9 @@ export function buildDraftWorkPacketTaskPrompt(
   const assignedAgentIsSharedAlias =
     registry.shared_aliases.some((alias) => alias.handle === packet.agent.handle) ||
     packet.agent.handle === "agent@jai.nexus";
-  const repoScopeCompatible = packet.compatibility.repo_scope_in_scope;
+  const configuredScopeExists = packet.compatibility.configured_scope_exists;
+  const targetRepoCompatible = packet.compatibility.target_repo_in_scope;
+  const targetSurfaceCompatible = packet.compatibility.target_surface_in_scope;
   const requestedActionsCompatible = packet.compatibility.requested_action_statuses.every(
     (compatibility) => compatibility.status !== "blocked",
   );
@@ -43,9 +45,21 @@ export function buildDraftWorkPacketTaskPrompt(
     );
   }
 
-  if (!repoScopeCompatible) {
+  if (!configuredScopeExists) {
     blockedReasons.push(
-      "Requested repo is outside the configured repo scope for this named agent.",
+      "Configured scope key is not present in the control-plane model.",
+    );
+  }
+
+  if (!targetRepoCompatible) {
+    blockedReasons.push(
+      "Requested repo target is outside the configured scope subset for this named agent.",
+    );
+  }
+
+  if (!targetSurfaceCompatible) {
+    blockedReasons.push(
+      "Requested surface target is outside the configured scope subset for this named agent.",
     );
   }
 
@@ -79,8 +93,10 @@ export function buildDraftWorkPacketTaskPrompt(
     `Assigned agent key: ${packet.agent.key}`,
     `Assigned agent display name: ${packet.agent.label}`,
     `Assigned agent handle: ${packet.agent.handle}`,
-    `Target repo: ${packet.repo_scope}`,
-    `Target surface: ${packet.target_surface}`,
+    `Configured scope key: ${packet.configured_scope_key}`,
+    `Target repo: ${packet.target.repo_full_name}`,
+    `Target surface: ${packet.target.surface.label}`,
+    `Target project: ${packet.target.project?.name ?? "none"}`,
     `Branch suggestion (suggestion only): ${branchNameSuggestion}`,
     `Branch suggestion note: ${branchSuggestionNote}`,
     ``,
@@ -96,7 +112,9 @@ export function buildDraftWorkPacketTaskPrompt(
     `Compatibility summary:`,
     `- agent exists: ${assignedAgentExists ? "yes" : "no"}`,
     `- shared alias blocked: ${assignedAgentIsSharedAlias ? "yes" : "no"}`,
-    `- repo in scope: ${repoScopeCompatible ? "yes" : "no"}`,
+    `- configured scope key present: ${configuredScopeExists ? "yes" : "no"}`,
+    `- target repo in scope: ${targetRepoCompatible ? "yes" : "no"}`,
+    `- target surface in scope: ${targetSurfaceCompatible ? "yes" : "no"}`,
     `- requested capability compatibility: ${requestedActionsCompatible ? "compatible or preview_only" : "blocked"}`,
     `- execution blocked in v0: yes`,
     ``,
@@ -135,6 +153,9 @@ export function buildDraftWorkPacketTaskPrompt(
     packet_id: packet.packet_id,
     assigned_agent_key: packet.agent.key,
     assigned_agent_label: packet.agent.label,
+    target_repo_full_name: packet.target.repo_full_name,
+    target_surface_label: packet.target.surface.label,
+    target_project_label: packet.target.project?.name ?? null,
     branch_name_suggestion: branchNameSuggestion,
     branch_suggestion_note: branchSuggestionNote,
     status,
@@ -143,7 +164,9 @@ export function buildDraftWorkPacketTaskPrompt(
     validation: {
       agent_exists: assignedAgentExists,
       assigned_agent_is_shared_alias: assignedAgentIsSharedAlias,
-      repo_scope_compatible: repoScopeCompatible,
+      configured_scope_exists: configuredScopeExists,
+      target_repo_compatible: targetRepoCompatible,
+      target_surface_compatible: targetSurfaceCompatible,
       requested_actions_compatible: requestedActionsCompatible,
     },
     prompt_text: promptLines.join("\n"),

@@ -119,13 +119,43 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <ToneBadge tone="sky">{packet.repo_scope}</ToneBadge>
+          <ToneBadge tone="sky">
+            scope subset: {packet.configured_scope_key}
+          </ToneBadge>
           <ToneBadge tone="slate">{packet.packet_id}</ToneBadge>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
         <div className="space-y-4">
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">Target model</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ToneBadge tone="sky">{packet.target.repo_full_name}</ToneBadge>
+              <ToneBadge tone="slate">
+                surface: {packet.target.surface.label}
+              </ToneBadge>
+              {packet.target.project ? (
+                <ToneBadge tone="emerald">
+                  project: {packet.target.project.name}
+                </ToneBadge>
+              ) : (
+                <ToneBadge tone="amber">project: none</ToneBadge>
+              )}
+            </div>
+            <p className="mt-3 text-sm text-gray-300">
+              Work packet targets always resolve to an actual repo plus a named
+              surface, with an optional project/workstream overlay.
+            </p>
+            <ul className="mt-3 space-y-1 text-xs text-gray-400">
+              <li>- repo: {packet.target.repo_full_name}</li>
+              <li>- surface: {packet.target.surface.label}</li>
+              <li>
+                - project: {packet.target.project?.project_id ?? "not assigned"}
+              </li>
+            </ul>
+          </div>
+
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-gray-500">
@@ -190,11 +220,25 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
             <div className="mt-4 flex flex-wrap gap-2">
               <ToneBadge
                 tone={
-                  packet.compatibility.repo_scope_in_scope ? "emerald" : "rose"
+                  packet.compatibility.configured_scope_exists ? "emerald" : "rose"
                 }
               >
-                repo in scope:{" "}
-                {packet.compatibility.repo_scope_in_scope ? "yes" : "no"}
+                scope key present:{" "}
+                {packet.compatibility.configured_scope_exists ? "yes" : "no"}
+              </ToneBadge>
+              <ToneBadge
+                tone={packet.compatibility.target_repo_in_scope ? "emerald" : "rose"}
+              >
+                target repo in scope:{" "}
+                {packet.compatibility.target_repo_in_scope ? "yes" : "no"}
+              </ToneBadge>
+              <ToneBadge
+                tone={
+                  packet.compatibility.target_surface_in_scope ? "emerald" : "rose"
+                }
+              >
+                target surface in scope:{" "}
+                {packet.compatibility.target_surface_in_scope ? "yes" : "no"}
               </ToneBadge>
               <ToneBadge tone="rose">
                 execution blocked:{" "}
@@ -250,9 +294,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
           </div>
 
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
-              Guardrails
-            </h4>
+            <h4 className="text-sm font-semibold text-gray-100">Guardrails</h4>
             <ul className="mt-3 space-y-2 text-sm text-gray-300">
               <li>- no run, dispatch, or execute controls exist here</li>
               <li>- no branch write or PR creation controls exist here</li>
@@ -280,7 +322,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <ToneBadge tone="slate">
-                {prompt.assigned_agent_key} · {prompt.assigned_agent_label}
+                {prompt.assigned_agent_key} - {prompt.assigned_agent_label}
               </ToneBadge>
               <ToneBadge tone="sky">
                 branch suggestion: {prompt.branch_name_suggestion}
@@ -320,7 +362,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               <textarea
                 readOnly
                 value={prompt.prompt_text}
-                rows={24}
+                rows={28}
                 className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
               />
             </div>
@@ -336,7 +378,8 @@ export default function WorkPage() {
   const compatibleCount = packets.filter(
     (packet) =>
       packet.compatibility.agent_exists &&
-      packet.compatibility.repo_scope_in_scope,
+      packet.compatibility.target_repo_in_scope &&
+      packet.compatibility.target_surface_in_scope,
   ).length;
 
   return (
@@ -344,14 +387,14 @@ export default function WorkPage() {
       <div className="mx-auto max-w-7xl space-y-10">
         <header className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS · Work Packets</h1>
+            <h1 className="text-3xl font-semibold">JAI NEXUS - Work Packets</h1>
             <ToneBadge tone="amber">draft only</ToneBadge>
             <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
           </div>
           <p className="max-w-3xl text-sm text-gray-400">
             Read-only operator surface for draft work packets linked to
-            configured JAI agents, repo scopes, capability posture, and human
-            review expectations before any execution is enabled.
+            configured JAI agents, configured scope subset keys, and actual
+            repo-plus-surface targets before any execution is enabled.
           </p>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
@@ -363,7 +406,7 @@ export default function WorkPage() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
             label="Draft packets"
             value={String(packets.length)}
@@ -372,28 +415,32 @@ export default function WorkPage() {
           <SummaryCard
             label="Configured links"
             value={String(compatibleCount)}
-            detail="Every seed packet links to a configured named agent and in-scope repo."
+            detail="Every seed packet links to a configured named agent and a matching repo-plus-surface target."
           />
           <SummaryCard
-            label="Repos represented"
-            value={String(new Set(packets.map((packet) => packet.repo_scope)).size)}
-            detail="Repo scope compatibility is shown directly against the agent registry."
+            label="Target repos"
+            value={String(
+              new Set(packets.map((packet) => packet.target.repo_full_name)).size,
+            )}
+            detail="Actual GitHub repositories represented by the current packet set."
           />
           <SummaryCard
-            label="Execution posture"
-            value="blocked"
-            detail="All packets remain human-gated and draft-only in v0."
+            label="Target surfaces"
+            value={String(
+              new Set(packets.map((packet) => packet.target.surface.key)).size,
+            )}
+            detail="Product or operator surfaces attached to those repo targets."
           />
           <SummaryCard
             label="Task prompts"
             value={String(packets.length)}
-            detail="Every initial draft work packet now generates a deterministic preview-only task prompt."
+            detail="Every initial draft work packet generates a deterministic preview-only task prompt."
           />
         </section>
 
         <Section
           title="Draft work packet queue"
-          description="Packets link configured named agents to proposed repo work, while keeping every execution path disabled."
+          description="Packets bind configured named agents to actual repo-plus-surface targets, while keeping every execution path disabled."
         >
           <div className="space-y-4">
             {packets.map((packet) => (

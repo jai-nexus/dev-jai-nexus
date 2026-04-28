@@ -2,8 +2,13 @@ import type {
   AgentRegistryAgent,
   AgentRegistryCapabilityKey,
   AgentRegistryCapabilityState,
-  AgentRegistryRepoScope,
+  AgentRegistryScopeKey,
 } from "@/lib/agents/types";
+import type {
+  ControlPlaneProjectEntry,
+  ControlPlaneSurfaceEntry,
+  ControlPlaneTargetRef,
+} from "@/lib/controlPlane/types";
 
 export type DraftWorkPacketAction =
   | "draft_plan"
@@ -25,7 +30,9 @@ export interface DraftWorkPacketActionCompatibility {
 
 export interface DraftWorkPacketCompatibility {
   agent_exists: boolean;
-  repo_scope_in_scope: boolean;
+  configured_scope_exists: boolean;
+  target_repo_in_scope: boolean;
+  target_surface_in_scope: boolean;
   execution_blocked: true;
   requested_action_statuses: DraftWorkPacketActionCompatibility[];
 }
@@ -35,8 +42,8 @@ export interface DraftWorkPacketSeed {
   title: string;
   summary: string;
   agent_key: string;
-  repo_scope: AgentRegistryRepoScope;
-  target_surface: string;
+  configured_scope_key: AgentRegistryScopeKey;
+  target: ControlPlaneTargetRef;
   requested_actions: DraftWorkPacketAction[];
   allowed_paths: string[];
   blocked_paths: string[];
@@ -49,8 +56,12 @@ export interface DraftWorkPacket {
   packet_id: string;
   title: string;
   summary: string;
-  repo_scope: AgentRegistryRepoScope;
-  target_surface: string;
+  configured_scope_key: AgentRegistryScopeKey;
+  target: {
+    repo_full_name: string;
+    surface: ControlPlaneSurfaceEntry;
+    project: ControlPlaneProjectEntry | null;
+  };
   requested_actions: DraftWorkPacketAction[];
   allowed_paths: string[];
   blocked_paths: string[];
@@ -64,7 +75,9 @@ export interface DraftWorkPacket {
 export interface DraftWorkPacketTaskPromptValidation {
   agent_exists: boolean;
   assigned_agent_is_shared_alias: boolean;
-  repo_scope_compatible: boolean;
+  configured_scope_exists: boolean;
+  target_repo_compatible: boolean;
+  target_surface_compatible: boolean;
   requested_actions_compatible: boolean;
 }
 
@@ -73,6 +86,9 @@ export interface DraftWorkPacketTaskPrompt {
   packet_id: string;
   assigned_agent_key: string;
   assigned_agent_label: string;
+  target_repo_full_name: string;
+  target_surface_label: string;
+  target_project_label: string | null;
   branch_name_suggestion: string;
   branch_suggestion_note: string;
   status: "ready_preview" | "warning" | "blocked";
