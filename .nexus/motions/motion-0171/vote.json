@@ -1,0 +1,42 @@
+{
+  "motion_id": "motion-0171",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The continuity layer now exports committed repo-native chat and wave artifacts from a single bundled continuity source.",
+      "The seeded chat markdown artifact and wave yaml/plan artifacts preserve the required naming conventions, links, and nh_id hierarchy.",
+      "The exporter provides deterministic --write and --check behavior, and the committed projections are current.",
+      "The operator chats and waves surfaces now distinguish bundled model preview, artifact path preview, and committed artifact presence.",
+      "Required gates passed, no API or DB mutation was added, no runtime or proof files changed, and no existing motion packages were modified.",
+      "No live automatic capture, execution, branch write, PR creation, dispatch, scheduler behavior, credential enablement, or cross-repo mutation capability was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-04-28T15:25:23.9980808Z"
+}
