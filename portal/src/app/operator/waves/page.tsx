@@ -1,167 +1,299 @@
-// portal/src/app/operator/waves/page.tsx
-import { redirect } from "next/navigation";
+export const runtime = "nodejs";
+export const revalidate = 0;
+
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { getSeededWavePlans } from "@/lib/continuity/waves";
+import type { WaveNode, WavePlan } from "@/lib/continuity/types";
 
-import { getServerAuthSession } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import type { WavePlan } from "@/lib/waves/types";
-
-type WaveRow = {
-  id: number; // PilotSession.id
-  projectKey: string;
-  waveLabel: string;
-  summary: string;
-  notes?: string;
-  createdAt: Date;
-  tasksCount: number;
-  pendingCount: number;
-  doneCount: number;
-};
-
-function parsePlan(payload: unknown): WavePlan | null {
-  if (!payload) return null;
-  try {
-    if (typeof payload === "string") {
-      return JSON.parse(payload) as WavePlan;
-    }
-    return payload as WavePlan;
-  } catch {
-    return null;
-  }
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-4">
+      <div className="space-y-1">
+        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
+        <p className="text-sm text-gray-400">{description}</p>
+      </div>
+      {children}
+    </section>
+  );
 }
 
-export default async function WavesPage() {
-  const session = await getServerAuthSession();
-  if (!session) {
-    redirect("/login");
-  }
+function SummaryCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
+      <p className="mt-2 text-sm text-gray-400">{detail}</p>
+    </div>
+  );
+}
 
-  // Take the most recent sessions; for each, use the latest action as its plan.
-  const sessions = await prisma.pilotSession.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 20,
-    include: {
-      actions: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      },
-    },
-  });
-
-  const rows: WaveRow[] = [];
-
-  for (const s of sessions) {
-    const latest = s.actions[0];
-    if (!latest || !latest.payload) continue;
-
-    const plan = parsePlan(latest.payload);
-    if (!plan) continue;
-
-    const tasks = plan.tasks ?? [];
-    const pendingCount = tasks.filter((t) => t.status === "pending").length;
-    const doneCount = tasks.filter((t) => t.status === "done").length;
-
-    rows.push({
-      id: s.id,
-      projectKey: plan.projectKey,
-      waveLabel: plan.waveLabel,
-      summary: plan.summary,
-      notes: plan.notes,
-      createdAt: s.createdAt,
-      tasksCount: tasks.length,
-      pendingCount,
-      doneCount,
-    });
-  }
+function ToneBadge({
+  children,
+  tone,
+}: {
+  children: ReactNode;
+  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
+}) {
+  const toneClass =
+    tone === "sky"
+      ? "border-sky-800 bg-sky-950 text-sky-200"
+      : tone === "amber"
+        ? "border-amber-800 bg-amber-950 text-amber-200"
+        : tone === "emerald"
+          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
+          : tone === "rose"
+            ? "border-rose-800 bg-rose-950 text-rose-200"
+            : "border-gray-800 bg-zinc-900 text-gray-200";
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 px-8 py-10">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold">JAI · Waves</h1>
-          <p className="mt-1 text-sm text-gray-400">
-            Wave plans logged via{" "}
-            <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
-              jai:wave:plan
-            </code>{" "}
-            /{" "}
-            <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
-              jai:wave:apply
-            </code>
-            .
-          </p>
-        </div>
-      </header>
+    <span
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
+    >
+      {children}
+    </span>
+  );
+}
 
-      {rows.length === 0 ? (
-        <p className="text-sm text-gray-400">
-          No wave sessions found yet. Run{" "}
-          <code className="rounded bg-zinc-900 px-1 py-0.5 text-xs">
-            npm run jai:wave:plan -- 2.1.2 W1.0 &quot;Wave 1.0 - tighten auth
-            &amp; internal agents&quot;
-          </code>{" "}
-          to seed one.
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950/60">
-          <table className="min-w-full text-left text-sm">
-            <thead className="border-b border-zinc-800 bg-zinc-950/80 text-xs uppercase tracking-wide text-gray-400">
-              <tr>
-                <th className="px-4 py-3">Wave</th>
-                <th className="px-4 py-3">Project</th>
-                <th className="px-4 py-3">Summary</th>
-                <th className="px-4 py-3">Tasks</th>
-                <th className="px-4 py-3">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-t border-zinc-800 hover:bg-zinc-900/60"
-                >
-                  <td className="px-4 py-3 align-top text-xs">
-                    <Link
-                      href={`/operator/waves/${row.id}`}
-                      className="inline-flex flex-col text-emerald-300 hover:text-emerald-200"
-                    >
-                      <span className="font-mono">
-                        {row.projectKey}.{row.waveLabel}
-                      </span>
-                      <span className="mt-0.5 font-mono text-[10px] text-gray-500">
-                        session #{row.id}
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 align-top text-xs text-gray-300">
-                    {row.projectKey}
-                  </td>
-                  <td className="px-4 py-3 align-top text-sm text-gray-100">
-                    <div className="font-medium">{row.summary}</div>
-                    {row.notes ? (
-                      <div className="mt-1 text-xs text-gray-400">
-                        {row.notes}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 align-top text-xs text-gray-300">
-                    <div>{row.tasksCount} total</div>
-                    <div className="text-amber-300">
-                      {row.pendingCount} pending
-                    </div>
-                    <div className="text-emerald-300">
-                      {row.doneCount} done
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 align-top text-xs text-gray-400">
-                    {row.createdAt.toISOString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+function statusTone(status: WaveNode["status"] | WavePlan["status"]) {
+  if (status === "done") return "emerald";
+  if (status === "active") return "sky";
+  if (status === "planned") return "amber";
+  if (status === "blocked") return "rose";
+  return "slate";
+}
+
+function WaveNodeTree({ node, depth = 0 }: { node: WaveNode; depth?: number }) {
+  return (
+    <div className="space-y-3">
+      <div
+        className="rounded-lg border border-gray-800 bg-zinc-950/60 p-4"
+        style={{ marginLeft: depth * 20 }}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <ToneBadge tone="slate">{node.nh_id}</ToneBadge>
+          <ToneBadge tone={statusTone(node.status)}>{node.status}</ToneBadge>
+          <h4 className="text-sm font-semibold text-gray-100">{node.title}</h4>
         </div>
-      )}
+        <p className="mt-3 text-sm text-gray-300">{node.summary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {node.linked_motion_ids.map((motionId) => (
+            <ToneBadge key={`${node.nh_id}-${motionId}`} tone="amber">
+              {motionId}
+            </ToneBadge>
+          ))}
+          {node.linked_chat_ids.map((chatId) => (
+            <ToneBadge key={`${node.nh_id}-${chatId}`} tone="sky">
+              {chatId}
+            </ToneBadge>
+          ))}
+          {node.linked_work_packet_ids.map((packetId) => (
+            <ToneBadge key={`${node.nh_id}-${packetId}`} tone="emerald">
+              {packetId}
+            </ToneBadge>
+          ))}
+        </div>
+        <ul className="mt-3 space-y-1 text-xs text-gray-400">
+          {node.acceptance_notes.map((note) => (
+            <li key={`${node.nh_id}-${note}`}>- {note}</li>
+          ))}
+        </ul>
+      </div>
+
+      {node.children.map((child) => (
+        <WaveNodeTree key={child.nh_id} node={child} depth={depth + 1} />
+      ))}
+    </div>
+  );
+}
+
+function WaveCard({ wave }: { wave: WavePlan }) {
+  return (
+    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-semibold text-gray-100">{wave.title}</h3>
+            <ToneBadge tone={statusTone(wave.status)}>{wave.status}</ToneBadge>
+            <ToneBadge tone="amber">planning spine</ToneBadge>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ToneBadge tone="sky">{wave.repo_full_name}</ToneBadge>
+            <ToneBadge tone="slate">{wave.surface_label}</ToneBadge>
+            {wave.project_label ? (
+              <ToneBadge tone="emerald">{wave.project_label}</ToneBadge>
+            ) : (
+              <ToneBadge tone="amber">project:none</ToneBadge>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ToneBadge tone="emerald">{wave.wave_id}</ToneBadge>
+          <ToneBadge tone="rose">capture/index only</ToneBadge>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1.1fr]">
+        <div className="space-y-4">
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">
+              Wave artifact convention
+            </h4>
+            <ul className="mt-3 space-y-1 text-sm text-gray-300">
+              <li>- wave id: {wave.wave_id}</li>
+              <li>- wave.yaml: {wave.artifact_path_preview.wave_yaml}</li>
+              <li>- plan.md: {wave.artifact_path_preview.plan_md}</li>
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">Linked continuity</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {wave.related_motion_ids.map((motionId) => (
+                <ToneBadge key={`${wave.wave_id}-${motionId}`} tone="amber">
+                  {motionId}
+                </ToneBadge>
+              ))}
+              {wave.related_chat_ids.map((chatId) => (
+                <ToneBadge key={`${wave.wave_id}-${chatId}`} tone="sky">
+                  {chatId}
+                </ToneBadge>
+              ))}
+              {wave.related_work_packet_ids.map((packetId) => (
+                <ToneBadge key={`${wave.wave_id}-${packetId}`} tone="emerald">
+                  {packetId}
+                </ToneBadge>
+              ))}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-400">
+              <Link href={wave.deliberation_route} className="text-sky-300 underline">
+                {wave.deliberation_route}
+              </Link>
+              <Link href="/operator/chats" className="text-sky-300 underline">
+                /operator/chats
+              </Link>
+              <Link href="/operator/work" className="text-sky-300 underline">
+                /operator/work
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-gray-100">
+                Next prompt / handoff
+              </h4>
+              <ToneBadge tone="amber">copy only</ToneBadge>
+            </div>
+            <textarea
+              readOnly
+              value={wave.next_prompt_preview}
+              rows={20}
+              className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">nh_id wave plan</h4>
+            <p className="mt-2 text-xs text-gray-400">
+              v0 waves are repo-native planning artifacts only. They do not run
+              automatically and do not authorize execution.
+            </p>
+            <div className="mt-4 space-y-3">
+              {wave.nodes.map((node) => (
+                <WaveNodeTree key={node.nh_id} node={node} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export default function WavesPage() {
+  const waves = getSeededWavePlans();
+  const nodeCount = waves.flatMap((wave) => wave.nodes).length;
+
+  return (
+    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <header className="space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-semibold">JAI NEXUS - Waves</h1>
+            <ToneBadge tone="amber">planning spine</ToneBadge>
+            <ToneBadge tone="rose">no automatic live capture</ToneBadge>
+          </div>
+          <p className="max-w-4xl text-sm text-gray-400">
+            Bundled/static wave sessions connect captured conversations,
+            deliberation transcripts, motions, work packets, and next prompts
+            into a durable planning hierarchy using nh_id nodes such as 0.0,
+            1.0, 1.1, and 1.1.1.
+          </p>
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+            <p>
+              This v0 seam is capture, index, and planning only. It does not
+              add automatic live capture, execution, branch writes, PR creation,
+              dispatch, scheduler behavior, DB mutation, API mutation, or hidden
+              persistence.
+            </p>
+          </div>
+        </header>
+
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <SummaryCard
+            label="Wave sessions"
+            value={String(waves.length)}
+            detail="Seeded wave plans derived from current deliberation direction."
+          />
+          <SummaryCard
+            label="Root nh_id nodes"
+            value={String(nodeCount)}
+            detail="Wave sessions expose a durable nh_id planning hierarchy."
+          />
+          <SummaryCard
+            label="Related motions"
+            value={String(
+              new Set(waves.flatMap((wave) => wave.related_motion_ids)).size,
+            )}
+            detail="Waves link back to the continuity and deliberation motions."
+          />
+          <SummaryCard
+            label="Execution posture"
+            value="blocked"
+            detail="Waves remain a planning spine only and do not authorize action."
+          />
+        </section>
+
+        <Section
+          title="Seeded wave sessions"
+          description="At least one wave plan is seeded from the current next-action recommendation and linked back to motions, chats, work packets, and prompts."
+        >
+          <div className="space-y-4">
+            {waves.map((wave) => (
+              <WaveCard key={wave.wave_id} wave={wave} />
+            ))}
+          </div>
+        </Section>
+      </div>
     </main>
   );
 }
