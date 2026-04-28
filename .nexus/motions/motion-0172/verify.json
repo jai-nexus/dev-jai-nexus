@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "motion_id": "motion-0172",
+  "latest": {
+    "validate_motion": {
+      "ok": true,
+      "status": 0,
+      "timestamp": "2026-04-28T16:19:23.5852427Z"
+    },
+    "validate_agency": {
+      "ok": true,
+      "status": 0,
+      "timestamp": "2026-04-28T16:19:23.5852427Z"
+    },
+    "typecheck": {
+      "ok": true,
+      "status": 0,
+      "timestamp": "2026-04-28T16:19:23.5852427Z"
+    }
+  },
+  "summary": {
+    "required_ok": true,
+    "last_updated": "2026-04-28T16:19:23.5852427Z"
+  }
+}

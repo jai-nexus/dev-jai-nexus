@@ -333,8 +333,8 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
         </section>
 
         <Section
-          title="Captured operator deliberations"
-          description="New continuity records are bundled/static in v0 and link deliberation output into motions, waves, work packets, and next prompts."
+          title="Captured continuity records"
+          description="Bundled/static continuity records now include both captured operator deliberations and repo-facing planning captures linked into motions, waves, work packets, and next prompts."
         >
           <div className="space-y-4">
             {continuityRecords.map((record) => (
