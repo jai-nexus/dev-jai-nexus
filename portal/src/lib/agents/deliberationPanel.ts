@@ -7,15 +7,18 @@ import type {
 } from "@/lib/agents/types";
 import {
   getProjectEntry,
-  getProjectCatalog,
   getSurfaceEntry,
 } from "@/lib/controlPlane/repoSurfaceModel";
 import type {
   DeliberationAgentAdvisory,
+  DeliberationAdvisoryVote,
   DeliberationCandidate,
   DeliberationCandidateSeed,
   DeliberationConsensusSummary,
   DeliberationPanelModel,
+  DeliberationTranscriptRecommendation,
+  DeliberationTranscriptSession,
+  DeliberationTranscriptTurn,
 } from "@/lib/agents/deliberationTypes";
 import type { DraftWorkPacketAction } from "@/lib/agents/workPacketTypes";
 
@@ -26,6 +29,14 @@ const GLOBAL_AGENT_KEYS = new Set([
   "jai-librarian",
   "jai-governance-agent",
 ]);
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
 
 function actionToCapabilityKey(
   action: DraftWorkPacketAction,
@@ -426,6 +437,222 @@ function buildNextStepPrompt(
   };
 }
 
+function voteScore(vote: DeliberationAdvisoryVote) {
+  if (vote === "support") return 4;
+  if (vote === "support_with_caution") return 2;
+  if (vote === "defer") return -1;
+  return -3;
+}
+
+function sourceKindBonus(candidate: DeliberationCandidate) {
+  if (candidate.source_kind === "work_packet") return 4;
+  if (candidate.source_kind === "manual") return 3;
+  if (candidate.source_kind === "motion") return 2;
+  if (candidate.source_kind === "project") return 1;
+  return -8;
+}
+
+function candidateRank(candidate: DeliberationCandidate) {
+  return (
+    candidate.advisory.reduce((total, entry) => total + voteScore(entry.vote), 0) +
+    sourceKindBonus(candidate)
+  );
+}
+
+function sortCandidatesForRecommendation(candidates: DeliberationCandidate[]) {
+  return [...candidates].sort((left, right) => {
+    const rankDelta = candidateRank(right) - candidateRank(left);
+    if (rankDelta !== 0) {
+      return rankDelta;
+    }
+
+    const supportDelta = right.consensus.support - left.consensus.support;
+    if (supportDelta !== 0) {
+      return supportDelta;
+    }
+
+    return left.title.localeCompare(right.title);
+  });
+}
+
+function pickRecommendedCandidate(candidates: DeliberationCandidate[]) {
+  const ranked = sortCandidatesForRecommendation(candidates);
+  return ranked[0];
+}
+
+function buildTranscriptRecommendation(
+  candidate: DeliberationCandidate,
+): DeliberationTranscriptRecommendation {
+  const suggestedMotionTitle = `Follow-up: ${candidate.title}`;
+  const suggestedBranchName = `sprint/q2-${slugify(candidate.title)}-follow-up`;
+  const lines = [
+    "# Deliberation Session Recommendation",
+    "",
+    `Recommended candidate: ${candidate.title}`,
+    `Candidate ID: ${candidate.candidate_id}`,
+    `Suggested next motion title: ${suggestedMotionTitle}`,
+    "Suggested next motion id: assigned by operator",
+    `Suggested branch name: ${suggestedBranchName}`,
+    `Target repo: ${candidate.target.repo_full_name}`,
+    `Target surface: ${candidate.target.surface.label}`,
+    `Target project: ${candidate.target.project?.name ?? "none"}`,
+    "",
+    "Why this was recommended:",
+    `- ${candidate.consensus.summary}`,
+    `- Highest non-binding support rank among current deliberation candidates: ${candidate.consensus.consensus_label}.`,
+    "",
+    "Human gates:",
+    ...candidate.human_gates.map((gate) => `- ${gate}`),
+    "",
+    "Evidence expectations:",
+    ...candidate.evidence_expectations.map((expectation) => `- ${expectation}`),
+    "",
+    "Verification commands:",
+    ...candidate.verification_commands.map((command) => `- ${command}`),
+    "",
+    "Operator guardrail: This is copy-only guidance.",
+    "Operator guardrail: Do not execute unless separately authorized by the operator.",
+    "Operator guardrail: No branch write, PR creation, dispatch, scheduler behavior, DB mutation, API mutation, or runtime execution is enabled from this session.",
+  ];
+
+  return {
+    recommended_candidate_id: candidate.candidate_id,
+    recommended_title: candidate.title,
+    suggested_motion_title: suggestedMotionTitle,
+    suggested_motion_id_note: "assigned by operator",
+    suggested_branch_name: suggestedBranchName,
+    prompt_text: lines.join("\n"),
+    non_binding: true,
+    operator_authorization_required: true,
+  };
+}
+
+function pickPrimaryCandidateForAgent(
+  agent: AgentRegistryAgent,
+  candidates: DeliberationCandidate[],
+) {
+  return [...candidates]
+    .map((candidate) => ({
+      candidate,
+      advisory:
+        candidate.advisory.find((entry) => entry.agent.key === agent.key) ?? null,
+    }))
+    .filter(
+      (entry): entry is {
+        candidate: DeliberationCandidate;
+        advisory: DeliberationAgentAdvisory;
+      } => Boolean(entry.advisory),
+    )
+    .sort((left, right) => {
+      const voteDelta = voteScore(right.advisory.vote) - voteScore(left.advisory.vote);
+      if (voteDelta !== 0) {
+        return voteDelta;
+      }
+
+      const consensusDelta =
+        candidateRank(right.candidate) - candidateRank(left.candidate);
+      if (consensusDelta !== 0) {
+        return consensusDelta;
+      }
+
+      return left.candidate.title.localeCompare(right.candidate.title);
+    })[0];
+}
+
+function buildModeratorTurn(
+  recommendation: DeliberationTranscriptRecommendation,
+  candidates: DeliberationCandidate[],
+): DeliberationTranscriptTurn {
+  return {
+    turn_id: "turn-00-moderator",
+    order: 0,
+    speaker_kind: "moderator",
+    speaker_label: "Moderator",
+    speaker_handle: null,
+    advisory_vote: "framing",
+    focus_candidate_ids: candidates.map((candidate) => candidate.candidate_id),
+    statement: [
+      "This transcript is advisory only and compares multiple candidate motions and actions using deterministic registry, work packet, motion, project, manual, and planned-toolchain inputs.",
+      `The current leading recommendation is ${recommendation.recommended_title}, but operator authorization is still required before any execution, branch creation, or motion drafting occurs.`,
+      "Planned toolchain targets remain visible for handoff planning only and do not imply any integration or runnable path.",
+    ],
+  };
+}
+
+function buildAgentTurn(
+  agent: AgentRegistryAgent,
+  order: number,
+  candidates: DeliberationCandidate[],
+  recommendation: DeliberationTranscriptRecommendation,
+): DeliberationTranscriptTurn {
+  const primary = pickPrimaryCandidateForAgent(agent, candidates);
+  const recommendedCandidate = candidates.find(
+    (candidate) => candidate.candidate_id === recommendation.recommended_candidate_id,
+  );
+  const primaryCandidate = primary?.candidate ?? recommendedCandidate ?? candidates[0];
+  const primaryAdvisory =
+    primary?.advisory ??
+    primaryCandidate.advisory.find((entry) => entry.agent.key === agent.key) ??
+    primaryCandidate.advisory[0];
+  const plannedCandidate = candidates.find(
+    (candidate) =>
+      candidate.planned_toolchain_target === "jai-pilot" ||
+      candidate.planned_toolchain_target === "vscode-nexus",
+  );
+  const plannedNote = plannedCandidate
+    ? `${plannedCandidate.planned_toolchain_target} remains planned only and does not change the execution boundary.`
+    : "No planned toolchain target changes the execution boundary.";
+
+  return {
+    turn_id: `turn-${String(order).padStart(2, "0")}-${agent.key}`,
+    order,
+    speaker_kind: "agent",
+    speaker_label: agent.label,
+    speaker_handle: agent.handle,
+    advisory_vote: primaryAdvisory.vote,
+    focus_candidate_ids: [
+      primaryCandidate.candidate_id,
+      recommendation.recommended_candidate_id,
+    ],
+    statement: [
+      `Primary recommendation focus: ${primaryCandidate.title}. Vote: ${primaryAdvisory.vote}.`,
+      ...primaryAdvisory.reasoning,
+      `Session-wide recommendation check: ${recommendation.recommended_title} remains copy-only and requires operator authorization before any next motion or repo action is opened.`,
+      plannedNote,
+    ],
+  };
+}
+
+function buildTranscriptSession(
+  participatingAgents: AgentRegistryAgent[],
+  candidates: DeliberationCandidate[],
+): DeliberationTranscriptSession {
+  const recommendedCandidate = pickRecommendedCandidate(candidates);
+  const recommendation = buildTranscriptRecommendation(recommendedCandidate);
+  const moderatorFraming = [
+    "Moderator framing: select the next best motion or action candidate without enabling any execution surface.",
+    "Moderator framing: compare work packets, project follow-ups, motion follow-ups, manual candidates, and planned toolchain targets using the shared repo-plus-surface-plus-optional-project model.",
+    "Moderator framing: all votes are non-binding, all prompts are copy-only, and operator authorization is required before any execution or branch activity.",
+  ];
+
+  const turns: DeliberationTranscriptTurn[] = [
+    buildModeratorTurn(recommendation, candidates),
+    ...participatingAgents.map((agent, index) =>
+      buildAgentTurn(agent, index + 1, candidates, recommendation),
+    ),
+  ];
+
+  return {
+    session_id: "agent-deliberation-transcript-v0",
+    focus: "select the next best motion or action without enabling execution",
+    moderator_framing: moderatorFraming,
+    evaluated_candidate_ids: candidates.map((candidate) => candidate.candidate_id),
+    turns,
+    consensus_summary: recommendedCandidate.consensus,
+    recommendation,
+  };
+}
+
 export function getAgentDeliberationPanel(): DeliberationPanelModel {
   const registry = getAgentConfigurationRegistry();
   const participatingAgents = registry.named_agents;
@@ -483,5 +710,6 @@ export function getAgentDeliberationPanel(): DeliberationPanelModel {
     participating_agents: participatingAgents,
     candidates,
     planned_toolchain_targets: ["jai-pilot", "vscode-nexus"],
+    transcript_session: buildTranscriptSession(participatingAgents, candidates),
   };
 }

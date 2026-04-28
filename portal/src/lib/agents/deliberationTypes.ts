@@ -88,4 +88,37 @@ export interface DeliberationPanelModel {
   participating_agents: AgentRegistryAgent[];
   candidates: DeliberationCandidate[];
   planned_toolchain_targets: DeliberationToolchainTargetKey[];
+  transcript_session: DeliberationTranscriptSession;
+}
+
+export interface DeliberationTranscriptTurn {
+  turn_id: string;
+  order: number;
+  speaker_kind: "moderator" | "agent";
+  speaker_label: string;
+  speaker_handle: string | null;
+  focus_candidate_ids: string[];
+  advisory_vote: DeliberationAdvisoryVote | "framing";
+  statement: string[];
+}
+
+export interface DeliberationTranscriptRecommendation {
+  recommended_candidate_id: string;
+  recommended_title: string;
+  suggested_motion_title: string;
+  suggested_motion_id_note: string;
+  suggested_branch_name: string;
+  prompt_text: string;
+  non_binding: true;
+  operator_authorization_required: true;
+}
+
+export interface DeliberationTranscriptSession {
+  session_id: string;
+  focus: string;
+  moderator_framing: string[];
+  evaluated_candidate_ids: string[];
+  turns: DeliberationTranscriptTurn[];
+  consensus_summary: DeliberationConsensusSummary;
+  recommendation: DeliberationTranscriptRecommendation;
 }
