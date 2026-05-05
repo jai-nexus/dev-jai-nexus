@@ -1,0 +1,19 @@
+motion_id: motion-0173
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Q2M5 Control Thread Role Taxonomy v0"
+subtitle: "make the Q2M5 chat and workflow role taxonomy explicit for routing clarity without reactivating Orchestrator as a JAI agent role"
+kind: builder-proof
+program: q2m5-control-thread-role-taxonomy-v0
+basis: motion-0172
+status: ratified
+created_at: "2026-05-05T00:00:00.000Z"
+decided_at: "2026-05-05T17:29:14.2951314Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []

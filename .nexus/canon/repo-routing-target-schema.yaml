@@ -1,0 +1,117 @@
+schema_id: repo-routing-target-schema
+version: "0.1"
+established_by: motion-0173
+established_at: "2026-05-05"
+purpose: >
+  Define the repo-routing target package used to hand bounded work from
+  control-thread or orchestrator scope into repo execution or exploration.
+
+required_fields:
+  repo:
+    type: string
+    description: target repository name
+
+  branch:
+    type: string
+    description: target branch or recommended working branch
+
+  motion_or_seam:
+    type: string
+    description: active motion id or named bounded seam
+
+  baseline:
+    type: sequence
+    min_items: 1
+    description: current baseline facts the receiving repo thread must assume
+
+  task:
+    type: string
+    description: one bounded request sentence for the receiving session
+
+  allowed_files_surfaces:
+    type: sequence
+    min_items: 1
+    description: explicit files, directories, or product surfaces allowed to change
+
+  blocked_files_surfaces:
+    type: sequence
+    min_items: 1
+    description: explicit files, directories, or product surfaces that must not change
+
+  acceptance_criteria:
+    type: sequence
+    min_items: 1
+    description: observable conditions required for the seam to be considered complete
+
+  validation_commands:
+    type: sequence
+    min_items: 1
+    description: commands or checks expected before return
+
+  expected_return_fields:
+    type: sequence
+    min_items: 1
+    allowed_values:
+      - current baseline
+      - settled canon
+      - active work
+      - open questions
+      - deferred ideas
+      - tasks
+      - risks
+      - routing targets
+      - next prompts
+      - validation gate status
+      - changed files
+      - commit plan
+      - PR description
+    description: fields the receiving session must send back in its return package
+
+  passalong_destination:
+    type: mapping
+    required_keys:
+      - role
+      - repo
+      - chat
+    description: where the receiving session should return continuity when done
+
+optional_fields:
+  settled_canon:
+    type: sequence
+    description: specific motions or canon files the receiving session must anchor to
+
+  open_questions:
+    type: sequence
+    description: unresolved items that remain in scope for clarification only
+
+  explicit_boundaries:
+    type: sequence
+    description: authority, capability, or governance constraints to restate verbatim
+
+  validation_gate_status:
+    type: sequence
+    description: known pass/fail/pending gate posture at routing time
+
+routing_rules:
+  allowed_target_roles:
+    - REPO_EXECUTION
+    - EXPLORATION
+  notes:
+    - CONTROL_THREAD and ORCHESTRATOR may author routing targets
+    - ORCHESTRATOR remains recommendation-only and does not become a JAI agent role
+    - a routing target does not itself authorize branch creation, PR creation, or execution widening
+
+blocked_uses:
+  - expanding branch-write authority
+  - expanding PR-creation authority
+  - enabling execution where execution is disabled
+  - hidden persistence or autonomous scheduling
+  - DB or API mutation by implication
+  - cross-repo mutation outside the named target
+
+future_dependencies:
+  - motion: motion-0174
+    status: deferred_not_implemented
+    note: >
+      A future motion may define richer operational routing flows or tooling, but
+      motion-0173 limits itself to the documentary target contract.

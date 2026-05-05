@@ -1,0 +1,168 @@
+schema_id: passalong-schema
+version: "0.1"
+established_by: motion-0173
+established_at: "2026-05-05"
+purpose: >
+  Define the minimum passalong contract for workflow-role handoff packaging
+  across control-thread, orchestrator, repo-execution, and exploration sessions.
+
+applies_to:
+  source_roles:
+    - CONTROL_THREAD
+    - ORCHESTRATOR
+    - REPO_EXECUTION
+    - EXPLORATION
+  target_roles:
+    - CONTROL_THREAD
+    - ORCHESTRATOR
+    - REPO_EXECUTION
+    - EXPLORATION
+
+required_fields:
+  source:
+    type: mapping
+    required_keys:
+      - repo
+      - chat
+    description: origin repo/chat that authored the passalong
+
+  target:
+    type: mapping
+    required_keys:
+      - repo
+      - chat
+    description: receiving repo/chat expected to continue the work
+
+  date:
+    type: iso_date
+    description: handoff date in YYYY-MM-DD form
+
+  scope:
+    type: enum
+    allowed:
+      - CONTROL_THREAD
+      - ORCHESTRATOR
+      - REPO_EXECUTION
+      - EXPLORATION
+    description: workflow-role scope the passalong is authored from
+
+  current_baseline:
+    type: sequence
+    min_items: 1
+    description: current branch, motion, baseline state, and boundary facts
+
+  settled_canon:
+    type: sequence
+    min_items: 1
+    description: motions, canon files, or decisions treated as settled
+
+  active_work:
+    type: sequence
+    min_items: 1
+    description: work in progress that the receiving session must preserve
+
+  open_questions:
+    type: sequence
+    description: unresolved questions still affecting routing or closure
+
+  deferred_ideas:
+    type: sequence
+    description: postponed ideas that must remain explicit and not be silently dropped
+
+  tasks:
+    type: sequence
+    min_items: 1
+    item_shape:
+      required_keys:
+        - id
+        - action
+    description: discrete next actions for the receiving session
+
+  risks:
+    type: sequence
+    item_shape:
+      required_keys:
+        - risk
+        - mitigation
+    description: open risks and mitigations relevant at receipt time
+
+  routing_targets:
+    type: sequence
+    min_items: 1
+    item_shape:
+      required_keys:
+        - role
+        - reason
+    description: valid next targets and why each is or is not appropriate
+    item_constraints:
+      role_allowed:
+        - CONTROL_THREAD
+        - ORCHESTRATOR
+        - REPO_EXECUTION
+        - EXPLORATION
+      repo_routing_target_ref: .nexus/canon/repo-routing-target-schema.yaml
+
+  next_prompts:
+    type: sequence
+    min_items: 1
+    description: exact prompt starters for the next chat/session
+
+  explicit_boundaries:
+    type: sequence
+    min_items: 1
+    description: no-touch constraints, authority limits, and out-of-scope reminders
+
+conditional_fields:
+  validation_gate_status:
+    required_when:
+      - scope == REPO_EXECUTION
+      - scope == CONTROL_THREAD
+    type: sequence
+    item_shape:
+      required_keys:
+        - gate
+        - status
+    description: gate posture where validation evidence exists or is required
+
+  current_motion:
+    required_when:
+      - an active motion exists
+    type: string
+    description: active motion id
+
+  branch:
+    required_when:
+      - repo-local work is active
+    type: string
+    description: active branch at handoff time
+
+  passalong_destination:
+    required_when:
+      - a single intended receiver is already chosen
+    type: mapping
+    required_keys:
+      - role
+      - repo
+      - chat
+    description: primary receiving target when the handoff is not fan-out planning
+
+authoring_rules:
+  - passalong content is documentary only and does not execute work
+  - passalong content does not replace motion packages, decision files, or ratification artifacts
+  - passalong content does not authorize repo mutation, branch creation, or PR creation
+  - deferred ideas must remain explicit rather than being silently omitted
+  - validation status must distinguish pass, fail, pending, and not_run states
+  - source and target chat identifiers must be present even when repo is unchanged
+
+blocked_uses:
+  - treating a passalong as an execution command
+  - claiming sync-back without required ratification and recorded continuity evidence
+  - inventing settled canon or gate results
+  - using passalong packaging to widen authority
+
+future_dependencies:
+  - motion: motion-0174
+    status: deferred_not_implemented
+    note: >
+      Future operational workflow wiring may consume this schema, but motion-0173
+      defines the contract only.
