@@ -1,0 +1,121 @@
+schema_id: docs-operations-control-plane
+version: "0.1"
+established_by: motion-0174
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Define the planning-only control-plane semantics by which dev-jai-nexus may
+  eventually govern JAI Agent maintenance operations for docs-nexus through a
+  staged authority ladder without activating write, branch, PR, merge, or
+  automation authority in v0.
+
+relationship_model:
+  docs_nexus_owns:
+    - docs/source-intelligence/canon
+    - curated source artifacts
+    - motion context packs
+    - docs validation
+    - source-intelligence library material
+  dev_jai_nexus_owns:
+    - agent authority semantics
+    - workflow and control-plane policy
+    - docs-agent authorization ladder
+    - audit and event expectations
+  statement: >
+    docs-nexus remains the docs, source-intelligence, and canon repository.
+    dev-jai-nexus defines how JAI Agents could be authorized to read, propose,
+    curate, update, and audit docs-nexus changes after explicit future approval.
+
+v0_posture:
+  designable_now_levels:
+    - 0
+    - 1
+    - 2
+  modeled_but_disabled_levels:
+    - 3
+    - 4
+    - 5
+  no_activation_in_this_motion:
+    - docs-nexus file writes
+    - docs-nexus branch creation
+    - docs-nexus PR creation
+    - docs-nexus merge authority
+    - workflow automation
+    - live capture
+    - scheduler behavior
+
+workflow_alignment:
+  routing_roles:
+    - CONTROL_THREAD
+    - ORCHESTRATOR
+    - REPO_EXECUTION
+    - EXPLORATION
+  note: >
+    The docs operations control plane is a workflow-policy surface layered on top
+    of the settled workflow-role canon from motion-0173. It does not introduce
+    new workflow roles or execution authority.
+
+docs_agent_roles:
+  docs_librarian:
+    canonical_role_class: Librarian
+    purpose: source organization, retrieval, canon linkage
+    default_max_level: 1
+    note: default_max_level is not automatic authorization
+
+  source_curator:
+    canonical_role_class: Librarian
+    purpose: relevance, metadata grounding, curation posture
+    default_max_level: 1
+    note: default_max_level is not automatic authorization
+
+  context_packager:
+    canonical_role_class: Architect
+    purpose: read-only motion context packs from curated sources
+    default_max_level: 1
+    note: default_max_level is not automatic authorization
+
+  docs_patch_planner:
+    canonical_role_class: Builder
+    purpose: patch plans and PR draft text without repo mutation
+    default_max_level: 2
+    note: default_max_level is not automatic authorization
+
+  docs_verifier:
+    canonical_role_class: Verifier
+    purpose: validation evidence, placeholder cleanup, source provenance, diff hygiene
+    default_max_level: 2
+    note: default_max_level is not automatic authorization
+
+  docs_arbiter:
+    canonical_role_class: Arbiter
+    purpose: disputed curation or promotion decisions
+    default_max_level: 2
+    note: default_max_level is not automatic authorization
+
+  operator:
+    canonical_role_class: Operator
+    purpose: grants or withholds authority escalation
+    default_max_level: 5
+    note: >
+      operator default_max_level reflects the highest level that could be
+      considered after explicit future approval; it does not activate that level.
+
+guardrails:
+  - no main writes
+  - no autonomous merge
+  - no raw source promotion to canon
+  - no hidden persistence
+  - no company decision authority
+  - no cross-repo execution authority
+  - no credentials
+  - no scheduler
+  - no live capture
+  - no immediate automation change
+  - no API or DB mutation
+  - no docs-nexus edits in motion-0174
+
+future_authority_model:
+  statement: >
+    Any future progression beyond Level 2 requires an explicit motion that
+    ratifies the level, path allowlists, reviewer contract, audit expectations,
+    and failure-handling semantics before any docs-nexus mutation is allowed.

@@ -1,0 +1,122 @@
+schema_id: docs-agent-authority-ladder
+version: "0.1"
+established_by: motion-0174
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Define the staged authority ladder for future docs-nexus maintenance work
+  governed by dev-jai-nexus. V0 is design-only. Levels 3 through 5 are modeled
+  but disabled.
+
+authority_levels:
+  "0":
+    name: read_curated_context
+    v0_status: designable_now
+    description: Agents read curated docs-nexus context only.
+    allowed_outputs:
+      - read curated source artifacts
+      - summarize docs context
+      - cite source artifact IDs
+      - provide motion deliberation context
+    blocked_outputs:
+      - no patch plans
+      - no recommendations framed as authority
+      - no repo mutation
+      - no canon promotion
+
+  "1":
+    name: recommend_and_curate
+    v0_status: designable_now
+    description: Agents generate recommendations, curation notes, relevance scores, and docs update proposals.
+    allowed_outputs:
+      - curation notes
+      - relevance scores
+      - preserve recommendations
+      - defer recommendations
+      - omit recommendations
+      - docs update proposals
+    blocked_outputs:
+      - no file writes
+      - no branch creation
+      - no PR creation
+      - no canon updates
+
+  "2":
+    name: draft_patch_and_review_packages
+    v0_status: designable_now
+    description: Agents generate patch plans and PR drafts, but no repo mutation.
+    allowed_outputs:
+      - patch plans
+      - proposed file lists
+      - PR title drafts
+      - PR body drafts
+      - validation plans
+      - reviewer handoffs
+    blocked_outputs:
+      - no writing files
+      - no creating branches
+      - no creating PRs
+      - no modifying docs-nexus
+
+  "3":
+    name: constrained_pr_creation
+    v0_status: modeled_but_disabled
+    description: Future constrained docs-nexus PRs under allowlisted paths only.
+    allowed_outputs:
+      - model only, disabled in v0
+      - future constrained docs-nexus PRs under allowlisted paths only
+    blocked_outputs:
+      - disabled in v0
+      - no main writes
+      - no non-allowlisted paths
+      - no raw source promotion
+      - no autonomous merge
+
+  "4":
+    name: controlled_queue_branch_updates
+    v0_status: modeled_but_disabled
+    description: Future controlled rolling branch updates only.
+    allowlisted_branches:
+      - sources/rolling-ingest
+      - docs/agent-curation-queue
+      - docs/motion-context-pack-queue
+    allowed_outputs:
+      - model only, disabled in v0
+      - future controlled rolling branch updates only
+    blocked_outputs:
+      - disabled in v0
+      - no direct canon promotion
+      - no uncontrolled branch names
+      - no main writes
+
+  "5":
+    name: allowlisted_low_risk_auto_merge
+    v0_status: modeled_but_disabled
+    description: Future allowlisted low-risk auto-merge only, if later authorized.
+    allowed_outputs:
+      - model only, disabled in v0
+      - future allowlisted low-risk auto-merge only
+    blocked_outputs:
+      - disabled in v0
+      - no canon-bearing ambiguity
+      - no policy or constitution changes
+      - no raw source promotion
+      - no schema changes unless separately approved
+      - no security-sensitive updates
+
+authorization_rules:
+  default_max_level_is_not_authorization: true
+  operator_escalation_required: true
+  future_levels_require_explicit_motion: true
+  cross_repo_execution_authority_added: false
+  main_write_authority_added: false
+  autonomous_merge_authority_added: false
+
+role_ceiling_map:
+  docs_librarian: 1
+  source_curator: 1
+  context_packager: 1
+  docs_patch_planner: 2
+  docs_verifier: 2
+  docs_arbiter: 2
+  operator: 5
