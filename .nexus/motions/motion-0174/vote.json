@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0174",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The dev-jai-nexus and docs-nexus relationship is explicit, with docs-nexus retaining docs and source-intelligence ownership while dev-jai-nexus owns authority semantics and workflow policy.",
+      "Authority Levels 0 through 5 are documented with Levels 0 through 2 designable now and Levels 3 through 5 modeled but explicitly disabled in v0.",
+      "The motion is planning-only, documents allowed and blocked outputs plus the audit event model, and does not add docs-nexus write, branch, PR, merge, or automation authority."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-05T17:51:28.2348628Z"
+}

@@ -1,0 +1,101 @@
+schema_id: docs-agent-operation-event
+version: "0.1"
+established_by: motion-0174
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Define the audit/event contract for future docs agent operations touching
+  docs-nexus authority semantics. Motion-0174 defines the event shape only and
+  does not emit events.
+
+event_name: DocsAgentOperationEvent
+v0_status: model_only_not_emitted
+
+fields:
+  event_id:
+    type: string
+    required: true
+  occurred_at:
+    type: datetime
+    required: true
+  authority_level:
+    type: integer
+    required: true
+    allowed_values: [0, 1, 2, 3, 4, 5]
+  actor_role:
+    type: string
+    required: true
+    allowed_values:
+      - docs_librarian
+      - source_curator
+      - context_packager
+      - docs_patch_planner
+      - docs_verifier
+      - docs_arbiter
+      - operator
+  actor_agent_id:
+    type: string
+    required: true
+  operator_authorized_by:
+    type: string_or_null
+    required: false
+  source_repo:
+    type: string
+    required: true
+  target_repo:
+    type: string
+    required: true
+  operation_type:
+    type: enum
+    required: true
+    allowed_values:
+      - read_context
+      - recommend_curation
+      - score_relevance
+      - draft_patch_plan
+      - draft_pr
+      - create_pr
+      - update_queue_branch
+      - auto_merge
+  target_paths:
+    type: sequence
+    required: true
+  related_motion_ids:
+    type: sequence
+    required: false
+  related_wave_ids:
+    type: sequence
+    required: false
+  related_chat_ids:
+    type: sequence
+    required: false
+  evidence:
+    type: mapping
+    required: true
+    fields:
+      validation_commands:
+        type: sequence
+        required: false
+      source_artifacts:
+        type: sequence
+        required: false
+      risk_notes:
+        type: sequence
+        required: false
+  result:
+    type: mapping
+    required: true
+    fields:
+      status:
+        type: string
+        required: true
+      output_refs:
+        type: sequence
+        required: false
+
+rules:
+  - event emission is not enabled by motion-0174
+  - Levels 3 through 5 remain disabled even though event operation types are modeled
+  - create_pr, update_queue_branch, and auto_merge event types require future explicit authorization before use
+  - event records do not themselves authorize an operation
+  - no live capture, hidden persistence, or scheduler behavior is introduced here
