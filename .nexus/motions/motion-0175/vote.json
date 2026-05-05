@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0175",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The dry run documents Level 0 and Level 1 docs-agent behavior only, with participating roles limited to read and recommendation posture.",
+      "Recommendations, curation notes, relevance observations, and recommendations-only docs update proposals are recorded without any patch plans, PR drafts, or docs-nexus mutation path.",
+      "Level 2 remains disabled in this seam, Levels 3 through 5 remain modeled disabled, and no authority guardrails are weakened."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-05T18:23:38.8647248Z"
+}

@@ -1,0 +1,19 @@
+motion_id: motion-0175
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Docs Operations Level 0/1 Dry Run v0"
+subtitle: "prove Level 0 and Level 1 docs-agent read and recommend behavior without any write-adjacent output or authority escalation"
+kind: builder-proof
+program: q2m5-docs-ops-level-0-1-dry-run-v0
+basis: motion-0174
+status: ratified
+created_at: "2026-05-05T00:00:00.000Z"
+decided_at: "2026-05-05T18:23:38.8647248Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []

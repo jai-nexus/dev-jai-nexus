@@ -1,0 +1,210 @@
+schema_id: docs-ops-level-0-1-dry-run
+version: "0.1"
+established_by: motion-0175
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Record a planning-only dry run that exercises the canonized docs operations
+  control plane at Level 0 and Level 1 only, proving read and recommend
+  behavior without any write-adjacent output, docs-nexus mutation path, or
+  authority escalation.
+
+authority_scope:
+  active_levels:
+    - 0
+    - 1
+  explicitly_inactive_levels:
+    - 2
+    - 3
+    - 4
+    - 5
+  operator_record:
+    escalation_beyond_level_1_authorized: false
+    note: >
+      This dry run proves Level 0 and Level 1 read/recommend behavior only.
+      Level 2 remains disabled in this seam, and Levels 3 through 5 remain
+      modeled disabled per motion-0174 canon.
+
+docs_nexus_context_baseline:
+  merged_cleanup_markers:
+    - "#61 rolling source-ingest PR model merged"
+    - "#62 curated Q2 source artifacts merged"
+    - "#63 Q1/Q2 mega-curation merged"
+    - "#64 Source Intelligence Library v0 design merged"
+    - "#65 audit surfaces reconciliation merged"
+    - "#47 and #38 closed as superseded or stale"
+  continuity_summary: >
+    docs-nexus cleanup is complete. The repository is now healthier as a
+    conceptual Level 0 read context source, but none of those merged artifacts
+    are treated as automatically promotable canon by this dry run.
+
+participating_roles:
+  docs_librarian:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - read and summarize curated docs context
+      - recommend organization and context linkage improvements
+
+  source_curator:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - recommend preserve, defer, omit, and review-later treatment
+      - produce curation notes
+      - produce relevance observations
+
+  context_packager:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - recommend motion-context pack candidates
+      - recommend citation structure for curated artifact ids and provenance
+      - avoid generated pack assembly beyond recommendation text only
+
+  docs_verifier:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - recommend validation and audit checks
+      - reinforce provenance and diff hygiene expectations
+      - avoid schema enforcement and repo mutation
+
+  operator:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - record that no escalation beyond Level 1 is authorized
+      - preserve the no-write dry-run boundary
+
+  docs_patch_planner:
+    active: false
+    reason: Level 2 is out of scope for this dry run
+
+  docs_arbiter:
+    active: false
+    reason: no dispute requires arbitration in this dry run
+
+recommendations:
+  - id: dry-run-rec-01
+    role: docs_librarian
+    level: 0
+    recommendation: Source Intelligence Library should become the primary Level 0 context source for future docs-agent deliberations.
+
+  - id: dry-run-rec-02
+    role: source_curator
+    level: 0
+    recommendation: Q1 and Q2 curated artifacts should be treated as Level 0 read context, not as automatically promotable canon.
+
+  - id: dry-run-rec-03
+    role: context_packager
+    level: 1
+    recommendation: Future motion-context packs should cite curated artifact ids and PR provenance.
+
+  - id: dry-run-rec-04
+    role: source_curator
+    level: 1
+    recommendation: Source curation should continue to distinguish preserve, defer, omit, and review-later outcomes.
+
+  - id: dry-run-rec-05
+    role: docs_verifier
+    level: 1
+    recommendation: Security and CVE artifacts should remain triage context only unless an explicit asset or exposure review motion is routed.
+
+  - id: dry-run-rec-06
+    role: docs_verifier
+    level: 1
+    recommendation: Generated rollups and signals should remain outside canon unless later curated and validated.
+
+  - id: dry-run-rec-07
+    role: operator
+    level: 1
+    recommendation: Any Level 2 patch-plan exercise should be separately authorized and explicitly non-mutating.
+
+  - id: dry-run-rec-08
+    role: operator
+    level: 1
+    recommendation: Level 3 and above docs-nexus write, branch, PR, and merge authority remains disabled.
+
+curation_notes_and_relevance_observations:
+  - rolling ingest is now structurally healthier than daily PR flood
+  - curated artifacts are useful as motion deliberation context
+  - Source Intelligence Library is the right abstraction boundary for read-only docs-agent context
+  - audit surfaces reconciliation reduces stale manual and canon-bearing PR pressure
+  - source artifacts need provenance and metadata grounding to remain trustworthy
+  - raw generated sources should not bypass curation into canon
+
+docs_update_proposals:
+  - recommendation_only: true
+    proposal: Maintain the Source Intelligence Library as the default read-context entrypoint for future docs-agent deliberation prompts.
+  - recommendation_only: true
+    proposal: Preserve curated artifact identifiers and PR provenance in any future motion-context pack recommendation set.
+  - recommendation_only: true
+    proposal: Keep generated source rollups outside canon until a later curated validation path is explicitly ratified.
+
+optional_event_sample:
+  present: true
+  model_only_non_emitted: true
+  sample:
+    event_id: docs-op-dry-run-0001
+    occurred_at: "2026-05-05T00:00:00.000Z"
+    authority_level: 1
+    actor_role: source_curator
+    actor_agent_id: dry-run-source-curator
+    operator_authorized_by: operator
+    source_repo: dev-jai-nexus
+    target_repo: docs-nexus
+    operation_type: recommend_curation
+    target_paths:
+      - conceptual://docs-nexus/curated-artifacts
+      - conceptual://docs-nexus/source-intelligence-library
+    related_motion_ids:
+      - motion-0174
+      - motion-0175
+    related_wave_ids: []
+    related_chat_ids: []
+    evidence:
+      validation_commands: []
+      source_artifacts:
+        - pr-61
+        - pr-62
+        - pr-63
+        - pr-64
+        - pr-65
+      risk_notes:
+        - Non-emitted dry-run sample only
+        - No docs-nexus mutation path
+    result:
+      status: recommendation_only
+      output_refs:
+        - .nexus/canon/docs-ops-level-0-1-dry-run.yaml
+
+blocked_outputs:
+  - no docs-nexus edits
+  - no docs-nexus branch creation
+  - no docs-nexus PR creation
+  - no patch plans
+  - no PR drafts
+  - no automation
+  - no scheduler
+  - no hidden persistence
+  - no credentials
+  - no live capture
+  - no API or DB mutation
+  - no execution authority
+  - no Level 2 activation
+  - no Level 3 activation
+  - no Level 4 activation
+  - no Level 5 activation
+  - no Agent Assets Library implementation
+  - no raw source promotion to canon
