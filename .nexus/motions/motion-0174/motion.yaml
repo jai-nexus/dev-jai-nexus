@@ -1,0 +1,19 @@
+motion_id: motion-0174
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Agentic Docs Operations Control Plane v0"
+subtitle: "define the planning-only authority ladder and audit model for future docs-nexus maintenance governed by dev-jai-nexus"
+kind: builder-proof
+program: q2m5-agentic-docs-operations-control-plane-v0
+basis: motion-0173
+status: ratified
+created_at: "2026-05-05T00:00:00.000Z"
+decided_at: "2026-05-05T17:51:28.2348628Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []

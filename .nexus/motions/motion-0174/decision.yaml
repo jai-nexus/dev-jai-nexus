@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0174
+status: RATIFIED
+decided_at: "2026-05-05T17:51:28.2348628Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-05T17:51:28.2348628Z"
+notes: "RATIFIED: motion-0174 ratifies the agentic docs operations control plane, authority ladder, and audit model in planning-only posture."
