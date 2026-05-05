@@ -1,0 +1,20 @@
+protocol_version: "0.3.8"
+motion_id: motion-0175
+evaluated_at: "2026-05-05T18:23:38.8647248Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.08
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: []
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "Scope remains Level 0 and Level 1 read/recommend dry-run canon only; Level 2 and above stay disabled."
+escalation_state: null
