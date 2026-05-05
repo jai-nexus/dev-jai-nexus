@@ -1,0 +1,213 @@
+schema_id: docs-ops-level-2-patch-plan
+version: "0.1"
+established_by: motion-0176
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Record a planning-only Level 2 docs operations patch-plan exercise that
+  produces patch-plan text, proposed file targets, PR draft text, validation
+  recommendations, and reviewer handoff recommendations without any docs-nexus
+  mutation, branch creation, PR creation, diff output, or automation.
+
+authority_scope:
+  active_levels:
+    - 2
+  supporting_levels:
+    - 0
+    - 1
+  explicitly_disabled_levels:
+    - 3
+    - 4
+    - 5
+  operator_record:
+    level_2_authorized_for_non_mutating_planning_only: true
+    note: >
+      Level 2 is exercised here for planning output only. It does not authorize
+      branch creation, PR creation, file writes, automation, or docs-nexus
+      mutation. Levels 3 through 5 remain disabled.
+
+docs_nexus_context_baseline:
+  merged_cleanup_markers:
+    - "#61 rolling source-ingest PR model merged"
+    - "#62 curated Q2 source artifacts merged"
+    - "#63 Q1/Q2 mega-curation merged"
+    - "#64 Source Intelligence Library v0 design merged"
+    - "#65 audit surfaces reconciliation merged"
+    - "#47 and #38 closed as superseded or stale"
+  continuity_summary: >
+    docs-nexus cleanup is complete. Source Intelligence Library operational
+    readiness is now a reasonable conceptual target for a future docs-nexus
+    planning package, but this motion does not create or mutate any docs-nexus
+    files.
+
+participating_roles:
+  docs_patch_planner:
+    active: true
+    authority_level: 2
+    responsibilities:
+      - produce patch-plan text
+      - produce recommended docs-nexus file targets
+      - produce PR title and PR body draft text
+    constraints:
+      - cannot write files
+      - cannot create branches
+      - cannot create PRs
+      - cannot produce apply-ready diff output
+
+  docs_verifier:
+    active: true
+    authority_level: 2
+    responsibilities:
+      - produce validation plan recommendations
+      - produce risk checks and review hygiene notes
+    constraints:
+      - cannot enforce schemas
+      - cannot mutate docs-nexus
+
+  docs_librarian:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - supply curated context and provenance references
+
+  source_curator:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - supply curation posture and relevance notes
+
+  context_packager:
+    active: true
+    authority_levels:
+      - 0
+      - 1
+    responsibilities:
+      - supply motion-context-pack recommendations
+
+  operator:
+    active: true
+    authority_level: 2
+    responsibilities:
+      - record that Level 2 is authorized for non-mutating planning only
+      - record that Levels 3 through 5 remain disabled
+
+  docs_arbiter:
+    active: false
+    reason: no dispute is modeled in this patch-plan dry run
+
+patch_plan_target:
+  name: Source Intelligence Library Level 2 Readiness Pack
+  goal: >
+    Improve conceptual Source Intelligence Library operational readiness through
+    future docs-nexus documentation structure without changing docs-nexus in this motion.
+
+proposed_target_paths:
+  recommendation_only: true
+  paths:
+    - surfaces/sources/context-packs/README.md
+    - surfaces/sources/context-packs/q2m5-docs-ops-readiness-pack.md
+    - surfaces/sources/curation/README.md
+    - surfaces/sources/curation/source-artifact-curation-status.md
+
+patch_plan_text:
+  recommendation_only: true
+  phases:
+    - phase: contextual_entrypoint
+      description: >
+        Recommend a future context-pack entrypoint that explains how curated
+        source artifacts feed docs-agent deliberation context.
+    - phase: readiness_pack
+      description: >
+        Recommend a future readiness-pack document that links Source Intelligence
+        Library abstraction, curated source provenance, and docs operations guardrails.
+    - phase: curation_status_visibility
+      description: >
+        Recommend a future curation-status surface that distinguishes preserved,
+        deferred, and review-later artifacts without promoting raw generated sources.
+    - phase: reviewer_alignment
+      description: >
+        Recommend explicit reviewer guidance that keeps any future implementation
+        constrained to docs-only readiness improvements and away from canon ambiguity.
+
+pr_draft:
+  title: "docs: add source intelligence readiness context pack"
+  body:
+    summary:
+      - add a future readiness-oriented context-pack structure for Source Intelligence Library use
+      - improve visibility into curated-source provenance and curation status
+      - keep docs-operations guidance bounded to docs-only readiness context
+    rationale:
+      - rolling ingest and curated artifact cleanup make the repository ready for a clearer read-context entrypoint
+      - Source Intelligence Library is the right abstraction boundary for future docs-agent context consumption
+      - curation status visibility reduces ambiguity around preserve/defer/omit posture
+    proposed_files:
+      - surfaces/sources/context-packs/README.md
+      - surfaces/sources/context-packs/q2m5-docs-ops-readiness-pack.md
+      - surfaces/sources/curation/README.md
+      - surfaces/sources/curation/source-artifact-curation-status.md
+    validation_plan:
+      - verify provenance references resolve to curated artifacts and merged PR history
+      - verify no raw generated sources are presented as canon
+      - verify docs-only scope and no automation or runtime behavior
+      - verify placeholder and duplication hygiene across context-pack and curation surfaces
+    guardrails:
+      - no main writes
+      - no raw source promotion to canon
+      - no automation or scheduler behavior
+      - no branch, PR, or merge authority implied by the readiness pack
+    non_goals:
+      - no docs-nexus runtime, API, or DB changes
+      - no auto-generated patch or diff content
+      - no activation of Levels 3 through 5
+    reviewer_checklist:
+      - confirm files are documentation-only readiness surfaces
+      - confirm provenance language is grounded and non-promotional
+      - confirm no canon-bearing ambiguity is introduced
+      - confirm no mutation or automation authority is implied
+
+validation_plan:
+  recommendation_only: true
+  checks:
+    - confirm proposed file list remains recommendations only
+    - confirm PR draft text is descriptive only and not executable
+    - confirm no apply-ready patch or diff output is present
+    - confirm no docs-nexus mutation path, branch creation path, or PR creation path is introduced
+    - confirm Levels 3 through 5 remain disabled
+    - confirm raw source promotion to canon remains blocked
+
+reviewer_handoff:
+  recommendation_only: true
+  recipients:
+    - docs_verifier
+    - operator
+    - future docs-nexus reviewer set
+  handoff_notes:
+    - review the conceptual file targets for docs-only readiness value
+    - verify provenance and curation posture remain explicit
+    - reject any future implementation that widens into write, branch, PR, or merge authority without a new motion
+    - require explicit non-mutating scope if a later Level 2 planning exercise is expanded
+
+blocked_outputs:
+  - no docs-nexus edits
+  - no docs-nexus branch creation
+  - no docs-nexus PR creation
+  - no files generated for docs-nexus
+  - no patch or diff output that can be applied directly
+  - no automation
+  - no scheduler
+  - no hidden persistence
+  - no credentials
+  - no live capture
+  - no API or DB mutation
+  - no execution authority
+  - no Level 3 activation
+  - no Level 4 activation
+  - no Level 5 activation
+  - no Agent Assets Library implementation
+  - no raw source promotion to canon
+  - no direct main writes
+  - no autonomous merge

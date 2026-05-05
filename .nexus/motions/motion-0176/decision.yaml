@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0176
+status: RATIFIED
+decided_at: "2026-05-05T19:03:45.1741392Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-05T19:03:45.1741392Z"
+notes: "RATIFIED: motion-0176 ratifies the Level 2 docs operations non-mutating patch-plan model and draft planning artifacts."
