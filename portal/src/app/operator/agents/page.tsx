@@ -10,6 +10,7 @@ import type {
   AgentRegistryIdentity,
   AgentRegistryScopeKey,
 } from "@/lib/agents/types";
+import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
 
 function Section({
@@ -176,6 +177,7 @@ function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
 export default function AgentsPage() {
   const registry = getAgentConfigurationRegistry();
   const fullRepoRegistry = getFullRepoRegistry();
+  const authorityPosture = getControlPlaneAuthorityPosture();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -230,6 +232,68 @@ export default function AgentsPage() {
             detail="branch write, PR proposals, and runtime execution remain off in v0."
           />
         </section>
+
+        <Section
+          title="Control-plane authority posture"
+          description="Workflow roles, docs-ops levels, disabled authority, and Agent Assets Library status are visible here as read-only control-plane reference."
+        >
+          <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">
+                  Workflow roles
+                </h3>
+                <ToneBadge tone="sky">motion-0173 canon</ToneBadge>
+                <ToneBadge tone="rose">no authority grant</ToneBadge>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                {authorityPosture.workflow_roles.map((role) => (
+                  <div
+                    key={role.key}
+                    className="rounded-lg border border-gray-800 bg-black/30 p-3"
+                  >
+                    <div className="font-mono text-xs text-sky-200">{role.key}</div>
+                    <p className="mt-2 text-sm text-gray-300">{role.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-100">
+                    Agent Assets Library
+                  </h3>
+                  <ToneBadge tone="amber">static material</ToneBadge>
+                  <ToneBadge tone="rose">authority: none</ToneBadge>
+                </div>
+                <div className="mt-3 font-mono text-xs text-sky-200">
+                  {authorityPosture.agent_assets.location}
+                </div>
+                <p className="mt-3 text-sm text-gray-300">
+                  {authorityPosture.agent_assets.summary}
+                </p>
+                <ul className="mt-3 space-y-1 text-xs text-gray-400">
+                  <li>- assets do not grant authority</li>
+                  <li>- assets do not replace workflow-role canon</li>
+                  <li>- assets do not activate docs-ops Level 3, 4, or 5</li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Read-only authority notes
+                </div>
+                <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                  {authorityPosture.notes.map((note) => (
+                    <li key={note}>- {note}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </Section>
 
         <Section
           title="Identity boundaries"
@@ -439,6 +503,21 @@ export default function AgentsPage() {
                 </ul>
               </div>
             ))}
+          </div>
+        </Section>
+
+        <Section
+          title="Blocked capabilities"
+          description="These remain disabled across the current control-plane posture and are shown here to avoid ambiguity."
+        >
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <div className="flex flex-wrap gap-2">
+              {authorityPosture.blocked_capabilities.map((capability) => (
+                <ToneBadge key={capability} tone="rose">
+                  {capability}
+                </ToneBadge>
+              ))}
+            </div>
           </div>
         </Section>
       </div>

@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { getDraftWorkPackets } from "@/lib/agents/workPackets";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
+import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import type {
   DraftWorkPacket,
   DraftWorkPacketActionCompatibility,
@@ -375,6 +376,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
 
 export default function WorkPage() {
   const packets = getDraftWorkPackets();
+  const authorityPosture = getControlPlaneAuthorityPosture();
   const compatibleCount = packets.filter(
     (packet) =>
       packet.compatibility.agent_exists &&
@@ -437,6 +439,99 @@ export default function WorkPage() {
             detail="Every initial draft work packet generates a deterministic preview-only task prompt."
           />
         </section>
+
+        <Section
+          title="Docs-ops authority posture"
+          description="Read-only visibility into exercised planning-safe levels, modeled disabled levels, and blocked capabilities."
+        >
+          <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">
+                  Docs-ops levels
+                </h3>
+                <ToneBadge tone="amber">read-only visibility</ToneBadge>
+                <ToneBadge tone="rose">no new authority</ToneBadge>
+              </div>
+              <div className="mt-3 space-y-3">
+                {authorityPosture.docs_ops_levels.map((level) => (
+                  <div
+                    key={`docs-ops-level-${level.level}`}
+                    className="rounded-lg border border-gray-800 bg-black/30 p-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-mono text-xs text-sky-200">
+                        Level {level.level}
+                      </div>
+                      <ToneBadge
+                        tone={
+                          level.status === "modeled_disabled"
+                            ? "rose"
+                            : level.status === "static_material"
+                              ? "amber"
+                              : "emerald"
+                        }
+                      >
+                        {level.status === "modeled_disabled"
+                          ? "modeled disabled"
+                          : "exercised / planning-safe"}
+                      </ToneBadge>
+                      <span className="text-sm text-gray-200">{level.label}</span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-300">{level.summary}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">
+                  Control-plane notes
+                </div>
+                <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                  {authorityPosture.notes.map((note) => (
+                    <li key={note}>- {note}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-gray-100">
+                    Agent Assets Library
+                  </h3>
+                  <ToneBadge tone="amber">static material</ToneBadge>
+                </div>
+                <div className="mt-3 font-mono text-xs text-sky-200">
+                  {authorityPosture.agent_assets.location}
+                </div>
+                <p className="mt-3 text-sm text-gray-300">
+                  {authorityPosture.agent_assets.summary}
+                </p>
+                <p className="mt-3 text-xs text-gray-400">
+                  Assets do not grant authority and do not enable docs-ops
+                  Level 3, 4, or 5 capability.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section
+          title="Blocked capabilities"
+          description="These capabilities remain disabled across the current control-plane posture."
+        >
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <div className="flex flex-wrap gap-2">
+              {authorityPosture.blocked_capabilities.map((capability) => (
+                <ToneBadge key={capability} tone="rose">
+                  {capability}
+                </ToneBadge>
+              ))}
+            </div>
+          </div>
+        </Section>
 
         <Section
           title="Draft work packet queue"
