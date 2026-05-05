@@ -1,0 +1,19 @@
+motion_id: motion-0177
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Agent Assets Library v0"
+subtitle: "add static reusable role cards, templates, and checklists for future agent work without granting authority"
+kind: builder-proof
+program: q2m5-agent-assets-library-v0
+basis: motion-0176
+status: ratified
+created_at: "2026-05-05T00:00:00.000Z"
+decided_at: "2026-05-05T22:55:30.1506867Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []
