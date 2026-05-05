@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0173",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The Q2M5 workflow-role taxonomy is now explicit for CONTROL_THREAD, ORCHESTRATOR, REPO_EXECUTION, and EXPLORATION with allowed and blocked outputs documented.",
+      "The passalong schema and repo-routing target schema make routing and continuity contracts explicit without implementing workflow automation.",
+      "The motion is static canon only, preserves the workflow-role versus JAI-agent-role distinction, and does not expand execution, branch-write, or PR authority."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-05T17:29:14.2951314Z"
+}
