@@ -1,0 +1,188 @@
+schema_id: workflow-role-taxonomy
+version: "0.1"
+established_by: motion-0173
+established_at: "2026-05-05"
+scope: dev-jai-nexus
+purpose: >
+  Define the explicit Q2M5 workflow-role taxonomy used for chat/workflow routing
+  and continuity packaging without changing canonical JAI agent roles or
+  execution authority.
+
+workflow_roles:
+  CONTROL_THREAD:
+    class: workflow_role
+    purpose: preserve cross-repo continuity and route the next bounded work item
+    responsibilities:
+      - cross-repo sequencing
+      - priority control
+      - passalong routing
+      - portfolio-level decision tracking
+    required_inputs:
+      - current baseline
+      - settled canon
+      - active work
+      - prior passalongs or sync-back records
+    allowed_outputs:
+      - continuity notes
+      - control-thread passalongs
+      - routing decisions
+      - portfolio-level baseline updates
+      - deferred-item registration
+    blocked_outputs:
+      - repo file mutation outside canon artifacts
+      - implementation plans for active repo changes
+      - branch creation
+      - PR creation
+      - execution enablement
+      - runtime, DB, or API mutation
+
+  ORCHESTRATOR:
+    class: workflow_role
+    purpose: package the next bounded seam after passalong intake
+    responsibilities:
+      - passalong intake
+      - candidate seam comparison
+      - next-step planning
+      - repo-init prompt preparation
+    required_inputs:
+      - control-thread baseline
+      - settled canon
+      - candidate seams or open framing gaps
+      - explicit constraints and deferred items
+    allowed_outputs:
+      - seam comparison
+      - next-motion recommendation
+      - repo routing target package
+      - repo-init prompt set
+      - explicit deferral notes
+    blocked_outputs:
+      - active canonical JAI agent-role assignment
+      - repo implementation
+      - branch creation
+      - PR creation
+      - execution enablement
+      - hidden automation
+      - runtime, DB, or API mutation
+
+  REPO_EXECUTION:
+    class: workflow_role
+    purpose: execute one bounded work line inside one repo and return continuity
+    responsibilities:
+      - one repo, branch, PR, motion, or implementation line
+      - branch plan
+      - file/path plan
+      - acceptance criteria
+      - commit plan
+      - PR description
+      - validation results
+      - passalong back to CONTROL_THREAD
+    required_inputs:
+      - repo routing target
+      - active motion or bounded seam
+      - baseline branch state
+      - acceptance criteria
+      - validation expectations
+    allowed_outputs:
+      - bounded repo-local file changes
+      - implementation plan
+      - verification evidence
+      - commit plan
+      - PR description draft
+      - repo-execution passalong
+    blocked_outputs:
+      - cross-repo sequencing decisions
+      - silent scope widening
+      - branch-write authority expansion
+      - PR-creation authority expansion
+      - runtime, DB, or API mutation outside the active boundary
+      - autonomous scheduling or hidden persistence
+
+  EXPLORATION:
+    class: workflow_role
+    purpose: reduce ambiguity before seam recommendation or execution
+    responsibilities:
+      - bounded ideation
+      - option shaping
+      - problem framing only
+    required_inputs:
+      - bounded question
+      - current baseline
+      - active constraints
+      - evaluation lens
+    allowed_outputs:
+      - framing notes
+      - option comparisons
+      - bounded recommendations
+      - deferred idea capture
+    blocked_outputs:
+      - implementation claims
+      - seam execution
+      - ratification claims
+      - branch creation
+      - PR creation
+      - runtime, DB, or API mutation
+
+distinctions:
+  workflow_role_vs_jai_agent_role:
+    statement: >
+      Workflow roles describe where a session sits in the routing and continuity
+      chain. JAI agent roles describe the work style a session uses within that
+      chain. They are orthogonal and must not be conflated.
+    workflow_roles:
+      - CONTROL_THREAD
+      - ORCHESTRATOR
+      - REPO_EXECUTION
+      - EXPLORATION
+    active_canonical_jai_agent_roles:
+      - ARCHITECT
+      - BUILDER
+      - VERIFIER
+      - OPERATOR
+      - LIBRARIAN
+    not_active_jai_agent_roles:
+      - ORCHESTRATOR
+      - CONTROL_THREAD
+      - REPO_EXECUTION
+      - EXPLORATION
+
+  orchestrator_guardrail:
+    statement: >
+      ORCHESTRATOR is valid as a chat/workflow role only. Orchestrator must not
+      be reintroduced as an active canonical JAI agent role unless a future
+      explicit motion changes jai-nexus role canon.
+    workflow_role_status: active
+    jai_agent_role_status: deferred_not_active
+    forbidden_inference:
+      - do not treat ORCHESTRATOR workflow role adoption as JAI agent-role activation
+      - do not add Orchestrator to active agent manifests, panels, or staffing canon
+
+routing_defaults:
+  normal_loop:
+    - CONTROL_THREAD
+    - ORCHESTRATOR
+    - REPO_EXECUTION
+    - CONTROL_THREAD
+  optional_insertion:
+    - CONTROL_THREAD
+    - EXPLORATION
+    - ORCHESTRATOR
+    - REPO_EXECUTION
+    - CONTROL_THREAD
+  note: deferred is an outcome state, not a workflow role
+
+guardrails_preserved:
+  - all execution/write authority remains disabled unless already granted by separate canon
+  - no branch-write expansion
+  - no PR-creation expansion
+  - no hidden persistence
+  - no autonomous scheduling
+  - no DB or API mutation
+  - no credential handling changes
+  - no cross-repo mutation by implication
+
+future_dependencies:
+  - motion: motion-0174
+    status: deferred_not_implemented
+    note: >
+      A future motion may extend routing operations or downstream workflow
+      mechanics. Motion-0173 only defines taxonomy and schemas.
