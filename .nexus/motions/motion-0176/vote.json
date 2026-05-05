@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0176",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The motion documents a Level 2 non-mutating patch-plan model with docs_patch_planner active only for planning outputs and no docs-nexus mutation path.",
+      "Recommended docs-nexus file targets, PR title/body draft text, validation plan, and reviewer handoff are all recorded as recommendations only and not executable actions.",
+      "No apply-ready patch or diff output is produced, and Levels 3 through 5 remain disabled without any authority guardrail weakening."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-05T19:03:45.1741392Z"
+}
