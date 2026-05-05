@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0177",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The motion defines a reusable Agent Assets Library with clear taxonomy, role cards, templates, and checklists for future agent work.",
+      "The assets are explicitly tied back to workflow-role canon and docs-ops canon while stating that they do not grant authority or replace settled policy.",
+      "No Level 3 through Level 5 activation, no docs-nexus or jai-nexus edits, and no automation, scheduler, API, DB, provider, credential, or execution changes were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-05T22:55:30.1506867Z"
+}
