@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import YAML from "yaml";
 import type {
   ConfiguredAgentScopeKey,
   ControlPlaneConfiguredScopeEntry,
@@ -7,64 +10,136 @@ import type {
   ControlPlaneSurfaceKey,
 } from "@/lib/controlPlane/types";
 
-const FULL_REPO_REGISTRY: ControlPlaneRepoEntry[] = [
-  {
-    repo_id: "sot-nexus",
-    org_repo: "jai-nexus/sot-nexus",
-    label: "SoT Nexus",
-    tier: 0,
-    role: "sot-ledger",
-    owner: "Jerry Ingram",
-    status: "active",
-    notes: "Source-of-truth DB and API service.",
-    project_ids: ["jai-internal", "teacher-copilot", "offbook"],
-  },
-  {
-    repo_id: "jai-nexus",
-    org_repo: "jai-nexus/jai-nexus",
+type CanonicalRepoConfigRow = {
+  nh_id?: string;
+  repo: string;
+  description?: string;
+  tier?: number;
+  role?: string;
+  status?: string;
+  owner?: string;
+  notes?: string;
+  wave?: number | null;
+};
+
+type CanonicalRepoConfigFile =
+  | CanonicalRepoConfigRow[]
+  | {
+      schema_version?: string | number;
+      repos?: CanonicalRepoConfigRow[];
+    };
+
+type RepoMetadata = {
+  label?: string;
+  owner?: string;
+  tier?: number;
+  role?: string;
+  status?: ControlPlaneRepoEntry["status"];
+  notes?: string;
+  project_ids?: string[];
+};
+
+const DEFAULT_OWNER = "Jerry Ingram";
+
+const REPO_METADATA: Record<string, RepoMetadata> = {
+  "jai-nexus/jai-nexus": {
     label: "JAI Nexus",
     tier: 0,
     role: "jai-core",
-    owner: "Jerry Ingram",
-    status: "active",
-    notes:
-      "Primary repo for landing-page, customer-portal, API review, and format surfaces.",
     project_ids: ["jai-internal"],
+    notes:
+      "Primary repo for landing-page and customer-facing surfaces. Customer portal remains a surface inside this repo.",
   },
-  {
-    repo_id: "dev-jai-nexus",
-    org_repo: "jai-nexus/dev-jai-nexus",
+  "jai-nexus/dev-jai-nexus": {
     label: "Dev JAI Nexus",
     tier: 0,
     role: "dev-spine",
-    owner: "Jerry Ingram",
-    status: "active",
-    notes: "Operator-facing control-plane and status spine.",
     project_ids: ["jai-internal"],
+    notes: "Operator-facing control-plane and status spine.",
   },
-  {
-    repo_id: "docs-nexus",
-    org_repo: "jai-nexus/docs-nexus",
+  "jai-nexus/sot-nexus": {
+    label: "SoT Nexus",
+    tier: 0,
+    role: "sot-ledger",
+    project_ids: ["jai-internal", "teacher-copilot", "offbook"],
+    notes: "Source-of-truth ledger and service surface.",
+  },
+  "jai-nexus/docs-nexus": {
     label: "Docs Nexus",
     tier: 0,
     role: "docs-kb",
-    owner: "Jerry Ingram",
-    status: "active",
-    notes: "Canonical documentation and knowledge-base surface.",
     project_ids: ["jai-internal", "teacher-copilot", "offbook"],
+    notes: "Canonical documentation and knowledge-base repo.",
   },
-  {
-    repo_id: "offbook-ai",
-    org_repo: "JerryIngram/offbook-ai",
+  "jai-nexus/api-nexus": {
+    label: "API Nexus",
+    tier: 1,
+    role: "api-surface",
+    project_ids: ["jai-internal"],
+    notes: "Standalone API surface repo; keep distinct from jai-nexus product surfaces.",
+  },
+  "jai-nexus/jai-format": {
+    label: "JAI Format",
+    tier: 0,
+    role: "format-spec",
+    project_ids: ["jai-internal"],
+    notes: "Canonical formatting and container-spec repo.",
+  },
+  "jai-nexus/datacontracts-nexus": {
+    label: "DataContracts Nexus",
+    tier: 0,
+    role: "contracts",
+    project_ids: ["jai-internal"],
+  },
+  "jai-nexus/orchestrator-nexus": {
+    label: "Orchestrator Nexus",
+    tier: 2,
+    role: "orchestrator",
+    project_ids: ["jai-internal"],
+  },
+  "jai-nexus/audit-nexus": {
+    label: "Audit Nexus",
+    tier: 2,
+    role: "tooling",
+    project_ids: ["jai-internal"],
+  },
+  "jai-nexus/community-nexus": {
+    label: "Community Nexus",
+    tier: 2,
+    role: "community",
+    project_ids: ["jai-internal"],
+  },
+  "jai-nexus/integrations-nexus": {
+    label: "Integrations Nexus",
+    tier: 2,
+    role: "integrations",
+    project_ids: ["jai-internal"],
+  },
+  "jai-nexus/jai-pilot": {
+    label: "JAI Pilot",
+    tier: 1,
+    role: "pilot",
+    project_ids: ["jai-internal"],
+    notes: "Present in broader registry; current control-plane surfaces keep this planned-only.",
+  },
+  "jai-nexus/jai-nexus-legacy": {
+    label: "JAI Nexus Legacy",
+    tier: 2,
+    role: "legacy",
+    status: "frozen",
+    project_ids: ["jai-internal"],
+    notes: "Legacy placeholder entry for older jai-nexus lineage.",
+  },
+  "JerryIngram/offbook-ai": {
     label: "OffBook AI",
     tier: 1,
     role: "product-app",
-    owner: "Jerry Ingram",
     status: "planned",
-    notes: "Planned product app and service surface for OffBook AI.",
     project_ids: ["offbook"],
+    notes:
+      "External product-app anchor retained in the broader registry. Treat as non-control-plane product coverage, not a core operator repo.",
   },
-];
+};
 
 const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
   {
@@ -83,7 +158,7 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
     label: "Customer portal",
     repo_full_name: "jai-nexus/jai-nexus",
     summary:
-      "Customer portal and intake experience inside jai-nexus/jai-nexus.",
+      "Customer portal and customer console experience inside jai-nexus/jai-nexus.",
     configured_scope_keys: ["customer-portal"],
     project_ids: ["jai-internal"],
     notes: [
@@ -93,25 +168,23 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
   {
     key: "api-nexus",
     label: "API Nexus",
-    repo_full_name: "jai-nexus/jai-nexus",
-    summary:
-      "API contract and schema review surface inside jai-nexus/jai-nexus.",
+    repo_full_name: "jai-nexus/api-nexus",
+    summary: "Standalone API contract and schema surface repo.",
     configured_scope_keys: ["api-nexus"],
     project_ids: ["jai-internal"],
     notes: [
-      "Configured as a surface-level scope key, not a standalone repo registry entry.",
+      "This configured scope key now resolves to the actual api-nexus repo entry.",
     ],
   },
   {
     key: "jai-format",
     label: "JAI Format",
-    repo_full_name: "jai-nexus/jai-nexus",
-    summary:
-      "Formatting and presentation conventions surfaced inside jai-nexus/jai-nexus.",
+    repo_full_name: "jai-nexus/jai-format",
+    summary: "Standalone formatting and presentation conventions repo.",
     configured_scope_keys: ["jai-format"],
     project_ids: ["jai-internal"],
     notes: [
-      "Configured as a surface-level scope key, not a standalone repo registry entry.",
+      "This configured scope key now resolves to the actual jai-format repo entry.",
     ],
   },
   {
@@ -128,7 +201,8 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
     key: "operator-motions",
     label: "Operator motions",
     repo_full_name: "jai-nexus/dev-jai-nexus",
-    summary: "Read-only Motion Operations surface for canonical motions and contenders.",
+    summary:
+      "Read-only Motion Operations surface for canonical motions and contenders.",
     configured_scope_keys: ["dev-jai-nexus"],
     project_ids: ["jai-internal"],
     notes: ["Control-plane operator surface."],
@@ -196,16 +270,16 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
     summary: "Planned product surface for Texas Teacher Copilot.",
     configured_scope_keys: [],
     project_ids: ["teacher-copilot"],
-    notes: ["Referenced by project canon but not present in the current full repo registry."],
+    notes: ["Referenced by project canon; repo registration still trails the project naming canon."],
   },
   {
     key: "offbook-ai",
     label: "OffBook AI",
     repo_full_name: "JerryIngram/offbook-ai",
-    summary: "Planned OffBook AI product and application surface.",
+    summary: "Planned and external OffBook AI product and application surface.",
     configured_scope_keys: [],
     project_ids: ["offbook"],
-    notes: ["Mapped to the current full repo registry entry for OffBook AI."],
+    notes: ["Mapped to the broader repo registry entry for OffBook AI."],
   },
 ];
 
@@ -217,7 +291,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
     tier: 0,
     priority_level: "P1",
     status: "active",
-    owner: "Jerry Ingram",
+    owner: DEFAULT_OWNER,
     summary:
       "JAI OS, dev.jai.nexus control-plane surfaces, source-of-truth, docs, and attached product surfaces.",
     repo_full_names: [
@@ -225,6 +299,14 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
       "jai-nexus/dev-jai-nexus",
       "jai-nexus/sot-nexus",
       "jai-nexus/docs-nexus",
+      "jai-nexus/api-nexus",
+      "jai-nexus/jai-format",
+      "jai-nexus/datacontracts-nexus",
+      "jai-nexus/orchestrator-nexus",
+      "jai-nexus/audit-nexus",
+      "jai-nexus/community-nexus",
+      "jai-nexus/integrations-nexus",
+      "jai-nexus/jai-pilot",
     ],
     surface_keys: [
       "landing-page",
@@ -242,7 +324,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
     ],
     notes: [
       "Projects are workstreams that span repos and surfaces.",
-      "This project owns the current control-plane and attached jai-nexus surfaces.",
+      "Customer portal remains a product surface inside jai-nexus/jai-nexus.",
     ],
   },
   {
@@ -252,7 +334,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
     tier: 1,
     priority_level: "P2",
     status: "planned",
-    owner: "Jerry Ingram",
+    owner: DEFAULT_OWNER,
     summary:
       "Planned external product workstream spanning a product app repo plus shared docs and source-of-truth surfaces.",
     repo_full_names: [
@@ -263,7 +345,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
     surface_keys: ["teacher-copilot", "docs-canon", "sot-ledger"],
     notes: [
       "Teacher Copilot is a project, not a repo.",
-      "Its primary product repo is planned and not yet present in the current full repo registry.",
+      "Project naming canon still references teacher-copilot-nexus while the broader repo registry still carries legacy teacher-copilot naming.",
     ],
   },
   {
@@ -273,7 +355,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
     tier: 1,
     priority_level: "P2",
     status: "planned",
-    owner: "Jerry Ingram",
+    owner: DEFAULT_OWNER,
     summary:
       "Planned creative-performance product workstream spanning the OffBook app, docs, and source-of-truth surfaces.",
     repo_full_names: [
@@ -303,9 +385,7 @@ const CONFIGURED_AGENT_SCOPE_SUBSET: ControlPlaneConfiguredScopeEntry[] = [
     ],
     summary:
       "Configured control-plane subset for dev.jai.nexus operator surfaces.",
-    notes: [
-      "This is a configured subset, not the full repo registry.",
-    ],
+    notes: ["This is a configured subset, not the full repo registry."],
   },
   {
     key: "jai-nexus",
@@ -314,9 +394,7 @@ const CONFIGURED_AGENT_SCOPE_SUBSET: ControlPlaneConfiguredScopeEntry[] = [
     surface_keys: ["landing-page"],
     summary:
       "Configured subset for the jai-nexus landing-page surface inside jai-nexus/jai-nexus.",
-    notes: [
-      "This scope key resolves to a surface inside jai-nexus/jai-nexus.",
-    ],
+    notes: ["This scope key resolves to a surface inside jai-nexus/jai-nexus."],
   },
   {
     key: "customer-portal",
@@ -332,45 +410,163 @@ const CONFIGURED_AGENT_SCOPE_SUBSET: ControlPlaneConfiguredScopeEntry[] = [
   {
     key: "api-nexus",
     label: "api-nexus configured subset",
-    repo_full_name: "jai-nexus/jai-nexus",
+    repo_full_name: "jai-nexus/api-nexus",
     surface_keys: ["api-nexus"],
     summary:
-      "Configured subset for API contract and schema review inside jai-nexus/jai-nexus.",
-    notes: [
-      "This scope key maps to a surface, not a standalone repo registry entry.",
-    ],
+      "Configured subset for the standalone api-nexus repo and its API review surface.",
+    notes: ["This scope key now maps to the actual api-nexus repo entry."],
   },
   {
     key: "jai-format",
     label: "jai-format configured subset",
-    repo_full_name: "jai-nexus/jai-nexus",
+    repo_full_name: "jai-nexus/jai-format",
     surface_keys: ["jai-format"],
     summary:
-      "Configured subset for JAI format and presentation work inside jai-nexus/jai-nexus.",
-    notes: [
-      "This scope key maps to a surface, not a standalone repo registry entry.",
-    ],
+      "Configured subset for the standalone jai-format repo and format surface.",
+    notes: ["This scope key now maps to the actual jai-format repo entry."],
   },
 ];
 
-function cloneArray<T>(value: T[]): T[] {
-  return value.map((entry) => ({ ...entry }));
+function repoIdFromOrgRepo(orgRepo: string): string {
+  const parts = orgRepo.split("/").filter(Boolean);
+  return parts.at(-1) ?? orgRepo;
+}
+
+function formatRepoLabel(repoFullName: string): string {
+  const slug = repoIdFromOrgRepo(repoFullName);
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function normalizeStatus(
+  value: string | undefined,
+  notes: string | undefined,
+): ControlPlaneRepoEntry["status"] {
+  const normalized = (value ?? "").trim().toLowerCase();
+  if (
+    normalized === "active" ||
+    normalized === "planned" ||
+    normalized === "frozen" ||
+    normalized === "deprecated"
+  ) {
+    return normalized;
+  }
+
+  if ((notes ?? "").toLowerCase().includes("deprecated")) {
+    return "deprecated";
+  }
+
+  return "planned";
+}
+
+function resolveCanonicalReposPath(): string {
+  const candidates = [
+    path.join(process.cwd(), "config", "repos.yaml"),
+    path.join(process.cwd(), "portal", "config", "repos.yaml"),
+  ];
+
+  const match = candidates.find((candidate) => fs.existsSync(candidate));
+  if (!match) {
+    throw new Error(
+      "Canonical repo registry not found. Expected config/repos.yaml or portal/config/repos.yaml.",
+    );
+  }
+
+  return match;
+}
+
+function loadCanonicalRepoRows(): CanonicalRepoConfigRow[] {
+  const configPath = resolveCanonicalReposPath();
+  const file = fs.readFileSync(configPath, "utf8");
+  const parsed = YAML.parse(file) as CanonicalRepoConfigFile;
+
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed && Array.isArray(parsed.repos)) return parsed.repos;
+  return [];
+}
+
+function buildRepoNotes(row: CanonicalRepoConfigRow, metadata: RepoMetadata): string {
+  return [row.description, row.notes, metadata.notes]
+    .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    .join(" ");
+}
+
+function buildFullRepoRegistry(): ControlPlaneRepoEntry[] {
+  return loadCanonicalRepoRows()
+    .filter((row) => typeof row.repo === "string" && row.repo.includes("/"))
+    .map((row) => {
+      const metadata = REPO_METADATA[row.repo] ?? {};
+      const notes = buildRepoNotes(row, metadata);
+
+      return {
+        repo_id: repoIdFromOrgRepo(row.repo),
+        org_repo: row.repo,
+        label: metadata.label ?? formatRepoLabel(row.repo),
+        tier: metadata.tier ?? row.tier ?? 2,
+        role: metadata.role ?? row.role ?? "registry",
+        owner: metadata.owner ?? row.owner ?? DEFAULT_OWNER,
+        status: metadata.status ?? normalizeStatus(row.status, row.notes),
+        notes,
+        project_ids: [...(metadata.project_ids ?? ["jai-internal"])],
+      };
+    })
+    .sort((left, right) => left.org_repo.localeCompare(right.org_repo));
+}
+
+const FULL_REPO_REGISTRY = buildFullRepoRegistry();
+
+function cloneRepoEntry(entry: ControlPlaneRepoEntry): ControlPlaneRepoEntry {
+  return {
+    ...entry,
+    project_ids: [...entry.project_ids],
+  };
+}
+
+function cloneSurfaceEntry(entry: ControlPlaneSurfaceEntry): ControlPlaneSurfaceEntry {
+  return {
+    ...entry,
+    configured_scope_keys: [...entry.configured_scope_keys],
+    project_ids: [...entry.project_ids],
+    notes: [...entry.notes],
+  };
+}
+
+function cloneProjectEntry(entry: ControlPlaneProjectEntry): ControlPlaneProjectEntry {
+  return {
+    ...entry,
+    repo_full_names: [...entry.repo_full_names],
+    surface_keys: [...entry.surface_keys],
+    notes: [...entry.notes],
+  };
+}
+
+function cloneConfiguredScopeEntry(
+  entry: ControlPlaneConfiguredScopeEntry,
+): ControlPlaneConfiguredScopeEntry {
+  return {
+    ...entry,
+    surface_keys: [...entry.surface_keys],
+    notes: [...entry.notes],
+  };
 }
 
 export function getFullRepoRegistry(): ControlPlaneRepoEntry[] {
-  return cloneArray(FULL_REPO_REGISTRY);
+  return FULL_REPO_REGISTRY.map(cloneRepoEntry);
 }
 
 export function getSurfaceCatalog(): ControlPlaneSurfaceEntry[] {
-  return cloneArray(SURFACE_CATALOG);
+  return SURFACE_CATALOG.map(cloneSurfaceEntry);
 }
 
 export function getProjectCatalog(): ControlPlaneProjectEntry[] {
-  return cloneArray(PROJECT_CATALOG);
+  return PROJECT_CATALOG.map(cloneProjectEntry);
 }
 
 export function getConfiguredAgentScopeSubset(): ControlPlaneConfiguredScopeEntry[] {
-  return cloneArray(CONFIGURED_AGENT_SCOPE_SUBSET);
+  return CONFIGURED_AGENT_SCOPE_SUBSET.map(cloneConfiguredScopeEntry);
 }
 
 export function getRepoEntry(
@@ -408,7 +604,8 @@ export function getSurfaceEntriesForConfiguredScope(
 
   return scope.surface_keys
     .map((surfaceKey) => getSurfaceEntry(surfaceKey))
-    .filter((entry): entry is ControlPlaneSurfaceEntry => Boolean(entry));
+    .filter((entry): entry is ControlPlaneSurfaceEntry => Boolean(entry))
+    .map(cloneSurfaceEntry);
 }
 
 export function getSurfaceLabels(surfaceKeys: ControlPlaneSurfaceKey[]): string[] {
