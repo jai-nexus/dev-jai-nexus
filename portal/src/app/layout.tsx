@@ -22,7 +22,7 @@ export default function RootLayout({
           </div>
           <nav className="text-sm flex gap-4 text-gray-400">
             <Link href="/" className="hover:text-gray-100">
-              Runs
+              Sync Runs
             </Link>
             <Link href="/repos" className="hover:text-gray-100">
               Repos
