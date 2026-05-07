@@ -1,12 +1,134 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-06T19:54:06.179Z",
+  "generated_at": "2026-05-07T00:52:19.982Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 177,
+  "motion_count": 178,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0179",
+      "item": {
+        "motion_id": "motion-0179",
+        "title": "JAI Chat Surface v0",
+        "subtitle": "add a draft-only operator JAI shell for dev.jai.nexus without live provider, execution, or mutation authority",
+        "program": "q2-jai-chat-surface-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0178",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-05-06T00:00:00.000Z",
+        "decided_at": "2026-05-07T00:51:38.2087694Z",
+        "updated_at": "2026-05-07T00:52:19.982Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0179/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0179\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"JAI Chat Surface v0\"\nsubtitle: \"add a draft-only operator JAI shell for dev.jai.nexus without live provider, execution, or mutation authority\"\nkind: builder-proof\nprogram: q2-jai-chat-surface-v0\nbasis: motion-0178\nstatus: ratified\ncreated_at: \"2026-05-06T00:00:00.000Z\"\ndecided_at: \"2026-05-07T00:51:38.2087694Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0179/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0179\nstatus: RATIFIED\ndecided_at: \"2026-05-07T00:51:38.2087694Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-05-07T00:51:38.2087694Z\"\nnotes: \"RATIFIED: motion-0179 ratifies a draft-only operator JAI shell with read-only context and no provider, execution, or mutation authority.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0179/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0179\nevaluated_at: \"2026-05-07T00:51:38.2087694Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.11\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"This motion adds a static shell only. Provider calls, persistence, and authority expansion remain disabled.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0179/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0179\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-07T00:51:38.2087694Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0179/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-07T00:51:38.2087694Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-07T00:51:38.2087694Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"build\": {\n      \"gate\": \"build\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-07T00:51:38.2087694Z\",\n      \"command\": \"pnpm -C portal build\",\n      \"cwd\": \".\",\n      \"required\": false\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-05-07T00:51:38.2087694Z\"\n  },\n  \"notes\": [\n    \"All local gates passed before ratification.\",\n    \"Portal build is recorded as additional local evidence beyond the required motion gates.\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0179/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0179\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The new /operator/jai route is bounded to static, draft-only, read-only operator use.\",\n      \"The surface shows control-plane context, authority posture, blocked capabilities, and linked operator surfaces without implying execution.\",\n      \"No provider calls, backend chat route, persistence, execution, branch write, PR creation, scheduler behavior, or cross-repo mutation were introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-05-07T00:51:38.2087694Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0179/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: JAI Chat Surface v0\n\n**Motion:** motion-0179\n**Role:** BUILDER\n**Date:** 2026-05-06\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: standard\nBasis: one new static operator route, one small static control-plane model, one\noperator subnav update, one control-plane surface-catalog extension, and one\nnew motion packet. No API routes. No DB mutation. No cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis implementation must not:\n\n- add live provider/model calls\n- add a chat backend\n- add API routes for chat\n- add DB-backed message persistence\n- add event stream integration\n- add sync-run pipeline changes\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add scheduler\n- add hidden persistence\n- add credentials\n- mutate `docs-nexus`\n- mutate `jai-nexus`\n- implement agent PR workflow Layer 1\n- imply autonomous agent behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-07T00:51:38.2087694Z`\n\n### 2. Files changed for implementation and ratification\n\n- `portal/src/app/operator/jai/page.tsx`\n- `portal/src/components/operator/OperatorSubnav.tsx`\n- `portal/src/lib/controlPlane/jaiChatSurface.ts`\n- `portal/src/lib/controlPlane/repoSurfaceModel.ts`\n- `portal/src/lib/controlPlane/types.ts`\n- `.nexus/motions/motion-0179/**`\n\nNo docs-nexus files were changed. No jai-nexus files were changed.\n\n### 3. Acceptance checks\n\n- JAI-01 pass\n- JAI-02 pass\n- JAI-03 pass\n- JAI-04 pass\n- JAI-05 pass\n- JAI-06 pass\n- JAI-07 pass\n- JAI-08 pass\n- JAI-09 pass\n- JAI-10 pass\n- JAI-11 pass\n- JAI-12 pass\n- JAI-13 pass\n- JAI-14 pass\n- JAI-15 pass\n- JAI-16 pass\n\n### 4. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0179/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\npnpm -C portal build\n```\n\nResults recorded after local gates and ratification:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `build` -> pass\n\n### 5. Content verification summary\n\n- `/operator/jai` added as a draft-only operator-facing JAI shell\n- surface is scoped to `dev.jai.nexus` and `jai-nexus/dev-jai-nexus`\n- route shows baseline canon through `motion-0178`\n- route shows repo registry count from the canonical repos model\n- route shows authority posture and Agent Assets Library as static non-authorizing material\n- prompt chips and assistant content remain copy-only placeholders\n- no provider, backend, persistence, execution, or mutation capability was introduced\n\n### 6. Guardrails preserved\n\n- did not add live provider/model calls\n- did not add a chat backend\n- did not add API routes for chat\n- did not add DB-backed message persistence\n- did not add event stream integration\n- did not add sync-run pipeline changes\n- did not add execution capability\n- did not add branch-write authority\n- did not add PR-creation authority\n- did not add scheduler\n- did not add hidden persistence\n- did not add credentials\n- did not mutate `docs-nexus`\n- did not mutate `jai-nexus`\n- did not implement agent PR workflow Layer 1\n- did not imply autonomous agent behavior\n\n### 7. Ratification closeout\n\nMotion-0179 is ratified locally as a static control-plane shell only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- `policy.yaml` remains non-blocking with `required_ok: true`\n- the route remains read-only and draft-only\n- no authority, persistence, provider, or execution capability was added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0179/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: JAI Chat Surface v0\n\n## Summary\n\nAdd a bounded `/operator/jai` surface for `dev.jai.nexus` that makes the\ncontrol-plane domain feel usable without introducing any live provider/model\nintegration, persistence, execution capability, or mutation authority.\n\n## Scope\n\n- add `/operator/jai` as an operator-facing, draft-only, read-only shell\n- show `dev.jai.nexus` domain scope and `jai-nexus/dev-jai-nexus` repo scope\n- show baseline canon alignment through `motion-0178`\n- show repo registry count and authority posture from existing control-plane models\n- show prompt chips and placeholder assistant copy for manual operator drafting\n- link to existing operator surfaces:\n  - `/operator/chats`\n  - `/operator/waves`\n  - `/operator/work`\n  - `/operator/agents`\n  - `/operator/motions`\n\n## Non-scope\n\n- no provider or model calls\n- no chat backend\n- no API routes\n- no DB-backed message persistence\n- no event stream integration\n- no sync-run pipeline change\n- no execution authority\n- no branch-write authority\n- no PR-creation authority\n- no scheduler\n- no hidden persistence\n- no credentials\n- no cross-repo mutation\n\n## Expected outcome\n\nThe operator gets a coherent JAI shell that reads as a real control-plane\nsurface while keeping the current read-only and authority-disabled posture\nexplicit."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0179/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: JAI Chat Surface v0\n\n## Main risks\n\n- the route could look more capable than it actually is if copy is vague\n- the new surface could drift from the control-plane registry if it is not added\n  to the existing surface catalog\n- adjacent operator surfaces could be blurred if `/operator/jai` tries to behave\n  like a live chat product\n\n## Mitigations\n\n- make the route visibly draft-only, read-only, and non-executing\n- show blocked authority and missing capability posture directly on the page\n- reuse existing control-plane models for repo count and authority posture\n- keep all prompt affordances static and copy-only\n\n## Blocking boundary\n\nThis motion must not add provider dispatch, API routes, message persistence,\nevent streaming, scheduler behavior, execution, branch writes, PR creation,\ncredentials, or cross-repo mutation."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0179/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0179/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0179/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0179/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0179/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0179/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: JAI Chat Surface v0\n\n**Motion:** motion-0179\n**Role:** BUILDER\n**Date:** 2026-05-06\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: standard\nBasis: one new static operator route, one small static control-plane model, one\noperator subnav update, one control-plane surface-catalog extension, and one\nnew motion packet. No API routes. No DB mutation. No cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis implementation must not:\n\n- add live provider/model calls\n- add a chat backend\n- add API routes for chat\n- add DB-backed message persistence\n- add event stream integration\n- add sync-run pipeline changes\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add scheduler\n- add hidden persistence\n- add credentials\n- mutate `docs-nexus`\n- mutate `jai-nexus`\n- implement agent PR workflow Layer 1\n- imply autonomous agent behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-07T00:51:38.2087694Z`\n\n### 2. Files changed for implementation and ratification\n\n- `portal/src/app/operator/jai/page.tsx`\n- `portal/src/components/operator/OperatorSubnav.tsx`\n- `portal/src/lib/controlPlane/jaiChatSurface.ts`\n- `portal/src/lib/controlPlane/repoSurfaceModel.ts`\n- `portal/src/lib/controlPlane/types.ts`\n- `.nexus/motions/motion-0179/**`\n\nNo docs-nexus files were changed. No jai-nexus files were changed.\n\n### 3. Acceptance checks\n\n- JAI-01 pass\n- JAI-02 pass\n- JAI-03 pass\n- JAI-04 pass\n- JAI-05 pass\n- JAI-06 pass\n- JAI-07 pass\n- JAI-08 pass\n- JAI-09 pass\n- JAI-1\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0179\nTitle: JAI Chat Surface v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0179/motion.yaml\n2. .nexus/motions/motion-0179/decision.yaml\n3. .nexus/motions/motion-0179/policy.yaml\n4. .nexus/motions/motion-0179/verify.json\n5. .nexus/motions/motion-0179/vote.json\n6. .nexus/motions/motion-0179/execution.md\n7. .nexus/motions/motion-0179/proposal.md\n8. .nexus/motions/motion-0179/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0179\n\nCore artifact paths:\n- .nexus/motions/motion-0179/motion.yaml\n- .nexus/motions/motion-0179/decision.yaml\n- .nexus/motions/motion-0179/policy.yaml\n- .nexus/motions/motion-0179/verify.json\n- .nexus/motions/motion-0179/vote.json\n- .nexus/motions/motion-0179/execution.md\n- .nexus/motions/motion-0179/proposal.md\n- .nexus/motions/motion-0179/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0179",
+      "chat_search_href": "/operator/chats?q=motion-0179"
+    },
     {
       "motion_id": "motion-0178",
       "item": {
