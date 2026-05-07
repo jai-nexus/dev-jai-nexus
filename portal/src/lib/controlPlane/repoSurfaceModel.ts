@@ -188,6 +188,19 @@ const SURFACE_CATALOG: ControlPlaneSurfaceEntry[] = [
     ],
   },
   {
+    key: "operator-jai",
+    label: "Operator JAI",
+    repo_full_name: "jai-nexus/dev-jai-nexus",
+    summary:
+      "Draft-only operator JAI chat shell with visible control-plane context and blocked authority posture.",
+    configured_scope_keys: ["dev-jai-nexus"],
+    project_ids: ["jai-internal"],
+    notes: [
+      "Control-plane operator surface.",
+      "Read-only shell only. No live provider, execution, mutation, or scheduler capability.",
+    ],
+  },
+  {
     key: "operator-deliberation",
     label: "Operator deliberation",
     repo_full_name: "jai-nexus/dev-jai-nexus",
@@ -313,6 +326,7 @@ const PROJECT_CATALOG: ControlPlaneProjectEntry[] = [
       "customer-portal",
       "api-nexus",
       "jai-format",
+      "operator-jai",
       "operator-motions",
       "operator-deliberation",
       "operator-agents",
@@ -376,6 +390,7 @@ const CONFIGURED_AGENT_SCOPE_SUBSET: ControlPlaneConfiguredScopeEntry[] = [
     label: "dev-jai-nexus configured subset",
     repo_full_name: "jai-nexus/dev-jai-nexus",
     surface_keys: [
+      "operator-jai",
       "operator-motions",
       "operator-deliberation",
       "operator-agents",

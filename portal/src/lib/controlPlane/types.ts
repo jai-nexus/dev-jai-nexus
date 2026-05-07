@@ -9,6 +9,7 @@ export type ControlPlaneSurfaceKey =
   | "customer-portal"
   | "api-nexus"
   | "jai-format"
+  | "operator-jai"
   | "operator-deliberation"
   | "operator-motions"
   | "operator-agents"
