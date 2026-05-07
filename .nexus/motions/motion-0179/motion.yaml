@@ -1,0 +1,19 @@
+motion_id: motion-0179
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Chat Surface v0"
+subtitle: "add a draft-only operator JAI shell for dev.jai.nexus without live provider, execution, or mutation authority"
+kind: builder-proof
+program: q2-jai-chat-surface-v0
+basis: motion-0178
+status: ratified
+created_at: "2026-05-06T00:00:00.000Z"
+decided_at: "2026-05-07T00:51:38.2087694Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []
