@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0179",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The new /operator/jai route is bounded to static, draft-only, read-only operator use.",
+      "The surface shows control-plane context, authority posture, blocked capabilities, and linked operator surfaces without implying execution.",
+      "No provider calls, backend chat route, persistence, execution, branch write, PR creation, scheduler behavior, or cross-repo mutation were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-07T00:51:38.2087694Z"
+}
