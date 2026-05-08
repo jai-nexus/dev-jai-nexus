@@ -3,7 +3,21 @@ import fs from "node:fs"
 import path from "node:path"
 import yaml from "js-yaml"
 
-const PROJECTS_PATH = path.join(process.cwd(), "config", "projects.yaml")
+function resolveProjectsPath(): string {
+  const candidates = [
+    path.join(process.cwd(), "portal", "config", "projects.yaml"),
+    path.join(process.cwd(), "config", "projects.yaml"),
+  ]
+
+  const match = candidates.find((candidate) => fs.existsSync(candidate))
+  if (!match) {
+    throw new Error(
+      "Projects registry not found. Expected portal/config/projects.yaml or config/projects.yaml.",
+    )
+  }
+
+  return match
+}
 
 export type ProjectStatus = "active" | "planned" | "frozen" | "deprecated"
 
@@ -28,7 +42,7 @@ let cachedProjects: ProjectsConfig | null = null
 export function getProjectsConfig(): ProjectsConfig {
   if (cachedProjects) return cachedProjects
 
-  const raw = fs.readFileSync(PROJECTS_PATH, "utf8")
+  const raw = fs.readFileSync(resolveProjectsPath(), "utf8")
   const parsed = yaml.load(raw) as ProjectsConfig
   cachedProjects = parsed
   return parsed
