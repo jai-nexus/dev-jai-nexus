@@ -32,23 +32,3 @@ projects:
     description: >
       Local Windows agent that watches builds, calls LLMs for fixes,
       and emits AUTOPILOT_* SoT events into dev.jai.nexus.
-
-  - project_id: "offbook.v0"
-    name: "OffBook.ai v0"
-    root_nh_id: "2.1"
-    tier: 1
-    status: "active"
-    repo: "JerryIngram/offbook-ai"
-    owner_agent_nh_id: "2.1"
-    description: >
-      First external product anchor for Q1’26.
-
-  - project_id: "teacher-copilot.sandbox"
-    name: "Teacher Copilot Sandbox"
-    root_nh_id: "2.2"
-    tier: 2
-    status: "frozen"
-    repo: "jai-nexus/teacher-copilot"
-    owner_agent_nh_id: "2.2"
-    description: >
-      Experiments only until explicitly unfrozen via SoT event.
