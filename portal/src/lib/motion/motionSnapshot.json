@@ -1,12 +1,134 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-07T00:52:19.982Z",
+  "generated_at": "2026-05-09T22:23:47.249Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 178,
+  "motion_count": 179,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0180",
+      "item": {
+        "motion_id": "motion-0180",
+        "title": "Event and Sync Gap Assessment v0",
+        "subtitle": "assess stale operator telemetry surfaces and recommend repair, relabel, or deprecate paths without adding emitters, automation, or authority",
+        "program": "q2-event-sync-gap-assessment-v0",
+        "kind": "documentation",
+        "basis": "motion-0179",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-05-09T00:00:00.000Z",
+        "decided_at": "2026-05-09T22:01:30.1912010Z",
+        "updated_at": "2026-05-09T22:23:47.249Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0180/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0180\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Event and Sync Gap Assessment v0\"\nsubtitle: \"assess stale operator telemetry surfaces and recommend repair, relabel, or deprecate paths without adding emitters, automation, or authority\"\nkind: documentation\nprogram: q2-event-sync-gap-assessment-v0\nbasis: motion-0179\nstatus: ratified\ncreated_at: \"2026-05-09T00:00:00.000Z\"\ndecided_at: \"2026-05-09T22:01:30.1912010Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: []"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0180/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0180\nstatus: RATIFIED\ndecided_at: \"2026-05-09T22:01:30.1912010Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-05-09T22:01:30.1912010Z\"\nnotes: \"RATIFIED: motion-0180 documents stale event, sync-run, and adjacent decisions freshness and adds copy-only labels without adding emitters, automation, or authority.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0180/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0180\nevaluated_at: \"2026-05-09T22:01:30.1912010Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.08\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: []\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"This motion is assessment-only. Any future emitter, automation, or telemetry repair requires a separate routed seam.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0180/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0180\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-09T22:01:30.1912010Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0180/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-09T22:01:30.1912010Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-09T22:01:30.1912010Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"build\": {\n      \"gate\": \"build\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-09T22:01:30.1912010Z\",\n      \"command\": \"pnpm -C portal build\",\n      \"cwd\": \".\",\n      \"required\": false\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-05-09T22:01:30.1912010Z\"\n  },\n  \"notes\": [\n    \"All required local motion gates passed before ratification.\",\n    \"Portal build passed as additional local evidence.\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0180/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0180\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"The assessment distinguishes route existence from telemetry freshness and names the latest locally observed event, sync-run, and decision timestamps.\",\n      \"The motion clarifies that governance ratification does not currently auto-emit into Events in v0.\",\n      \"The only product changes are copy-only stale-surface labels; no emitters, automation, authority, API mutation, or DB migration were introduced.\"\n    ]\n    ,\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-05-09T22:01:30.1912010Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0180/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Event and Sync Gap Assessment v0\n\n**Motion:** motion-0180\n**Role:** BUILDER\n**Date:** 2026-05-09\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one durable assessment doc, one motion packet, and small copy-only label\nupdates on already-existing operator surfaces. No runtime emitters, no DB\nmutation, no automation, and no cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add a new event emitter\n- add a scheduler\n- add automation\n- add provider/model calls\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add DB migration\n- add API mutation\n- change `/operator/jai`\n- change the canonical agent registry\n- change the JAI Palette model\n- implement agent PR workflow\n- broaden into a telemetry implementation seam\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-09T22:01:30.1912010Z`\n\n### 2. Files changed\n\n- `portal/docs/event-sync-gap-assessment.md`\n- `portal/src/app/events/page.tsx`\n- `portal/src/app/operator/events/page.tsx`\n- `portal/src/app/page.tsx`\n- `.nexus/motions/motion-0180/**`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 3. Inspection findings\n\n#### Events\n\n- Surface paths:\n  - `portal/src/app/events/page.tsx`\n  - `portal/src/app/operator/events/page.tsx`\n- Data source:\n  - `prisma.sotEvent`\n- Latest event found locally:\n  - `2026-04-17T01:39:31.334Z`\n  - source: `jai-work-ui`\n  - kind: `WORK_APPROVED`\n  - summary: `Work approved: motion-0133`\n- Interpretation:\n  - the route is live, but the feed is partial and stale relative to current motion baseline\n  - motion ratification does not auto-emit into Events in v0\n\n#### Sync Runs\n\n- Surface paths:\n  - `portal/src/app/page.tsx`\n  - `portal/src/app/operator/sync-runs/[syncRunId]/review/page.tsx`\n- Data source:\n  - `prisma.syncRun`\n- Latest sync run found locally:\n  - `2026-02-18T20:56:16.526Z`\n  - type: `agent-commit`\n  - status: `PENDING_REVIEW`\n  - trigger: `runner-v0`\n  - summary: `test: staged edit via agents/commit`\n- Interpretation:\n  - the root surface is not operating as a live repo-wide sync heartbeat\n  - current observed table state reads as legacy or sparse\n\n#### Decisions\n\n- Surface path:\n  - `portal/src/app/operator/decisions/page.tsx`\n- Data source:\n  - `prisma.decision`\n  - manual extractor: `pnpm -C portal extract:decisions`\n- Latest decision found locally:\n  - `2026-02-02T01:26:52.960Z`\n- Interpretation:\n  - freshness is manual and stale\n  - inclusion here is adjacency-only, not a routed repair seam\n\n### 4. Copy-only labels added\n\n- `/events`\n  - added note that the stream is a manual/script/runtime-fed snapshot and does not auto-emit motion ratification in v0\n- `/operator/events`\n  - added note that the surface is a partial telemetry stream and does not auto-emit current motion/governance ratification artifacts\n- `/`\n  - added note that Sync Runs is a legacy sparse `SyncRun` feed, not a full live heartbeat for the 38-repo registry\n\nNo behavior, emitters, jobs, or mutations were added.\n\n### 5. Acceptance checks\n\n- ESG-01 pass\n- ESG-02 pass\n- ESG-03 pass\n- ESG-04 pass\n- ESG-05 pass\n- ESG-06 pass\n- ESG-07 pass\n- ESG-08 pass\n- ESG-09 pass\n- ESG-10 pass\n- ESG-11 pass\n- ESG-12 pass\n- ESG-13 pass\n- ESG-14 pass\n- ESG-15 pass\n- ESG-16 pass\n- ESG-17 pass\n- ESG-18 pass\n- ESG-19 pass\n- ESG-20 pass\n- ESG-21 pass\n\n### 6. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0180/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\npnpm -C portal build\n```\n\nResults recorded for ratification:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `build` -> pass\n\n### 7. Ratification closeout\n\nMotion-0180 is ratified as an assessment and copy-label seam only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- `policy.yaml` remains non-blocking with `required_ok: true`\n- no emitters, automation, authority, or mutation paths were added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0180/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Event and Sync Gap Assessment v0\n\n**Motion:** motion-0180\n**Kind:** documentation\n**Program:** q2-event-sync-gap-assessment-v0\n**Basis:** motion-0179\n**Date:** 2026-05-09\n\n---\n\n## Problem\n\nThe operator surface is now structurally coherent, but several telemetry-facing\nsurfaces still read as more current or more complete than the underlying feeds\njustify.\n\nThe concrete gaps named for this assessment are:\n\n- Event stream freshness\n- Sync run freshness and semantics\n- Decisions freshness only if it is low-risk and adjacent\n\nThe key question is not whether these routes exist. They do. The question is\nwhether they are:\n\n- actively fed,\n- correctly framed,\n- or misleading enough that they should be relabeled or later deprecated.\n\n---\n\n## Scope\n\nThis motion is assessment-only with narrowly justified copy-only labels allowed.\n\nIt covers:\n\n1. Inspecting current Events surfaces and their data source\n2. Identifying the latest event timestamp available locally\n3. Clarifying whether motion/governance ratification currently flows into Events\n4. Inspecting current Sync Runs surfaces and their data source\n5. Identifying the latest sync run timestamp available locally\n6. Determining whether Sync Runs is active, legacy, mislabeled, or stale\n7. Inspecting Decisions freshness only because it is structurally adjacent\n8. Recording repair / relabel / deprecate recommendations\n\n---\n\n## Non-goals\n\n- adding a new event emitter\n- adding a scheduler\n- adding automation\n- adding provider/model calls\n- adding execution authority\n- adding branch-write authority\n- adding PR-creation authority\n- adding DB migration or API mutation\n- changing `/operator/jai`\n- changing the canonical agent registry or JAI Palette model\n- implementing telemetry repair in this motion\n\n---\n\n## Success criteria\n\n- Events source and freshness are documented\n- latest event timestamp is named or explicitly absent\n- governance-event expectation is clarified\n- Sync Runs source and freshness are documented\n- latest sync run timestamp is named or explicitly absent\n- a repair / relabel / deprecate recommendation is made\n- Decisions freshness is either included or explicitly deferred with rationale\n- any UI change is copy-only and justified\n- no emitter, scheduler, automation, authority, DB mutation, or cross-repo mutation is introduced"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0180/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Event and Sync Gap Assessment v0\n\n**Motion:** motion-0180\n\n---\n\n## Risks\n\n### Risk 1: Mistaking stale data for broken routes\n\nThe Events and Sync Runs pages are backed by real database reads. If the\nassessment calls them dead without checking write paths and stored rows, the\nresult will be inaccurate and over-prescriptive.\n\n### Risk 2: Treating partial telemetry as a complete control-plane stream\n\nCurrent wording on Events and Sync Runs can read as if they represent the\nwhole operator heartbeat. If motion ratification and other governance activity\ndo not actually emit into those tables, that expectation is misleading.\n\n### Risk 3: Scope drift into implementation\n\nThe obvious temptation is to repair freshness by wiring emitters, jobs, or\nautomation. That is explicitly out of scope for this seam.\n\n### Risk 4: Pulling Decisions into a larger data-quality project\n\nDecisions are adjacent, but they are populated by extraction, not by live\ntelemetry. This motion should include them only to document freshness posture,\nnot to reopen extraction architecture.\n\n---\n\n## Challenger standard\n\nApprove only if:\n\n- the assessment distinguishes route existence from feed freshness\n- latest available timestamps are named or explicitly unavailable\n- governance-event expectations are stated plainly\n- Sync Runs receives a concrete recommendation\n- any product change stays copy-only\n- no runtime authority or automation is introduced\n\n---\n\n## Required gates\n\n- validate_motion\n- validate_agency\n- typecheck\n\nOptional supporting gate:\n\n- build\n\n---\n\n## Risk score\n\nrisk_score: 0.08"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0180/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0180/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0180/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0180/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0180/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0180/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Event and Sync Gap Assessment v0\n\n**Motion:** motion-0180\n**Role:** BUILDER\n**Date:** 2026-05-09\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one durable assessment doc, one motion packet, and small copy-only label\nupdates on already-existing operator surfaces. No runtime emitters, no DB\nmutation, no automation, and no cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add a new event emitter\n- add a scheduler\n- add automation\n- add provider/model calls\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add DB migration\n- add API mutation\n- change `/operator/jai`\n- change the canonical agent registry\n- change the JAI Palette model\n- implement agent PR workflow\n- broaden into a telemetry implementation seam\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-09T22:01:30.1912010Z`\n\n### 2. Files changed\n\n- `portal/docs/event-sync-gap-assessment.md`\n- `portal/src/app/events/page.tsx`\n- `portal/src/app/operator/events/page.tsx`\n- `portal/src/app/page.tsx`\n- `.nexus/motions/motion-0180/**`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 3. Inspection findings\n\n#### Events\n\n- Surface paths:\n  - `portal/src/app/events/page.tsx`\n  - `portal/src/app/operator/events/page.tsx`\n- Data source:\n  - `prisma.sotEvent`\n- Latest event found locally:\n  - `2026-04-17T01:39:31.334Z`\n  - source: `jai-work-ui`\n  - kind: `WORK_APPROVED`\n  - summary: `Work approved: motion-0133`\n- Interpretation:\n  -\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0180\nTitle: Event and Sync Gap Assessment v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0180/motion.yaml\n2. .nexus/motions/motion-0180/decision.yaml\n3. .nexus/motions/motion-0180/policy.yaml\n4. .nexus/motions/motion-0180/verify.json\n5. .nexus/motions/motion-0180/vote.json\n6. .nexus/motions/motion-0180/execution.md\n7. .nexus/motions/motion-0180/proposal.md\n8. .nexus/motions/motion-0180/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0180\n\nCore artifact paths:\n- .nexus/motions/motion-0180/motion.yaml\n- .nexus/motions/motion-0180/decision.yaml\n- .nexus/motions/motion-0180/policy.yaml\n- .nexus/motions/motion-0180/verify.json\n- .nexus/motions/motion-0180/vote.json\n- .nexus/motions/motion-0180/execution.md\n- .nexus/motions/motion-0180/proposal.md\n- .nexus/motions/motion-0180/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0180",
+      "chat_search_href": "/operator/chats?q=motion-0180"
+    },
     {
       "motion_id": "motion-0179",
       "item": {
@@ -23,7 +145,7 @@
         "vote_result": "PASS",
         "created_at": "2026-05-06T00:00:00.000Z",
         "decided_at": "2026-05-07T00:51:38.2087694Z",
-        "updated_at": "2026-05-07T00:52:19.982Z",
+        "updated_at": "2026-05-07T20:52:54.188Z",
         "queue_state": "settled",
         "attention_flags": [],
         "missing_files": []
