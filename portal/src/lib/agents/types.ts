@@ -21,6 +21,22 @@ export type AgentRegistryCapabilityState =
   | "preview_only"
   | "disabled";
 
+export type AgentRegistryAgentClass = "canonical_active" | "palette_draft";
+
+export type AgentRegistryCanonicalLane = "execution" | "governance";
+
+export type AgentRegistryCanonicalActiveKey =
+  | "jai-architect"
+  | "jai-builder"
+  | "jai-verifier"
+  | "jai-librarian"
+  | "jai-operator"
+  | "jai-council-root"
+  | "jai-proposer"
+  | "jai-executor"
+  | "jai-challenger"
+  | "jai-arbiter";
+
 export type AgentRegistryScopeKey = ConfiguredAgentScopeKey;
 export type AgentRegistryRepoScope = AgentRegistryScopeKey;
 
@@ -57,6 +73,11 @@ export interface AgentRegistryAgent {
   label: string;
   handle: string;
   kind: "named_agent";
+  agent_class: AgentRegistryAgentClass;
+  canonical_key?: AgentRegistryCanonicalActiveKey;
+  canonical_lane?: AgentRegistryCanonicalLane;
+  nh_id?: string;
+  palette_proposed_role?: AgentRegistryCanonicalActiveKey;
   summary: string;
   execution_identity: false;
   configured_scope_keys: AgentRegistryScopeKey[];

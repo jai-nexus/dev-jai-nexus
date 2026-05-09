@@ -2,6 +2,7 @@ import type {
   AgentRegistryAgent,
   AgentRegistryCapabilityKey,
   AgentRegistryCapabilityState,
+  AgentRegistryCanonicalActiveKey,
   AgentRegistryScopeKey,
 } from "@/lib/agents/types";
 import type {
@@ -37,6 +38,13 @@ export interface DraftWorkPacketCompatibility {
   requested_action_statuses: DraftWorkPacketActionCompatibility[];
 }
 
+export interface DraftWorkPacketCanonicalRoleResolution {
+  canonical_role_key: AgentRegistryCanonicalActiveKey | null;
+  canonical_role_label: string | null;
+  palette_draft_key: string | null;
+  palette_draft_label: string | null;
+}
+
 export interface DraftWorkPacketSeed {
   packet_id: string;
   title: string;
@@ -67,6 +75,7 @@ export interface DraftWorkPacket {
   blocked_paths: string[];
   verification_commands: string[];
   agent: AgentRegistryAgent;
+  canonical_role: DraftWorkPacketCanonicalRoleResolution;
   compatibility: DraftWorkPacketCompatibility;
   human_gates: string[];
   evidence_expectations: string[];
@@ -86,6 +95,10 @@ export interface DraftWorkPacketTaskPrompt {
   packet_id: string;
   assigned_agent_key: string;
   assigned_agent_label: string;
+  canonical_role_key: AgentRegistryCanonicalActiveKey | null;
+  canonical_role_label: string | null;
+  palette_draft_key: string | null;
+  palette_draft_label: string | null;
   target_repo_full_name: string;
   target_surface_label: string;
   target_project_label: string | null;
