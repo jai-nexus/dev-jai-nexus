@@ -160,7 +160,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-gray-500">
-                Assigned named agent
+                Assigned identity
               </span>
               <Link
                 href={`/operator/agents#${packet.agent.key}`}
@@ -168,12 +168,41 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               >
                 {packet.agent.label}
               </Link>
-              <ToneBadge tone="slate">configured identity</ToneBadge>
+              <ToneBadge
+                tone={packet.agent.agent_class === "canonical_active" ? "emerald" : "amber"}
+              >
+                {packet.agent.agent_class === "canonical_active"
+                  ? "canonical active"
+                  : "palette draft"}
+              </ToneBadge>
             </div>
             <div className="mt-2 font-mono text-xs text-gray-400">
               {packet.agent.handle}
             </div>
             <p className="mt-2 text-sm text-gray-300">{packet.agent.summary}</p>
+            <div className="mt-3 rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Canonical role mapping
+              </div>
+              {packet.canonical_role.canonical_role_label ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <ToneBadge tone="emerald">
+                    {packet.canonical_role.canonical_role_label}
+                  </ToneBadge>
+                  {packet.canonical_role.palette_draft_label ? (
+                    <ToneBadge tone="amber">
+                      palette draft: {packet.canonical_role.palette_draft_label}
+                    </ToneBadge>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <ToneBadge tone="amber">
+                    palette draft: {packet.agent.label}
+                  </ToneBadge>
+                </div>
+              )}
+            </div>
             <ul className="mt-3 space-y-1 text-xs text-gray-400">
               <li>- agent exists: yes</li>
               <li>
@@ -325,6 +354,18 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               <ToneBadge tone="slate">
                 {prompt.assigned_agent_key} - {prompt.assigned_agent_label}
               </ToneBadge>
+              {prompt.canonical_role_label ? (
+                <ToneBadge tone="emerald">
+                  canonical role: {prompt.canonical_role_label}
+                </ToneBadge>
+              ) : (
+                <ToneBadge tone="amber">canonical role: none</ToneBadge>
+              )}
+              {prompt.palette_draft_label ? (
+                <ToneBadge tone="amber">
+                  palette draft: {prompt.palette_draft_label}
+                </ToneBadge>
+              ) : null}
               <ToneBadge tone="sky">
                 branch suggestion: {prompt.branch_name_suggestion}
               </ToneBadge>

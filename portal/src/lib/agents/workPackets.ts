@@ -1,4 +1,4 @@
-import { getAgentConfigurationRegistry } from "@/lib/agents/agentRegistry";
+import { getAgentByKey } from "@/lib/agents/agentRegistry";
 import type {
   AgentRegistryAgent,
   AgentRegistryCapabilityKey,
@@ -13,6 +13,7 @@ import type {
   DraftWorkPacket,
   DraftWorkPacketAction,
   DraftWorkPacketActionCompatibility,
+  DraftWorkPacketCanonicalRoleResolution,
   DraftWorkPacketCompatibilityState,
   DraftWorkPacketSeed,
 } from "@/lib/agents/workPacketTypes";
@@ -167,14 +168,49 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
 ];
 
 function getNamedAgent(agentKey: string): AgentRegistryAgent {
-  const registry = getAgentConfigurationRegistry();
-  const agent = registry.named_agents.find((entry) => entry.key === agentKey);
+  const agent = getAgentByKey(agentKey);
 
   if (!agent) {
     throw new Error(`Named agent not found in registry: ${agentKey}`);
   }
 
   return agent;
+}
+
+export function resolveCanonicalRoleForPacket(
+  packet:
+    | DraftWorkPacket
+    | {
+        agent: AgentRegistryAgent;
+      },
+): DraftWorkPacketCanonicalRoleResolution {
+  const { agent } = packet;
+
+  if (agent.agent_class === "canonical_active") {
+    return {
+      canonical_role_key: agent.canonical_key ?? null,
+      canonical_role_label: agent.label,
+      palette_draft_key: null,
+      palette_draft_label: null,
+    };
+  }
+
+  if (agent.palette_proposed_role) {
+    const canonicalAgent = getAgentByKey(agent.palette_proposed_role);
+    return {
+      canonical_role_key: agent.palette_proposed_role,
+      canonical_role_label: canonicalAgent?.label ?? null,
+      palette_draft_key: agent.key,
+      palette_draft_label: agent.label,
+    };
+  }
+
+  return {
+    canonical_role_key: null,
+    canonical_role_label: null,
+    palette_draft_key: agent.key,
+    palette_draft_label: agent.label,
+  };
 }
 
 function actionToCapabilityKey(
@@ -293,6 +329,7 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
       blocked_paths: seed.blocked_paths,
       verification_commands: seed.verification_commands,
       agent,
+      canonical_role: resolveCanonicalRoleForPacket({ agent }),
       compatibility: {
         agent_exists: true,
         configured_scope_exists: true,
