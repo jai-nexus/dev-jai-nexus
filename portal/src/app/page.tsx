@@ -22,6 +22,10 @@ export default async function HomePage() {
           <p className="text-sm text-gray-400 mt-1">
             Control plane for sync runs across the Nexus.
           </p>
+          <p className="text-xs text-amber-400/90 mt-2">
+            Legacy sync-run surface. The table below is a sparse SyncRun feed, not a
+            full live heartbeat for the 38-repo registry.
+          </p>
         </div>
       </header>
 

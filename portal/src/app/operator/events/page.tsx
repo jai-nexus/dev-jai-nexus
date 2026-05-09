@@ -94,6 +94,10 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
 
+        <p className="text-xs text-amber-400/90 mt-2">
+          Partial telemetry stream only. Current motion and governance ratification
+          artifacts are not auto-emitted into Events in v0.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
           <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
             <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>

@@ -25,6 +25,10 @@ export default async function EventsPage() {
         <p className="text-sm text-gray-400 mt-1">
           Stream of record (SoT events) from chats, syncs, and other sources.
         </p>
+        <p className="text-xs text-amber-400/90 mt-2">
+          Snapshot from manual, script, and runtime-fed SoT rows. Motion ratification
+          does not auto-emit into Events in v0.
+        </p>
         <p className="text-xs text-gray-500 mt-1">
           Showing latest 50 events · {tz}
         </p>
