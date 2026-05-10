@@ -119,7 +119,7 @@ export default async function HomePage() {
           />
           <SummaryCard
             label="Loop-through candidate"
-            value={overview.first_official_loop_candidate.packet_id}
+            value={overview.first_official_loop_candidate.selected_work_packet_id}
             detail="First official agenda-to-deliberation-to-passalong proof candidate."
           />
           <SummaryCard
@@ -191,15 +191,23 @@ export default async function HomePage() {
                 <ToneBadge tone="rose">copy-only routing</ToneBadge>
               </div>
               <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                <li>- packet: {overview.first_official_loop_candidate.packet_id}</li>
+                <li>- packet: {overview.first_official_loop_candidate.selected_work_packet_id}</li>
                 <li>- title: {overview.first_official_loop_candidate.title}</li>
+                <li>- status: {overview.first_official_loop_candidate.selected_status_label}</li>
                 <li>- agent: {overview.first_official_loop_candidate.assigned_agent_label}</li>
                 <li>- canonical role: {overview.first_official_loop_candidate.canonical_role_label}</li>
                 <li>- repo: {overview.first_official_loop_candidate.target_repo_full_name}</li>
                 <li>- surface: {overview.first_official_loop_candidate.target_surface_label}</li>
-                <li>- next target: {overview.first_official_loop_candidate.next_target}</li>
+                <li>- next target: {overview.first_official_loop_candidate.routing_target}</li>
               </ul>
-              <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.note}</p>
+              <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.summary}</p>
+              <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.selection_reason}</p>
+              <p className="mt-3 text-xs text-gray-400">
+                Validation gate: {overview.first_official_loop_candidate.validation_gate}
+              </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Human decision: {overview.first_official_loop_candidate.human_decision_gate}
+              </p>
               <div className="mt-3 flex flex-wrap gap-3 text-xs">
                 <Link href="/operator/work" className="text-sky-300 underline">
                   Open /operator/work

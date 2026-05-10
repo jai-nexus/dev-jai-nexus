@@ -16,6 +16,7 @@ import {
   getDeterministicAgendaModel,
   type DeterministicAgendaItem,
 } from "@/lib/controlPlane/agendaModel";
+import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
 
 function Section({
   title,
@@ -428,6 +429,7 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
 export default function WorkPage() {
   const agenda = getDeterministicAgendaModel();
   const authorityPosture = getControlPlaneAuthorityPosture();
+  const loopCandidate = getOperatorLoopCandidate();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -455,6 +457,11 @@ export default function WorkPage() {
               <span className="font-mono">draft_plan</span>,{" "}
               <span className="font-mono">draft_files_preview</span>, and{" "}
               <span className="font-mono">verify</span>.
+            </p>
+            <p className="mt-3 text-xs text-gray-400">
+              Current selected loop-through candidate:{" "}
+              <span className="font-mono">{loopCandidate.selected_work_packet_id}</span>.{" "}
+              {loopCandidate.selection_reason}
             </p>
           </div>
         </header>

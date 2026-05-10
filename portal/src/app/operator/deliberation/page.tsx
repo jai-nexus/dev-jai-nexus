@@ -295,12 +295,13 @@ export default function DeliberationPage() {
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
               First official agenda deliberation passalong candidate:{" "}
-              <span className="font-mono">{loopCandidate.packet_id}</span>. This
+              <span className="font-mono">{loopCandidate.selected_work_packet_id}</span>. This
               session keeps the loop deterministic, read-only, and human-gated
               across <span className="font-mono">/</span>,{" "}
               <span className="font-mono">/operator/work</span>, and{" "}
               <span className="font-mono">/operator/deliberation</span>.
             </p>
+            <p className="mt-3 text-xs text-gray-400">{loopCandidate.selection_reason}</p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
@@ -413,12 +414,14 @@ export default function DeliberationPage() {
                   </div>
                   <ul className="mt-2 space-y-1">
                     <li>- packet: {passalong.selected_packet_id ?? "none"}</li>
+                    <li>- status: {passalong.selected_status_label ?? "none"}</li>
                     <li>- agent: {passalong.selected_assigned_agent_label ?? "none"}</li>
                     <li>- canonical role: {passalong.selected_canonical_role_label ?? "none"}</li>
                     <li>- repo: {passalong.selected_target_repo_full_name ?? "none"}</li>
                     <li>- surface: {passalong.selected_target_surface_label ?? "none"}</li>
                     <li>- source seam: {passalong.selected_source_label ?? "none"}</li>
                   </ul>
+                  <p className="mt-2">{passalong.selection_reason ?? "none"}</p>
                 </div>
 
                 <div>
