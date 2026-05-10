@@ -3,6 +3,7 @@ export const revalidate = 0;
 
 import type { ReactNode } from "react";
 import { getAgentDeliberationPanel } from "@/lib/agents/deliberationPanel";
+import { buildDeliberationPassalongSummary } from "@/lib/controlPlane/deliberationPassalong";
 import type {
   DeliberationAdvisoryVote,
   DeliberationCandidate,
@@ -262,6 +263,7 @@ function TranscriptTurnCard({
 export default function DeliberationPage() {
   const panel = getAgentDeliberationPanel();
   const transcript = panel.transcript_session;
+  const passalong = buildDeliberationPassalongSummary(panel);
   const candidatesById = new Map(
     panel.candidates.map((candidate) => [candidate.candidate_id, candidate] as const),
   );
@@ -367,6 +369,130 @@ export default function DeliberationPage() {
                 candidatesById={candidatesById}
               />
             ))}
+          </div>
+        </Section>
+
+        <Section
+          title="Passalong-ready summary"
+          description="Deterministic CONTROL_THREAD handoff block computed from the current deliberation transcript. Read-only and copy-only only."
+        >
+          <div className="grid gap-4 xl:grid-cols-[1fr_1.2fr]">
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-100">
+                  Passalong posture
+                </h3>
+                <ToneBadge tone="amber">copy only</ToneBadge>
+                <ToneBadge tone="rose">no persistence</ToneBadge>
+                <ToneBadge tone="sky">{passalong.recommended_next_target}</ToneBadge>
+              </div>
+
+              <div className="mt-4 space-y-4 text-sm text-gray-300">
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Reviewed motion / seam
+                  </div>
+                  <div className="mt-2">{passalong.reviewed_motion_or_seam}</div>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Participant roles
+                  </div>
+                  <ul className="mt-2 space-y-1">
+                    {passalong.participant_role_summary.map((entry) => (
+                      <li key={entry}>- {entry}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Posture summary
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <ToneBadge tone="emerald">
+                      support {passalong.posture_summary.support}
+                    </ToneBadge>
+                    <ToneBadge tone="amber">
+                      caution {passalong.posture_summary.caution}
+                    </ToneBadge>
+                    <ToneBadge tone="slate">
+                      defer/hold {passalong.posture_summary.defer_or_hold}
+                    </ToneBadge>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-300">
+                    Recommendation: {passalong.posture_summary.recommendation}
+                  </p>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Evidence basis
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {passalong.evidence_basis_summary.map((basis) => (
+                      <ToneBadge key={basis} tone="slate">
+                        {basis}
+                      </ToneBadge>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Strongest dissent / caution
+                  </div>
+                  <p className="mt-2">{passalong.strongest_dissent_or_caution}</p>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Arbiter synthesis
+                  </div>
+                  <p className="mt-2">{passalong.arbiter_synthesis}</p>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Recommended next routing
+                  </div>
+                  <p className="mt-2">Target: {passalong.recommended_next_target}</p>
+                  <p className="mt-2">{passalong.recommended_next_action}</p>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                    Authority boundary
+                  </div>
+                  <ul className="mt-2 space-y-1">
+                    {passalong.authority_boundary.map((entry) => (
+                      <li key={entry}>- {entry}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-100">
+                  Copy-only passalong text
+                </h3>
+                <ToneBadge tone="amber">textarea only</ToneBadge>
+                <ToneBadge tone="rose">no submit / no save</ToneBadge>
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                This block is deterministic handoff material only. There is no
+                submit path, no save path, no API call, and no hidden persistence.
+              </p>
+              <textarea
+                readOnly
+                value={passalong.copy_text}
+                rows={28}
+                className="mt-4 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+              />
+            </div>
           </div>
         </Section>
 

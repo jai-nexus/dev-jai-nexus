@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0186",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The passalong-ready summary block is derived from the existing deterministic deliberation transcript rather than a new persistence or indexing layer.",
+      "The block now summarizes motion or seam, participants, posture, evidence basis, strongest caution, arbiter synthesis, next routing, and authority boundary in copy-only form.",
+      "No provider call, runtime execution, write authority, persistence path, or mutation path was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T21:36:38.7199671Z"
+}

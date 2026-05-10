@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0186
+status: RATIFIED
+decided_at: "2026-05-10T21:36:38.7199671Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-10T21:36:38.7199671Z"
+notes: "RATIFIED: motion-0186 adds a deterministic copy-only passalong-ready summary block for /operator/deliberation with no persistence, authority expansion, or mutation path."
