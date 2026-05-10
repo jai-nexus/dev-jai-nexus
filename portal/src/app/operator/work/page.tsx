@@ -219,6 +219,13 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
                   deliberation, and CONTROL_THREAD passalong.
                 </div>
               ) : null}
+              {item.is_first_official_loop_candidate ? (
+                <p className="mb-3 text-xs text-gray-400">
+                  Switching remains static/local and code/governance controlled
+                  only. No runtime control, route state, query state, API call,
+                  or persistence path exists for changing the active candidate.
+                </p>
+              ) : null}
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs uppercase tracking-wide text-gray-500">
                   Assigned identity
@@ -492,6 +499,16 @@ export default function WorkPage() {
             </p>
             <p className="mt-2 text-xs text-gray-400">
               Selection criteria: {loopCandidate.criteria_summary}
+            </p>
+            <p className="mt-2 text-xs text-gray-400">
+              Static switching policy:{" "}
+              {loopCandidate.static_switching.switching_policy.summary}
+            </p>
+            <p className="mt-2 text-xs text-gray-400">
+              Eligible alternative ids:{" "}
+              {loopCandidate.static_switching.eligible_candidate_ids.length > 0
+                ? loopCandidate.static_switching.eligible_candidate_ids.join(", ")
+                : "none"}
             </p>
           </div>
         </header>
