@@ -1,12 +1,134 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-10T20:01:13.488Z",
+  "generated_at": "2026-05-10T20:23:07.865Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 182,
+  "motion_count": 183,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0184",
+      "item": {
+        "motion_id": "motion-0184",
+        "title": "Root Operator Status Overview v0",
+        "subtitle": "replace root syncrun-first landing with a broader read-only control-plane overview",
+        "program": "q2-root-operator-status-overview-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0183",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-05-10T00:00:00.000Z",
+        "decided_at": "2026-05-10T20:22:11.8345208Z",
+        "updated_at": "2026-05-10T20:23:07.865Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0184/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0184\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Root Operator Status Overview v0\"\nsubtitle: \"replace root syncrun-first landing with a broader read-only control-plane overview\"\nkind: builder-proof\nprogram: q2-root-operator-status-overview-v0\nbasis: motion-0183\nstatus: ratified\ncreated_at: \"2026-05-10T00:00:00.000Z\"\ndecided_at: \"2026-05-10T20:22:11.8345208Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0184/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0184\nstatus: RATIFIED\ndecided_at: \"2026-05-10T20:22:11.8345208Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-05-10T20:22:11.8345208Z\"\nnotes: \"RATIFIED: motion-0184 replaces the root SyncRun-first landing surface with a broader read-only operator status overview without adding telemetry production, authority, or mutation paths.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0184/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0184\nevaluated_at: \"2026-05-10T20:22:11.8345208Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.08\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: [build]\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"This motion is display-only and must not imply live heartbeat telemetry or new authority.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0184/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0184\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0184/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"snapshot_write\": {\n      \"gate\": \"snapshot_write\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"node portal/scripts/build-motion-snapshot.mjs --write\",\n      \"cwd\": \".\",\n      \"required\": false\n    },\n    \"snapshot_check\": {\n      \"gate\": \"snapshot_check\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"node portal/scripts/build-motion-snapshot.mjs --check\",\n      \"cwd\": \".\",\n      \"required\": false\n    },\n    \"build\": {\n      \"gate\": \"build\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T20:22:11.8345208Z\",\n      \"command\": \"pnpm -C portal build\",\n      \"cwd\": \".\",\n      \"required\": false\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-05-10T20:22:11.8345208Z\"\n  },\n  \"notes\": [\n    \"Motion-0184 was created in open posture, then ratified after final validation and snapshot refresh.\",\n    \"Final bundled motion snapshot was refreshed through motion-0184 and verified current.\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0184/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0184\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Root / now reads as an operator status overview instead of a SyncRun-first landing page.\",\n      \"The overview links motion, agenda, JAI Chat, registry, agent, authority, and telemetry freshness posture without introducing live heartbeat semantics.\",\n      \"No scheduler, automation, telemetry producer, provider call, execution authority, or mutation path was introduced.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-05-10T20:22:11.8345208Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0184/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Root Operator Status Overview v0\n\n**Motion:** motion-0184\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: medium\nBasis: one root landing-page reframe, one computed root overview model, one\nmotion packet, and one bundled snapshot refresh. No telemetry producers, no new\npersistence, and no cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add scheduler or automation\n- add live producers or event emitters\n- add provider/model calls\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add DB or API mutation\n- change `/operator/jai`, Events ingestion, Decisions extraction, canonical\n  agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T20:22:11.8345208Z`\n\n### 2. Implementation shape\n\n- added `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- replaced root `/` with an operator status overview\n- preserved Sync Runs as a compact legacy/review section only\n- refreshed the bundled motion snapshot through motion-0184\n\n### 3. Files changed\n\n- `portal/src/app/page.tsx`\n- `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- `.nexus/motions/motion-0184/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 4. Root overview coverage\n\n- root `/` is no longer SyncRun-first\n- root `/` now leads with motion snapshot, deterministic agenda, operator JAI,\n  repo registry, project registry, agent posture, authority posture, and\n  telemetry freshness notes\n- required operator links are present:\n  - `/operator`\n  - `/operator/jai`\n  - `/operator/work`\n  - `/operator/motions`\n  - `/operator/agents`\n  - `/operator/projects`\n  - `/operator/events`\n  - `/operator/chats`\n  - `/operator/waves`\n- Sync Runs remain visible only as a compact legacy/review feed\n- Decisions freshness is included as a low-risk read-only note\n\n### 5. Authority posture preserved\n\n- no scheduler or automation\n- no live producer or event emitter\n- no provider/model calls\n- no execution capability\n- no branch-write authority\n- no PR-creation authority\n- no DB or API mutation\n- no changes to `/operator/jai`, Events ingestion, Decisions extraction,\n  canonical agent registry, or JAI Palette behavior\n\n### 6. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0184/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\nnode portal/scripts/build-motion-snapshot.mjs --write\nnode portal/scripts/build-motion-snapshot.mjs --check\npnpm -C portal build\n```\n\nResults recorded after final ratification and final snapshot refresh:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `snapshot_write` -> pass\n- `snapshot_check` -> pass\n- `build` -> pass\n\n### 7. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `182`\n  - latest bundled motion: `motion-0183`\n- bundled snapshot after refresh:\n  - motion count: `183`\n  - latest bundled motion: `motion-0184`\n- `node portal/scripts/build-motion-snapshot.mjs --check` returned\n  `status: current`\n\n### 8. Acceptance checks\n\n- acceptance-01 pass: root `/` is no longer SyncRun-first\n- acceptance-02 pass: root `/` reads as the front-door operator status overview\n- acceptance-03 pass: latest motion snapshot posture is visible\n- acceptance-04 pass: deterministic agent activation agenda posture is visible\n- acceptance-05 pass: `/operator/jai` entry point is visible and framed as\n  static/draft-only/read-only\n- acceptance-06 pass: repo registry count and project registry posture are visible\n- acceptance-07 pass: canonical agent / JAI Palette posture is visible without\n  changing the registry/model\n- acceptance-08 pass: authority-disabled posture is explicit\n- acceptance-09 pass: Events freshness note is visible without implying\n  governance auto-emission\n- acceptance-10 pass: Sync Runs are preserved only as legacy/agent-edit review\n  semantics\n- acceptance-11 pass: Decisions freshness note is included from existing\n  read-only data/model\n- acceptance-12 pass: required operator links are present\n- acceptance-13 pass: no new telemetry producer, mutation path, execution\n  authority, scheduler, or provider/model call is introduced\n- acceptance-14 pass: motion snapshot gate ran and passed\n- acceptance-15 pass: typecheck and build passed\n\n### 9. Ratification closeout\n\nMotion-0184 is ratified as a read-only/display-only root overview seam only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- final bundled snapshot includes `motion-0184`\n- no telemetry production, mutation, runtime, or authority expansion was added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0184/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Root Operator Status Overview v0\n\n## Summary\n\nReplace root `/` from a SyncRun-first landing surface into a broader read-only\noperator status overview for `dev.jai.nexus`.\n\nThe root surface should become the front door to the JAI NEXUS control plane,\nleading with motion, agenda, registry, agent, authority, and freshness posture\ninstead of implying a live heartbeat through a sparse SyncRun table.\n\n## Scope\n\n- add a small computed root overview model using existing read-only control-plane\n  sources\n- reframe root `/` into an operator status overview\n- keep `/operator/jai` visibly available as a static, draft-only, read-only\n  entry point\n- keep Sync Runs visible only as compact legacy/review artifacts below the\n  overview\n- include low-risk freshness notes for Events, Sync Runs, and Decisions\n\n## Non-scope\n\n- no scheduler or automation\n- no live producer or event emitter\n- no provider/model calls\n- no execution authority\n- no branch-write authority\n- no PR-creation authority\n- no DB migration or API mutation\n- no changes to `/operator/jai`, Events ingestion, Decisions extraction,\n  canonical agent registry, or JAI Palette model\n\n## Expected outcome\n\nThe root domain becomes a useful read-only operator front door while preserving\nthe current authority-disabled and telemetry-limited posture."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0184/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Root Operator Status Overview v0\n\n**Motion:** motion-0184\n\n---\n\n## Risks\n\n### Risk 1: Root overview could accidentally imply live telemetry health\n\nIf Events or Sync Runs are presented too positively, operators may mistake\npartial/stale data for a full live heartbeat.\n\n### Risk 2: The seam could duplicate operator logic instead of composing it\n\nThe root page should derive from existing read-only models and avoid introducing\nanother persistence or status system.\n\n### Risk 3: Sync Runs could remain visually dominant\n\nThe landing surface must stop being SyncRun-first, while still preserving the\nlegacy/review semantics that remain useful.\n\n### Risk 4: Authority-disabled posture could become less explicit\n\nA more polished front door must still repeat that execution, branch write, PR\nproposal, provider dispatch, and mutation paths remain disabled.\n\n---\n\n## Challenger standard\n\nApprove only if:\n\n- root `/` clearly reads as a control-plane overview rather than a SyncRun table\n- required operator links are present\n- Sync Runs remain visibly legacy/review-only\n- Events and Decisions notes stay honest about freshness and automation limits\n- no new telemetry production, authority, or mutation path is introduced\n\n---\n\n## Required gates\n\n- validate_motion\n- validate_agency\n- typecheck\n\nOptional supporting gate:\n\n- build\n\n---\n\n## Risk score\n\nrisk_score: 0.08"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0184/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0184/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0184/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0184/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0184/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0184/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Root Operator Status Overview v0\n\n**Motion:** motion-0184\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: medium\nBasis: one root landing-page reframe, one computed root overview model, one\nmotion packet, and one bundled snapshot refresh. No telemetry producers, no new\npersistence, and no cross-repo changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add scheduler or automation\n- add live producers or event emitters\n- add provider/model calls\n- add execution capability\n- add branch-write authority\n- add PR-creation authority\n- add DB or API mutation\n- change `/operator/jai`, Events ingestion, Decisions extraction, canonical\n  agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T20:22:11.8345208Z`\n\n### 2. Implementation shape\n\n- added `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- replaced root `/` with an operator status overview\n- preserved Sync Runs as a compact legacy/review section only\n- refreshed the bundled motion snapshot through motion-0184\n\n### 3. Files changed\n\n- `portal/src/app/page.tsx`\n- `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- `.nexus/motions/motion-0184/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 4. Root overview coverage\n\n- root `/` is no longer SyncRun-first\n- root `/` now leads with motion snapshot, deterministic agenda, operator JAI,\n  repo registry, project reg\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0184\nTitle: Root Operator Status Overview v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0184/motion.yaml\n2. .nexus/motions/motion-0184/decision.yaml\n3. .nexus/motions/motion-0184/policy.yaml\n4. .nexus/motions/motion-0184/verify.json\n5. .nexus/motions/motion-0184/vote.json\n6. .nexus/motions/motion-0184/execution.md\n7. .nexus/motions/motion-0184/proposal.md\n8. .nexus/motions/motion-0184/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0184\n\nCore artifact paths:\n- .nexus/motions/motion-0184/motion.yaml\n- .nexus/motions/motion-0184/decision.yaml\n- .nexus/motions/motion-0184/policy.yaml\n- .nexus/motions/motion-0184/verify.json\n- .nexus/motions/motion-0184/vote.json\n- .nexus/motions/motion-0184/execution.md\n- .nexus/motions/motion-0184/proposal.md\n- .nexus/motions/motion-0184/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0184",
+      "chat_search_href": "/operator/chats?q=motion-0184"
+    },
     {
       "motion_id": "motion-0183",
       "item": {
@@ -23,7 +145,7 @@
         "vote_result": "PASS",
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T19:59:55.3558866Z",
-        "updated_at": "2026-05-10T20:01:13.488Z",
+        "updated_at": "2026-05-10T20:14:12.634Z",
         "queue_state": "settled",
         "attention_flags": [],
         "missing_files": []
