@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0191",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-10T23:16:37.1497240Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "Static loop candidate switching model verified without adding runtime controls, persistence, ranking, or authority expansion."
+  ],
+  "summary": {
+    "before_motion_count": 189,
+    "after_motion_count": 190,
+    "latest_bundled_motion": "motion-0191"
+  }
+}

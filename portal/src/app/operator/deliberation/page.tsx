@@ -303,6 +303,10 @@ export default function DeliberationPage() {
             </p>
             <p className="mt-3 text-xs text-gray-400">{loopCandidate.selection_reason}</p>
             <p className="mt-2 text-xs text-gray-400">{loopCandidate.criteria_summary}</p>
+            <p className="mt-2 text-xs text-gray-400">
+              Static switching policy:{" "}
+              {loopCandidate.static_switching.switching_policy.summary}
+            </p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
@@ -423,6 +427,10 @@ export default function DeliberationPage() {
                     <li>- source seam: {passalong.selected_source_label ?? "none"}</li>
                   </ul>
                   <p className="mt-2">{passalong.selection_reason ?? "none"}</p>
+                  <p className="mt-2 text-xs text-gray-400">
+                    Switching policy:{" "}
+                    {loopCandidate.static_switching.switching_policy.summary}
+                  </p>
                 </div>
 
                 <div>

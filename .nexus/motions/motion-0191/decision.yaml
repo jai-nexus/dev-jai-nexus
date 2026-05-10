@@ -1,0 +1,13 @@
+motion_id: motion-0191
+decision_id: decision-motion-0191
+decided_at: "2026-05-10T23:16:37.1497240Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-10T23:16:37.1497240Z"
+status: RATIFIED
+decision_summary: "Ratified as a static selected-candidate switching model only."
+rationale:
+  - "Static/local switching metadata is now explicit and keeps candidate changes governance-controlled only."
+  - "The current active candidate remains wp-agent-registry-follow-up without adding runtime controls, ranking, or persistence."
+consequences:
+  - "Future switching may be represented explicitly in code/governance seams without route state, API mutation, or persistence."
+  - "The current selected candidate remains wp-agent-registry-follow-up until a later explicit switch seam changes it."

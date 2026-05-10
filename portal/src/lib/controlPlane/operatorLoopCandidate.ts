@@ -16,6 +16,33 @@ export interface OperatorLoopSelectionCriterion {
   current_candidate_satisfies: boolean;
 }
 
+export type LoopCandidateSelectionStatus =
+  | "active"
+  | "eligible"
+  | "deferred"
+  | "blocked";
+
+export interface StaticLoopCandidateSwitchingEntry {
+  work_packet_id: string;
+  selection_status: LoopCandidateSelectionStatus;
+  selection_rationale: string;
+  metadata_criteria_result: string;
+  switching_note: string;
+}
+
+export interface StaticLoopCandidateSwitchingPolicy {
+  mode: "static_code_governance_controlled";
+  summary: string;
+  disallowed: string[];
+}
+
+export interface StaticLoopCandidateSwitchingModel {
+  active_candidate_id: string;
+  eligible_candidate_ids: string[];
+  candidates: StaticLoopCandidateSwitchingEntry[];
+  switching_policy: StaticLoopCandidateSwitchingPolicy;
+}
+
 function criterion(
   key: string,
   label: string,
@@ -47,6 +74,7 @@ export interface OperatorLoopCandidateModel {
   selection_criteria: OperatorLoopSelectionCriterion[];
   criteria_summary: string;
   current_candidate_criteria_result: "satisfies_required_criteria";
+  static_switching: StaticLoopCandidateSwitchingModel;
 }
 
 export function getFirstOfficialLoopPacket(): DraftWorkPacket {
@@ -152,9 +180,120 @@ function buildSelectionCriteria(
   ];
 }
 
+function satisfiesRequiredCriteria(
+  criteria: OperatorLoopSelectionCriterion[],
+): boolean {
+  return criteria.every(
+    (criterion) => !criterion.required || criterion.current_candidate_satisfies,
+  );
+}
+
+function getSelectionStatus(
+  packet: DraftWorkPacket,
+  criteria: OperatorLoopSelectionCriterion[],
+): LoopCandidateSelectionStatus {
+  if (packet.packet_id === FIRST_OFFICIAL_LOOP_PACKET_ID) {
+    return "active";
+  }
+
+  if (
+    satisfiesRequiredCriteria(criteria) &&
+    packet.status !== "blocked" &&
+    packet.status !== "settled"
+  ) {
+    return "eligible";
+  }
+
+  if (packet.status === "deferred") {
+    return "deferred";
+  }
+
+  return "blocked";
+}
+
+function selectionRationale(
+  packet: DraftWorkPacket,
+  status: LoopCandidateSelectionStatus,
+): string {
+  if (status === "active") {
+    return "Current default active loop-through candidate selected by settled code/governance control.";
+  }
+
+  if (status === "eligible") {
+    return "Eligible for future loop-through switching because the packet satisfies the required deterministic selection criteria.";
+  }
+
+  if (status === "deferred") {
+    return "Deferred as a future loop-through option until seam order, timing, or human-governance readiness changes.";
+  }
+
+  return "Not eligible for static switching in the current posture because it remains cross-repo, implementation-heavy, blocked, or otherwise outside the preferred bounded loop criteria.";
+}
+
+function criteriaResultLabel(criteria: OperatorLoopSelectionCriterion[]): string {
+  const satisfied = criteria.filter(
+    (criterion) => criterion.required && criterion.current_candidate_satisfies,
+  ).length;
+  const required = criteria.filter((criterion) => criterion.required).length;
+
+  return `${satisfied}/${required} required criteria satisfied`;
+}
+
+function switchingNote(status: LoopCandidateSelectionStatus): string {
+  if (status === "active") {
+    return "Active candidate changes only through a later code/governance-controlled seam.";
+  }
+
+  if (status === "eligible") {
+    return "Eligible candidates may be promoted only by an explicit later code/governance-controlled switch, not by runtime controls.";
+  }
+
+  if (status === "deferred") {
+    return "Deferred candidates stay visible but cannot become active without an explicit later code/governance-controlled switch.";
+  }
+
+  return "Blocked candidates remain excluded from switching until a later code/governance seam changes the bounded conditions.";
+}
+
+function buildStaticSwitchingModel(): StaticLoopCandidateSwitchingModel {
+  const candidates = getDraftWorkPackets().map((packet) => {
+    const criteria = buildSelectionCriteria(packet.selection_metadata);
+    const selection_status = getSelectionStatus(packet, criteria);
+
+    return {
+      work_packet_id: packet.packet_id,
+      selection_status,
+      selection_rationale: selectionRationale(packet, selection_status),
+      metadata_criteria_result: criteriaResultLabel(criteria),
+      switching_note: switchingNote(selection_status),
+    };
+  });
+
+  return {
+    active_candidate_id: FIRST_OFFICIAL_LOOP_PACKET_ID,
+    eligible_candidate_ids: candidates
+      .filter((candidate) => candidate.selection_status === "eligible")
+      .map((candidate) => candidate.work_packet_id),
+    candidates,
+    switching_policy: {
+      mode: "static_code_governance_controlled",
+      summary:
+        "Loop-through candidate switching remains static/local and may change only through an explicit code-and-governance-controlled seam.",
+      disallowed: [
+        "runtime operator controls",
+        "query or route state switching",
+        "API mutation",
+        "persistence or passalong index",
+        "ranking or scoring engine",
+      ],
+    },
+  };
+}
+
 export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
   const packet = getFirstOfficialLoopPacket();
   const selection_criteria = buildSelectionCriteria(packet.selection_metadata);
+  const static_switching = buildStaticSwitchingModel();
 
   return {
     selected_work_packet_id: packet.packet_id,
@@ -183,5 +322,6 @@ export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
     criteria_summary:
       "Future loop-through candidates must stay repo-local preferred, governance-safe, draft/review-only, validation-gated, human-gated, non-mutating, and authority-disabled.",
     current_candidate_criteria_result: "satisfies_required_criteria",
+    static_switching,
   };
 }

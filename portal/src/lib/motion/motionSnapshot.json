@@ -1,12 +1,258 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-10T22:33:14.776Z",
+  "generated_at": "2026-05-10T23:17:25.996Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 188,
+  "motion_count": 190,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0191",
+      "item": {
+        "motion_id": "motion-0191",
+        "title": "Static Loop Candidate Switching v0",
+        "subtitle": "define a durable static/local switching model for future loop-through candidates without runtime controls, persistence, ranking, or authority expansion",
+        "program": "q2-static-loop-candidate-switching-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0190",
+        "motion_status": "ratified",
+        "decision_status": null,
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-10T00:00:00.000Z",
+        "decided_at": "2026-05-10T23:16:37.1497240Z",
+        "updated_at": "2026-05-10T23:17:25.996Z",
+        "queue_state": "attention",
+        "attention_flags": [
+          "parse error: decision.yaml"
+        ],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0191/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0191\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Static Loop Candidate Switching v0\"\nsubtitle: \"define a durable static/local switching model for future loop-through candidates without runtime controls, persistence, ranking, or authority expansion\"\nkind: builder-proof\nprogram: q2-static-loop-candidate-switching-v0\nbasis: motion-0190\nstatus: ratified\ncreated_at: \"2026-05-10T00:00:00.000Z\"\ndecided_at: \"2026-05-10T23:16:37.1497240Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0191/decision.yaml",
+          "present": true,
+          "parse_ok": false,
+          "preview": "motion_id: motion-0191\ndecision_id: decision-motion-0191\nstatus: DRAFT\ndecided_at: \"2026-05-10T23:16:37.1497240Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-10T23:16:37.1497240Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a static selected-candidate switching model only.\"\nrationale:\n  - \"Static/local switching metadata is now explicit and keeps candidate changes governance-controlled only.\"\n  - \"The current active candidate remains wp-agent-registry-follow-up without adding runtime controls, ranking, or persistence.\"\nconsequences:\n  - \"Future switching may be represented explicitly in code/governance seams without route state, API mutation, or persistence.\"\n  - \"The current selected candidate remains wp-agent-registry-follow-up until a later explicit switch seam changes it.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0191/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0191\npolicy_id: policy-motion-0191\nstatus: RATIFIED\nevaluated_at: \"2026-05-10T23:16:37.1497240Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"static/local only\"\n  - \"deterministic only\"\n  - \"read-only/copy-only only\"\n  - \"no runtime controls\"\n  - \"no persistence\"\n  - \"no ranking or scoring\"\n  - \"no provider/model call\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0191/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0191\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-10T23:16:37.1497240Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"Static loop candidate switching model verified without adding runtime controls, persistence, ranking, or authority expansion.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 189,\n    \"after_motion_count\": 190,\n    \"latest_bundled_motion\": \"motion-0191\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0191/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0191\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:16:37.1497240Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The switching model stays static/local and exposes active-versus-eligible posture without route state or runtime control.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence are recorded and the current selected candidate remains deterministic and human-gated.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam hardens future switching semantics without adding persistence, API mutation, ranking, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0191/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Static Loop Candidate Switching v0\n\n**Motion:** motion-0191\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one selected-candidate helper extension, small read-only surface updates,\none motion packet, and one bundled snapshot refresh. No runtime controls,\npersistence, ranking, or authority changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add runtime operator controls\n- add query or route state\n- add persistence or passalong indexing\n- add provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- change `/operator/jai`, canonical agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T23:16:37.1497240Z`\n\n### 2. Implementation shape\n\n- extended `operatorLoopCandidate.ts` with a static switching model\n- preserved `wp-agent-registry-follow-up` as the active candidate\n- exposed eligible candidate ids, switching status, rationale, criteria result,\n  and switching policy summary\n- surfaced the switching policy compactly on root overview, deterministic agenda,\n  deliberation, and the copy-only passalong text\n- refreshed the bundled motion snapshot through `motion-0191`\n\n### 3. Files changed\n\n- `portal/src/lib/controlPlane/operatorLoopCandidate.ts`\n- `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- `portal/src/lib/controlPlane/deliberationPassalong.ts`\n- `portal/src/app/page.tsx`\n- `portal/src/app/operator/work/page.tsx`\n- `portal/src/app/operator/deliberation/page.tsx`\n- `.nexus/motions/motion-0191/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 4. Static switching model added\n\nAdded a static/local switching model that represents:\n\n- active candidate id\n- eligible candidate ids\n- per-candidate selection status\n- per-candidate selection rationale\n- per-candidate metadata criteria result\n- per-candidate switching note\n- switching policy mode and disallowed mechanisms\n\n### 5. Active candidate preserved\n\n- `wp-agent-registry-follow-up` remains the active loop-through candidate\n- assigned agent remains `JAI Governance Agent`\n- role posture remains palette-draft governance identity\n- target repo remains `jai-nexus/dev-jai-nexus`\n- target surface remains `Operator agents`\n- requested action remains `draft_plan`\n- routing target remains `ORCHESTRATOR`\n\n### 6. Surface impact\n\n- root `/` now shows eligible alternative ids and the static switching policy summary\n- `/operator/work` now states the static switching policy in the agenda header and on the active candidate card\n- `/operator/deliberation` now states the switching policy in the header and passalong posture section\n- the passalong copy text now includes the switching policy line\n\n### 7. Authority posture preserved\n\n- no provider/model calls\n- no backend runtime execution\n- no branch-write or PR authority\n- no scheduler or automation\n- no API or DB mutation\n- no hidden persistence\n- no passalong indexing\n- no runtime switching controls\n- no route-state or query-state switching\n\n### 8. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0191/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\nnode portal/scripts/build-motion-snapshot.mjs --write\nnode portal/scripts/build-motion-snapshot.mjs --check\npnpm -C portal build\n```\n\nResults recorded after final ratification and final snapshot refresh:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `snapshot_write` -> pass\n- `snapshot_check` -> pass\n- `build` -> pass\n\n### 9. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `189`\n  - latest bundled motion: `motion-0190`\n- bundled snapshot after refresh:\n  - motion count: `190`\n  - latest bundled motion: `motion-0191`\n- `node portal/scripts/build-motion-snapshot.mjs --check` returned\n  `status: current`\n\n### 10. Acceptance checks\n\n- acceptance-01 pass: `wp-agent-registry-follow-up` remains the current selected loop-through candidate\n- acceptance-02 pass: static switching model explicitly represents active candidate, eligible ids, status, rationale, criteria result, and governance-only switching note\n- acceptance-03 pass: cross-surface representation remains consistent across root overview, agenda, deliberation, and passalong\n- acceptance-04 pass: representation remains static/local, deterministic, read-only, copy-only, and human-gated\n- acceptance-05 pass: no provider/model/backend/execution/write authority was introduced\n- acceptance-06 pass: no API/DB mutation, passalong index, persistence layer, scheduler, automation, or ranking/scoring engine was introduced\n- acceptance-07 pass: motion snapshot gate passed\n- acceptance-08 pass: validation passed\n\n### 11. Ratification closeout\n\nMotion-0191 is ratified as a static loop-candidate switching seam only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- final bundled snapshot includes `motion-0191`\n- no runtime control, persistence path, ranking logic, provider call, runtime execution, or write authority was added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0191/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Static Loop Candidate Switching v0\n\n## Purpose\n\nDefine a static selected-candidate switching model for future operator-loop\ncandidates.\n\n## Scope\n\n- preserve `wp-agent-registry-follow-up` as the current active selected candidate\n- add a static/local switching model that exposes:\n  - current active candidate\n  - eligible candidate ids\n  - per-candidate selection status\n  - selection rationale\n  - metadata criteria result\n  - explicit code/governance-controlled switching note\n- surface the switching model where low-risk across root overview, agenda, and\n  deliberation\n- refresh the bundled motion snapshot through `motion-0191`\n\n## Non-goals\n\n- no runtime switching controls\n- no query state or route state\n- no persistence or passalong index\n- no scoring or ranking engine\n- no provider/model calls\n- no runtime execution or write authority"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0191/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Static Loop Candidate Switching v0\n\n## Risks\n\n- the switching model could imply runtime interactivity if the copy is not explicit\n- exposing eligible candidates could be mistaken for a ranking system if not framed\n  as static/local governance-only metadata\n\n## Mitigations\n\n- keep one active candidate only\n- label switching as code/governance-controlled only\n- avoid route state, persistence, API mutation, and ranking logic"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0191/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0191/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0191/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0191/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0191/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0191/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Static Loop Candidate Switching v0\n\n**Motion:** motion-0191\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one selected-candidate helper extension, small read-only surface updates,\none motion packet, and one bundled snapshot refresh. No runtime controls,\npersistence, ranking, or authority changes.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add runtime operator controls\n- add query or route state\n- add persistence or passalong indexing\n- add provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- change `/operator/jai`, canonical agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T23:16:37.1497240Z`\n\n### 2. Implementation shape\n\n- extended `operatorLoopCandidate.ts` with a static switching model\n- preserved `wp-agent-registry-follow-up` as the active candidate\n- exposed eligible candidate ids, switching status, rationale, criteria result,\n  and switching policy summary\n- surfaced the switching policy compactly on root overview, deterministic agenda,\n  deliberation, and the copy-only passalong text\n- refreshed the bundled motion snapshot through `motion-0191`\n\n### 3. Files changed\n\n- `portal/src/lib/controlPlane/operatorLoopCandidate.ts`\n- `portal/src/lib/controlPlane/rootOperatorOverview.ts`\n- `portal/src/lib/controlPlane/deliberationPassalong.ts`\n- `portal/src/app/page.tsx`\n- `portal\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0191\nTitle: Static Loop Candidate Switching v0\nQueue state: attention\nDecision status: null\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- parse error: decision.yaml\n\nRead order:\n1. .nexus/motions/motion-0191/motion.yaml\n2. .nexus/motions/motion-0191/decision.yaml\n3. .nexus/motions/motion-0191/policy.yaml\n4. .nexus/motions/motion-0191/verify.json\n5. .nexus/motions/motion-0191/vote.json\n6. .nexus/motions/motion-0191/execution.md\n7. .nexus/motions/motion-0191/proposal.md\n8. .nexus/motions/motion-0191/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0191\n\nCore artifact paths:\n- .nexus/motions/motion-0191/motion.yaml\n- .nexus/motions/motion-0191/decision.yaml\n- .nexus/motions/motion-0191/policy.yaml\n- .nexus/motions/motion-0191/verify.json\n- .nexus/motions/motion-0191/vote.json\n- .nexus/motions/motion-0191/execution.md\n- .nexus/motions/motion-0191/proposal.md\n- .nexus/motions/motion-0191/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0191",
+      "chat_search_href": "/operator/chats?q=motion-0191"
+    },
+    {
+      "motion_id": "motion-0190",
+      "item": {
+        "motion_id": "motion-0190",
+        "title": "Agenda Source Metadata Hardening v0",
+        "subtitle": "add explicit agenda-source metadata for future loop-candidate selection without adding persistence, routing complexity, or authority",
+        "program": "q2-agenda-source-metadata-hardening-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0189",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": true,
+        "eligible_to_vote": true,
+        "vote_result": "PASS",
+        "created_at": "2026-05-10T00:00:00.000Z",
+        "decided_at": "2026-05-10T22:49:28.1268791Z",
+        "updated_at": "2026-05-10T23:09:14.172Z",
+        "queue_state": "settled",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0190/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0190\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agenda Source Metadata Hardening v0\"\nsubtitle: \"add explicit agenda-source metadata for future loop-candidate selection without adding persistence, routing complexity, or authority\"\nkind: builder-proof\nprogram: q2-agenda-source-metadata-hardening-v0\nbasis: motion-0189\nstatus: ratified\ncreated_at: \"2026-05-10T00:00:00.000Z\"\ndecided_at: \"2026-05-10T22:49:28.1268791Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0190/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0190\nstatus: RATIFIED\ndecided_at: \"2026-05-10T22:49:28.1268791Z\"\nratified_by: voter\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_gates: [validate_motion, validate_agency, typecheck]\nlast_updated: \"2026-05-10T22:49:28.1268791Z\"\nnotes: \"RATIFIED: motion-0190 adds explicit agenda-source metadata hardening for future loop-candidate selection.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0190/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "protocol_version: \"0.3.8\"\nmotion_id: motion-0190\nevaluated_at: \"2026-05-10T22:49:28.1268791Z\"\ntarget_domain: \"dev.jai.nexus\"\ntarget_repo: \"dev-jai-nexus\"\nvote_mode: \"unanimous_consent\"\nrequired_voters: [proposer, challenger, arbiter]\nrisk_score: 0.06\nmax_risk_score: 0.20\nrequired_gates: [validate_motion, validate_agency, typecheck]\noptional_gates: [build]\nfailed_required_gates: []\nfailed_optional_gates: []\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nblocking_reasons: []\nwarnings:\n  - \"This motion hardens agenda-source metadata only and must not imply persistence, dynamic routing, ranking, or authority expansion.\"\nescalation_state: null"
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0190/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"version\": \"0.2\",\n  \"motion_id\": \"motion-0190\",\n  \"latest\": {\n    \"validate_motion\": {\n      \"gate\": \"validate_motion\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0190/motion.yaml\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"validate_agency\": {\n      \"gate\": \"validate_agency\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"node portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"typecheck\": {\n      \"gate\": \"typecheck\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"pnpm -C portal typecheck\",\n      \"cwd\": \".\",\n      \"required\": true\n    },\n    \"snapshot_write\": {\n      \"gate\": \"snapshot_write\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"node portal/scripts/build-motion-snapshot.mjs --write\",\n      \"cwd\": \".\",\n      \"required\": false\n    },\n    \"snapshot_check\": {\n      \"gate\": \"snapshot_check\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"node portal/scripts/build-motion-snapshot.mjs --check\",\n      \"cwd\": \".\",\n      \"required\": false\n    },\n    \"build\": {\n      \"gate\": \"build\",\n      \"ok\": true,\n      \"status\": 0,\n      \"ts\": \"2026-05-10T22:49:28.1268791Z\",\n      \"command\": \"pnpm -C portal build\",\n      \"cwd\": \".\",\n      \"required\": false\n    }\n  },\n  \"summary\": {\n    \"required_ok\": true,\n    \"last_updated\": \"2026-05-10T22:49:28.1268791Z\"\n  },\n  \"notes\": [\n    \"Motion-0190 was created in open posture, then ratified after final validation and snapshot refresh.\",\n    \"Final bundled motion snapshot was refreshed through motion-0190 and verified current.\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0190/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0190\",\n  \"version\": \"0.2\",\n  \"protocol_version\": \"0.3.8\",\n  \"vote_mode\": \"unanimous_consent\",\n  \"required_roles\": [\n    \"proposer\",\n    \"challenger\",\n    \"arbiter\"\n  ],\n  \"votes\": [\n    {\n      \"role\": \"proposer\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"challenger\",\n      \"vote\": \"yes\"\n    },\n    {\n      \"role\": \"arbiter\",\n      \"vote\": \"yes\"\n    }\n  ],\n  \"outcome\": {\n    \"yes\": 3,\n    \"no\": 0,\n    \"abstain\": 0,\n    \"yes_with_reservations\": 0,\n    \"result\": \"PASS\",\n    \"reasons\": [\n      \"Agenda items now expose explicit source metadata for repo posture, work class, action class, gate presence, mutation boundary, authority boundary, and chain completeness.\",\n      \"The selected-candidate helper now aligns its future-selection criteria to the hardened agenda metadata instead of inferring everything ad hoc.\",\n      \"The current selected candidate remains wp-agent-registry-follow-up and the seam does not add persistence, ranking, or authority expansion.\"\n    ],\n    \"missing_required_roles\": []\n  },\n  \"last_updated\": \"2026-05-10T22:49:28.1268791Z\"\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0190/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agenda Source Metadata Hardening v0\n\n**Motion:** motion-0190\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one work-packet type extension, one static source derivation pass, one\nselected-candidate helper alignment, small surface updates, one motion packet,\nand one bundled snapshot refresh. No provider calls, runtime execution,\npersistence, or cross-repo mutation.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add live provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- add hidden persistence\n- add passalong indexing\n- change `/operator/jai`, canonical agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T22:49:28.1268791Z`\n\n### 2. Implementation shape\n\n- extended work-packet types with explicit selection metadata\n- derived selection metadata in the static work-packet source\n- aligned selected-candidate criteria to the hardened agenda metadata\n- surfaced the metadata in `/operator/work` and passalong text where low-risk\n- refreshed the bundled motion snapshot through motion-0190\n\n### 3. Files changed\n\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/controlPlane/agendaModel.ts`\n- `portal/src/lib/controlPlane/operatorLoopCandidate.ts`\n- `portal/src/lib/controlPlane/deliberationPassalong.ts`\n- `portal/src/app/operator/work/page.tsx`\n- `.nexus/motions/motion-0190/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\nNo `docs-nexus` files were changed. No `jai-nexus` files were changed.\n\n### 4. Agenda-source metadata added\n\nAdded explicit work-packet metadata for:\n\n- repo posture\n- work class\n- requested action class\n- validation gate presence\n- human decision gate presence\n- mutation boundary\n- authority boundary\n- deterministic chain completeness\n- selection notes\n\n### 5. Selected-candidate criteria alignment\n\n- `operatorLoopCandidate.ts` now reads the future-selection criteria from the\n  explicit agenda metadata rather than recomputing everything from loose packet fields\n- `wp-agent-registry-follow-up` remains the selected loop-through candidate\n- selected candidate posture remains:\n  - repo-local\n  - governance-safe\n  - draft/review-only\n  - validation-gated\n  - human-gated\n  - no mutation\n  - planning/review-only authority boundary\n\n### 6. Surface impact\n\n- `/operator/work` now shows a compact `Selection metadata` section on agenda items\n- the passalong block now carries an `agenda metadata` summary line in the copy-only handoff text\n- no route/state complexity, persistence, or ranking was added\n\n### 7. Authority posture preserved\n\n- no live provider/model calls\n- no backend runtime execution\n- no branch-write or PR authority\n- no scheduler or automation\n- no API or DB mutation\n- no hidden persistence\n- no passalong indexing\n- no changes to `/operator/jai`, canonical agent registry, or JAI Palette behavior\n\n### 8. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0190/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\nnode portal/scripts/build-motion-snapshot.mjs --write\nnode portal/scripts/build-motion-snapshot.mjs --check\npnpm -C portal build\n```\n\nResults recorded after final ratification and final snapshot refresh:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `snapshot_write` -> pass\n- `snapshot_check` -> pass\n- `build` -> pass\n\n### 9. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `188`\n  - latest bundled motion: `motion-0189`\n- bundled snapshot after refresh:\n  - motion count: `189`\n  - latest bundled motion: `motion-0190`\n- `node portal/scripts/build-motion-snapshot.mjs --check` returned\n  `status: current`\n\n### 10. Acceptance checks\n\n- acceptance-01 pass: `wp-agent-registry-follow-up` remains the current selected loop-through candidate\n- acceptance-02 pass: explicit agenda/work-packet metadata was added for future candidate selection\n- acceptance-03 pass: selected-candidate criteria now align to the hardened agenda metadata\n- acceptance-04 pass: metadata is surfaced where low-risk without adding routing state or persistence\n- acceptance-05 pass: representation remains static/local, deterministic, read-only, copy-only, and human-gated\n- acceptance-06 pass: no provider/model/backend/execution/write authority was introduced\n- acceptance-07 pass: no API/DB mutation, passalong index, persistence layer, scheduler, automation, or ranking/scoring engine was introduced\n- acceptance-08 pass: motion snapshot gate passed\n- acceptance-09 pass: validation passed\n\n### 11. Ratification closeout\n\nMotion-0190 is ratified as an agenda-source metadata hardening seam only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- final bundled snapshot includes `motion-0190`\n- no provider call, runtime execution, write authority, persistence path, or mutation path was added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0190/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agenda Source Metadata Hardening v0\n\n## Summary\n\nHarden the static agenda/work-packet source model with explicit selection\nmetadata so future loop-candidate selection uses stronger, more consistent\ninputs.\n\nThe current selected candidate remains `wp-agent-registry-follow-up`.\n\n## Scope\n\n- extend the work-packet type layer with explicit selection metadata\n- derive that metadata in the static work-packet source model\n- align the selected-candidate helper with the new agenda metadata\n- surface the metadata in `/operator/work` and, where useful, in the passalong text\n\n## Non-scope\n\n- no provider or model calls\n- no runtime execution\n- no branch-write authority\n- no PR-creation authority\n- no scheduler or automation\n- no API or DB mutation\n- no hidden persistence\n- no passalong index\n- no ranking/scoring engine\n- no changes to `/operator/jai`, canonical agent registry, or JAI Palette model\n\n## Expected outcome\n\nAgenda items become easier to inspect and compare as future loop-through\ncandidates because the source model now exposes repo posture, work class,\naction class, mutation boundary, authority boundary, and chain completeness\ndirectly."
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0190/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agenda Source Metadata Hardening v0\n\n**Motion:** motion-0190\n\n---\n\n## Risks\n\n### Risk 1: Metadata could stay implicit\n\nIf repo posture, work class, action class, mutation boundary, and chain\ncompleteness are still inferred ad hoc, future candidate selection will remain\nfragile.\n\n### Risk 2: The selected candidate could drift\n\nThis seam must preserve `wp-agent-registry-follow-up` as the current selected\nloop-through candidate and only harden the source metadata.\n\n### Risk 3: The helper and agenda source could diverge\n\nIf `operatorLoopCandidate.ts` does not consume the new agenda metadata, the new\nsource fields do not materially improve future selection.\n\n### Risk 4: The seam could grow into ranking or routing logic\n\nThis motion must stop at metadata hardening and low-risk visibility, not evolve\ninto dynamic scoring, persistence, or new route complexity.\n\n---\n\n## Challenger standard\n\nApprove only if:\n\n- explicit agenda-source metadata exists for repo posture, work class, action\n  class, gate presence, mutation boundary, authority boundary, and chain completeness\n- `wp-agent-registry-follow-up` remains the selected candidate\n- selected-candidate criteria align to the hardened agenda metadata\n- the seam remains deterministic, read-only, copy-only, and authority-disabled\n\n---\n\n## Required gates\n\n- validate_motion\n- validate_agency\n- typecheck\n\nOptional supporting gate:\n\n- build\n\n---\n\n## Risk score\n\nrisk_score: 0.06"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0190/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0190/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0190/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0190/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0190/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0190/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agenda Source Metadata Hardening v0\n\n**Motion:** motion-0190\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one work-packet type extension, one static source derivation pass, one\nselected-candidate helper alignment, small surface updates, one motion packet,\nand one bundled snapshot refresh. No provider calls, runtime execution,\npersistence, or cross-repo mutation.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- add live provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- add hidden persistence\n- add passalong indexing\n- change `/operator/jai`, canonical agent registry, or JAI Palette behavior\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-10T22:49:28.1268791Z`\n\n### 2. Implementation shape\n\n- extended work-packet types with explicit selection metadata\n- derived selection metadata in the static work-packet source\n- aligned selected-candidate criteria to the hardened agenda metadata\n- surfaced the metadata in `/operator/work` and passalong text where low-risk\n- refreshed the bundled motion snapshot through motion-0190\n\n### 3. Files changed\n\n- `portal/src/lib/agents/workPacketTypes.ts`\n- `portal/src/lib/agents/workPackets.ts`\n- `portal/src/lib/controlPlane/agendaModel.ts`\n- `portal/src/lib/controlPlane/operatorLoopCandidate.ts`\n- `portal/src/lib/controlPlane/deliberationPassalong.ts`\n- `portal/src/app/operator/work/page.tsx`\n\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0190\nTitle: Agenda Source Metadata Hardening v0\nQueue state: settled\nDecision status: RATIFIED\nRequired gates ok: true\nVote result: PASS\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0190/motion.yaml\n2. .nexus/motions/motion-0190/decision.yaml\n3. .nexus/motions/motion-0190/policy.yaml\n4. .nexus/motions/motion-0190/verify.json\n5. .nexus/motions/motion-0190/vote.json\n6. .nexus/motions/motion-0190/execution.md\n7. .nexus/motions/motion-0190/proposal.md\n8. .nexus/motions/motion-0190/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0190\n\nCore artifact paths:\n- .nexus/motions/motion-0190/motion.yaml\n- .nexus/motions/motion-0190/decision.yaml\n- .nexus/motions/motion-0190/policy.yaml\n- .nexus/motions/motion-0190/verify.json\n- .nexus/motions/motion-0190/vote.json\n- .nexus/motions/motion-0190/execution.md\n- .nexus/motions/motion-0190/proposal.md\n- .nexus/motions/motion-0190/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0190",
+      "chat_search_href": "/operator/chats?q=motion-0190"
+    },
     {
       "motion_id": "motion-0189",
       "item": {
@@ -23,7 +269,7 @@
         "vote_result": "PASS",
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T22:32:13.8294954Z",
-        "updated_at": "2026-05-10T22:33:14.776Z",
+        "updated_at": "2026-05-10T22:44:39.316Z",
         "queue_state": "settled",
         "attention_flags": [],
         "missing_files": []

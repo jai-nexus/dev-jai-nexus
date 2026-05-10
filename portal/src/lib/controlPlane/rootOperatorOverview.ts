@@ -94,6 +94,8 @@ export interface RootOperatorOverview {
     criteria_summary: string;
     required_criteria_count: number;
     required_criteria_satisfied_count: number;
+    eligible_candidate_ids: string[];
+    switching_policy_summary: string;
   };
   operator_jai: {
     href: "/operator/jai";
@@ -269,6 +271,8 @@ export async function getRootOperatorOverview(): Promise<RootOperatorOverview> {
       required_criteria_satisfied_count: loopCandidate.selection_criteria.filter(
         (criterion) => criterion.required && criterion.current_candidate_satisfies,
       ).length,
+      eligible_candidate_ids: loopCandidate.static_switching.eligible_candidate_ids,
+      switching_policy_summary: loopCandidate.static_switching.switching_policy.summary,
     },
     operator_jai: {
       href: "/operator/jai",

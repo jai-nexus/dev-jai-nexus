@@ -216,6 +216,16 @@ export default async function HomePage() {
                 {overview.first_official_loop_candidate.required_criteria_satisfied_count}/
                 {overview.first_official_loop_candidate.required_criteria_count}
               </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Eligible static alternatives:{" "}
+                {overview.first_official_loop_candidate.eligible_candidate_ids.length > 0
+                  ? overview.first_official_loop_candidate.eligible_candidate_ids.join(", ")
+                  : "none"}
+              </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Switching policy:{" "}
+                {overview.first_official_loop_candidate.switching_policy_summary}
+              </p>
               <div className="mt-3 flex flex-wrap gap-3 text-xs">
                 <Link href="/operator/work" className="text-sky-300 underline">
                   Open /operator/work

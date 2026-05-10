@@ -1,0 +1,24 @@
+motion_id: motion-0191
+policy_id: policy-motion-0191
+status: RATIFIED
+evaluated_at: "2026-05-10T23:16:37.1497240Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "static/local only"
+  - "deterministic only"
+  - "read-only/copy-only only"
+  - "no runtime controls"
+  - "no persistence"
+  - "no ranking or scoring"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"
