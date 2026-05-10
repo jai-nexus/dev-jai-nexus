@@ -1,4 +1,4 @@
-import { getAgentConfigurationRegistry } from "@/lib/agents/agentRegistry";
+import { getCanonicalActiveAgents } from "@/lib/agents/agentRegistry";
 import { getDraftWorkPackets } from "@/lib/agents/workPackets";
 import type {
   AgentRegistryAgent,
@@ -21,13 +21,17 @@ import type {
   DeliberationTranscriptTurn,
 } from "@/lib/agents/deliberationTypes";
 import type { DraftWorkPacketAction } from "@/lib/agents/workPacketTypes";
+import { buildDeterministicDeliberationLens } from "@/lib/controlPlane/deliberationQuality";
 
-const GLOBAL_AGENT_KEYS = new Set([
-  "jai-orchestrator",
+const DELIBERATION_AGENT_KEYS = new Set([
+  "jai-architect",
   "jai-builder",
   "jai-verifier",
   "jai-librarian",
-  "jai-governance-agent",
+  "jai-operator",
+  "jai-proposer",
+  "jai-challenger",
+  "jai-arbiter",
 ]);
 
 function slugify(value: string): string {
@@ -240,110 +244,96 @@ function deriveAgentAdvisory(
   agent: AgentRegistryAgent,
   candidate: Omit<DeliberationCandidate, "advisory" | "consensus" | "next_step_prompt">,
 ): DeliberationAgentAdvisory {
-  const broadAgent = GLOBAL_AGENT_KEYS.has(agent.key);
+  const broadAgent =
+    agent.key === "jai-architect" ||
+    agent.key === "jai-builder" ||
+    agent.key === "jai-verifier" ||
+    agent.key === "jai-librarian" ||
+    agent.key === "jai-operator";
   const inScope = hasScope(agent, candidate.configured_scope_key);
   const actionStates = candidate.requested_actions.map((action) =>
     getActionState(agent, action),
   );
   const hasDisabledAction = actionStates.includes("disabled");
   const hasPreviewOnlyAction = actionStates.includes("preview_only");
-  const reasoning: string[] = [];
+  const context = {
+    in_scope: inScope,
+    broad_agent: broadAgent,
+    has_disabled_action: hasDisabledAction,
+    has_preview_only_action: hasPreviewOnlyAction,
+  };
 
   if (candidate.planned_toolchain_target) {
+    const vote = !inScope && !broadAgent ? "out_of_scope" : "support_with_caution";
+    const lens = buildDeterministicDeliberationLens(agent, candidate, vote, context);
     if (!inScope && !broadAgent) {
       return {
         agent,
-        vote: "out_of_scope",
+        vote,
+        role_lens: lens.role_lens,
+        evidence_basis: lens.evidence_basis,
+        confidence: lens.confidence,
+        recommendation_posture: lens.recommendation_posture,
+        dissent_or_caution:
+          lens.dissent_or_caution ??
+          "This planned toolchain target is outside the configured scope subset for this agent.",
         reasoning: [
           "This planned toolchain target is outside the configured scope subset for this agent.",
+          ...lens.reasoning,
         ],
       };
     }
-
-    reasoning.push(
-      `${candidate.planned_toolchain_target} remains a planned toolchain target only and is not integrated in v0.`,
-    );
-    reasoning.push(
-      "Any next step should stay copy-only and operator-authorized, with no execution or credential enablement.",
-    );
     return {
       agent,
-      vote: "support_with_caution",
-      reasoning,
+      vote,
+      role_lens: lens.role_lens,
+      evidence_basis: lens.evidence_basis,
+      confidence: lens.confidence,
+      recommendation_posture: lens.recommendation_posture,
+      dissent_or_caution: lens.dissent_or_caution,
+      reasoning: lens.reasoning,
     };
   }
 
   if (!inScope && !broadAgent) {
+    const vote = "out_of_scope";
+    const lens = buildDeterministicDeliberationLens(agent, candidate, vote, context);
     return {
       agent,
-      vote: "out_of_scope",
+      vote,
+      role_lens: lens.role_lens,
+      evidence_basis: lens.evidence_basis,
+      confidence: lens.confidence,
+      recommendation_posture: lens.recommendation_posture,
+      dissent_or_caution:
+        lens.dissent_or_caution ??
+        "Requested repo and surface target are outside this agent's configured scope subset.",
       reasoning: [
         "Requested repo and surface target are outside this agent's configured scope subset.",
+        ...lens.reasoning,
       ],
     };
   }
 
-  if (!inScope && broadAgent) {
-    reasoning.push(
-      "Target is not currently represented in a configured scope subset, so this remains a planning-only advisory review.",
-    );
-  } else {
-    reasoning.push(
-      `Target resolves within configured scope key ${candidate.configured_scope_key}.`,
-    );
-  }
-
+  let vote: DeliberationAdvisoryVote;
   if (hasDisabledAction) {
-    reasoning.push(
-      "At least one requested action is outside this agent's enabled or preview-only posture.",
-    );
-    return {
-      agent,
-      vote: broadAgent ? "defer" : "out_of_scope",
-      reasoning,
-    };
+    vote = broadAgent ? "defer" : "out_of_scope";
+  } else if (hasPreviewOnlyAction || candidate.source_kind === "project" || candidate.source_kind === "motion") {
+    vote = "support_with_caution";
+  } else {
+    vote = "support";
   }
 
-  if (hasPreviewOnlyAction) {
-    reasoning.push(
-      "Requested actions include preview-only output, so the recommendation stays non-binding and copy-only.",
-    );
-    return {
-      agent,
-      vote: "support_with_caution",
-      reasoning,
-    };
-  }
-
-  if (candidate.source_kind === "project") {
-    reasoning.push(
-      "This project target is still planned, so advice should stay at planning and scope-clarification level only.",
-    );
-    return {
-      agent,
-      vote: "support_with_caution",
-      reasoning,
-    };
-  }
-
-  if (candidate.source_kind === "motion") {
-    reasoning.push(
-      "Motion-derived follow-up remains advisory only and cannot create or ratify anything from this panel.",
-    );
-    return {
-      agent,
-      vote: "support_with_caution",
-      reasoning,
-    };
-  }
-
-  reasoning.push(
-    "Requested actions fit the current read-only or planning posture for this agent.",
-  );
+  const lens = buildDeterministicDeliberationLens(agent, candidate, vote, context);
   return {
     agent,
-    vote: "support",
-    reasoning,
+    vote,
+    role_lens: lens.role_lens,
+    evidence_basis: lens.evidence_basis,
+    confidence: lens.confidence,
+    recommendation_posture: lens.recommendation_posture,
+    dissent_or_caution: lens.dissent_or_caution,
+    reasoning: lens.reasoning,
   };
 }
 
@@ -570,6 +560,17 @@ function buildModeratorTurn(
     speaker_label: "Moderator",
     speaker_handle: null,
     advisory_vote: "framing",
+    role_lens: "session framing, bounded comparison, operator guardrails",
+    evidence_basis: [
+      "motion package",
+      "operator route inspection",
+      "authority posture",
+      "control-thread passalong",
+    ],
+    confidence: "high",
+    recommendation_posture: "framing",
+    dissent_or_caution:
+      "The transcript is deterministic and non-binding. Similarity between turns should not be mistaken for autonomous consensus.",
     focus_candidate_ids: candidates.map((candidate) => candidate.candidate_id),
     statement: [
       "This transcript is advisory only and compares multiple candidate motions and actions using deterministic registry, work packet, motion, project, manual, and planned-toolchain inputs.",
@@ -610,12 +611,17 @@ function buildAgentTurn(
     speaker_label: agent.label,
     speaker_handle: agent.handle,
     advisory_vote: primaryAdvisory.vote,
+    role_lens: primaryAdvisory.role_lens,
+    evidence_basis: primaryAdvisory.evidence_basis,
+    confidence: primaryAdvisory.confidence,
+    recommendation_posture: primaryAdvisory.recommendation_posture,
+    dissent_or_caution: primaryAdvisory.dissent_or_caution,
     focus_candidate_ids: [
       primaryCandidate.candidate_id,
       recommendation.recommended_candidate_id,
     ],
     statement: [
-      `Primary recommendation focus: ${primaryCandidate.title}. Vote: ${primaryAdvisory.vote}.`,
+      `Primary recommendation focus: ${primaryCandidate.title}. Vote: ${primaryAdvisory.vote}. Posture: ${primaryAdvisory.recommendation_posture}.`,
       ...primaryAdvisory.reasoning,
       `Session-wide recommendation check: ${recommendation.recommended_title} remains copy-only and requires operator authorization before any next motion or repo action is opened.`,
       plannedNote,
@@ -654,8 +660,9 @@ function buildTranscriptSession(
 }
 
 export function getAgentDeliberationPanel(): DeliberationPanelModel {
-  const registry = getAgentConfigurationRegistry();
-  const participatingAgents = registry.named_agents;
+  const participatingAgents = getCanonicalActiveAgents().filter((agent) =>
+    DELIBERATION_AGENT_KEYS.has(agent.key),
+  );
 
   const candidates = createCandidateSeeds().map((seed) => {
     const surface = getSurfaceEntry(seed.surface_key);

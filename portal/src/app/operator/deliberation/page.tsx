@@ -7,6 +7,8 @@ import type {
   DeliberationAdvisoryVote,
   DeliberationCandidate,
   DeliberationCandidateSourceKind,
+  DeliberationConfidence,
+  DeliberationRecommendationPosture,
   DeliberationTranscriptTurn,
 } from "@/lib/agents/deliberationTypes";
 
@@ -87,6 +89,19 @@ function voteTone(vote: DeliberationAdvisoryVote | "framing") {
   if (vote === "support") return "emerald";
   if (vote === "support_with_caution") return "amber";
   if (vote === "defer" || vote === "framing") return "slate";
+  return "rose";
+}
+
+function postureTone(posture: DeliberationRecommendationPosture | "framing") {
+  if (posture === "support") return "emerald";
+  if (posture === "support_with_caution") return "amber";
+  if (posture === "framing") return "sky";
+  return "rose";
+}
+
+function confidenceTone(confidence: DeliberationConfidence) {
+  if (confidence === "high") return "emerald";
+  if (confidence === "medium") return "amber";
   return "rose";
 }
 
@@ -173,6 +188,12 @@ function TranscriptTurnCard({
             <ToneBadge tone={voteTone(turn.advisory_vote)}>
               {turn.advisory_vote}
             </ToneBadge>
+            <ToneBadge tone={postureTone(turn.recommendation_posture)}>
+              {turn.recommendation_posture}
+            </ToneBadge>
+            <ToneBadge tone={confidenceTone(turn.confidence)}>
+              confidence: {turn.confidence}
+            </ToneBadge>
           </div>
           {turn.speaker_handle ? (
             <div className="font-mono text-[11px] text-gray-500">
@@ -181,6 +202,36 @@ function TranscriptTurnCard({
           ) : null}
         </div>
         <ToneBadge tone="rose">advisory only</ToneBadge>
+      </div>
+
+      <div className="mt-4">
+        <div className="text-xs uppercase tracking-wide text-gray-500">
+          Role lens
+        </div>
+        <div className="mt-2 text-sm text-gray-200">{turn.role_lens}</div>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">
+            Evidence basis
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {turn.evidence_basis.map((basis) => (
+              <ToneBadge key={`${turn.turn_id}-${basis}`} tone="slate">
+                {basis}
+              </ToneBadge>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-wide text-gray-500">
+            Dissent / caution
+          </div>
+          <div className="mt-2 text-sm text-gray-300">
+            {turn.dissent_or_caution ?? "none"}
+          </div>
+        </div>
       </div>
 
       <div className="mt-4">

@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0185",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Canonical deliberation participants now use differentiated deterministic role lenses instead of a generic repeated reasoning pattern.",
+      "Each turn now exposes role lens, evidence basis, confidence, recommendation posture, and dissent/caution without adding live providers or runtime execution.",
+      "The surface remains advisory-only, copy-only, and authority-disabled."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T21:17:47.5728649Z"
+}
