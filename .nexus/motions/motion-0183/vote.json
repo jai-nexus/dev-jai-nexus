@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0183",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The /operator/work surface now resolves a deterministic planning and review chain for each agenda item without implying runtime execution.",
+      "The implementation keeps agent identity, canonical role mapping, repo target, surface target, source seam, requested actions, validation gates, and human gates visible together.",
+      "No provider calls, live runtime, branch write, PR creation, scheduler behavior, hidden persistence, or API/DB mutation paths were introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T19:59:55.3558866Z"
+}

@@ -12,9 +12,29 @@ import type {
 } from "@/lib/controlPlane/types";
 
 export type DraftWorkPacketAction =
+  | "view_only"
   | "draft_plan"
   | "draft_files_preview"
   | "verify";
+
+export type DraftWorkPacketStatus =
+  | "draft"
+  | "ready_for_review"
+  | "blocked"
+  | "deferred"
+  | "settled";
+
+export interface DraftWorkPacketSource {
+  kind: "motion" | "control_thread";
+  label: string;
+  motion_id?: string;
+}
+
+export interface DraftWorkPacketNextPromptTarget {
+  target: "CONTROL_THREAD" | "ORCHESTRATOR" | "REPO_EXECUTION" | "EXPLORATION";
+  label: string;
+  prompt: string;
+}
 
 export type DraftWorkPacketCompatibilityState =
   | "compatible"
@@ -49,6 +69,8 @@ export interface DraftWorkPacketSeed {
   packet_id: string;
   title: string;
   summary: string;
+  status: DraftWorkPacketStatus;
+  source: DraftWorkPacketSource;
   agent_key: string;
   configured_scope_key: AgentRegistryScopeKey;
   target: ControlPlaneTargetRef;
@@ -58,12 +80,15 @@ export interface DraftWorkPacketSeed {
   verification_commands: string[];
   human_gates: string[];
   evidence_expectations: string[];
+  next_prompt_target: DraftWorkPacketNextPromptTarget;
 }
 
 export interface DraftWorkPacket {
   packet_id: string;
   title: string;
   summary: string;
+  status: DraftWorkPacketStatus;
+  source: DraftWorkPacketSource;
   configured_scope_key: AgentRegistryScopeKey;
   target: {
     repo_full_name: string;
@@ -79,6 +104,7 @@ export interface DraftWorkPacket {
   compatibility: DraftWorkPacketCompatibility;
   human_gates: string[];
   evidence_expectations: string[];
+  next_prompt_target: DraftWorkPacketNextPromptTarget;
 }
 
 export interface DraftWorkPacketTaskPromptValidation {
@@ -93,18 +119,25 @@ export interface DraftWorkPacketTaskPromptValidation {
 export interface DraftWorkPacketTaskPrompt {
   prompt_id: string;
   packet_id: string;
+  agenda_status: DraftWorkPacketStatus;
+  source_kind: DraftWorkPacketSource["kind"];
+  source_label: string;
+  source_motion_id: string | null;
   assigned_agent_key: string;
   assigned_agent_label: string;
   canonical_role_key: AgentRegistryCanonicalActiveKey | null;
   canonical_role_label: string | null;
   palette_draft_key: string | null;
   palette_draft_label: string | null;
+  next_prompt_target: DraftWorkPacketNextPromptTarget["target"];
+  next_prompt_label: string;
+  next_prompt_text: string;
   target_repo_full_name: string;
   target_surface_label: string;
   target_project_label: string | null;
   branch_name_suggestion: string;
   branch_suggestion_note: string;
-  status: "ready_preview" | "warning" | "blocked";
+  preview_status: "ready_preview" | "warning" | "blocked";
   warnings: string[];
   blocked_reasons: string[];
   validation: DraftWorkPacketTaskPromptValidation;

@@ -4,14 +4,18 @@ export const revalidate = 0;
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { getDraftWorkPackets } from "@/lib/agents/workPackets";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
-import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import type {
-  DraftWorkPacket,
+  DraftWorkPacketAction,
   DraftWorkPacketActionCompatibility,
   DraftWorkPacketCompatibilityState,
+  DraftWorkPacketStatus,
 } from "@/lib/agents/workPacketTypes";
+import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import {
+  getDeterministicAgendaModel,
+  type DeterministicAgendaItem,
+} from "@/lib/controlPlane/agendaModel";
 
 function Section({
   title,
@@ -78,6 +82,17 @@ function ToneBadge({
   );
 }
 
+function statusTone(status: DraftWorkPacketStatus): "amber" | "emerald" | "rose" | "slate" {
+  if (status === "ready_for_review") return "emerald";
+  if (status === "blocked") return "rose";
+  if (status === "settled") return "slate";
+  return "amber";
+}
+
+function statusLabel(status: DraftWorkPacketStatus): string {
+  return status.replace(/_/g, " ");
+}
+
 function compatibilityTone(
   state: DraftWorkPacketCompatibilityState,
 ): "emerald" | "amber" | "rose" {
@@ -86,14 +101,17 @@ function compatibilityTone(
   return "rose";
 }
 
+function actionLabel(action: DraftWorkPacketAction): string {
+  if (action === "view_only") return "view only";
+  if (action === "draft_plan") return "draft plan";
+  if (action === "draft_files_preview") return "draft files preview";
+  return "verify";
+}
+
 function compatibilityLabel(
   compatibility: DraftWorkPacketActionCompatibility,
 ): string {
-  if (compatibility.requested_action === "draft_plan") return "draft plan";
-  if (compatibility.requested_action === "draft_files_preview") {
-    return "draft files preview";
-  }
-  return "verify";
+  return actionLabel(compatibility.requested_action);
 }
 
 function promptTone(status: "ready_preview" | "warning" | "blocked") {
@@ -102,7 +120,23 @@ function promptTone(status: "ready_preview" | "warning" | "blocked") {
   return "rose";
 }
 
-function PacketCard({ packet }: { packet: DraftWorkPacket }) {
+function ChainRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
+      <div className="text-[11px] uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="mt-2 text-sm text-gray-200">{value}</div>
+    </div>
+  );
+}
+
+function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
+  const { packet } = item;
   const prompt = buildDraftWorkPacketTaskPrompt(packet);
 
   return (
@@ -110,20 +144,46 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">
-              {packet.title}
-            </h3>
-            <ToneBadge tone="amber">draft only</ToneBadge>
-            <ToneBadge tone="rose">execution disabled</ToneBadge>
+            <h3 className="text-base font-semibold text-gray-100">{packet.title}</h3>
+            <ToneBadge tone={statusTone(packet.status)}>
+              agenda status: {statusLabel(packet.status)}
+            </ToneBadge>
+            <ToneBadge tone="amber">draft-only activation</ToneBadge>
+            <ToneBadge tone="rose">execution blocked</ToneBadge>
           </div>
-          <p className="max-w-3xl text-sm text-gray-300">{packet.summary}</p>
+          <p className="max-w-4xl text-sm text-gray-300">{packet.summary}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <ToneBadge tone="sky">
-            scope subset: {packet.configured_scope_key}
-          </ToneBadge>
+          <ToneBadge tone="sky">scope subset: {packet.configured_scope_key}</ToneBadge>
           <ToneBadge tone="slate">{packet.packet_id}</ToneBadge>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <h4 className="text-sm font-semibold text-gray-100">
+            Deterministic chain coverage
+          </h4>
+          <ToneBadge tone="emerald">traceable activation chain</ToneBadge>
+        </div>
+        <p className="mt-2 text-xs text-gray-400">
+          Every agenda item resolves agent, role, repo, surface, motion/seam,
+          allowed output, validation gate, and human decision without enabling
+          runtime execution.
+        </p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-4">
+          <ChainRow label="Assigned JAI Agent" value={item.chain.assigned_agent_label} />
+          <ChainRow label="Canonical role mapping" value={item.chain.canonical_role_label} />
+          <ChainRow label="Target repo" value={item.chain.target_repo_full_name} />
+          <ChainRow label="Target surface" value={item.chain.target_surface_label} />
+          <ChainRow label="Source motion/seam" value={item.chain.source_label} />
+          <ChainRow
+            label="Motion id"
+            value={item.chain.source_motion_id ?? "control-thread decision"}
+          />
+          <ChainRow label="Allowed output" value={item.chain.allowed_output} />
+          <ChainRow label="Human decision" value={item.chain.human_decision_summary} />
         </div>
       </div>
 
@@ -133,27 +193,17 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
             <h4 className="text-sm font-semibold text-gray-100">Target model</h4>
             <div className="mt-3 flex flex-wrap gap-2">
               <ToneBadge tone="sky">{packet.target.repo_full_name}</ToneBadge>
-              <ToneBadge tone="slate">
-                surface: {packet.target.surface.label}
-              </ToneBadge>
+              <ToneBadge tone="slate">surface: {packet.target.surface.label}</ToneBadge>
               {packet.target.project ? (
-                <ToneBadge tone="emerald">
-                  project: {packet.target.project.name}
-                </ToneBadge>
+                <ToneBadge tone="emerald">project: {packet.target.project.name}</ToneBadge>
               ) : (
                 <ToneBadge tone="amber">project: none</ToneBadge>
               )}
             </div>
-            <p className="mt-3 text-sm text-gray-300">
-              Work packet targets always resolve to an actual repo plus a named
-              surface, with an optional project/workstream overlay.
-            </p>
             <ul className="mt-3 space-y-1 text-xs text-gray-400">
               <li>- repo: {packet.target.repo_full_name}</li>
               <li>- surface: {packet.target.surface.label}</li>
-              <li>
-                - project: {packet.target.project?.project_id ?? "not assigned"}
-              </li>
+              <li>- project: {packet.target.project?.project_id ?? "not assigned"}</li>
             </ul>
           </div>
 
@@ -176,44 +226,22 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
                   : "palette draft"}
               </ToneBadge>
             </div>
-            <div className="mt-2 font-mono text-xs text-gray-400">
-              {packet.agent.handle}
-            </div>
+            <div className="mt-2 font-mono text-xs text-gray-400">{packet.agent.handle}</div>
             <p className="mt-2 text-sm text-gray-300">{packet.agent.summary}</p>
             <div className="mt-3 rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
               <div className="text-xs uppercase tracking-wide text-gray-500">
-                Canonical role mapping
+                Source activation seam
               </div>
-              {packet.canonical_role.canonical_role_label ? (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <ToneBadge tone="emerald">
-                    {packet.canonical_role.canonical_role_label}
-                  </ToneBadge>
-                  {packet.canonical_role.palette_draft_label ? (
-                    <ToneBadge tone="amber">
-                      palette draft: {packet.canonical_role.palette_draft_label}
-                    </ToneBadge>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <ToneBadge tone="amber">
-                    palette draft: {packet.agent.label}
-                  </ToneBadge>
-                </div>
-              )}
+              <div className="mt-2 flex flex-wrap gap-2">
+                <ToneBadge tone={packet.source.kind === "motion" ? "emerald" : "amber"}>
+                  {packet.source.kind}
+                </ToneBadge>
+                {packet.source.motion_id ? (
+                  <ToneBadge tone="sky">{packet.source.motion_id}</ToneBadge>
+                ) : null}
+                <ToneBadge tone="slate">{packet.source.label}</ToneBadge>
+              </div>
             </div>
-            <ul className="mt-3 space-y-1 text-xs text-gray-400">
-              <li>- agent exists: yes</li>
-              <li>
-                - shared alias <span className="font-mono">agent@jai.nexus</span>{" "}
-                is not assignable as an execution identity
-              </li>
-              <li>
-                - execution identity remains false for this named JAI agent in
-                v0
-              </li>
-            </ul>
           </div>
 
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
@@ -221,59 +249,95 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               Requested actions and compatibility
             </h4>
             <div className="mt-3 space-y-3">
-              {packet.compatibility.requested_action_statuses.map(
-                (compatibility) => (
-                  <div
-                    key={`${packet.packet_id}-${compatibility.requested_action}`}
-                    className="rounded-lg border border-gray-800 bg-zinc-950/60 p-3"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <ToneBadge
-                        tone={compatibilityTone(compatibility.status)}
-                      >
-                        {compatibility.status}
-                      </ToneBadge>
-                      <span className="text-sm font-medium text-gray-100">
-                        {compatibilityLabel(compatibility)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        via {compatibility.registry_capability_key}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs text-gray-400">
-                      {compatibility.reason}
-                    </p>
+              {packet.compatibility.requested_action_statuses.map((compatibility) => (
+                <div
+                  key={`${packet.packet_id}-${compatibility.requested_action}`}
+                  className="rounded-lg border border-gray-800 bg-zinc-950/60 p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ToneBadge tone={compatibilityTone(compatibility.status)}>
+                      {compatibility.status}
+                    </ToneBadge>
+                    <span className="text-sm font-medium text-gray-100">
+                      {compatibilityLabel(compatibility)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      via {compatibility.registry_capability_key}
+                    </span>
                   </div>
-                ),
-              )}
+                  <p className="mt-2 text-xs text-gray-400">{compatibility.reason}</p>
+                </div>
+              ))}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <ToneBadge
-                tone={
-                  packet.compatibility.configured_scope_exists ? "emerald" : "rose"
-                }
-              >
-                scope key present:{" "}
-                {packet.compatibility.configured_scope_exists ? "yes" : "no"}
-              </ToneBadge>
-              <ToneBadge
-                tone={packet.compatibility.target_repo_in_scope ? "emerald" : "rose"}
-              >
-                target repo in scope:{" "}
-                {packet.compatibility.target_repo_in_scope ? "yes" : "no"}
-              </ToneBadge>
-              <ToneBadge
-                tone={
-                  packet.compatibility.target_surface_in_scope ? "emerald" : "rose"
-                }
-              >
-                target surface in scope:{" "}
-                {packet.compatibility.target_surface_in_scope ? "yes" : "no"}
+          </div>
+
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">Authority posture</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ToneBadge tone="rose">
+                execution blocked: {item.authority_posture.execution_blocked ? "yes" : "no"}
               </ToneBadge>
               <ToneBadge tone="rose">
-                execution blocked:{" "}
-                {packet.compatibility.execution_blocked ? "yes" : "no"}
+                branch_write disabled:{" "}
+                {item.authority_posture.branch_write_disabled ? "yes" : "no"}
               </ToneBadge>
+              <ToneBadge tone="rose">
+                propose_pr disabled:{" "}
+                {item.authority_posture.propose_pr_disabled ? "yes" : "no"}
+              </ToneBadge>
+              <ToneBadge tone="rose">
+                execute_runtime disabled:{" "}
+                {item.authority_posture.execute_runtime_disabled ? "yes" : "no"}
+              </ToneBadge>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">Allowed paths</h4>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                {packet.allowed_paths.map((allowedPath) => (
+                  <li key={allowedPath}>- {allowedPath}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">Blocked paths</h4>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                {packet.blocked_paths.map((blockedPath) => (
+                  <li key={blockedPath}>- {blockedPath}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">Verification gates</h4>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                {packet.verification_commands.map((command) => (
+                  <li key={command}>- {command}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">Human gates</h4>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                {packet.human_gates.map((gate) => (
+                  <li key={gate}>- {gate}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">Evidence expectations</h4>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                {packet.evidence_expectations.map((expectation) => (
+                  <li key={expectation}>- {expectation}</li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -281,122 +345,44 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
         <div className="space-y-4">
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
             <h4 className="text-sm font-semibold text-gray-100">
-              Human gates
+              Next prompt / passalong target
             </h4>
-            <ul className="mt-3 space-y-2 text-sm text-gray-300">
-              {packet.human_gates.map((gate) => (
-                <li key={gate}>- {gate}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
-              Evidence expectations
-            </h4>
-            <ul className="mt-3 space-y-2 text-sm text-gray-300">
-              {packet.evidence_expectations.map((expectation) => (
-                <li key={expectation}>- {expectation}</li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
-              Credential posture
-            </h4>
-            <p className="mt-2 text-xs text-gray-400">
-              Env variable names only. No values are rendered and no credential
-              enablement occurs in this seam.
-            </p>
-            <ul className="mt-3 space-y-3">
-              {packet.agent.credential_posture.map((credential) => (
-                <li key={`${packet.packet_id}-${credential.key}`}>
-                  <div className="font-mono text-xs text-sky-200">
-                    {credential.env_var}
-                  </div>
-                  <div className="mt-1 text-xs text-gray-400">
-                    {credential.purpose}
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ToneBadge tone="emerald">{packet.next_prompt_target.target}</ToneBadge>
+              <ToneBadge tone="sky">{packet.next_prompt_target.label}</ToneBadge>
+            </div>
+            <p className="mt-3 text-sm text-gray-300">{packet.next_prompt_target.prompt}</p>
           </div>
 
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
             <h4 className="text-sm font-semibold text-gray-100">Guardrails</h4>
             <ul className="mt-3 space-y-2 text-sm text-gray-300">
-              <li>- no run, dispatch, or execute controls exist here</li>
+              <li>- no live agent runtime exists here</li>
               <li>- no branch write or PR creation controls exist here</li>
-              <li>- no API or DB mutation path is added by this surface</li>
-              <li>
-                - promotion, runtime execution, and cross-repo mutation remain
-                out of scope
-              </li>
+              <li>- no scheduler, automation, or hidden persistence exists here</li>
+              <li>- prompt previews and branch suggestions remain copy-only</li>
             </ul>
           </div>
 
           <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm font-semibold text-gray-100">
-                Task prompt preview
-              </h4>
-              <ToneBadge tone={promptTone(prompt.status)}>
-                {prompt.status}
+              <h4 className="text-sm font-semibold text-gray-100">Task prompt preview</h4>
+              <ToneBadge tone={promptTone(prompt.preview_status)}>
+                {prompt.preview_status}
               </ToneBadge>
               <ToneBadge tone="amber">copy only</ToneBadge>
             </div>
-            <p className="mt-2 text-xs text-gray-400">
-              Prompt previews are deterministic and copy-only. Do not execute
-              unless separately authorized by the operator.
-            </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <ToneBadge tone="slate">
-                {prompt.assigned_agent_key} - {prompt.assigned_agent_label}
+                agenda status: {statusLabel(prompt.agenda_status)}
               </ToneBadge>
-              {prompt.canonical_role_label ? (
-                <ToneBadge tone="emerald">
-                  canonical role: {prompt.canonical_role_label}
-                </ToneBadge>
-              ) : (
-                <ToneBadge tone="amber">canonical role: none</ToneBadge>
-              )}
-              {prompt.palette_draft_label ? (
-                <ToneBadge tone="amber">
-                  palette draft: {prompt.palette_draft_label}
-                </ToneBadge>
-              ) : null}
               <ToneBadge tone="sky">
-                branch suggestion: {prompt.branch_name_suggestion}
+                next target: {prompt.next_prompt_target}
+              </ToneBadge>
+              <ToneBadge tone="emerald">
+                canonical role: {prompt.canonical_role_label ?? "none"}
               </ToneBadge>
             </div>
-
-            {prompt.warnings.length > 0 ? (
-              <div className="mt-4 rounded-lg border border-amber-800 bg-amber-950/40 p-3">
-                <div className="text-xs font-medium uppercase tracking-wide text-amber-300">
-                  Warnings
-                </div>
-                <ul className="mt-2 space-y-1 text-xs text-amber-100">
-                  {prompt.warnings.map((warning) => (
-                    <li key={warning}>- {warning}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {prompt.blocked_reasons.length > 0 ? (
-              <div className="mt-4 rounded-lg border border-rose-800 bg-rose-950/40 p-3">
-                <div className="text-xs font-medium uppercase tracking-wide text-rose-300">
-                  Blocked reasons
-                </div>
-                <ul className="mt-2 space-y-1 text-xs text-rose-100">
-                  {prompt.blocked_reasons.map((reason) => (
-                    <li key={reason}>- {reason}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
             <div className="mt-4 rounded-lg border border-gray-800 bg-zinc-950/70 p-3">
               <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Prompt text
@@ -404,7 +390,7 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
               <textarea
                 readOnly
                 value={prompt.prompt_text}
-                rows={28}
+                rows={30}
                 className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
               />
             </div>
@@ -416,158 +402,81 @@ function PacketCard({ packet }: { packet: DraftWorkPacket }) {
 }
 
 export default function WorkPage() {
-  const packets = getDraftWorkPackets();
+  const agenda = getDeterministicAgendaModel();
   const authorityPosture = getControlPlaneAuthorityPosture();
-  const compatibleCount = packets.filter(
-    (packet) =>
-      packet.compatibility.agent_exists &&
-      packet.compatibility.target_repo_in_scope &&
-      packet.compatibility.target_surface_in_scope,
-  ).length;
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
       <div className="mx-auto max-w-7xl space-y-10">
         <header className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS - Work Packets</h1>
-            <ToneBadge tone="amber">draft only</ToneBadge>
+            <h1 className="text-3xl font-semibold">
+              JAI NEXUS - Deterministic Agent Agenda
+            </h1>
+            <ToneBadge tone="amber">draft-only activation</ToneBadge>
             <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
           </div>
-          <p className="max-w-3xl text-sm text-gray-400">
-            Read-only operator surface for draft work packets linked to
-            configured JAI agents, configured scope subset keys, and actual
-            repo-plus-surface targets before any execution is enabled.
+          <p className="max-w-4xl text-sm text-gray-400">
+            Read-only operator surface for deterministic JAI Agent activation
+            agenda items. Every item binds agent, canonical role, repo, surface,
+            motion or control-thread seam, allowed output, validation gate, and
+            human decision without enabling runtime execution.
           </p>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
               Shared alias <span className="font-mono">agent@jai.nexus</span>{" "}
               remains view-only and is not assignable as an execution identity.
-              Promotion, dispatch, branch writes, PR creation, and runtime
-              execution remain disabled.
+              Requested actions here are deterministic planning/review outputs
+              only: <span className="font-mono">view_only</span>,{" "}
+              <span className="font-mono">draft_plan</span>,{" "}
+              <span className="font-mono">draft_files_preview</span>, and{" "}
+              <span className="font-mono">verify</span>.
             </p>
           </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
-            label="Draft packets"
-            value={String(packets.length)}
-            detail="Seed packets are examples of proposed repo work only. They do not run."
+            label="Agenda items"
+            value={String(agenda.summary.total_items)}
+            detail="Deterministic work packets tracked as planning/review agenda items only."
           />
           <SummaryCard
-            label="Configured links"
-            value={String(compatibleCount)}
-            detail="Every seed packet links to a configured named agent and a matching repo-plus-surface target."
+            label="Ready for review"
+            value={String(agenda.summary.status_counts.ready_for_review)}
+            detail="Items that are fully framed and ready for operator review or bounded prompt packaging."
+          />
+          <SummaryCard
+            label="Blocked or deferred"
+            value={String(
+              agenda.summary.status_counts.blocked + agenda.summary.status_counts.deferred,
+            )}
+            detail="Items that remain held behind scope, timing, or seam-order constraints."
           />
           <SummaryCard
             label="Target repos"
-            value={String(
-              new Set(packets.map((packet) => packet.target.repo_full_name)).size,
-            )}
-            detail="Actual GitHub repositories represented by the current packet set."
+            value={String(agenda.summary.repo_count)}
+            detail="Actual repo targets resolved by the current deterministic agenda."
           />
           <SummaryCard
-            label="Target surfaces"
+            label="Action coverage"
             value={String(
-              new Set(packets.map((packet) => packet.target.surface.key)).size,
+              Object.values(agenda.summary.requested_action_counts).filter((count) => count > 0)
+                .length,
             )}
-            detail="Product or operator surfaces attached to those repo targets."
-          />
-          <SummaryCard
-            label="Task prompts"
-            value={String(packets.length)}
-            detail="Every initial draft work packet generates a deterministic preview-only task prompt."
+            detail="Requested-action coverage includes view_only, draft_plan, draft_files_preview, and verify."
           />
         </section>
 
         <Section
-          title="Docs-ops authority posture"
-          description="Read-only visibility into exercised planning-safe levels, modeled disabled levels, and blocked capabilities."
-        >
-          <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-100">
-                  Docs-ops levels
-                </h3>
-                <ToneBadge tone="amber">read-only visibility</ToneBadge>
-                <ToneBadge tone="rose">no new authority</ToneBadge>
-              </div>
-              <div className="mt-3 space-y-3">
-                {authorityPosture.docs_ops_levels.map((level) => (
-                  <div
-                    key={`docs-ops-level-${level.level}`}
-                    className="rounded-lg border border-gray-800 bg-black/30 p-3"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="font-mono text-xs text-sky-200">
-                        Level {level.level}
-                      </div>
-                      <ToneBadge
-                        tone={
-                          level.status === "modeled_disabled"
-                            ? "rose"
-                            : level.status === "static_material"
-                              ? "amber"
-                              : "emerald"
-                        }
-                      >
-                        {level.status === "modeled_disabled"
-                          ? "modeled disabled"
-                          : "exercised / planning-safe"}
-                      </ToneBadge>
-                      <span className="text-sm text-gray-200">{level.label}</span>
-                    </div>
-                    <p className="mt-2 text-sm text-gray-300">{level.summary}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">
-                  Control-plane notes
-                </div>
-                <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                  {authorityPosture.notes.map((note) => (
-                    <li key={note}>- {note}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-100">
-                    Agent Assets Library
-                  </h3>
-                  <ToneBadge tone="amber">static material</ToneBadge>
-                </div>
-                <div className="mt-3 font-mono text-xs text-sky-200">
-                  {authorityPosture.agent_assets.location}
-                </div>
-                <p className="mt-3 text-sm text-gray-300">
-                  {authorityPosture.agent_assets.summary}
-                </p>
-                <p className="mt-3 text-xs text-gray-400">
-                  Assets do not grant authority and do not enable docs-ops
-                  Level 3, 4, or 5 capability.
-                </p>
-              </div>
-            </div>
-          </div>
-        </Section>
-
-        <Section
-          title="Blocked capabilities"
-          description="These capabilities remain disabled across the current control-plane posture."
+          title="Agenda status coverage"
+          description="Visible agenda states remain bounded to draft, ready_for_review, blocked, deferred, and settled."
         >
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
             <div className="flex flex-wrap gap-2">
-              {authorityPosture.blocked_capabilities.map((capability) => (
-                <ToneBadge key={capability} tone="rose">
-                  {capability}
+              {Object.entries(agenda.summary.status_counts).map(([status, count]) => (
+                <ToneBadge key={status} tone={statusTone(status as DraftWorkPacketStatus)}>
+                  {statusLabel(status as DraftWorkPacketStatus)}: {count}
                 </ToneBadge>
               ))}
             </div>
@@ -575,12 +484,46 @@ export default function WorkPage() {
         </Section>
 
         <Section
-          title="Draft work packet queue"
-          description="Packets bind configured named agents to actual repo-plus-surface targets, while keeping every execution path disabled."
+          title="Authority posture"
+          description="Activation agenda semantics remain planning/review-only and preserve the disabled control-plane boundary."
+        >
+          <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap gap-2">
+                <ToneBadge tone="rose">execution blocked</ToneBadge>
+                <ToneBadge tone="rose">branch_write disabled</ToneBadge>
+                <ToneBadge tone="rose">propose_pr disabled</ToneBadge>
+                <ToneBadge tone="rose">execute_runtime disabled</ToneBadge>
+              </div>
+              <ul className="mt-4 space-y-2 text-sm text-gray-300">
+                {authorityPosture.notes.map((note) => (
+                  <li key={note}>- {note}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Blocked capabilities
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {authorityPosture.blocked_capabilities.map((capability) => (
+                  <ToneBadge key={capability} tone="rose">
+                    {capability}
+                  </ToneBadge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section
+          title="Deterministic agenda queue"
+          description="Each item resolves agent, role, repo, surface, source seam, allowed output, verification gates, human gates, evidence expectations, and next passalong target."
         >
           <div className="space-y-4">
-            {packets.map((packet) => (
-              <PacketCard key={packet.packet_id} packet={packet} />
+            {agenda.items.map((item) => (
+              <AgendaItemCard key={item.packet.packet_id} item={item} />
             ))}
           </div>
         </Section>
