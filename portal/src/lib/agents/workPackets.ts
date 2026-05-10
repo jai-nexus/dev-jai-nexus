@@ -24,6 +24,12 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
     title: "Landing page homepage refresh",
     summary:
       "Draft a homepage refresh plan and preview-only file edits for the main jai-nexus landing page.",
+    status: "ready_for_review",
+    source: {
+      kind: "motion",
+      label: "motion-0179 JAI Chat Surface v0 follow-on surface planning",
+      motion_id: "motion-0179",
+    },
     agent_key: "jai-landing-page-agent",
     configured_scope_key: "jai-nexus",
     target: {
@@ -56,12 +62,24 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Preview-only file delta description with no repo mutation.",
       "Risk notes describing what remains blocked in v0.",
     ],
+    next_prompt_target: {
+      target: "REPO_EXECUTION",
+      label: "Prepare bounded repo execution prompt",
+      prompt:
+        "Prepare a bounded REPO_EXECUTION prompt for jai-nexus/jai-nexus landing-page planning only. Preserve preview-only output, name the allowed paths, restate blocked authority, and require operator review before any follow-up motion.",
+    },
   },
   {
     packet_id: "wp-customer-intake-map",
     title: "Customer portal intake map",
     summary:
       "Draft an intake-map plan for the customer-portal without opening implementation or execution paths.",
+    status: "draft",
+    source: {
+      kind: "motion",
+      label: "motion-0172 customer portal intake planning spine",
+      motion_id: "motion-0172",
+    },
     agent_key: "jai-customer-portal-agent",
     configured_scope_key: "customer-portal",
     target: {
@@ -92,12 +110,23 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft intake-map plan with actors, flows, and UI sections.",
       "Targeting note showing customer-portal as a surface under jai-nexus/jai-nexus.",
     ],
+    next_prompt_target: {
+      target: "CONTROL_THREAD",
+      label: "Prepare control-thread passalong",
+      prompt:
+        "Prepare a CONTROL_THREAD passalong that frames the customer-portal intake map as a planning-only surface under jai-nexus/jai-nexus, names the blocked implementation authority, and asks whether a later repo seam should be routed.",
+    },
   },
   {
     packet_id: "wp-agent-registry-follow-up",
     title: "Agent registry follow-up",
     summary:
       "Draft a governance follow-up plan for the agent registry without changing execution posture.",
+    status: "deferred",
+    source: {
+      kind: "control_thread",
+      label: "CONTROL_THREAD follow-up after agent baseline and palette coherence",
+    },
     agent_key: "jai-governance-agent",
     configured_scope_key: "dev-jai-nexus",
     target: {
@@ -128,20 +157,32 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Draft follow-up plan with bounded registry questions and next governance seams.",
       "Explicit statement that no execution enablement is proposed here.",
     ],
+    next_prompt_target: {
+      target: "ORCHESTRATOR",
+      label: "Compare next governance seams",
+      prompt:
+        "Compare the next governance-only seams for dev-jai-nexus agent registry follow-up. Keep execution disabled, keep JAI Palette intact, and recommend whether the next route should target policy, copy, or workflow documentation.",
+    },
   },
   {
     packet_id: "wp-api-contract-review",
     title: "API contract review",
     summary:
       "Draft a read-only API contract review packet for api-nexus, combining verification and planning posture only.",
+    status: "blocked",
+    source: {
+      kind: "motion",
+      label: "motion-0180 telemetry and surface freshness follow-up",
+      motion_id: "motion-0180",
+    },
     agent_key: "jai-verifier",
     configured_scope_key: "api-nexus",
     target: {
-      repo_full_name: "jai-nexus/jai-nexus",
+      repo_full_name: "jai-nexus/api-nexus",
       surface_key: "api-nexus",
       project_id: "jai-internal",
     },
-    requested_actions: ["verify", "draft_plan"],
+    requested_actions: ["view_only", "verify", "draft_plan"],
     allowed_paths: [
       "openapi/**",
       "src/contracts/**",
@@ -153,7 +194,7 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       ".github/**",
     ],
     verification_commands: [
-      "# operator must supply jai-nexus/jai-nexus API surface verification commands before any execution is authorized",
+      "# operator must supply jai-nexus/api-nexus verification commands before any execution is authorized",
       "# do not execute repository commands from this prompt without separate operator authorization",
     ],
     human_gates: [
@@ -164,6 +205,60 @@ const WORK_PACKET_SEEDS: DraftWorkPacketSeed[] = [
       "Read-only API contract review notes with observed risks and open questions.",
       "Draft follow-up plan for any schema or interface gaps found.",
     ],
+    next_prompt_target: {
+      target: "EXPLORATION",
+      label: "Bounded read-only review framing",
+      prompt:
+        "Frame a read-only EXPLORATION review brief for jai-nexus/api-nexus that limits outputs to API contract observations, verification notes, and follow-up planning questions. Do not imply branch write, runtime execution, or PR authority.",
+    },
+  },
+  {
+    packet_id: "wp-motion-snapshot-closeout",
+    title: "Motion snapshot closeout audit",
+    summary:
+      "Read the latest motion-bearing seam and verify that the bundled motion snapshot closeout evidence is complete before further routing.",
+    status: "settled",
+    source: {
+      kind: "motion",
+      label: "motion-0182 Motion Snapshot Gate v0",
+      motion_id: "motion-0182",
+    },
+    agent_key: "jai-librarian",
+    configured_scope_key: "dev-jai-nexus",
+    target: {
+      repo_full_name: "jai-nexus/dev-jai-nexus",
+      surface_key: "operator-motions",
+      project_id: "jai-internal",
+    },
+    requested_actions: ["view_only"],
+    allowed_paths: [
+      ".nexus/motions/**",
+      "portal/src/lib/motion/**",
+      "portal/docs/**",
+    ],
+    blocked_paths: [
+      "portal/src/app/api/**",
+      "runtime/**",
+      "surfaces/agent-ops/**",
+    ],
+    verification_commands: [
+      "node portal/scripts/build-motion-snapshot.mjs --check",
+      "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0182/motion.yaml",
+    ],
+    human_gates: [
+      "Human operator confirms the motion snapshot evidence is complete before merge.",
+      "Human operator decides whether any follow-up motion should refine snapshot policy or CI posture.",
+    ],
+    evidence_expectations: [
+      "Snapshot current result naming latest bundled motion and total count.",
+      "Read-only closeout note confirming no automation or authority expansion was introduced.",
+    ],
+    next_prompt_target: {
+      target: "CONTROL_THREAD",
+      label: "Close the motion-bearing seam",
+      prompt:
+        "Prepare a CONTROL_THREAD closeout that reports the latest bundled motion, bundled motion count, snapshot check result, and whether any further snapshot-gate refinement is needed.",
+    },
   },
 ];
 
@@ -216,6 +311,7 @@ export function resolveCanonicalRoleForPacket(
 function actionToCapabilityKey(
   action: DraftWorkPacketAction,
 ): AgentRegistryCapabilityKey {
+  if (action === "view_only") return "view_only";
   if (action === "draft_plan") return "draft_plan";
   if (action === "draft_files_preview") return "draft_files_preview";
   return "view_only";
@@ -318,6 +414,8 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
       packet_id: seed.packet_id,
       title: seed.title,
       summary: seed.summary,
+      status: seed.status,
+      source: { ...seed.source },
       configured_scope_key: seed.configured_scope_key,
       target: {
         repo_full_name: seed.target.repo_full_name,
@@ -346,6 +444,7 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
       },
       human_gates: seed.human_gates,
       evidence_expectations: seed.evidence_expectations,
+      next_prompt_target: { ...seed.next_prompt_target },
     };
   });
 }
