@@ -37,6 +37,8 @@
     "jai:wave:apply": "dotenv -e .env.local -- tsx scripts/jai-wave-apply.ts",
     "jai:wave:report": "dotenv -e .env.local -- tsx scripts/sql-wave-run-4.ts -- --waveRunId 4 --pretty",
     "sync:repos": "dotenv -e .env.local -- tsx scripts/jai-sync-repos.ts",
+    "snapshot:motions": "node scripts/build-motion-snapshot.mjs --write",
+    "snapshot:motions:check": "node scripts/build-motion-snapshot.mjs --check",
     "test": "echo \"Error: no test specified\" && exit 1",
     "export:audit-nexus": "dotenv -e .env.local -- tsx scripts/export-audit-nexus-events.ts",
     "extract:decisions": "dotenv -e .env.local -- tsx scripts/extract-decisions.ts",
