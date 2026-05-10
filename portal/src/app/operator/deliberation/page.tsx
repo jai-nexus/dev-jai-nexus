@@ -273,6 +273,12 @@ export default function DeliberationPage() {
   const plannedToolchainCount = panel.candidates.filter(
     (candidate) => candidate.planned_toolchain_target,
   ).length;
+  const reviewableCandidates = loopCandidate.static_switching.candidates.filter(
+    (candidate) =>
+      candidate.selection_status === "active" ||
+      candidate.selection_status === "eligible" ||
+      candidate.selection_status === "deferred",
+  );
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -315,6 +321,12 @@ export default function DeliberationPage() {
               PRs, dispatch work, schedule work, or integrate jai-pilot or
               vscode-nexus.
             </p>
+            <p className="mt-3 text-xs text-gray-400">
+              Agenda-to-deliberation movement is navigation/context only.
+              Reviewing other agenda items here does not switch the active
+              candidate, add route state, add query state, or persist any
+              selection.
+            </p>
           </div>
         </header>
 
@@ -345,6 +357,50 @@ export default function DeliberationPage() {
             detail="No run, dispatch, branch write, PR creation, or runtime execution controls exist."
           />
         </section>
+
+        <Section
+          title="Reviewable agenda context"
+          description="Reviewable agenda packets may be inspected in deliberation context, but active-candidate switching remains static and governance-controlled only."
+        >
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <div className="flex flex-wrap gap-2">
+              <ToneBadge tone="slate">
+                switching: {loopCandidate.static_switching.switching_policy.mode}
+              </ToneBadge>
+              <ToneBadge tone="rose">no runtime selection</ToneBadge>
+              <ToneBadge tone="amber">review only</ToneBadge>
+            </div>
+            <p className="mt-3 text-sm text-gray-300">
+              {loopCandidate.static_switching.switching_policy.review_navigation_note}
+            </p>
+            <div className="mt-4 space-y-3">
+              {reviewableCandidates.map((candidate) => (
+                <div
+                  key={candidate.work_packet_id}
+                  className="rounded-lg border border-gray-800 bg-black/30 p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ToneBadge tone="slate">
+                      {candidate.selection_status}
+                    </ToneBadge>
+                    <span className="font-mono text-sm text-gray-200">
+                      {candidate.work_packet_id}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-300">
+                    {candidate.selection_rationale}
+                  </p>
+                  <p className="mt-2 text-xs text-gray-400">
+                    {candidate.metadata_criteria_result}
+                  </p>
+                  <p className="mt-2 text-xs text-gray-400">
+                    {candidate.switching_note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
 
         <Section
           title="Moderator framing"

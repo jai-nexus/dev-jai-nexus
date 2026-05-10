@@ -149,6 +149,9 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
             <ToneBadge tone={statusTone(packet.status)}>
               agenda status: {statusLabel(packet.status)}
             </ToneBadge>
+            <ToneBadge tone="slate">
+              selection status: {item.selection_status}
+            </ToneBadge>
             {item.is_first_official_loop_candidate ? (
               <ToneBadge tone="sky">first official loop-through candidate</ToneBadge>
             ) : null}
@@ -390,8 +393,27 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
         <div className="space-y-4">
             <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
               <h4 className="text-sm font-semibold text-gray-100">
-                Next prompt / passalong target
+                Deliberation review and next target
               </h4>
+            <div className="mt-3 rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <ToneBadge tone="slate">
+                  switching: {item.switching_policy_mode}
+                </ToneBadge>
+                <Link
+                  href={item.deliberation_context_href}
+                  className="text-sm font-medium text-sky-300 underline"
+                >
+                  Review in deliberation
+                </Link>
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                {item.deliberation_context_note}
+              </p>
+              <p className="mt-2 text-xs text-gray-400">
+                {item.no_selection_mutation_note}
+              </p>
+            </div>
             <div className="mt-3 flex flex-wrap gap-2">
               <ToneBadge tone="emerald">{packet.next_prompt_target.target}</ToneBadge>
               <ToneBadge tone="sky">{packet.next_prompt_target.label}</ToneBadge>
@@ -503,6 +525,11 @@ export default function WorkPage() {
             <p className="mt-2 text-xs text-gray-400">
               Static switching policy:{" "}
               {loopCandidate.static_switching.switching_policy.summary}
+            </p>
+            <p className="mt-2 text-xs text-gray-400">
+              Agenda-to-deliberation routing is navigation/context only. Opening
+              deliberation does not change the active selected candidate, route
+              state, query state, or persistence.
             </p>
             <p className="mt-2 text-xs text-gray-400">
               Eligible alternative ids:{" "}

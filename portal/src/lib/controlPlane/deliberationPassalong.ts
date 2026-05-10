@@ -201,6 +201,7 @@ export function buildDeliberationPassalongSummary(
     `- selected status: ${selected_status_label ?? "none"}`,
     `- selection reason: ${selection_reason ?? "none"}`,
     `- switching policy: ${selectedCandidate?.static_switching.switching_policy.summary ?? "none"}`,
+    `- routing note: ${selectedCandidate?.static_switching.switching_policy.review_navigation_note ?? "none"}`,
     `- assigned agent: ${selected_assigned_agent_label ?? "none"}`,
     `- canonical role: ${selected_canonical_role_label ?? "none"}`,
     `- target repo: ${selected_target_repo_full_name}`,

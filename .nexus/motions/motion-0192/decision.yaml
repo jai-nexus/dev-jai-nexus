@@ -1,0 +1,13 @@
+motion_id: motion-0192
+decision_id: decision-motion-0192
+decided_at: "2026-05-10T23:32:15.7600549Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-10T23:32:15.7600549Z"
+status: RATIFIED
+decision_summary: "Ratified as read-only agenda-to-deliberation routing/context only."
+rationale:
+  - "Agenda items now expose deliberation review affordances without mutating selected-candidate state."
+  - "The active selected candidate remains static and governance-controlled while other items are reviewable only."
+consequences:
+  - "Operators can move from agenda items into deliberation context without route state, query state, or runtime selection."
+  - "Active selected candidate remains wp-agent-registry-follow-up until a later explicit governance/code switch seam changes it."
