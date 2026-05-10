@@ -91,6 +91,9 @@ export interface RootOperatorOverview {
     validation_gate: string;
     human_decision_gate: string;
     authority_boundary: string[];
+    criteria_summary: string;
+    required_criteria_count: number;
+    required_criteria_satisfied_count: number;
   };
   operator_jai: {
     href: "/operator/jai";
@@ -260,6 +263,12 @@ export async function getRootOperatorOverview(): Promise<RootOperatorOverview> {
       validation_gate: loopCandidate.validation_gate,
       human_decision_gate: loopCandidate.human_decision_gate,
       authority_boundary: loopCandidate.authority_boundary,
+      criteria_summary: loopCandidate.criteria_summary,
+      required_criteria_count: loopCandidate.selection_criteria.filter((criterion) => criterion.required)
+        .length,
+      required_criteria_satisfied_count: loopCandidate.selection_criteria.filter(
+        (criterion) => criterion.required && criterion.current_candidate_satisfies,
+      ).length,
     },
     operator_jai: {
       href: "/operator/jai",

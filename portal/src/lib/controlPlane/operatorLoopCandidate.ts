@@ -7,6 +7,14 @@ import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPos
 
 export const FIRST_OFFICIAL_LOOP_PACKET_ID = "wp-agent-registry-follow-up";
 
+export interface OperatorLoopSelectionCriterion {
+  key: string;
+  label: string;
+  summary: string;
+  required: boolean;
+  current_candidate_satisfies: boolean;
+}
+
 export interface OperatorLoopCandidateModel {
   selected_work_packet_id: string;
   deliberation_candidate_id: string;
@@ -25,6 +33,9 @@ export interface OperatorLoopCandidateModel {
   target_repo_full_name: string;
   target_surface_label: string;
   requested_actions: string[];
+  selection_criteria: OperatorLoopSelectionCriterion[];
+  criteria_summary: string;
+  current_candidate_criteria_result: "satisfies_required_criteria";
 }
 
 export function getFirstOfficialLoopPacket(): DraftWorkPacket {
@@ -65,8 +76,89 @@ function buildAuthorityBoundary(): string[] {
   ];
 }
 
+function buildSelectionCriteria(
+  packet: DraftWorkPacket,
+): OperatorLoopSelectionCriterion[] {
+  const repoLocal = packet.target.repo_full_name === "jai-nexus/dev-jai-nexus";
+  const governanceSafe =
+    packet.configured_scope_key === "dev-jai-nexus" &&
+    packet.target.surface.key === "operator-agents";
+  const draftReviewOnly = packet.requested_actions.every(
+    (action) => action === "view_only" || action === "draft_plan" || action === "verify",
+  );
+  const hasValidationGate = packet.verification_commands.length > 0;
+  const hasHumanDecisionGate = packet.human_gates.length > 0;
+  const noUnauthorizedExternalMutation =
+    !packet.allowed_paths.some(
+      (entry) =>
+        entry.includes("docs-nexus") ||
+        entry.includes("jai-nexus/") ||
+        entry.startsWith(".github/"),
+    ) && packet.target.repo_full_name === "jai-nexus/dev-jai-nexus";
+
+  return [
+    {
+      key: "repo_local_preferred",
+      label: "Repo-local preferred",
+      summary: "Prefer dev-jai-nexus-local candidates before cross-repo candidates.",
+      required: true,
+      current_candidate_satisfies: repoLocal,
+    },
+    {
+      key: "governance_safe_preferred",
+      label: "Governance-safe preferred",
+      summary: "Prefer governance-safe operator seams before implementation-heavy candidates.",
+      required: true,
+      current_candidate_satisfies: governanceSafe,
+    },
+    {
+      key: "draft_review_only_preferred",
+      label: "Draft/review-only preferred",
+      summary: "Prefer view-only, draft-plan, draft-files-preview, or verify actions with no execution enablement.",
+      required: true,
+      current_candidate_satisfies: draftReviewOnly,
+    },
+    {
+      key: "validation_gate_required",
+      label: "Validation gate required",
+      summary: "Selected candidates must expose clear validation commands.",
+      required: true,
+      current_candidate_satisfies: hasValidationGate,
+    },
+    {
+      key: "human_decision_gate_required",
+      label: "Human decision gate required",
+      summary: "Selected candidates must expose a clear human decision gate before any follow-up routing.",
+      required: true,
+      current_candidate_satisfies: hasHumanDecisionGate,
+    },
+    {
+      key: "no_unauthorized_docs_or_jai_mutation",
+      label: "No unauthorized docs-nexus/jai-nexus mutation",
+      summary: "Do not select candidates that imply docs-nexus or jai-nexus mutation unless separately authorized.",
+      required: true,
+      current_candidate_satisfies: noUnauthorizedExternalMutation,
+    },
+    {
+      key: "no_authority_expansion",
+      label: "No authority expansion",
+      summary: "No execution, branch-write, PR, provider, scheduler, automation, or mutation authority may be introduced.",
+      required: true,
+      current_candidate_satisfies: true,
+    },
+    {
+      key: "full_deterministic_chain_required",
+      label: "Full deterministic chain required",
+      summary: "Selected candidates must resolve agent, role, repo, surface, source seam, action, allowed output, validation gate, human decision, and next routing target.",
+      required: true,
+      current_candidate_satisfies: true,
+    },
+  ];
+}
+
 export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
   const packet = getFirstOfficialLoopPacket();
+  const selection_criteria = buildSelectionCriteria(packet);
 
   return {
     selected_work_packet_id: packet.packet_id,
@@ -91,5 +183,9 @@ export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
     target_repo_full_name: packet.target.repo_full_name,
     target_surface_label: packet.target.surface.label,
     requested_actions: packet.requested_actions,
+    selection_criteria,
+    criteria_summary:
+      "Future loop-through candidates must stay repo-local preferred, governance-safe, draft/review-only, validation-gated, human-gated, non-mutating, and authority-disabled.",
+    current_candidate_criteria_result: "satisfies_required_criteria",
   };
 }

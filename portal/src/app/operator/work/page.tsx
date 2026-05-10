@@ -463,6 +463,9 @@ export default function WorkPage() {
               <span className="font-mono">{loopCandidate.selected_work_packet_id}</span>.{" "}
               {loopCandidate.selection_reason}
             </p>
+            <p className="mt-2 text-xs text-gray-400">
+              Selection criteria: {loopCandidate.criteria_summary}
+            </p>
           </div>
         </header>
 

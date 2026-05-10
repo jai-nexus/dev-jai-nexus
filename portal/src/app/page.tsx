@@ -203,10 +203,18 @@ export default async function HomePage() {
               <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.summary}</p>
               <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.selection_reason}</p>
               <p className="mt-3 text-xs text-gray-400">
+                Criteria: {overview.first_official_loop_candidate.criteria_summary}
+              </p>
+              <p className="mt-3 text-xs text-gray-400">
                 Validation gate: {overview.first_official_loop_candidate.validation_gate}
               </p>
               <p className="mt-2 text-xs text-gray-400">
                 Human decision: {overview.first_official_loop_candidate.human_decision_gate}
+              </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Required criteria satisfied:{" "}
+                {overview.first_official_loop_candidate.required_criteria_satisfied_count}/
+                {overview.first_official_loop_candidate.required_criteria_count}
               </p>
               <div className="mt-3 flex flex-wrap gap-3 text-xs">
                 <Link href="/operator/work" className="text-sky-300 underline">
