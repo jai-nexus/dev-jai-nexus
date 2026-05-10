@@ -206,6 +206,7 @@ export function buildDeliberationPassalongSummary(
     `- target surface: ${selected_target_surface_label}`,
     `- source seam: ${selected_source_label}`,
     `- requested actions: ${selected_requested_actions.join(", ")}`,
+    `- selection criteria: ${selectedCandidate?.criteria_summary ?? "none"}`,
     "- deliberation mode: deterministic, advisory-only transcript",
     `- participants: ${turns.map((turn) => turn.speaker_label).join(", ")}`,
     "",

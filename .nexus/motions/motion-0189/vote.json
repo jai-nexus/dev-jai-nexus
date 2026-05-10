@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0189",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The current selected loop-through candidate remains wp-agent-registry-follow-up while future-selection criteria are now modeled explicitly.",
+      "The criteria cover repo-local preference, governance-safe preference, draft/review-only posture, validation gate requirement, human decision gate requirement, no unauthorized docs/jai mutation, and no authority expansion.",
+      "The criteria are surfaced compactly across root, work, deliberation, and the passalong block without adding routing state or persistence."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T22:32:13.8294954Z"
+}

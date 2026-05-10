@@ -302,6 +302,7 @@ export default function DeliberationPage() {
               <span className="font-mono">/operator/deliberation</span>.
             </p>
             <p className="mt-3 text-xs text-gray-400">{loopCandidate.selection_reason}</p>
+            <p className="mt-2 text-xs text-gray-400">{loopCandidate.criteria_summary}</p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
