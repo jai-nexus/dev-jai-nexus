@@ -49,6 +49,8 @@ Generated context bundle outputs:
 - `pnpm council:run motion-XXXX`
 - `pnpm -C portal typecheck`
 - `pnpm -C portal build`
+- `pnpm -C portal snapshot:motions`
+- `pnpm -C portal snapshot:motions:check`
 - `node portal/scripts/generate-context-bundle.mjs --motion motion-XXXX`
 - `pnpm -C portal exec tsx scripts/run-architect-once.ts <agentNhId>`
 - `pnpm -C portal exec tsx scripts/run-builder-once.ts <agentNhId>`
@@ -81,6 +83,11 @@ Take extra care when editing:
 5. Run local validation.
 6. Confirm the output/evidence/UI state.
 7. Ratify the motion only after proof exists.
+
+If a change adds or updates `.nexus/motions/motion-*/**`, refresh and check the
+bundled motion snapshot before closeout:
+- `pnpm -C portal snapshot:motions`
+- `pnpm -C portal snapshot:motions:check`
 
 ## Claude-specific guidance
 When operating on this repo:

@@ -37,6 +37,12 @@ If **Required**, paste commands + result (fill what applies):
 - Other:
   - `<cmd>`: PASS/FAIL (or N/A — why)
 
+### Motion Snapshot (if touching `.nexus/motions/**`)
+- `node portal/scripts/build-motion-snapshot.mjs --write`: PASS/FAIL (or N/A — why)
+- `node portal/scripts/build-motion-snapshot.mjs --check`: PASS/FAIL (or N/A — why)
+- latest bundled motion: `<motion-XXXX>`
+- bundled motion count: `<N>`
+
 Evidence is **Required** if touching any of:
 - `.github/workflows/**`
 - `portal/src/app/api/**`
