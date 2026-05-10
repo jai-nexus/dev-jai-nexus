@@ -1,0 +1,19 @@
+motion_id: motion-0181
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Sync Runs Repair/Reframe v0"
+subtitle: "assess what Sync Runs should mean on dev.jai.nexus and recommend root-IA direction without adding producers, automation, or authority"
+kind: documentation
+program: q2-sync-runs-repair-reframe-v0
+basis: motion-0180
+status: ratified
+created_at: "2026-05-09T00:00:00.000Z"
+decided_at: "2026-05-10T03:02:30.2744394Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: []

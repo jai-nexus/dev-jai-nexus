@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0181
+status: RATIFIED
+decided_at: "2026-05-10T03:02:30.2744394Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-10T03:02:30.2744394Z"
+notes: "RATIFIED: motion-0181 documents Sync Runs repair/reframe options, recommends narrowing current visible Sync Runs toward agent-edit review semantics, and positions root / for later operator-overview replacement without adding producers, automation, or authority."
