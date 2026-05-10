@@ -1,0 +1,40 @@
+{
+  "motion_id": "motion-0181",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "The assessment distinguishes the generic SyncRun schema from its stronger current agent-edit review semantics.",
+      "The motion recommends moving root / toward a broader operator overview later while narrowing current Sync Runs framing now.",
+      "The only product changes are copy-only or IA-only clarifications; no producers, automation, authority, API mutation, or DB migration were introduced."
+    ]
+    ,
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T03:02:30.2744394Z"
+}
