@@ -3,12 +3,14 @@ import type {
   DeliberationPanelModel,
   DeliberationTranscriptTurn,
 } from "@/lib/agents/deliberationTypes";
-import { getDeterministicAgendaModel } from "@/lib/controlPlane/agendaModel";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
 
 export interface DeliberationPassalongSummary {
   reviewed_motion_or_seam: string;
   selected_packet_id: string | null;
+  selected_status_label: string | null;
+  selection_reason: string | null;
   selected_assigned_agent_label: string | null;
   selected_canonical_role_label: string | null;
   selected_target_repo_full_name: string | null;
@@ -143,12 +145,10 @@ export function buildDeliberationPassalongSummary(
   panel: DeliberationPanelModel,
 ): DeliberationPassalongSummary {
   const candidate = getRecommendedCandidate(panel);
-  const agenda = getDeterministicAgendaModel();
-  const selectedAgendaItem =
-    candidate.source_kind === "work_packet"
-      ? agenda.items.find(
-          (item) => `candidate-${item.packet.packet_id}` === candidate.candidate_id,
-        ) ?? null
+  const loopCandidate = getOperatorLoopCandidate();
+  const selectedCandidate =
+    candidate.candidate_id === loopCandidate.deliberation_candidate_id
+      ? loopCandidate
       : null;
   const turns = getAgentTurns(panel);
   const participant_role_summary = turns.map(
@@ -175,23 +175,22 @@ export function buildDeliberationPassalongSummary(
   };
 
   const reviewed_motion_or_seam = `${candidate.source_label} - ${candidate.title}`;
-  const selected_packet_id = selectedAgendaItem?.packet.packet_id ?? null;
-  const selected_assigned_agent_label = selectedAgendaItem?.packet.agent.label ?? null;
-  const selected_canonical_role_label =
-    selectedAgendaItem?.packet.canonical_role.canonical_role_label ??
-    (selectedAgendaItem ? `palette draft only: ${selectedAgendaItem.packet.agent.label}` : null);
+  const selected_packet_id = selectedCandidate?.selected_work_packet_id ?? null;
+  const selected_status_label = selectedCandidate?.selected_status_label ?? null;
+  const selection_reason = selectedCandidate?.selection_reason ?? null;
+  const selected_assigned_agent_label = selectedCandidate?.assigned_agent_label ?? null;
+  const selected_canonical_role_label = selectedCandidate?.canonical_role_label ?? null;
   const selected_target_repo_full_name =
-    selectedAgendaItem?.packet.target.repo_full_name ?? candidate.target.repo_full_name;
+    selectedCandidate?.target_repo_full_name ?? candidate.target.repo_full_name;
   const selected_target_surface_label =
-    selectedAgendaItem?.packet.target.surface.label ?? candidate.target.surface.label;
-  const selected_source_label = selectedAgendaItem?.packet.source.label ?? candidate.source_label;
+    selectedCandidate?.target_surface_label ?? candidate.target.surface.label;
+  const selected_source_label = selectedCandidate?.source_seam ?? candidate.source_label;
   const selected_requested_actions =
-    selectedAgendaItem?.packet.requested_actions ?? candidate.requested_actions;
+    selectedCandidate?.requested_actions ?? candidate.requested_actions;
   const selected_validation_gate =
-    selectedAgendaItem?.chain.validation_gate_summary ??
-    (candidate.verification_commands[0] ?? null);
+    selectedCandidate?.validation_gate ?? (candidate.verification_commands[0] ?? null);
   const selected_human_decision_gate =
-    selectedAgendaItem?.chain.human_decision_summary ?? (candidate.human_gates[0] ?? null);
+    selectedCandidate?.human_decision_gate ?? (candidate.human_gates[0] ?? null);
 
   const copy_text = [
     "PASSALONG - /operator/deliberation - CONTROL_THREAD",
@@ -199,6 +198,8 @@ export function buildDeliberationPassalongSummary(
     "Scope:",
     `- reviewed motion/seam: ${reviewed_motion_or_seam}`,
     `- selected work packet id: ${selected_packet_id ?? "none"}`,
+    `- selected status: ${selected_status_label ?? "none"}`,
+    `- selection reason: ${selection_reason ?? "none"}`,
     `- assigned agent: ${selected_assigned_agent_label ?? "none"}`,
     `- canonical role: ${selected_canonical_role_label ?? "none"}`,
     `- target repo: ${selected_target_repo_full_name}`,
@@ -236,6 +237,8 @@ export function buildDeliberationPassalongSummary(
   return {
     reviewed_motion_or_seam,
     selected_packet_id,
+    selected_status_label,
+    selection_reason,
     selected_assigned_agent_label,
     selected_canonical_role_label,
     selected_target_repo_full_name,
