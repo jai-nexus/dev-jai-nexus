@@ -1,0 +1,20 @@
+protocol_version: "0.3.8"
+motion_id: motion-0190
+evaluated_at: "2026-05-10T22:49:28.1268791Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.06
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: [build]
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "This motion hardens agenda-source metadata only and must not imply persistence, dynamic routing, ranking, or authority expansion."
+escalation_state: null

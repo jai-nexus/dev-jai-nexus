@@ -303,6 +303,33 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
             </div>
           </div>
 
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+            <h4 className="text-sm font-semibold text-gray-100">Selection metadata</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <ToneBadge tone="sky">
+                repo posture: {packet.selection_metadata.repo_posture}
+              </ToneBadge>
+              <ToneBadge tone="amber">
+                work class: {packet.selection_metadata.work_class}
+              </ToneBadge>
+              <ToneBadge tone="slate">
+                action class: {packet.selection_metadata.requested_action_class}
+              </ToneBadge>
+              <ToneBadge tone="slate">
+                mutation boundary: {packet.selection_metadata.mutation_boundary}
+              </ToneBadge>
+            </div>
+            <ul className="mt-3 space-y-2 text-sm text-gray-300">
+              {packet.selection_metadata.selection_notes.map((note) => (
+                <li key={note}>- {note}</li>
+              ))}
+              <li>
+                - deterministic chain complete:{" "}
+                {packet.selection_metadata.deterministic_chain_complete ? "yes" : "no"}
+              </li>
+            </ul>
+          </div>
+
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
               <h4 className="text-sm font-semibold text-gray-100">Allowed paths</h4>

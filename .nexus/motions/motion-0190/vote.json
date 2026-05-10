@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0190",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Agenda items now expose explicit source metadata for repo posture, work class, action class, gate presence, mutation boundary, authority boundary, and chain completeness.",
+      "The selected-candidate helper now aligns its future-selection criteria to the hardened agenda metadata instead of inferring everything ad hoc.",
+      "The current selected candidate remains wp-agent-registry-follow-up and the seam does not add persistence, ranking, or authority expansion."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T22:49:28.1268791Z"
+}

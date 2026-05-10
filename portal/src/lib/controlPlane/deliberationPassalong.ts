@@ -218,6 +218,7 @@ export function buildDeliberationPassalongSummary(
     "",
     "Evidence basis:",
     ...evidence_basis_summary.map((basis) => `- ${basis}`),
+    `- agenda metadata: ${selectedCandidate?.criteria_summary ?? "none"}`,
     `- validation gate: ${selected_validation_gate ?? "none"}`,
     `- human decision gate: ${selected_human_decision_gate ?? "none"}`,
     "",
