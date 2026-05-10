@@ -3,10 +3,20 @@ import type {
   DeliberationPanelModel,
   DeliberationTranscriptTurn,
 } from "@/lib/agents/deliberationTypes";
+import { getDeterministicAgendaModel } from "@/lib/controlPlane/agendaModel";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 
 export interface DeliberationPassalongSummary {
   reviewed_motion_or_seam: string;
+  selected_packet_id: string | null;
+  selected_assigned_agent_label: string | null;
+  selected_canonical_role_label: string | null;
+  selected_target_repo_full_name: string | null;
+  selected_target_surface_label: string | null;
+  selected_source_label: string | null;
+  selected_requested_actions: string[];
+  selected_validation_gate: string | null;
+  selected_human_decision_gate: string | null;
   participant_role_summary: string[];
   posture_summary: {
     support: number;
@@ -133,6 +143,13 @@ export function buildDeliberationPassalongSummary(
   panel: DeliberationPanelModel,
 ): DeliberationPassalongSummary {
   const candidate = getRecommendedCandidate(panel);
+  const agenda = getDeterministicAgendaModel();
+  const selectedAgendaItem =
+    candidate.source_kind === "work_packet"
+      ? agenda.items.find(
+          (item) => `candidate-${item.packet.packet_id}` === candidate.candidate_id,
+        ) ?? null
+      : null;
   const turns = getAgentTurns(panel);
   const participant_role_summary = turns.map(
     (turn) => `${turn.speaker_label}: ${turn.role_lens}`,
@@ -158,12 +175,36 @@ export function buildDeliberationPassalongSummary(
   };
 
   const reviewed_motion_or_seam = `${candidate.source_label} - ${candidate.title}`;
+  const selected_packet_id = selectedAgendaItem?.packet.packet_id ?? null;
+  const selected_assigned_agent_label = selectedAgendaItem?.packet.agent.label ?? null;
+  const selected_canonical_role_label =
+    selectedAgendaItem?.packet.canonical_role.canonical_role_label ??
+    (selectedAgendaItem ? `palette draft only: ${selectedAgendaItem.packet.agent.label}` : null);
+  const selected_target_repo_full_name =
+    selectedAgendaItem?.packet.target.repo_full_name ?? candidate.target.repo_full_name;
+  const selected_target_surface_label =
+    selectedAgendaItem?.packet.target.surface.label ?? candidate.target.surface.label;
+  const selected_source_label = selectedAgendaItem?.packet.source.label ?? candidate.source_label;
+  const selected_requested_actions =
+    selectedAgendaItem?.packet.requested_actions ?? candidate.requested_actions;
+  const selected_validation_gate =
+    selectedAgendaItem?.chain.validation_gate_summary ??
+    (candidate.verification_commands[0] ?? null);
+  const selected_human_decision_gate =
+    selectedAgendaItem?.chain.human_decision_summary ?? (candidate.human_gates[0] ?? null);
 
   const copy_text = [
     "PASSALONG - /operator/deliberation - CONTROL_THREAD",
     "",
     "Scope:",
     `- reviewed motion/seam: ${reviewed_motion_or_seam}`,
+    `- selected work packet id: ${selected_packet_id ?? "none"}`,
+    `- assigned agent: ${selected_assigned_agent_label ?? "none"}`,
+    `- canonical role: ${selected_canonical_role_label ?? "none"}`,
+    `- target repo: ${selected_target_repo_full_name}`,
+    `- target surface: ${selected_target_surface_label}`,
+    `- source seam: ${selected_source_label}`,
+    `- requested actions: ${selected_requested_actions.join(", ")}`,
     "- deliberation mode: deterministic, advisory-only transcript",
     `- participants: ${turns.map((turn) => turn.speaker_label).join(", ")}`,
     "",
@@ -175,6 +216,8 @@ export function buildDeliberationPassalongSummary(
     "",
     "Evidence basis:",
     ...evidence_basis_summary.map((basis) => `- ${basis}`),
+    `- validation gate: ${selected_validation_gate ?? "none"}`,
+    `- human decision gate: ${selected_human_decision_gate ?? "none"}`,
     "",
     "Strongest dissent / caution:",
     `- ${strongest_dissent_or_caution}`,
@@ -192,6 +235,15 @@ export function buildDeliberationPassalongSummary(
 
   return {
     reviewed_motion_or_seam,
+    selected_packet_id,
+    selected_assigned_agent_label,
+    selected_canonical_role_label,
+    selected_target_repo_full_name,
+    selected_target_surface_label,
+    selected_source_label,
+    selected_requested_actions,
+    selected_validation_gate,
+    selected_human_decision_gate,
     participant_role_summary,
     posture_summary,
     evidence_basis_summary,

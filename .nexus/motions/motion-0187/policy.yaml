@@ -1,0 +1,20 @@
+protocol_version: "0.3.8"
+motion_id: motion-0187
+evaluated_at: "2026-05-10T21:55:08.3287823Z"
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_voters: [proposer, challenger, arbiter]
+risk_score: 0.07
+max_risk_score: 0.20
+required_gates: [validate_motion, validate_agency, typecheck]
+optional_gates: [build]
+failed_required_gates: []
+failed_optional_gates: []
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+blocking_reasons: []
+warnings:
+  - "This motion adds deterministic loop-through framing only and must not imply execution, persistence, or dispatch authority."
+escalation_state: null

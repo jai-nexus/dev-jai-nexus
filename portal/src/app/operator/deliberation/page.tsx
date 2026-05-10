@@ -4,6 +4,7 @@ export const revalidate = 0;
 import type { ReactNode } from "react";
 import { getAgentDeliberationPanel } from "@/lib/agents/deliberationPanel";
 import { buildDeliberationPassalongSummary } from "@/lib/controlPlane/deliberationPassalong";
+import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
 import type {
   DeliberationAdvisoryVote,
   DeliberationCandidate,
@@ -264,6 +265,7 @@ export default function DeliberationPage() {
   const panel = getAgentDeliberationPanel();
   const transcript = panel.transcript_session;
   const passalong = buildDeliberationPassalongSummary(panel);
+  const loopCandidate = getOperatorLoopCandidate();
   const candidatesById = new Map(
     panel.candidates.map((candidate) => [candidate.candidate_id, candidate] as const),
   );
@@ -290,6 +292,16 @@ export default function DeliberationPage() {
             branch, and prompt as copy-only output. Operator authorization is
             required before any execution or repo action.
           </p>
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+            <p>
+              First official agenda deliberation passalong candidate:{" "}
+              <span className="font-mono">{loopCandidate.packet_id}</span>. This
+              session keeps the loop deterministic, read-only, and human-gated
+              across <span className="font-mono">/</span>,{" "}
+              <span className="font-mono">/operator/work</span>, and{" "}
+              <span className="font-mono">/operator/deliberation</span>.
+            </p>
+          </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>
               Votes shown here are non-binding. This transcript cannot run agents,
@@ -397,6 +409,20 @@ export default function DeliberationPage() {
 
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500">
+                    First official loop-through candidate
+                  </div>
+                  <ul className="mt-2 space-y-1">
+                    <li>- packet: {passalong.selected_packet_id ?? "none"}</li>
+                    <li>- agent: {passalong.selected_assigned_agent_label ?? "none"}</li>
+                    <li>- canonical role: {passalong.selected_canonical_role_label ?? "none"}</li>
+                    <li>- repo: {passalong.selected_target_repo_full_name ?? "none"}</li>
+                    <li>- surface: {passalong.selected_target_surface_label ?? "none"}</li>
+                    <li>- source seam: {passalong.selected_source_label ?? "none"}</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="text-xs uppercase tracking-wide text-gray-500">
                     Participant roles
                   </div>
                   <ul className="mt-2 space-y-1">
@@ -459,6 +485,12 @@ export default function DeliberationPage() {
                   </div>
                   <p className="mt-2">Target: {passalong.recommended_next_target}</p>
                   <p className="mt-2">{passalong.recommended_next_action}</p>
+                  <p className="mt-2">
+                    Validation gate: {passalong.selected_validation_gate ?? "none"}
+                  </p>
+                  <p className="mt-2">
+                    Human decision: {passalong.selected_human_decision_gate ?? "none"}
+                  </p>
                 </div>
 
                 <div>

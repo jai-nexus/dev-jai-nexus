@@ -148,6 +148,9 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
             <ToneBadge tone={statusTone(packet.status)}>
               agenda status: {statusLabel(packet.status)}
             </ToneBadge>
+            {item.is_first_official_loop_candidate ? (
+              <ToneBadge tone="sky">first official loop-through candidate</ToneBadge>
+            ) : null}
             <ToneBadge tone="amber">draft-only activation</ToneBadge>
             <ToneBadge tone="rose">execution blocked</ToneBadge>
           </div>
@@ -207,10 +210,17 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs uppercase tracking-wide text-gray-500">
-                Assigned identity
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              {item.is_first_official_loop_candidate ? (
+                <div className="mb-3 rounded-lg border border-sky-900 bg-sky-950/40 p-3 text-sm text-sky-100">
+                  This seeded agenda item is the first official deterministic
+                  loop-through candidate for root overview, agenda review,
+                  deliberation, and CONTROL_THREAD passalong.
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-gray-500">
+                  Assigned identity
               </span>
               <Link
                 href={`/operator/agents#${packet.agent.key}`}
@@ -343,14 +353,28 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
-              Next prompt / passalong target
-            </h4>
+            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+              <h4 className="text-sm font-semibold text-gray-100">
+                Next prompt / passalong target
+              </h4>
             <div className="mt-3 flex flex-wrap gap-2">
               <ToneBadge tone="emerald">{packet.next_prompt_target.target}</ToneBadge>
               <ToneBadge tone="sky">{packet.next_prompt_target.label}</ToneBadge>
             </div>
+
+            {item.is_first_official_loop_candidate ? (
+              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+                <h4 className="text-sm font-semibold text-gray-100">Loop-through links</h4>
+                <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                  <Link href="/" className="text-sky-300 underline">
+                    Root overview
+                  </Link>
+                  <Link href="/operator/deliberation" className="text-sky-300 underline">
+                    Deliberation and passalong
+                  </Link>
+                </div>
+              </div>
+            ) : null}
             <p className="mt-3 text-sm text-gray-300">{packet.next_prompt_target.prompt}</p>
           </div>
 

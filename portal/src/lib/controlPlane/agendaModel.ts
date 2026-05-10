@@ -5,6 +5,7 @@ import type {
   DraftWorkPacketStatus,
 } from "@/lib/agents/workPacketTypes";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import { FIRST_OFFICIAL_LOOP_PACKET_ID } from "@/lib/controlPlane/operatorLoopCandidate";
 
 export interface DeterministicAgendaAuthorityPosture {
   execution_blocked: true;
@@ -29,6 +30,7 @@ export interface DeterministicAgendaItem {
   packet: DraftWorkPacket;
   authority_posture: DeterministicAgendaAuthorityPosture;
   chain: DeterministicAgendaChainCoverage;
+  is_first_official_loop_candidate: boolean;
 }
 
 export interface DeterministicAgendaSummary {
@@ -42,6 +44,7 @@ export interface DeterministicAgendaSummary {
 export interface DeterministicAgendaModel {
   summary: DeterministicAgendaSummary;
   items: DeterministicAgendaItem[];
+  first_official_loop_candidate: DeterministicAgendaItem;
 }
 
 const FIXED_AUTHORITY_POSTURE: DeterministicAgendaAuthorityPosture = {
@@ -72,6 +75,8 @@ function buildItem(packet: DraftWorkPacket): DeterministicAgendaItem {
   return {
     packet,
     authority_posture: { ...FIXED_AUTHORITY_POSTURE },
+    is_first_official_loop_candidate:
+      packet.packet_id === FIRST_OFFICIAL_LOOP_PACKET_ID,
     chain: {
       assigned_agent_label: packet.agent.label,
       canonical_role_label:
@@ -126,9 +131,19 @@ export function getDeterministicAgendaModel(): DeterministicAgendaModel {
   void authorityPosture;
 
   const items = packets.map(buildItem);
+  const first_official_loop_candidate = items.find(
+    (item) => item.is_first_official_loop_candidate,
+  );
+
+  if (!first_official_loop_candidate) {
+    throw new Error(
+      `First official loop candidate not found in deterministic agenda: ${FIRST_OFFICIAL_LOOP_PACKET_ID}`,
+    );
+  }
 
   return {
     summary: buildSummary(items),
     items,
+    first_official_loop_candidate,
   };
 }

@@ -1,0 +1,19 @@
+motion_id: motion-0187
+version: "0.1"
+protocol_version: "0.3.8"
+title: "First Agenda Deliberation Passalong v0"
+subtitle: "select one seeded agenda item as the first official deterministic loop-through candidate across root, work, deliberation, and passalong surfaces"
+kind: builder-proof
+program: q2-first-agenda-deliberation-passalong-v0
+basis: motion-0186
+status: ratified
+created_at: "2026-05-10T00:00:00.000Z"
+decided_at: "2026-05-10T21:55:08.3287823Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]
