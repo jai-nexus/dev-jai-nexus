@@ -1,0 +1,19 @@
+motion_id: motion-0185
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Deterministic Deliberation Quality v0"
+subtitle: "differentiate canonical agent reasoning lenses on /operator/deliberation without provider calls or authority expansion"
+kind: builder-proof
+program: q2-deterministic-deliberation-quality-v0
+basis: motion-0184
+status: ratified
+created_at: "2026-05-10T00:00:00.000Z"
+decided_at: "2026-05-10T21:17:47.5728649Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]

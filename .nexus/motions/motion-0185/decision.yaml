@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0185
+status: RATIFIED
+decided_at: "2026-05-10T21:17:47.5728649Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-10T21:17:47.5728649Z"
+notes: "RATIFIED: motion-0185 improves deterministic deliberation quality only, with no model/provider call, runtime execution, authority expansion, or mutation path."

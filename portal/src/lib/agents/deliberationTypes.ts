@@ -23,6 +23,14 @@ export type DeliberationAdvisoryVote =
   | "defer"
   | "out_of_scope";
 
+export type DeliberationConfidence = "high" | "medium" | "low";
+
+export type DeliberationRecommendationPosture =
+  | "support"
+  | "support_with_caution"
+  | "hold"
+  | "defer";
+
 export interface DeliberationCandidateSeed {
   candidate_id: string;
   title: string;
@@ -43,6 +51,11 @@ export interface DeliberationCandidateSeed {
 export interface DeliberationAgentAdvisory {
   agent: AgentRegistryAgent;
   vote: DeliberationAdvisoryVote;
+  role_lens: string;
+  evidence_basis: string[];
+  confidence: DeliberationConfidence;
+  recommendation_posture: DeliberationRecommendationPosture;
+  dissent_or_caution: string | null;
   reasoning: string[];
 }
 
@@ -99,6 +112,11 @@ export interface DeliberationTranscriptTurn {
   speaker_handle: string | null;
   focus_candidate_ids: string[];
   advisory_vote: DeliberationAdvisoryVote | "framing";
+  role_lens: string;
+  evidence_basis: string[];
+  confidence: DeliberationConfidence;
+  recommendation_posture: DeliberationRecommendationPosture | "framing";
+  dissent_or_caution: string | null;
   statement: string[];
 }
 
