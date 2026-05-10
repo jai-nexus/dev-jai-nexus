@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0187",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "One existing seeded agenda item is now selected deterministically as the first official loop-through candidate.",
+      "Root overview, deterministic agenda, deliberation, and the passalong block now all point at the same bounded repo-local candidate.",
+      "The loop remains read-only, copy-only, human-gated, and authority-disabled."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T21:55:08.3287823Z"
+}

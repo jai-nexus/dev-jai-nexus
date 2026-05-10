@@ -22,6 +22,7 @@ import type {
 } from "@/lib/agents/deliberationTypes";
 import type { DraftWorkPacketAction } from "@/lib/agents/workPacketTypes";
 import { buildDeterministicDeliberationLens } from "@/lib/controlPlane/deliberationQuality";
+import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
 
 const DELIBERATION_AGENT_KEYS = new Set([
   "jai-architect",
@@ -466,6 +467,15 @@ function sortCandidatesForRecommendation(candidates: DeliberationCandidate[]) {
 }
 
 function pickRecommendedCandidate(candidates: DeliberationCandidate[]) {
+  const selectedLoopCandidate = getOperatorLoopCandidate();
+  const preferred = candidates.find(
+    (candidate) => candidate.candidate_id === selectedLoopCandidate.deliberation_candidate_id,
+  );
+
+  if (preferred) {
+    return preferred;
+  }
+
   const ranked = sortCandidatesForRecommendation(candidates);
   return ranked[0];
 }
@@ -639,6 +649,7 @@ function buildTranscriptSession(
     "Moderator framing: select the next best motion or action candidate without enabling any execution surface.",
     "Moderator framing: compare work packets, project follow-ups, motion follow-ups, manual candidates, and planned toolchain targets using the shared repo-plus-surface-plus-optional-project model.",
     "Moderator framing: all votes are non-binding, all prompts are copy-only, and operator authorization is required before any execution or branch activity.",
+    `Moderator framing: first official loop-through candidate is ${recommendedCandidate.title} (${recommendedCandidate.candidate_id}) for bounded agenda-to-deliberation-to-passalong coverage.`,
   ];
 
   const turns: DeliberationTranscriptTurn[] = [

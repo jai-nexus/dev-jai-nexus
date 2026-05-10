@@ -74,6 +74,18 @@ export interface RootOperatorOverview {
     action_coverage_count: number;
     note: string;
   };
+  first_official_loop_candidate: {
+    packet_id: string;
+    title: string;
+    assigned_agent_label: string;
+    canonical_role_label: string;
+    target_repo_full_name: string;
+    target_surface_label: string;
+    source_label: string;
+    requested_actions: string[];
+    next_target: string;
+    note: string;
+  };
   operator_jai: {
     href: "/operator/jai";
     posture: string;
@@ -224,6 +236,25 @@ export async function getRootOperatorOverview(): Promise<RootOperatorOverview> {
       ).length,
       note:
         "Deterministic planning/review posture only. No execution, branch write, PR creation, or runtime dispatch is enabled.",
+    },
+    first_official_loop_candidate: {
+      packet_id: agenda.first_official_loop_candidate.packet.packet_id,
+      title: agenda.first_official_loop_candidate.packet.title,
+      assigned_agent_label: agenda.first_official_loop_candidate.packet.agent.label,
+      canonical_role_label:
+        agenda.first_official_loop_candidate.packet.canonical_role.canonical_role_label ??
+        `palette draft only: ${agenda.first_official_loop_candidate.packet.agent.label}`,
+      target_repo_full_name:
+        agenda.first_official_loop_candidate.packet.target.repo_full_name,
+      target_surface_label:
+        agenda.first_official_loop_candidate.packet.target.surface.label,
+      source_label: agenda.first_official_loop_candidate.packet.source.label,
+      requested_actions:
+        agenda.first_official_loop_candidate.packet.requested_actions,
+      next_target:
+        agenda.first_official_loop_candidate.packet.next_prompt_target.target,
+      note:
+        "Selected as the first official deterministic loop-through candidate for root overview, agenda review, deliberation, and CONTROL_THREAD passalong.",
     },
     operator_jai: {
       href: "/operator/jai",

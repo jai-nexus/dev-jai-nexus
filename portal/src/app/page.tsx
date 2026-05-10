@@ -118,6 +118,11 @@ export default async function HomePage() {
             detail={`${overview.deterministic_agenda.ready_for_review} ready for review, ${overview.deterministic_agenda.blocked + overview.deterministic_agenda.deferred} blocked or deferred.`}
           />
           <SummaryCard
+            label="Loop-through candidate"
+            value={overview.first_official_loop_candidate.packet_id}
+            detail="First official agenda-to-deliberation-to-passalong proof candidate."
+          />
+          <SummaryCard
             label="Operator JAI"
             value="draft-only"
             detail="Static, read-only JAI control-plane shell with visible blocked authority posture."
@@ -126,11 +131,6 @@ export default async function HomePage() {
             label="Repo registry"
             value={String(overview.repo_registry.repo_count)}
             detail={`${overview.repo_registry.configured_scope_count} configured scope keys remain a curated subset.`}
-          />
-          <SummaryCard
-            label="Project registry"
-            value={String(overview.project_registry.project_count)}
-            detail="JAI NEXUS-centric project registry only."
           />
         </section>
 
@@ -182,6 +182,32 @@ export default async function HomePage() {
               >
                 Open /operator/jai
               </Link>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">First official loop-through candidate</h3>
+                <ToneBadge tone="amber">deterministic</ToneBadge>
+                <ToneBadge tone="rose">copy-only routing</ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- packet: {overview.first_official_loop_candidate.packet_id}</li>
+                <li>- title: {overview.first_official_loop_candidate.title}</li>
+                <li>- agent: {overview.first_official_loop_candidate.assigned_agent_label}</li>
+                <li>- canonical role: {overview.first_official_loop_candidate.canonical_role_label}</li>
+                <li>- repo: {overview.first_official_loop_candidate.target_repo_full_name}</li>
+                <li>- surface: {overview.first_official_loop_candidate.target_surface_label}</li>
+                <li>- next target: {overview.first_official_loop_candidate.next_target}</li>
+              </ul>
+              <p className="mt-3 text-xs text-gray-400">{overview.first_official_loop_candidate.note}</p>
+              <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                <Link href="/operator/work" className="text-sky-300 underline">
+                  Open /operator/work
+                </Link>
+                <Link href="/operator/deliberation" className="text-sky-300 underline">
+                  Open /operator/deliberation
+                </Link>
+              </div>
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">

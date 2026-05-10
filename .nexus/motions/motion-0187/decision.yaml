@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0187
+status: RATIFIED
+decided_at: "2026-05-10T21:55:08.3287823Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-10T21:55:08.3287823Z"
+notes: "RATIFIED: motion-0187 selects one seeded agenda item as the first official deterministic loop-through candidate across root, work, deliberation, and passalong surfaces."
