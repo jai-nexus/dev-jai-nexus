@@ -164,6 +164,12 @@ export default async function ReviewPage({
               </div>
 
               <div className="mt-3 grid gap-2 text-sm text-white/70 sm:grid-cols-2">
+                <div className="truncate sm:col-span-2">
+                  <span className="text-white/50">Surface:</span>{" "}
+                  <span className="text-white/85">
+                    agent-edit review only, not a generic control-plane sync detail
+                  </span>
+                </div>
                 <div className="truncate">
                   <span className="text-white/50">Repo:</span>{" "}
                   <span className="text-white/85">{syncRun.repo?.name ?? "(none)"}</span>

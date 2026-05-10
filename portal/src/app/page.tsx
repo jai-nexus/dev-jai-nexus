@@ -26,6 +26,14 @@ export default async function HomePage() {
             Legacy sync-run surface. The table below is a sparse SyncRun feed, not a
             full live heartbeat for the 38-repo registry.
           </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Broader control-plane status currently lives under{" "}
+            <a href="/operator" className="text-sky-400 underline">
+              /operator
+            </a>
+            . A future motion may replace this root landing surface with an operator
+            overview.
+          </p>
         </div>
       </header>
 
@@ -37,7 +45,7 @@ export default async function HomePage() {
       ) : (
         <section>
           <h2 className="text-lg font-medium mb-3">
-            Recent sync runs
+            Legacy SyncRun feed
             <span className="ml-2 text-xs text-gray-500">
               (America/Chicago)
             </span>
