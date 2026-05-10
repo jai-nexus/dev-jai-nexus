@@ -1,0 +1,39 @@
+{
+  "motion_id": "motion-0184",
+  "version": "0.2",
+  "protocol_version": "0.3.8",
+  "vote_mode": "unanimous_consent",
+  "required_roles": [
+    "proposer",
+    "challenger",
+    "arbiter"
+  ],
+  "votes": [
+    {
+      "role": "proposer",
+      "vote": "yes"
+    },
+    {
+      "role": "challenger",
+      "vote": "yes"
+    },
+    {
+      "role": "arbiter",
+      "vote": "yes"
+    }
+  ],
+  "outcome": {
+    "yes": 3,
+    "no": 0,
+    "abstain": 0,
+    "yes_with_reservations": 0,
+    "result": "PASS",
+    "reasons": [
+      "Root / now reads as an operator status overview instead of a SyncRun-first landing page.",
+      "The overview links motion, agenda, JAI Chat, registry, agent, authority, and telemetry freshness posture without introducing live heartbeat semantics.",
+      "No scheduler, automation, telemetry producer, provider call, execution authority, or mutation path was introduced."
+    ],
+    "missing_required_roles": []
+  },
+  "last_updated": "2026-05-10T20:22:11.8345208Z"
+}

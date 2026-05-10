@@ -1,0 +1,19 @@
+motion_id: motion-0184
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Root Operator Status Overview v0"
+subtitle: "replace root syncrun-first landing with a broader read-only control-plane overview"
+kind: builder-proof
+program: q2-root-operator-status-overview-v0
+basis: motion-0183
+status: ratified
+created_at: "2026-05-10T00:00:00.000Z"
+decided_at: "2026-05-10T20:22:11.8345208Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]
