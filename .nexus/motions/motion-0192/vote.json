@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0192",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-10T23:32:15.7600549Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "ARCHITECT",
+      "vote": "yes",
+      "reason": "The routing affordance improves operator navigation without introducing any selected-candidate mutation path or runtime control."
+    },
+    {
+      "voter": "VERIFIER",
+      "vote": "yes",
+      "reason": "Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged."
+    },
+    {
+      "voter": "OPERATOR",
+      "vote": "yes",
+      "reason": "The seam makes agenda-to-deliberation review clearer while keeping switching static and governance-controlled only."
+    }
+  ]
+}

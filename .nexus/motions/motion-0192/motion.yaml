@@ -1,0 +1,19 @@
+motion_id: motion-0192
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Agenda Deliberation Routing v0"
+subtitle: "add read-only agenda-to-deliberation routing affordances without selected-candidate mutation, route state, query state, or authority expansion"
+kind: builder-proof
+program: q2-agenda-deliberation-routing-v0
+basis: motion-0191
+status: ratified
+created_at: "2026-05-10T00:00:00.000Z"
+decided_at: "2026-05-10T23:32:15.7600549Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]

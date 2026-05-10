@@ -1,0 +1,22 @@
+motion_id: motion-0192
+policy_id: policy-motion-0192
+status: RATIFIED
+evaluated_at: "2026-05-10T23:32:15.7600549Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "read-only routing/context only"
+  - "no selected-candidate mutation by navigation"
+  - "no query state or route state"
+  - "no persistence"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"

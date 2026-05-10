@@ -5,7 +5,11 @@ import type {
   DraftWorkPacketStatus,
 } from "@/lib/agents/workPacketTypes";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
-import { FIRST_OFFICIAL_LOOP_PACKET_ID } from "@/lib/controlPlane/operatorLoopCandidate";
+import {
+  FIRST_OFFICIAL_LOOP_PACKET_ID,
+  getOperatorLoopCandidate,
+  type LoopCandidateSelectionStatus,
+} from "@/lib/controlPlane/operatorLoopCandidate";
 
 export interface DeterministicAgendaAuthorityPosture {
   execution_blocked: true;
@@ -32,6 +36,11 @@ export interface DeterministicAgendaItem {
   authority_posture: DeterministicAgendaAuthorityPosture;
   chain: DeterministicAgendaChainCoverage;
   is_first_official_loop_candidate: boolean;
+  selection_status: LoopCandidateSelectionStatus;
+  deliberation_context_href: "/operator/deliberation";
+  deliberation_context_note: string;
+  switching_policy_mode: "static_code_governance_controlled";
+  no_selection_mutation_note: string;
 }
 
 export interface DeterministicAgendaSummary {
@@ -73,11 +82,26 @@ function buildHumanDecisionSummary(packet: DraftWorkPacket): string {
 }
 
 function buildItem(packet: DraftWorkPacket): DeterministicAgendaItem {
+  const loopCandidate = getOperatorLoopCandidate();
+  const switchingEntry = loopCandidate.static_switching.candidates.find(
+    (candidate) => candidate.work_packet_id === packet.packet_id,
+  );
+
+  if (!switchingEntry) {
+    throw new Error(`Switching entry not found for work packet: ${packet.packet_id}`);
+  }
+
   return {
     packet,
     authority_posture: { ...FIXED_AUTHORITY_POSTURE },
     is_first_official_loop_candidate:
       packet.packet_id === FIRST_OFFICIAL_LOOP_PACKET_ID,
+    selection_status: switchingEntry.selection_status,
+    deliberation_context_href: switchingEntry.deliberation_review_href,
+    deliberation_context_note: switchingEntry.deliberation_review_note,
+    switching_policy_mode: loopCandidate.static_switching.switching_policy.mode,
+    no_selection_mutation_note:
+      loopCandidate.static_switching.switching_policy.review_navigation_note,
     chain: {
       assigned_agent_label: packet.agent.label,
       canonical_role_label:

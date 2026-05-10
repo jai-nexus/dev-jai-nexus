@@ -28,12 +28,15 @@ export interface StaticLoopCandidateSwitchingEntry {
   selection_rationale: string;
   metadata_criteria_result: string;
   switching_note: string;
+  deliberation_review_href: "/operator/deliberation";
+  deliberation_review_note: string;
 }
 
 export interface StaticLoopCandidateSwitchingPolicy {
   mode: "static_code_governance_controlled";
   summary: string;
   disallowed: string[];
+  review_navigation_note: string;
 }
 
 export interface StaticLoopCandidateSwitchingModel {
@@ -255,6 +258,24 @@ function switchingNote(status: LoopCandidateSelectionStatus): string {
   return "Blocked candidates remain excluded from switching until a later code/governance seam changes the bounded conditions.";
 }
 
+function deliberationReviewNote(status: LoopCandidateSelectionStatus): string {
+  if (status === "active") {
+    return "Review navigation opens deliberation context only and keeps this already-active candidate unchanged.";
+  }
+
+  if (status === "eligible") {
+    return "Review navigation opens deliberation context only and does not promote this eligible candidate to active.";
+  }
+
+  if (status === "deferred") {
+    return "Review navigation opens deliberation context only and does not change deferred candidate status.";
+  }
+
+  return "Review navigation opens deliberation context only and does not change blocked candidate status.";
+}
+
+const DELIBERATION_REVIEW_HREF = "/operator/deliberation" as const;
+
 function buildStaticSwitchingModel(): StaticLoopCandidateSwitchingModel {
   const candidates = getDraftWorkPackets().map((packet) => {
     const criteria = buildSelectionCriteria(packet.selection_metadata);
@@ -266,6 +287,8 @@ function buildStaticSwitchingModel(): StaticLoopCandidateSwitchingModel {
       selection_rationale: selectionRationale(packet, selection_status),
       metadata_criteria_result: criteriaResultLabel(criteria),
       switching_note: switchingNote(selection_status),
+      deliberation_review_href: DELIBERATION_REVIEW_HREF,
+      deliberation_review_note: deliberationReviewNote(selection_status),
     };
   });
 
@@ -286,6 +309,8 @@ function buildStaticSwitchingModel(): StaticLoopCandidateSwitchingModel {
         "persistence or passalong index",
         "ranking or scoring engine",
       ],
+      review_navigation_note:
+        "Agenda-to-deliberation movement is navigation/context only. It does not mutate selected-candidate state, route state, query state, or persistence.",
     },
   };
 }
