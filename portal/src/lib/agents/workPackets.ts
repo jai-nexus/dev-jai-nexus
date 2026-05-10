@@ -10,11 +10,16 @@ import {
   getSurfaceEntry,
 } from "@/lib/controlPlane/repoSurfaceModel";
 import type {
+  AgendaMutationBoundary,
+  AgendaRequestedActionClass,
+  AgendaRepoPosture,
+  AgendaWorkClass,
   DraftWorkPacket,
   DraftWorkPacketAction,
   DraftWorkPacketActionCompatibility,
   DraftWorkPacketCanonicalRoleResolution,
   DraftWorkPacketCompatibilityState,
+  DraftWorkPacketSelectionMetadata,
   DraftWorkPacketSeed,
 } from "@/lib/agents/workPacketTypes";
 
@@ -389,6 +394,133 @@ function deriveActionCompatibility(
   };
 }
 
+function deriveRepoPosture(seed: DraftWorkPacketSeed): AgendaRepoPosture {
+  return seed.target.repo_full_name === "jai-nexus/dev-jai-nexus"
+    ? "repo_local"
+    : "cross_repo";
+}
+
+function deriveWorkClass(seed: DraftWorkPacketSeed): AgendaWorkClass {
+  if (
+    seed.configured_scope_key === "dev-jai-nexus" &&
+    seed.target.surface_key.startsWith("operator-")
+  ) {
+    return "governance_safe";
+  }
+
+  if (
+    seed.requested_actions.includes("draft_files_preview") ||
+    seed.allowed_paths.some(
+      (path) =>
+        path.startsWith("app/") ||
+        path.startsWith("components/") ||
+        path.startsWith("src/"),
+    )
+  ) {
+    return "implementation_heavy";
+  }
+
+  return "mixed";
+}
+
+function deriveRequestedActionClass(
+  seed: DraftWorkPacketSeed,
+): AgendaRequestedActionClass {
+  if (seed.requested_actions.every((action) => action === "view_only")) {
+    return "view_only";
+  }
+
+  if (seed.requested_actions.includes("draft_files_preview")) {
+    return "preview_only";
+  }
+
+  if (
+    seed.requested_actions.every(
+      (action) =>
+        action === "draft_plan" || action === "view_only" || action === "verify",
+    )
+  ) {
+    return "draft_review_only";
+  }
+
+  return "blocked";
+}
+
+function deriveMutationBoundary(
+  seed: DraftWorkPacketSeed,
+  repoPosture: AgendaRepoPosture,
+  requestedActionClass: AgendaRequestedActionClass,
+): AgendaMutationBoundary {
+  if (requestedActionClass === "preview_only" && repoPosture === "repo_local") {
+    return "repo_local_preview";
+  }
+
+  if (repoPosture === "cross_repo") {
+    return "cross_repo_blocked";
+  }
+
+  return "no_mutation";
+}
+
+function buildSelectionMetadata(seed: DraftWorkPacketSeed): DraftWorkPacketSelectionMetadata {
+  const repo_posture = deriveRepoPosture(seed);
+  const work_class = deriveWorkClass(seed);
+  const requested_action_class = deriveRequestedActionClass(seed);
+  const has_validation_gate = seed.verification_commands.length > 0;
+  const has_human_decision_gate = seed.human_gates.length > 0;
+  const mutation_boundary = deriveMutationBoundary(
+    seed,
+    repo_posture,
+    requested_action_class,
+  );
+  const authority_boundary = "planning_review_only" as const;
+  const deterministic_chain_complete =
+    Boolean(seed.agent_key) &&
+    Boolean(seed.target.repo_full_name) &&
+    Boolean(seed.target.surface_key) &&
+    Boolean(seed.source.label) &&
+    seed.requested_actions.length > 0 &&
+    has_validation_gate &&
+    has_human_decision_gate &&
+    Boolean(seed.next_prompt_target.target);
+
+  const selection_notes = [
+    repo_posture === "repo_local"
+      ? "Repo-local to dev-jai-nexus."
+      : "Cross-repo candidate; keep bounded and non-mutating.",
+    work_class === "governance_safe"
+      ? "Governance-safe operator seam."
+      : work_class === "implementation_heavy"
+        ? "Implementation-heavy planning seam."
+        : "Mixed planning seam.",
+    requested_action_class === "draft_review_only"
+      ? "Requested actions remain draft/review-only."
+      : requested_action_class === "preview_only"
+        ? "Requested actions include preview-only file output."
+        : requested_action_class === "view_only"
+          ? "Requested actions are read-only."
+          : "Requested actions include blocked posture.",
+    has_validation_gate
+      ? "Validation gate is present."
+      : "Validation gate is missing.",
+    has_human_decision_gate
+      ? "Human decision gate is present."
+      : "Human decision gate is missing.",
+  ];
+
+  return {
+    repo_posture,
+    work_class,
+    requested_action_class,
+    has_validation_gate,
+    has_human_decision_gate,
+    mutation_boundary,
+    authority_boundary,
+    deterministic_chain_complete,
+    selection_notes,
+  };
+}
+
 export function getDraftWorkPackets(): DraftWorkPacket[] {
   return WORK_PACKET_SEEDS.map((seed) => {
     const agent = getNamedAgent(seed.agent_key);
@@ -409,6 +541,8 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
         `Target surface not found in control-plane model: ${seed.target.surface_key}`,
       );
     }
+
+    const selection_metadata = buildSelectionMetadata(seed);
 
     return {
       packet_id: seed.packet_id,
@@ -442,6 +576,7 @@ export function getDraftWorkPackets(): DraftWorkPacket[] {
           deriveActionCompatibility(agent, action),
         ),
       },
+      selection_metadata,
       human_gates: seed.human_gates,
       evidence_expectations: seed.evidence_expectations,
       next_prompt_target: { ...seed.next_prompt_target },

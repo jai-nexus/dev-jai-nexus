@@ -24,6 +24,7 @@ export interface DeterministicAgendaChainCoverage {
   allowed_output: string;
   validation_gate_summary: string;
   human_decision_summary: string;
+  selection_metadata_summary: string;
 }
 
 export interface DeterministicAgendaItem {
@@ -89,6 +90,13 @@ function buildItem(packet: DraftWorkPacket): DeterministicAgendaItem {
       allowed_output: buildAllowedOutput(packet),
       validation_gate_summary: buildValidationGateSummary(packet),
       human_decision_summary: buildHumanDecisionSummary(packet),
+      selection_metadata_summary: [
+        `repo posture: ${packet.selection_metadata.repo_posture}`,
+        `work class: ${packet.selection_metadata.work_class}`,
+        `action class: ${packet.selection_metadata.requested_action_class}`,
+        `mutation boundary: ${packet.selection_metadata.mutation_boundary}`,
+        `chain complete: ${packet.selection_metadata.deterministic_chain_complete ? "yes" : "no"}`,
+      ].join(" | "),
     },
   };
 }

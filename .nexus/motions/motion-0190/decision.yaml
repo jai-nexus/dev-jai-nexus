@@ -1,0 +1,11 @@
+protocol_version: "0.3.8"
+motion_id: motion-0190
+status: RATIFIED
+decided_at: "2026-05-10T22:49:28.1268791Z"
+ratified_by: voter
+target_domain: "dev.jai.nexus"
+target_repo: "dev-jai-nexus"
+vote_mode: "unanimous_consent"
+required_gates: [validate_motion, validate_agency, typecheck]
+last_updated: "2026-05-10T22:49:28.1268791Z"
+notes: "RATIFIED: motion-0190 adds explicit agenda-source metadata hardening for future loop-candidate selection."

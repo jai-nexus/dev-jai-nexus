@@ -1,6 +1,7 @@
 import { getDraftWorkPackets } from "@/lib/agents/workPackets";
 import type {
   DraftWorkPacket,
+  DraftWorkPacketSelectionMetadata,
   DraftWorkPacketStatus,
 } from "@/lib/agents/workPacketTypes";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
@@ -13,6 +14,16 @@ export interface OperatorLoopSelectionCriterion {
   summary: string;
   required: boolean;
   current_candidate_satisfies: boolean;
+}
+
+function criterion(
+  key: string,
+  label: string,
+  summary: string,
+  required: boolean,
+  current_candidate_satisfies: boolean,
+): OperatorLoopSelectionCriterion {
+  return { key, label, summary, required, current_candidate_satisfies };
 }
 
 export interface OperatorLoopCandidateModel {
@@ -77,88 +88,73 @@ function buildAuthorityBoundary(): string[] {
 }
 
 function buildSelectionCriteria(
-  packet: DraftWorkPacket,
+  metadata: DraftWorkPacketSelectionMetadata,
 ): OperatorLoopSelectionCriterion[] {
-  const repoLocal = packet.target.repo_full_name === "jai-nexus/dev-jai-nexus";
-  const governanceSafe =
-    packet.configured_scope_key === "dev-jai-nexus" &&
-    packet.target.surface.key === "operator-agents";
-  const draftReviewOnly = packet.requested_actions.every(
-    (action) => action === "view_only" || action === "draft_plan" || action === "verify",
-  );
-  const hasValidationGate = packet.verification_commands.length > 0;
-  const hasHumanDecisionGate = packet.human_gates.length > 0;
-  const noUnauthorizedExternalMutation =
-    !packet.allowed_paths.some(
-      (entry) =>
-        entry.includes("docs-nexus") ||
-        entry.includes("jai-nexus/") ||
-        entry.startsWith(".github/"),
-    ) && packet.target.repo_full_name === "jai-nexus/dev-jai-nexus";
-
   return [
-    {
-      key: "repo_local_preferred",
-      label: "Repo-local preferred",
-      summary: "Prefer dev-jai-nexus-local candidates before cross-repo candidates.",
-      required: true,
-      current_candidate_satisfies: repoLocal,
-    },
-    {
-      key: "governance_safe_preferred",
-      label: "Governance-safe preferred",
-      summary: "Prefer governance-safe operator seams before implementation-heavy candidates.",
-      required: true,
-      current_candidate_satisfies: governanceSafe,
-    },
-    {
-      key: "draft_review_only_preferred",
-      label: "Draft/review-only preferred",
-      summary: "Prefer view-only, draft-plan, draft-files-preview, or verify actions with no execution enablement.",
-      required: true,
-      current_candidate_satisfies: draftReviewOnly,
-    },
-    {
-      key: "validation_gate_required",
-      label: "Validation gate required",
-      summary: "Selected candidates must expose clear validation commands.",
-      required: true,
-      current_candidate_satisfies: hasValidationGate,
-    },
-    {
-      key: "human_decision_gate_required",
-      label: "Human decision gate required",
-      summary: "Selected candidates must expose a clear human decision gate before any follow-up routing.",
-      required: true,
-      current_candidate_satisfies: hasHumanDecisionGate,
-    },
-    {
-      key: "no_unauthorized_docs_or_jai_mutation",
-      label: "No unauthorized docs-nexus/jai-nexus mutation",
-      summary: "Do not select candidates that imply docs-nexus or jai-nexus mutation unless separately authorized.",
-      required: true,
-      current_candidate_satisfies: noUnauthorizedExternalMutation,
-    },
-    {
-      key: "no_authority_expansion",
-      label: "No authority expansion",
-      summary: "No execution, branch-write, PR, provider, scheduler, automation, or mutation authority may be introduced.",
-      required: true,
-      current_candidate_satisfies: true,
-    },
-    {
-      key: "full_deterministic_chain_required",
-      label: "Full deterministic chain required",
-      summary: "Selected candidates must resolve agent, role, repo, surface, source seam, action, allowed output, validation gate, human decision, and next routing target.",
-      required: true,
-      current_candidate_satisfies: true,
-    },
+    criterion(
+      "repo_local_preferred",
+      "Repo-local preferred",
+      "Prefer dev-jai-nexus-local candidates before cross-repo candidates.",
+      true,
+      metadata.repo_posture === "repo_local",
+    ),
+    criterion(
+      "governance_safe_preferred",
+      "Governance-safe preferred",
+      "Prefer governance-safe operator seams before implementation-heavy candidates.",
+      true,
+      metadata.work_class === "governance_safe",
+    ),
+    criterion(
+      "draft_review_only_preferred",
+      "Draft/review-only preferred",
+      "Prefer view-only, draft-plan, draft-files-preview, or verify actions with no execution enablement.",
+      true,
+      metadata.requested_action_class === "draft_review_only" ||
+        metadata.requested_action_class === "view_only" ||
+        metadata.requested_action_class === "preview_only",
+    ),
+    criterion(
+      "validation_gate_required",
+      "Validation gate required",
+      "Selected candidates must expose clear validation commands.",
+      true,
+      metadata.has_validation_gate,
+    ),
+    criterion(
+      "human_decision_gate_required",
+      "Human decision gate required",
+      "Selected candidates must expose a clear human decision gate before any follow-up routing.",
+      true,
+      metadata.has_human_decision_gate,
+    ),
+    criterion(
+      "no_unauthorized_docs_or_jai_mutation",
+      "No unauthorized docs-nexus/jai-nexus mutation",
+      "Do not select candidates that imply docs-nexus or jai-nexus mutation unless separately authorized.",
+      true,
+      metadata.mutation_boundary === "no_mutation",
+    ),
+    criterion(
+      "no_authority_expansion",
+      "No authority expansion",
+      "No execution, branch-write, PR, provider, scheduler, automation, or mutation authority may be introduced.",
+      true,
+      metadata.authority_boundary === "planning_review_only",
+    ),
+    criterion(
+      "full_deterministic_chain_required",
+      "Full deterministic chain required",
+      "Selected candidates must resolve agent, role, repo, surface, source seam, action, allowed output, validation gate, human decision, and next routing target.",
+      true,
+      metadata.deterministic_chain_complete,
+    ),
   ];
 }
 
 export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
   const packet = getFirstOfficialLoopPacket();
-  const selection_criteria = buildSelectionCriteria(packet);
+  const selection_criteria = buildSelectionCriteria(packet.selection_metadata);
 
   return {
     selected_work_packet_id: packet.packet_id,

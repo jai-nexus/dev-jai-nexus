@@ -24,6 +24,19 @@ export type DraftWorkPacketStatus =
   | "deferred"
   | "settled";
 
+export type AgendaRepoPosture = "repo_local" | "cross_repo";
+export type AgendaWorkClass = "governance_safe" | "implementation_heavy" | "mixed";
+export type AgendaRequestedActionClass =
+  | "view_only"
+  | "draft_review_only"
+  | "preview_only"
+  | "blocked";
+export type AgendaMutationBoundary =
+  | "no_mutation"
+  | "repo_local_preview"
+  | "cross_repo_blocked";
+export type AgendaAuthorityBoundary = "planning_review_only";
+
 export interface DraftWorkPacketSource {
   kind: "motion" | "control_thread";
   label: string;
@@ -65,6 +78,18 @@ export interface DraftWorkPacketCanonicalRoleResolution {
   palette_draft_label: string | null;
 }
 
+export interface DraftWorkPacketSelectionMetadata {
+  repo_posture: AgendaRepoPosture;
+  work_class: AgendaWorkClass;
+  requested_action_class: AgendaRequestedActionClass;
+  has_validation_gate: boolean;
+  has_human_decision_gate: boolean;
+  mutation_boundary: AgendaMutationBoundary;
+  authority_boundary: AgendaAuthorityBoundary;
+  deterministic_chain_complete: boolean;
+  selection_notes: string[];
+}
+
 export interface DraftWorkPacketSeed {
   packet_id: string;
   title: string;
@@ -102,6 +127,7 @@ export interface DraftWorkPacket {
   agent: AgentRegistryAgent;
   canonical_role: DraftWorkPacketCanonicalRoleResolution;
   compatibility: DraftWorkPacketCompatibility;
+  selection_metadata: DraftWorkPacketSelectionMetadata;
   human_gates: string[];
   evidence_expectations: string[];
   next_prompt_target: DraftWorkPacketNextPromptTarget;
