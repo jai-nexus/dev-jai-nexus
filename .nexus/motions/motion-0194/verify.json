@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0194",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-11T00:12:21.9051639Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "Cross-repo canon routing is recorded in docs/canon only; no other repo was mutated and no runtime or authority change was introduced."
+  ],
+  "summary": {
+    "before_motion_count": 192,
+    "after_motion_count": 193,
+    "latest_bundled_motion": "motion-0194"
+  }
+}

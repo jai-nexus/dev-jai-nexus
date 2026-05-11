@@ -1,0 +1,19 @@
+motion_id: motion-0194
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Cross-Repo Canonical Timeline and Golden Script Routing v0"
+subtitle: "map cross-repo canon ownership and routing for Q2M5-Q4M12, Golden Script, NHID, .nexus governance spine, and JAI Toolchain without centralizing ownership in dev-jai-nexus"
+kind: builder-proof
+program: q2-cross-repo-canonical-timeline-golden-script-routing-v0
+basis: motion-0193
+status: ratified
+created_at: "2026-05-10T00:00:00.000Z"
+decided_at: "2026-05-11T00:12:21.9051639Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]
