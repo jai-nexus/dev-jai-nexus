@@ -1,0 +1,13 @@
+motion_id: motion-0193
+decision_id: decision-motion-0193
+decided_at: "2026-05-10T23:56:56.5850630Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-10T23:56:56.5850630Z"
+status: RATIFIED
+decision_summary: "Ratified as a compact read-only candidate-posture review panel only."
+rationale:
+  - "Candidate posture is now summarized compactly without introducing selector UI, state, persistence, or ranking."
+  - "The active selected candidate remains unchanged while eligible, deferred, and blocked posture stays review-only."
+consequences:
+  - "Operators can inspect candidate posture more quickly without any runtime selection mechanism."
+  - "The active selected candidate remains wp-agent-registry-follow-up until a later explicit governance/code switch seam changes it."

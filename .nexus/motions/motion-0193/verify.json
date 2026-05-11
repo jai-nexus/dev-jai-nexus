@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0193",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-10T23:56:56.5850630Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "Candidate posture is summarized read-only and does not mutate active selected-candidate state."
+  ],
+  "summary": {
+    "before_motion_count": 191,
+    "after_motion_count": 192,
+    "latest_bundled_motion": "motion-0193"
+  }
+}

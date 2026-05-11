@@ -46,6 +46,16 @@ export interface StaticLoopCandidateSwitchingModel {
   switching_policy: StaticLoopCandidateSwitchingPolicy;
 }
 
+export interface EligibleCandidateReviewPanel {
+  active_candidate_id: string;
+  eligible_candidate_ids: string[];
+  deferred_candidate_ids: string[];
+  blocked_candidate_ids: string[];
+  selection_criteria_summary: string;
+  switching_policy_summary: string;
+  no_selection_mutation_note: string;
+}
+
 function criterion(
   key: string,
   label: string,
@@ -78,6 +88,7 @@ export interface OperatorLoopCandidateModel {
   criteria_summary: string;
   current_candidate_criteria_result: "satisfies_required_criteria";
   static_switching: StaticLoopCandidateSwitchingModel;
+  review_panel: EligibleCandidateReviewPanel;
 }
 
 export function getFirstOfficialLoopPacket(): DraftWorkPacket {
@@ -319,6 +330,21 @@ export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
   const packet = getFirstOfficialLoopPacket();
   const selection_criteria = buildSelectionCriteria(packet.selection_metadata);
   const static_switching = buildStaticSwitchingModel();
+  const review_panel: EligibleCandidateReviewPanel = {
+    active_candidate_id: static_switching.active_candidate_id,
+    eligible_candidate_ids: static_switching.eligible_candidate_ids,
+    deferred_candidate_ids: static_switching.candidates
+      .filter((candidate) => candidate.selection_status === "deferred")
+      .map((candidate) => candidate.work_packet_id),
+    blocked_candidate_ids: static_switching.candidates
+      .filter((candidate) => candidate.selection_status === "blocked")
+      .map((candidate) => candidate.work_packet_id),
+    selection_criteria_summary:
+      "Repo-local preferred, governance-safe preferred, draft/review-only preferred, validation-gated, human-gated, non-mutating, and authority-disabled.",
+    switching_policy_summary: static_switching.switching_policy.summary,
+    no_selection_mutation_note:
+      static_switching.switching_policy.review_navigation_note,
+  };
 
   return {
     selected_work_packet_id: packet.packet_id,
@@ -348,5 +374,6 @@ export function getOperatorLoopCandidate(): OperatorLoopCandidateModel {
       "Future loop-through candidates must stay repo-local preferred, governance-safe, draft/review-only, validation-gated, human-gated, non-mutating, and authority-disabled.",
     current_candidate_criteria_result: "satisfies_required_criteria",
     static_switching,
+    review_panel,
   };
 }
