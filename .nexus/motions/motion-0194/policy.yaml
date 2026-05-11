@@ -1,0 +1,23 @@
+motion_id: motion-0194
+policy_id: policy-motion-0194
+status: RATIFIED
+evaluated_at: "2026-05-11T00:12:21.9051639Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "planning and canon routing only"
+  - "no other repo mutation"
+  - "audit-nexus treated as first-class"
+  - "dev-jai-nexus framed as Operator Control Plane, not sole canon owner"
+  - "ownership assumptions remain provisional pending repo inspection"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"

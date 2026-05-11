@@ -1,12 +1,134 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-10T23:57:46.587Z",
+  "generated_at": "2026-05-11T00:13:12.906Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 192,
+  "motion_count": 193,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0194",
+      "item": {
+        "motion_id": "motion-0194",
+        "title": "Cross-Repo Canonical Timeline and Golden Script Routing v0",
+        "subtitle": "map cross-repo canon ownership and routing for Q2M5-Q4M12, Golden Script, NHID, .nexus governance spine, and JAI Toolchain without centralizing ownership in dev-jai-nexus",
+        "program": "q2-cross-repo-canonical-timeline-golden-script-routing-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0193",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-10T00:00:00.000Z",
+        "decided_at": "2026-05-11T00:12:21.9051639Z",
+        "updated_at": "2026-05-11T00:13:12.906Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0194/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0194\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Cross-Repo Canonical Timeline and Golden Script Routing v0\"\nsubtitle: \"map cross-repo canon ownership and routing for Q2M5-Q4M12, Golden Script, NHID, .nexus governance spine, and JAI Toolchain without centralizing ownership in dev-jai-nexus\"\nkind: builder-proof\nprogram: q2-cross-repo-canonical-timeline-golden-script-routing-v0\nbasis: motion-0193\nstatus: ratified\ncreated_at: \"2026-05-10T00:00:00.000Z\"\ndecided_at: \"2026-05-11T00:12:21.9051639Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0194/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0194\ndecision_id: decision-motion-0194\ndecided_at: \"2026-05-11T00:12:21.9051639Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-11T00:12:21.9051639Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as cross-repo canon routing and planning only.\"\nrationale:\n  - \"The new canon files map ownership and routing without centralizing all canon in dev-jai-nexus.\"\n  - \"audit-nexus is explicitly treated as first-class and ownership statements remain provisional pending direct repo inspection.\"\nconsequences:\n  - \"Cross-repo roadmap and routing references are now visible in dev-jai-nexus without mutating other repos.\"\n  - \"Ownership assumptions remain provisional until later repo-specific inspection and ratification.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0194/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0194\npolicy_id: policy-motion-0194\nstatus: RATIFIED\nevaluated_at: \"2026-05-11T00:12:21.9051639Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"planning and canon routing only\"\n  - \"no other repo mutation\"\n  - \"audit-nexus treated as first-class\"\n  - \"dev-jai-nexus framed as Operator Control Plane, not sole canon owner\"\n  - \"ownership assumptions remain provisional pending repo inspection\"\n  - \"no provider/model call\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0194/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0194\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-11T00:12:21.9051639Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"Cross-repo canon routing is recorded in docs/canon only; no other repo was mutated and no runtime or authority change was introduced.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 192,\n    \"after_motion_count\": 193,\n    \"latest_bundled_motion\": \"motion-0194\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0194/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0194\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-11T00:12:21.9051639Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam establishes cross-repo canon routing without collapsing ownership into dev-jai-nexus.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation passed and the canon remains planning-only with no cross-repo mutation or authority expansion.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The routing package correctly frames dev-jai-nexus as Operator Control Plane and treats audit-nexus as first-class.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0194/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Cross-Repo Canonical Timeline and Golden Script Routing v0\n\n**Motion:** motion-0194\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: docs/canon additions, one motion package, and one bundled snapshot\nrefresh. No runtime behavior, persistence, or cross-repo mutation.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- mutate `audit-nexus`, `docs-nexus`, `jai-nexus`, `jai`, `api-nexus`,\n  `jai-format`, `jai-pilot`, or `vscode-nexus`\n- add runtime behavior\n- add provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- claim `dev-jai-nexus` owns all Golden Script, NHID, audit, hygiene, or ritual canon\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-11T00:12:21.9051639Z`\n\n### 2. Implementation shape\n\n- added cross-repo roadmap canon for Q2M5-Q4M12\n- added cross-repo routing canon for Golden Script, NHID, `.nexus`, and JAI Toolchain\n- explicitly treated `audit-nexus` as first-class\n- explicitly framed `dev-jai-nexus` as Operator Control Plane, not sole canon owner\n- refreshed the bundled motion snapshot through `motion-0194`\n\n### 3. Files changed\n\n- `.nexus/canon/roadmap/q2m5-q4m12-cross-repo-timeline.md`\n- `.nexus/canon/cross-repo-canon-routing.md`\n- `.nexus/canon/golden-script-routing.md`\n- `.nexus/canon/nhid-routing.md`\n- `.nexus/canon/nexus-governance-spine-routing.md`\n- `.nexus/canon/jai-toolchain-product-foundry-routing.md`\n- `.nexus/motions/motion-0194/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\nNo `audit-nexus` files were changed. No `docs-nexus` files were changed. No\n`jai-nexus` files were changed. No other repo was mutated.\n\n### 4. Canon package added\n\nAdded routing/planning canon for:\n\n- Q2M5-Q4M12 cross-repo timeline\n- cross-repo ownership map\n- Golden Script routing\n- NHID routing\n- `.nexus` governance spine routing\n- JAI Toolchain product-foundry routing\n\n### 5. Repo/domain ownership framing\n\n- `dev-jai-nexus` is framed as Operator Control Plane, not sole canon owner\n- `audit-nexus` is explicitly treated as first-class and likely audit/hygiene/state-direction review owner\n- `docs-nexus`, `jai`, `jai-nexus`, `api-nexus`, `jai-format`, and future toolchain repos are all routed explicitly by likely domain ownership\n- ownership assumptions are marked provisional pending later repo inspection\n\n### 6. Relationship to Q2M5 operator-loop work\n\n- the Q2M5 deterministic operator loop is now tied to the broader roadmap as\n  the Operator Control Plane proof\n- later months route Golden Script, NHID, `.nexus`, Toolchain, authority, and\n  productization across multiple repos/domains rather than collapsing them into\n  a single control-plane repo\n\n### 7. Authority posture preserved\n\n- no provider/model calls\n- no backend runtime execution\n- no branch-write or PR authority\n- no scheduler or automation\n- no API or DB mutation\n- no hidden persistence\n- no selector UI, route/query state, runtime switching, or ranking work\n- no cross-repo mutation\n\n### 8. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0194/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\nnode portal/scripts/build-motion-snapshot.mjs --write\nnode portal/scripts/build-motion-snapshot.mjs --check\npnpm -C portal build\n```\n\nResults recorded after final ratification and final snapshot refresh:\n\n- `validate_motion` -> pass\n- `validate_agency` -> pass\n- `typecheck` -> pass\n- `snapshot_write` -> pass\n- `snapshot_check` -> pass\n- `build` -> pass\n\n### 9. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `192`\n  - latest bundled motion: `motion-0193`\n- bundled snapshot after refresh:\n  - motion count: `193`\n  - latest bundled motion: `motion-0194`\n- `node portal/scripts/build-motion-snapshot.mjs --check` returned\n  `status: current`\n\n### 10. Acceptance checks\n\n- acceptance-01 pass: cross-repo Q2M5-Q4M12 timeline exists\n- acceptance-02 pass: cross-repo canon routing map exists\n- acceptance-03 pass: `audit-nexus` is first-class and explicitly routed as likely audit/hygiene/state-assessment owner\n- acceptance-04 pass: `dev-jai-nexus` is framed as Operator Control Plane, not sole canon owner\n- acceptance-05 pass: Golden Script is defined as cross-repo ritual with routed/provisional ownership\n- acceptance-06 pass: NHID is defined as durable project-intelligence coordinate system with routed/provisional ownership\n- acceptance-07 pass: `.nexus` governance spine is framed across repos/domains\n- acceptance-08 pass: JAI Toolchain product-foundry routing is included\n- acceptance-09 pass: Q2M5 operator-loop work is tied to the larger roadmap\n- acceptance-10 pass: no other repo was mutated\n- acceptance-11 pass: no runtime/provider/execution/API/DB/persistence/authority expansion was introduced\n- acceptance-12 pass: motion snapshot gate passed\n- acceptance-13 pass: validation passed\n\n### 11. Ratification closeout\n\nMotion-0194 is ratified as cross-repo canon routing and planning only.\n\n- `motion.yaml` status -> `ratified`\n- `decision.yaml` status -> `RATIFIED`\n- `vote.json` result -> `PASS`\n- final bundled snapshot includes `motion-0194`\n- no cross-repo mutation, runtime behavior, provider call, runtime execution, or write authority was added"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0194/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Cross-Repo Canonical Timeline and Golden Script Routing v0\n\n## Purpose\n\nCreate a planning/canon package in `dev-jai-nexus` that maps cross-repo canon\nownership and routing for the Q2M5-Q4M12 timeline, Golden Script, NHID,\n`.nexus` governance spine, and JAI Toolchain product-foundry layer.\n\n## Scope\n\n- add a cross-repo roadmap timeline for Q2M5-Q4M12\n- add cross-repo canon routing references\n- define Golden Script as a cross-repo operating ritual\n- define NHID as durable project-intelligence coordinate system\n- define `.nexus` as a governance spine across repos/domains\n- define JAI Toolchain as the product-foundry layer\n- treat `audit-nexus` as first-class\n- tie Q2M5 operator-loop work to the larger roadmap\n- refresh the bundled motion snapshot through `motion-0194`\n\n## Non-goals\n\n- no mutation of any other repo\n- no runtime behavior change\n- no authority expansion\n- no provider/model calls\n- no execution, branch-write, PR, scheduler, automation, or persistence\n- no declaration that `dev-jai-nexus` owns all cross-repo canon"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0194/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Cross-Repo Canonical Timeline and Golden Script Routing v0\n\n## Risks\n\n- `dev-jai-nexus` could accidentally be read as the sole owner of all canon\n- provisional ownership statements could be mistaken for final ratified ownership\n\n## Mitigations\n\n- mark ownership assumptions as provisional pending inspection\n- explicitly state `audit-nexus` is first-class\n- explicitly state `dev-jai-nexus` is the Operator Control Plane, not sole owner\n- keep this seam planning/canon only with no cross-repo mutation"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0194/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0194/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0194/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0194/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0194/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0194/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Cross-Repo Canonical Timeline and Golden Script Routing v0\n\n**Motion:** motion-0194\n**Role:** BUILDER\n**Date:** 2026-05-10\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: docs/canon additions, one motion package, and one bundled snapshot\nrefresh. No runtime behavior, persistence, or cross-repo mutation.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- mutate `audit-nexus`, `docs-nexus`, `jai-nexus`, `jai`, `api-nexus`,\n  `jai-format`, `jai-pilot`, or `vscode-nexus`\n- add runtime behavior\n- add provider/model calls\n- add backend runtime execution\n- add branch-write or PR authority\n- add scheduler or automation\n- add API or DB mutation\n- claim `dev-jai-nexus` owns all Golden Script, NHID, audit, hygiene, or ritual canon\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-11T00:12:21.9051639Z`\n\n### 2. Implementation shape\n\n- added cross-repo roadmap canon for Q2M5-Q4M12\n- added cross-repo routing canon for Golden Script, NHID, `.nexus`, and JAI Toolchain\n- explicitly treated `audit-nexus` as first-class\n- explicitly framed `dev-jai-nexus` as Operator Control Plane, not sole canon owner\n- refreshed the bundled motion snapshot through `motion-0194`\n\n### 3. Files changed\n\n- `.nexus/canon/roadmap/q2m5-q4m12-cross-repo-timeline.md`\n- `.nexus/canon/cross-repo-canon-routing.md`\n- `.nexus/canon/golden-script-routing.md`\n- `.nexus/canon/nhid-routing.md`\n- `.nexus/canon/nexus-governance-spine-routing.md`\n- `.nexus/canon/jai-toolchain-product-foundry-routing.md`\n- `.nexus\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0194\nTitle: Cross-Repo Canonical Timeline and Golden Script Routing v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0194/motion.yaml\n2. .nexus/motions/motion-0194/decision.yaml\n3. .nexus/motions/motion-0194/policy.yaml\n4. .nexus/motions/motion-0194/verify.json\n5. .nexus/motions/motion-0194/vote.json\n6. .nexus/motions/motion-0194/execution.md\n7. .nexus/motions/motion-0194/proposal.md\n8. .nexus/motions/motion-0194/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0194\n\nCore artifact paths:\n- .nexus/motions/motion-0194/motion.yaml\n- .nexus/motions/motion-0194/decision.yaml\n- .nexus/motions/motion-0194/policy.yaml\n- .nexus/motions/motion-0194/verify.json\n- .nexus/motions/motion-0194/vote.json\n- .nexus/motions/motion-0194/execution.md\n- .nexus/motions/motion-0194/proposal.md\n- .nexus/motions/motion-0194/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0194",
+      "chat_search_href": "/operator/chats?q=motion-0194"
+    },
     {
       "motion_id": "motion-0193",
       "item": {
@@ -23,7 +145,7 @@
         "vote_result": null,
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T23:56:56.5850630Z",
-        "updated_at": "2026-05-10T23:57:46.587Z",
+        "updated_at": "2026-05-11T00:09:05.662Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []

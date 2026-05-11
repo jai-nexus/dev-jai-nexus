@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0194",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-11T00:12:21.9051639Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "ARCHITECT",
+      "vote": "yes",
+      "reason": "The seam establishes cross-repo canon routing without collapsing ownership into dev-jai-nexus."
+    },
+    {
+      "voter": "VERIFIER",
+      "vote": "yes",
+      "reason": "Validation passed and the canon remains planning-only with no cross-repo mutation or authority expansion."
+    },
+    {
+      "voter": "OPERATOR",
+      "vote": "yes",
+      "reason": "The routing package correctly frames dev-jai-nexus as Operator Control Plane and treats audit-nexus as first-class."
+    }
+  ]
+}

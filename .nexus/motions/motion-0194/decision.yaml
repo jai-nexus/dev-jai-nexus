@@ -1,0 +1,13 @@
+motion_id: motion-0194
+decision_id: decision-motion-0194
+decided_at: "2026-05-11T00:12:21.9051639Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-11T00:12:21.9051639Z"
+status: RATIFIED
+decision_summary: "Ratified as cross-repo canon routing and planning only."
+rationale:
+  - "The new canon files map ownership and routing without centralizing all canon in dev-jai-nexus."
+  - "audit-nexus is explicitly treated as first-class and ownership statements remain provisional pending direct repo inspection."
+consequences:
+  - "Cross-repo roadmap and routing references are now visible in dev-jai-nexus without mutating other repos."
+  - "Ownership assumptions remain provisional until later repo-specific inspection and ratification."
