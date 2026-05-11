@@ -313,6 +313,12 @@ export default function DeliberationPage() {
               Static switching policy:{" "}
               {loopCandidate.static_switching.switching_policy.summary}
             </p>
+            <p className="mt-2 text-xs text-gray-400">
+              Eligible review candidates:{" "}
+              {loopCandidate.review_panel.eligible_candidate_ids.length > 0
+                ? loopCandidate.review_panel.eligible_candidate_ids.join(", ")
+                : "none"}
+            </p>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
             <p>

@@ -589,6 +589,58 @@ export default function WorkPage() {
         </Section>
 
         <Section
+          title="Eligible Candidate Review Panel"
+          description="Compact read-only posture summary for active, eligible, deferred, and blocked loop-through candidates. Review only; no runtime selection or mutation."
+        >
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <div className="flex flex-wrap gap-2">
+              <ToneBadge tone="sky">
+                active: {loopCandidate.review_panel.active_candidate_id}
+              </ToneBadge>
+              <ToneBadge tone="slate">
+                switching: {loopCandidate.static_switching.switching_policy.mode}
+              </ToneBadge>
+              <ToneBadge tone="rose">no selection mutation</ToneBadge>
+            </div>
+            <p className="mt-3 text-sm text-gray-300">
+              {loopCandidate.review_panel.selection_criteria_summary}
+            </p>
+            <p className="mt-2 text-xs text-gray-400">
+              {loopCandidate.review_panel.switching_policy_summary}
+            </p>
+            <p className="mt-2 text-xs text-gray-400">
+              {loopCandidate.review_panel.no_selection_mutation_note}
+            </p>
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Eligible</div>
+                <div className="mt-2 text-sm text-gray-200">
+                  {loopCandidate.review_panel.eligible_candidate_ids.length > 0
+                    ? loopCandidate.review_panel.eligible_candidate_ids.join(", ")
+                    : "none"}
+                </div>
+              </div>
+              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Deferred</div>
+                <div className="mt-2 text-sm text-gray-200">
+                  {loopCandidate.review_panel.deferred_candidate_ids.length > 0
+                    ? loopCandidate.review_panel.deferred_candidate_ids.join(", ")
+                    : "none"}
+                </div>
+              </div>
+              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Blocked</div>
+                <div className="mt-2 text-sm text-gray-200">
+                  {loopCandidate.review_panel.blocked_candidate_ids.length > 0
+                    ? loopCandidate.review_panel.blocked_candidate_ids.join(", ")
+                    : "none"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section
           title="Authority posture"
           description="Activation agenda semantics remain planning/review-only and preserve the disabled control-plane boundary."
         >

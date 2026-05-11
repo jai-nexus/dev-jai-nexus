@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0193",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-10T23:56:56.5850630Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "ARCHITECT",
+      "vote": "yes",
+      "reason": "The review panel clarifies posture with static grouping only and does not add controls, state, or ranking."
+    },
+    {
+      "voter": "VERIFIER",
+      "vote": "yes",
+      "reason": "Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged."
+    },
+    {
+      "voter": "OPERATOR",
+      "vote": "yes",
+      "reason": "The panel is low-noise, read-only, and improves inspection without introducing runtime switching or authority."
+    }
+  ]
+}

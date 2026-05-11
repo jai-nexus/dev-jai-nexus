@@ -1,0 +1,23 @@
+motion_id: motion-0193
+policy_id: policy-motion-0193
+status: RATIFIED
+evaluated_at: "2026-05-10T23:56:56.5850630Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "read-only review panel only"
+  - "no selected-candidate mutation"
+  - "no selector UI"
+  - "no route/query/local/session state"
+  - "no persistence"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"
