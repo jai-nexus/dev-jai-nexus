@@ -1,4 +1,12 @@
 motion_id: motion-0219
-decision: ratified
+decision_id: decision-motion-0219
 decided_at: "2026-05-15T23:42:00.000Z"
-rationale: "A small static validator makes sandbox fixtures more durable without creating runtime enforcement or authority expansion."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:42:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox fixture static validator seam only."
+rationale:
+  - "A small static validator makes sandbox fixtures more durable without creating runtime enforcement or authority expansion."
+consequences:
+  - "Manual fixture-shape validation becomes easier to run consistently."
+  - "No runtime enforcement, automation, or authority expansion is introduced."

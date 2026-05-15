@@ -1,4 +1,12 @@
 motion_id: motion-0222
-decision: ratified
+decision_id: decision-motion-0222
 decided_at: "2026-05-16T00:00:00.000Z"
-rationale: "A manual drift-response playbook helps CONTROL_THREAD handle sandbox fixture issues consistently without creating runtime policy."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T00:00:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a fixture drift response playbook seam only."
+rationale:
+  - "A manual drift-response playbook helps CONTROL_THREAD handle sandbox fixture issues consistently without creating runtime policy."
+consequences:
+  - "Sandbox fixture drift response becomes more consistent."
+  - "No automation, runtime enforcement, or authority expansion is introduced."

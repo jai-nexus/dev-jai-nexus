@@ -1,4 +1,12 @@
 motion_id: motion-0217
-decision: ratified
+decision_id: decision-motion-0217
 decided_at: "2026-05-15T23:30:00.000Z"
-rationale: "Static gate-evidence fixtures make readiness review more inspectable without claiming live enforcement or agent operability."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a Corpus V2 gate evidence fixtures seam only."
+rationale:
+  - "Static gate-evidence fixtures make readiness review more inspectable without claiming live enforcement or agent operability."
+consequences:
+  - "Readiness evidence examples become easier to review."
+  - "No machine enforcement, live operability, or authority expansion is introduced."

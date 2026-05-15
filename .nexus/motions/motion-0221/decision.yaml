@@ -1,4 +1,12 @@
 motion_id: motion-0221
-decision: ratified
+decision_id: decision-motion-0221
 decided_at: "2026-05-15T23:54:00.000Z"
-rationale: "Showing validator posture in the existing sandbox review surface improves inspection without adding controls or runtime behavior."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:54:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox validation surface alignment seam only."
+rationale:
+  - "Showing validator posture in the existing sandbox review surface improves inspection without adding controls or runtime behavior."
+consequences:
+  - "Sandbox validation posture becomes more visible."
+  - "No controls, automation, or authority expansion are introduced."

@@ -1,4 +1,12 @@
 motion_id: motion-0220
-decision: ratified
+decision_id: decision-motion-0220
 decided_at: "2026-05-15T23:48:00.000Z"
-rationale: "An evidence record keeps the validator useful for manual review without allowing PASS to be misread as operability or authority."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:48:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox validator evidence record seam only."
+rationale:
+  - "An evidence record keeps the validator useful for manual review without allowing PASS to be misread as operability or authority."
+consequences:
+  - "Validator PASS semantics become clearer."
+  - "No live operability or authority expansion is introduced."
