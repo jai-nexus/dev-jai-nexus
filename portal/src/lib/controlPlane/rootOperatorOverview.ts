@@ -162,6 +162,11 @@ const ROOT_OVERVIEW_LINKS: RootOperatorOverviewLink[] = [
     summary: "Canonical motion queue and bundled snapshot visibility.",
   },
   {
+    href: "/operator/corpus",
+    label: "Corpus readiness",
+    summary: "Static drilldown for Corpus V2 readiness gates, evidence, and authority posture.",
+  },
+  {
     href: "/operator/agents",
     label: "Agents",
     summary: "Canonical active agents and JAI Palette draft design layer.",

@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0210",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:36:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The pre-opening operator checklist makes future opening prerequisites easier to review without opening Corpus V2, resetting numbering, or adding authority."
+  ],
+  "summary": {
+    "before_motion_count": 208,
+    "after_motion_count": 209,
+    "latest_bundled_motion": "motion-0210"
+  }
+}

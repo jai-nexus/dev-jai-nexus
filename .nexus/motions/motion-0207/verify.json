@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0207",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:18:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The static readiness gate model provides a local read-only representation of settled readiness canon without adding enforcement, automation, or authority."
+  ],
+  "summary": {
+    "before_motion_count": 205,
+    "after_motion_count": 206,
+    "latest_bundled_motion": "motion-0207"
+  }
+}

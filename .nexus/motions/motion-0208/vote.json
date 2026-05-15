@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0208",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:24:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact static drilldown surface makes readiness inspection more practical without turning the operator layer into a control plane for opening Corpus V2."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The drilldown route keeps the root overview compact while exposing the full static gate model and canon references."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This surface remains read-only and introduces no controls, runtime state, enforcement, or authority expansion."
+    }
+  ]
+}

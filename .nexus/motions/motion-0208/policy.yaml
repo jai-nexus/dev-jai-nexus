@@ -1,0 +1,22 @@
+motion_id: motion-0208
+policy_id: policy-motion-0208
+status: RATIFIED
+evaluated_at: "2026-05-15T22:24:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "read-only drilldown surface only"
+  - "no controls"
+  - "no runtime state"
+  - "no enforcement"
+  - "no automation"
+  - "Corpus V2 remains gated and unopened"
+  - "no write authority"

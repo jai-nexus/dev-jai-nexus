@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0210",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:36:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A concise pre-opening checklist gives CONTROL_THREAD a practical review frame before any future opening proposal is considered."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Requiring explicit evidence review and later motionization for opening, reset, and authority changes keeps the transition posture disciplined."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam is pre-opening only and adds no opening action, enforcement, automation, or authority expansion."
+    }
+  ]
+}

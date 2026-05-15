@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0209",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The sandbox boundary creates a clear fixture-only posture for future experiments without allowing provider dispatch, live runtime, or authority paths."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicitly separating sandbox materials from canon and forbidding live authority reduces confusion around future drafting and voting experiments."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam is boundary-setting only and introduces no drafting activation, voting activation, automation, or write authority."
+    }
+  ]
+}

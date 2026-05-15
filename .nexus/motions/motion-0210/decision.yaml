@@ -1,0 +1,13 @@
+motion_id: motion-0210
+decision_id: decision-motion-0210
+decided_at: "2026-05-15T22:36:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:36:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a pre-opening operator checklist seam only."
+rationale:
+  - "A future opening proposal needs a concise operator checklist before it is even proposed."
+  - "The checklist keeps later opening work bounded to current evidence and explicit motionization."
+consequences:
+  - "Pre-opening review posture becomes more concrete and repeatable."
+  - "No opening action, reset action, or authority expansion occurs."

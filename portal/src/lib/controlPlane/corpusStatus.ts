@@ -1,3 +1,8 @@
+import {
+  getCorpusReadinessGateCounts,
+  getCorpusReadinessTopBlockers,
+} from "@/lib/controlPlane/corpusReadinessGates";
+
 export interface CorpusStatusModel {
   current_corpus: {
     corpus_id: "corpus-v1";
@@ -30,13 +35,16 @@ export interface CorpusStatusModel {
 }
 
 export function getCorpusStatusModel(): CorpusStatusModel {
+  const gateCounts = getCorpusReadinessGateCounts();
+  const topBlockers = getCorpusReadinessTopBlockers();
+
   return {
     current_corpus: {
       corpus_id: "corpus-v1",
       label: "Corpus V1",
       governance_posture: "manual governance",
       status: "active / closing posture",
-      latest_motion_id: "motion-0206",
+      latest_motion_id: "motion-0210",
     },
     future_corpus: {
       corpus_id: "corpus-v2",
@@ -47,31 +55,17 @@ export function getCorpusStatusModel(): CorpusStatusModel {
     readiness: {
       source_of_truth: ".nexus/canon/corpus/corpus-v2-readiness-checklist.md",
       gate_counts: {
-        satisfied_by_canon: 5,
-        partially_satisfied: 5,
-        unmet_future: 1,
-        blocked_by_authority: 0,
-        deferred_until_v2_opening: 0,
+        satisfied_by_canon: gateCounts.satisfied_by_canon,
+        partially_satisfied: gateCounts.partially_satisfied,
+        unmet_future: gateCounts.unmet_future,
+        blocked_by_authority: gateCounts.blocked_by_authority,
+        deferred_until_v2_opening: gateCounts.deferred_until_v2_opening,
       },
-      top_blockers: [
-        "live agent motion drafting",
-        "live agent voting",
-        "governed visible ratification",
-        "deterministic agent-operable package generation",
-        "workflow-ready outputs",
-        "authority boundaries",
-      ],
+      top_blockers: topBlockers,
       surface_note:
         "Readiness summary is visibility-only. Checklist canon remains the source of truth and no gate is machine-enforced on this surface.",
     },
-    blockers: [
-      "live agent motion drafting",
-      "live agent voting",
-      "governed visible ratification",
-      "deterministic agent-operable package generation",
-      "workflow-ready outputs",
-      "authority boundaries",
-    ],
+    blockers: topBlockers,
     notes: [
       "No Corpus V2 opening is active.",
       "No motion numbering reset is active.",
@@ -84,6 +78,8 @@ export function getCorpusStatusModel(): CorpusStatusModel {
       ".nexus/canon/corpus/corpus-v2-readiness-gate.md",
       ".nexus/canon/corpus/corpus-v2-readiness-checklist.md",
       ".nexus/canon/corpus/corpus-v2-readiness-surface.md",
+      ".nexus/canon/corpus/corpus-v2-static-readiness-gates.md",
+      ".nexus/canon/corpus/corpus-v2-pre-opening-operator-checklist.md",
     ],
   };
 }
