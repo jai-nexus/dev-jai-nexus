@@ -1,4 +1,12 @@
 motion_id: motion-0218
-decision: ratified
+decision_id: decision-motion-0218
 decided_at: "2026-05-15T23:36:00.000Z"
-rationale: "A compact review summary makes sandbox fixture guardrails easier to inspect without turning the surface into a live governance console."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:36:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox fixture review summary seam only."
+rationale:
+  - "A compact review summary makes sandbox fixture guardrails easier to inspect without turning the surface into a live governance console."
+consequences:
+  - "Sandbox guard and evidence posture is easier to inspect."
+  - "No live governance console behavior or authority expansion is introduced."

@@ -1,4 +1,12 @@
 motion_id: motion-0216
-decision: ratified
+decision_id: decision-motion-0216
 decided_at: "2026-05-15T23:24:00.000Z"
-rationale: "Simulated blocked and failure traces make the sandbox review layer more durable without becoming runtime policy or active governance."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:24:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox failure trace fixtures seam only."
+rationale:
+  - "Simulated blocked and failure traces make the sandbox review layer more durable without becoming runtime policy or active governance."
+consequences:
+  - "Failure-mode review examples become easier to inspect."
+  - "No runtime rejection, automation, or authority expansion is introduced."

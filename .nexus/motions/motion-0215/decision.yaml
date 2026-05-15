@@ -1,4 +1,12 @@
 motion_id: motion-0215
-decision: ratified
+decision_id: decision-motion-0215
 decided_at: "2026-05-15T23:18:00.000Z"
-rationale: "Lightweight fixture schema guards make sandbox review artifacts more durable without introducing runtime enforcement or live authority."
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:18:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a sandbox fixture schema guards hygiene seam only."
+rationale:
+  - "Lightweight fixture schema guards make sandbox review artifacts more durable without introducing runtime enforcement or live authority."
+consequences:
+  - "Sandbox fixture review posture becomes more durable."
+  - "No runtime enforcement, automation, or authority expansion is introduced."
