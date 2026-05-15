@@ -1,0 +1,4 @@
+motion_id: motion-0215
+decision: ratified
+decided_at: "2026-05-15T23:18:00.000Z"
+rationale: "Lightweight fixture schema guards make sandbox review artifacts more durable without introducing runtime enforcement or live authority."

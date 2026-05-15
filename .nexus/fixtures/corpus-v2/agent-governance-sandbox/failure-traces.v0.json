@@ -1,0 +1,71 @@
+{
+  "fixture_id": "corpus-v2-failure-traces-fixture-v0",
+  "fixture_type": "failure_trace_collection",
+  "fixture_status": "simulated_review_only",
+  "fixture_labels": [
+    "Fixture-only",
+    "Simulated",
+    "Non-authoritative",
+    "Review-only",
+    "No authority",
+    "Corpus V2 not open",
+    "Not runtime enforcement"
+  ],
+  "traces": [
+    {
+      "trace_id": "authority-blocked-example-v0",
+      "trace_type": "blocked_by_authority",
+      "fixture_status": "simulated_review_only",
+      "simulated_condition": "draft requests branch write or PR creation",
+      "simulated_reason": "write, PR, and merge authority remain disabled in the settled readiness posture",
+      "expected_review_posture": "hold the draft in sandbox review and route any future capability request through separate authority motions",
+      "authority_note": "no branch-write, PR-creation, merge, or runtime execution authority exists",
+      "human_boundary_note": "human operator review remains required before any opening or authority proposal",
+      "source_design_ref": ".nexus/canon/corpus/agent-governance-sandbox-boundary-v0.md"
+    },
+    {
+      "trace_id": "validation-failed-example-v0",
+      "trace_type": "validation_failed",
+      "fixture_status": "simulated_review_only",
+      "simulated_condition": "draft package omits required files or fails schema expectations",
+      "simulated_reason": "deterministic schema-valid package generation is still only partially satisfied by canon and current tooling",
+      "expected_review_posture": "revise the fixture or draft shape before treating it as review-ready",
+      "authority_note": "failure example does not trigger automation or runtime rejection",
+      "human_boundary_note": "human review decides whether the fixture is informative enough to retain",
+      "source_design_ref": ".nexus/canon/corpus/agent-motion-drafting-design-v0.md"
+    },
+    {
+      "trace_id": "human-review-required-example-v0",
+      "trace_type": "human_review_required",
+      "fixture_status": "simulated_review_only",
+      "simulated_condition": "all simulated votes pass but operator approval has not been recorded",
+      "simulated_reason": "human override and approval boundary remain required where applicable",
+      "expected_review_posture": "show the trace as incomplete pending human review",
+      "authority_note": "no autonomous ratification authority exists",
+      "human_boundary_note": "human intervention remains explicit and mandatory in the modeled flow",
+      "source_design_ref": ".nexus/canon/corpus/agent-voting-ratification-design-v0.md"
+    },
+    {
+      "trace_id": "noncanonical-voter-example-v0",
+      "trace_type": "noncanonical_voter_rejected",
+      "fixture_status": "simulated_review_only",
+      "simulated_condition": "vote trace uses a role-lens or execution label instead of a canonical governance voter identity",
+      "simulated_reason": "recent settled posture requires jai-proposer, jai-challenger, and jai-arbiter in canonical vote traces",
+      "expected_review_posture": "flag the example as noncanonical and keep it as a failure example only",
+      "authority_note": "failure example documents review posture only and does not enforce runtime rejection",
+      "human_boundary_note": "human review distinguishes schema drift from valid governance voting identity shape",
+      "source_design_ref": ".nexus/canon/corpus/motion-governance-schema-hygiene-v0.md"
+    },
+    {
+      "trace_id": "provider-dispatch-blocked-example-v0",
+      "trace_type": "provider_dispatch_blocked",
+      "fixture_status": "simulated_review_only",
+      "simulated_condition": "sandbox trace implies provider or model dispatch to produce or ratify a motion",
+      "simulated_reason": "sandbox boundary remains no-provider and no live-runtime by settled design",
+      "expected_review_posture": "keep the example as a blocked simulation and remove any live-dispatch implication from future fixtures",
+      "authority_note": "no provider/model dispatch or live agent runtime is granted",
+      "human_boundary_note": "human operator review remains responsible for preserving the no-provider sandbox boundary",
+      "source_design_ref": ".nexus/canon/corpus/agent-governance-sandbox-prototype-v0.md"
+    }
+  ]
+}

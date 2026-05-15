@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0218",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:36:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact review summary keeps the sandbox inspection surface readable as fixture guardrails and evidence examples grow."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The surface stays explicit about fixture-only, simulated, non-authoritative posture without adding controls or new routes."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This update remains static and read-only, with no enforcement, automation, provider dispatch, or authority expansion."
+    }
+  ]
+}

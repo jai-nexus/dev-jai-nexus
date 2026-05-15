@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0217",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "Illustrative gate-evidence records make readiness review easier to inspect without claiming live enforcement."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Mapping evidence examples to settled gate ids improves consistency while preserving canon as the source of truth."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam remains fixture-only, non-authoritative, and introduces no new runtime or authority behavior."
+    }
+  ]
+}

@@ -1,12 +1,500 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-15T18:41:20.495Z",
+  "generated_at": "2026-05-15T19:00:15.746Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 213,
+  "motion_count": 217,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0218",
+      "item": {
+        "motion_id": "motion-0218",
+        "title": "Sandbox Fixture Review Summary v0",
+        "subtitle": "add a compact read-only summary of sandbox guard and evidence posture",
+        "program": "q2-agent-governance-fixture-guardrails-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0217",
+        "motion_status": "ratified",
+        "decision_status": null,
+        "required_ok": null,
+        "eligible_to_vote": null,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:36:00.000Z",
+        "updated_at": "2026-05-15T19:00:15.746Z",
+        "queue_state": "unknown",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0218/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0218\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Sandbox Fixture Review Summary v0\"\nsubtitle: \"add a compact read-only summary of sandbox guard and evidence posture\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-guardrails-batch-v0\nbasis: motion-0217\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:36:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0218/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0218\ndecision: ratified\ndecided_at: \"2026-05-15T23:36:00.000Z\"\nrationale: \"A compact review summary makes sandbox fixture guardrails easier to inspect without turning the surface into a live governance console.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0218/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0218\npolicy:\n  fixture_posture: \"fixture-only / static / review-only\"\n  corpus_v2_status: \"not_open\"\n  numbering_reset: \"not_performed\"\n  historical_mutation: \"none\"\n  live_drafting: \"disabled\"\n  live_voting: \"disabled\"\n  runtime_execution: \"disabled\"\n  provider_model_calls: \"disabled\"\n  authority_expansion: \"none\"\n  automation: \"none\"\n  enforcement: \"none\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0218/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0218\",\n  \"status\": \"verified\",\n  \"checks\": [\n    \"validate_motion\",\n    \"validate_agency\",\n    \"typecheck\",\n    \"build_motion_snapshot_write\",\n    \"build_motion_snapshot_check\",\n    \"build\"\n  ],\n  \"notes\": [\n    \"operator review summary remains static, local, and read-only\",\n    \"no controls, runtime state, or authority expansion were introduced\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0218/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0218\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:36:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"A compact review summary keeps the sandbox inspection surface readable as fixture guardrails and evidence examples grow.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"The surface stays explicit about fixture-only, simulated, non-authoritative posture without adding controls or new routes.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This update remains static and read-only, with no enforcement, automation, provider dispatch, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0218/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Sandbox Fixture Review Summary v0\n\n- extend `portal/src/lib/controlPlane/agentGovernanceSandbox.ts` with guard, failure, and evidence summaries\n- extend `portal/src/app/operator/corpus/page.tsx` with compact read-only summary blocks\n- keep the existing `/operator/corpus` layout intact\n- preserve static/local, non-authoritative inspection posture"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0218/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Sandbox Fixture Review Summary v0\n\n## Purpose\n\nAdd a compact read-only summary of sandbox fixture guard, failure, and gate\nevidence posture to `/operator/corpus`.\n\n## Scope\n\n- extend the existing sandbox review block without redesigning the page\n- display fixture guard posture, fixture categories, failure trace examples, gate-evidence summary, and source paths\n- keep all copy explicit about fixture-only, simulated, non-authoritative review posture\n\n## Non-goals\n\n- no new route\n- no controls\n- no runtime state\n- no API or DB calls\n- no live governance behavior"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0218/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Sandbox Fixture Review Summary v0\n\n## Concerns reviewed\n\n- page changes must stay compact and preserve the existing static inspection layout\n- summary language must stay explicit about no authority and no enforcement\n- added sections must not imply live agents are operating\n\n## Resolution\n\nThe page is extended in place with compact read-only summary blocks and explicit\nfixture-only labels, source paths, and no-authority notes."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0218/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0218/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0218/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0218/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0218/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0218/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Sandbox Fixture Review Summary v0\n\n- extend `portal/src/lib/controlPlane/agentGovernanceSandbox.ts` with guard, failure, and evidence summaries\n- extend `portal/src/app/operator/corpus/page.tsx` with compact read-only summary blocks\n- keep the existing `/operator/corpus` layout intact\n- preserve static/local, non-authoritative inspection posture",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0218\nTitle: Sandbox Fixture Review Summary v0\nQueue state: unknown\nDecision status: null\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0218/motion.yaml\n2. .nexus/motions/motion-0218/decision.yaml\n3. .nexus/motions/motion-0218/policy.yaml\n4. .nexus/motions/motion-0218/verify.json\n5. .nexus/motions/motion-0218/vote.json\n6. .nexus/motions/motion-0218/execution.md\n7. .nexus/motions/motion-0218/proposal.md\n8. .nexus/motions/motion-0218/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0218\n\nCore artifact paths:\n- .nexus/motions/motion-0218/motion.yaml\n- .nexus/motions/motion-0218/decision.yaml\n- .nexus/motions/motion-0218/policy.yaml\n- .nexus/motions/motion-0218/verify.json\n- .nexus/motions/motion-0218/vote.json\n- .nexus/motions/motion-0218/execution.md\n- .nexus/motions/motion-0218/proposal.md\n- .nexus/motions/motion-0218/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0218",
+      "chat_search_href": "/operator/chats?q=motion-0218"
+    },
+    {
+      "motion_id": "motion-0217",
+      "item": {
+        "motion_id": "motion-0217",
+        "title": "Corpus V2 Gate Evidence Fixtures v0",
+        "subtitle": "add illustrative evidence records mapped to settled readiness gate ids",
+        "program": "q2-agent-governance-fixture-guardrails-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0216",
+        "motion_status": "ratified",
+        "decision_status": null,
+        "required_ok": null,
+        "eligible_to_vote": null,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:30:00.000Z",
+        "updated_at": "2026-05-15T19:00:14.971Z",
+        "queue_state": "unknown",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0217/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0217\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Gate Evidence Fixtures v0\"\nsubtitle: \"add illustrative evidence records mapped to settled readiness gate ids\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-guardrails-batch-v0\nbasis: motion-0216\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:30:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0217/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0217\ndecision: ratified\ndecided_at: \"2026-05-15T23:30:00.000Z\"\nrationale: \"Static gate-evidence fixtures make readiness review more inspectable without claiming live enforcement or agent operability.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0217/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0217\npolicy:\n  fixture_posture: \"fixture-only / static / review-only\"\n  corpus_v2_status: \"not_open\"\n  numbering_reset: \"not_performed\"\n  historical_mutation: \"none\"\n  live_drafting: \"disabled\"\n  live_voting: \"disabled\"\n  runtime_execution: \"disabled\"\n  provider_model_calls: \"disabled\"\n  authority_expansion: \"none\"\n  automation: \"none\"\n  enforcement: \"none\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0217/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0217\",\n  \"status\": \"verified\",\n  \"checks\": [\n    \"validate_motion\",\n    \"validate_agency\",\n    \"typecheck\",\n    \"build_motion_snapshot_write\",\n    \"build_motion_snapshot_check\",\n    \"build\"\n  ],\n  \"notes\": [\n    \"gate evidence fixtures remain illustrative and non-authoritative\",\n    \"no gate is machine-enforced or newly satisfied by fixture examples alone\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0217/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0217\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:30:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"Illustrative gate-evidence records make readiness review easier to inspect without claiming live enforcement.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Mapping evidence examples to settled gate ids improves consistency while preserving canon as the source of truth.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam remains fixture-only, non-authoritative, and introduces no new runtime or authority behavior.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0217/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Gate Evidence Fixtures v0\n\n- add `.nexus/fixtures/corpus-v2/agent-governance-sandbox/gate-evidence.v0.json`\n- extend the static sandbox model with gate-evidence summary data\n- surface a compact gate-evidence summary on `/operator/corpus`\n- keep evidence records illustrative only and aligned with settled gate ids"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0217/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Gate Evidence Fixtures v0\n\n## Purpose\n\nAdd static sample evidence records mapped to settled Corpus V2 readiness gate\nids.\n\n## Scope\n\n- add illustrative evidence records for drafting shape, canonical voting shape, human boundary shape, snapshot posture, and blocked authority posture\n- map the examples to existing gate ids from the static readiness model\n- keep all evidence examples fixture-only and non-enforcing\n\n## Non-goals\n\n- no machine enforcement\n- no claim that fixtures satisfy gates by themselves\n- no authority expansion\n- no Corpus V2 opening"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0217/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Gate Evidence Fixtures v0\n\n## Concerns reviewed\n\n- evidence examples could overclaim readiness if phrased too strongly\n- gate mappings must align with existing settled gate ids\n- illustrative evidence must not become implied enforcement\n\n## Resolution\n\nEach evidence record is limited to an illustrative status claim, includes\nlimitations, and preserves the existing no-enforcement posture."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0217/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0217/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0217/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0217/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0217/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0217/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Gate Evidence Fixtures v0\n\n- add `.nexus/fixtures/corpus-v2/agent-governance-sandbox/gate-evidence.v0.json`\n- extend the static sandbox model with gate-evidence summary data\n- surface a compact gate-evidence summary on `/operator/corpus`\n- keep evidence records illustrative only and aligned with settled gate ids",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0217\nTitle: Corpus V2 Gate Evidence Fixtures v0\nQueue state: unknown\nDecision status: null\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0217/motion.yaml\n2. .nexus/motions/motion-0217/decision.yaml\n3. .nexus/motions/motion-0217/policy.yaml\n4. .nexus/motions/motion-0217/verify.json\n5. .nexus/motions/motion-0217/vote.json\n6. .nexus/motions/motion-0217/execution.md\n7. .nexus/motions/motion-0217/proposal.md\n8. .nexus/motions/motion-0217/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0217\n\nCore artifact paths:\n- .nexus/motions/motion-0217/motion.yaml\n- .nexus/motions/motion-0217/decision.yaml\n- .nexus/motions/motion-0217/policy.yaml\n- .nexus/motions/motion-0217/verify.json\n- .nexus/motions/motion-0217/vote.json\n- .nexus/motions/motion-0217/execution.md\n- .nexus/motions/motion-0217/proposal.md\n- .nexus/motions/motion-0217/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0217",
+      "chat_search_href": "/operator/chats?q=motion-0217"
+    },
+    {
+      "motion_id": "motion-0216",
+      "item": {
+        "motion_id": "motion-0216",
+        "title": "Sandbox Failure Trace Fixtures v0",
+        "subtitle": "add simulated blocked and failure-mode traces for sandbox review",
+        "program": "q2-agent-governance-fixture-guardrails-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0215",
+        "motion_status": "ratified",
+        "decision_status": null,
+        "required_ok": null,
+        "eligible_to_vote": null,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:24:00.000Z",
+        "updated_at": "2026-05-15T19:00:14.176Z",
+        "queue_state": "unknown",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0216/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0216\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Sandbox Failure Trace Fixtures v0\"\nsubtitle: \"add simulated blocked and failure-mode traces for sandbox review\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-guardrails-batch-v0\nbasis: motion-0215\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:24:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0216/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0216\ndecision: ratified\ndecided_at: \"2026-05-15T23:24:00.000Z\"\nrationale: \"Simulated blocked and failure traces make the sandbox review layer more durable without becoming runtime policy or active governance.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0216/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0216\npolicy:\n  fixture_posture: \"fixture-only / static / review-only\"\n  corpus_v2_status: \"not_open\"\n  numbering_reset: \"not_performed\"\n  historical_mutation: \"none\"\n  live_drafting: \"disabled\"\n  live_voting: \"disabled\"\n  runtime_execution: \"disabled\"\n  provider_model_calls: \"disabled\"\n  authority_expansion: \"none\"\n  automation: \"none\"\n  enforcement: \"none\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0216/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0216\",\n  \"status\": \"verified\",\n  \"checks\": [\n    \"validate_motion\",\n    \"validate_agency\",\n    \"typecheck\",\n    \"build_motion_snapshot_write\",\n    \"build_motion_snapshot_check\",\n    \"build\"\n  ],\n  \"notes\": [\n    \"failure traces remain simulated and review-only\",\n    \"no live detection, rejection, or automated authority handling was introduced\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0216/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0216\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:24:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"Explicit failure-mode examples make sandbox review more realistic while staying simulated and non-authoritative.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Authority, validation, and human-review blockers are clearer when documented as fixture-only traces instead of implicit assumptions.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam adds no runtime rejection, provider dispatch, or enforcement behavior.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0216/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Sandbox Failure Trace Fixtures v0\n\n- add `.nexus/fixtures/corpus-v2/agent-governance-sandbox/failure-traces.v0.json`\n- extend the static sandbox model with failure trace summary data\n- render a compact failure-trace review block on `/operator/corpus`\n- preserve the existing page layout and no-authority posture"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0216/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Sandbox Failure Trace Fixtures v0\n\n## Purpose\n\nAdd explicit simulated blocked and failure-mode traces for sandbox review.\n\n## Scope\n\n- add failure traces for authority, validation, human review, noncanonical voter, and provider-dispatch blockers\n- label all examples as fixture-only, simulated, non-authoritative, and review-only\n- surface concise failure examples in the existing sandbox review area\n\n## Non-goals\n\n- no real failure detection\n- no runtime rejection\n- no live drafting or voting\n- no Corpus V2 opening"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0216/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Sandbox Failure Trace Fixtures v0\n\n## Concerns reviewed\n\n- failure examples could be misread as real policy enforcement\n- blocked authority examples must not look like actual command handling\n- noncanonical voter examples must remain illustrative only\n\n## Resolution\n\nEvery trace is labeled simulated, fixture-only, non-authoritative, and not\nruntime enforcement. The examples describe review posture only."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0216/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0216/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0216/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0216/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0216/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0216/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Sandbox Failure Trace Fixtures v0\n\n- add `.nexus/fixtures/corpus-v2/agent-governance-sandbox/failure-traces.v0.json`\n- extend the static sandbox model with failure trace summary data\n- render a compact failure-trace review block on `/operator/corpus`\n- preserve the existing page layout and no-authority posture",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0216\nTitle: Sandbox Failure Trace Fixtures v0\nQueue state: unknown\nDecision status: null\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0216/motion.yaml\n2. .nexus/motions/motion-0216/decision.yaml\n3. .nexus/motions/motion-0216/policy.yaml\n4. .nexus/motions/motion-0216/verify.json\n5. .nexus/motions/motion-0216/vote.json\n6. .nexus/motions/motion-0216/execution.md\n7. .nexus/motions/motion-0216/proposal.md\n8. .nexus/motions/motion-0216/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0216\n\nCore artifact paths:\n- .nexus/motions/motion-0216/motion.yaml\n- .nexus/motions/motion-0216/decision.yaml\n- .nexus/motions/motion-0216/policy.yaml\n- .nexus/motions/motion-0216/verify.json\n- .nexus/motions/motion-0216/vote.json\n- .nexus/motions/motion-0216/execution.md\n- .nexus/motions/motion-0216/proposal.md\n- .nexus/motions/motion-0216/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0216",
+      "chat_search_href": "/operator/chats?q=motion-0216"
+    },
+    {
+      "motion_id": "motion-0215",
+      "item": {
+        "motion_id": "motion-0215",
+        "title": "Sandbox Fixture Schema Guards v0",
+        "subtitle": "document lightweight fixture-only schema guards for sandbox review artifacts",
+        "program": "q2-agent-governance-fixture-guardrails-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0214",
+        "motion_status": "ratified",
+        "decision_status": null,
+        "required_ok": null,
+        "eligible_to_vote": null,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:18:00.000Z",
+        "updated_at": "2026-05-15T19:00:13.385Z",
+        "queue_state": "unknown",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0215/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0215\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Sandbox Fixture Schema Guards v0\"\nsubtitle: \"document lightweight fixture-only schema guards for sandbox review artifacts\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-guardrails-batch-v0\nbasis: motion-0214\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:18:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0215/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0215\ndecision: ratified\ndecided_at: \"2026-05-15T23:18:00.000Z\"\nrationale: \"Lightweight fixture schema guards make sandbox review artifacts more durable without introducing runtime enforcement or live authority.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0215/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0215\npolicy:\n  fixture_posture: \"fixture-only / static / review-only\"\n  corpus_v2_status: \"not_open\"\n  numbering_reset: \"not_performed\"\n  historical_mutation: \"none\"\n  live_drafting: \"disabled\"\n  live_voting: \"disabled\"\n  runtime_execution: \"disabled\"\n  provider_model_calls: \"disabled\"\n  authority_expansion: \"none\"\n  automation: \"none\"\n  enforcement: \"none\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0215/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0215\",\n  \"status\": \"verified\",\n  \"checks\": [\n    \"validate_motion\",\n    \"validate_agency\",\n    \"typecheck\",\n    \"build_motion_snapshot_write\",\n    \"build_motion_snapshot_check\",\n    \"build\"\n  ],\n  \"notes\": [\n    \"schema guards are documented as review-only and not runtime enforcement\",\n    \"no live drafting, voting, ratification, provider dispatch, or authority expansion was introduced\"\n  ]\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0215/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0215\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:18:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"Documented fixture guards make simulated sandbox artifacts easier to inspect consistently without implying live governance.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"The guard seam preserves canonical voter identity guidance, authority labels, and human review notes while staying review-only.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This motion adds no runtime enforcement, automation, provider dispatch, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0215/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Sandbox Fixture Schema Guards v0\n\n- add `.nexus/canon/corpus/sandbox-fixture-schema-guards-v0.md`\n- extend static sandbox UI model with guard posture, categories, labels, and notes\n- surface the guard posture on `/operator/corpus` without changing page behavior\n- keep the entire seam fixture-only, simulated, and review-only"
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0215/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Sandbox Fixture Schema Guards v0\n\n## Purpose\n\nAdd lightweight schema and review guardrails for fixture-only sandbox JSON.\n\n## Scope\n\n- document required fixture fields and labels\n- clarify canonical voter identity expectations for sandbox voting traces\n- preserve explicit human review and intervention fields\n- keep all guards static, local, and review-only\n\n## Non-goals\n\n- no runtime enforcement\n- no Corpus V2 opening\n- no numbering reset\n- no live drafting, voting, or ratification\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0215/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Sandbox Fixture Schema Guards v0\n\n## Concerns reviewed\n\n- fixture guards could be mistaken for runtime policy if the language is vague\n- review labels must stay explicit so sandbox examples do not look active\n- canonical voter identity guidance must not be confused with live voting enablement\n\n## Resolution\n\nThe guard seam is documentation-only, explicitly non-enforcing, and preserves\nthe existing no-authority sandbox boundary."
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0215/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0215/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0215/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0215/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0215/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0215/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Sandbox Fixture Schema Guards v0\n\n- add `.nexus/canon/corpus/sandbox-fixture-schema-guards-v0.md`\n- extend static sandbox UI model with guard posture, categories, labels, and notes\n- surface the guard posture on `/operator/corpus` without changing page behavior\n- keep the entire seam fixture-only, simulated, and review-only",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0215\nTitle: Sandbox Fixture Schema Guards v0\nQueue state: unknown\nDecision status: null\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0215/motion.yaml\n2. .nexus/motions/motion-0215/decision.yaml\n3. .nexus/motions/motion-0215/policy.yaml\n4. .nexus/motions/motion-0215/verify.json\n5. .nexus/motions/motion-0215/vote.json\n6. .nexus/motions/motion-0215/execution.md\n7. .nexus/motions/motion-0215/proposal.md\n8. .nexus/motions/motion-0215/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0215\n\nCore artifact paths:\n- .nexus/motions/motion-0215/motion.yaml\n- .nexus/motions/motion-0215/decision.yaml\n- .nexus/motions/motion-0215/policy.yaml\n- .nexus/motions/motion-0215/verify.json\n- .nexus/motions/motion-0215/vote.json\n- .nexus/motions/motion-0215/execution.md\n- .nexus/motions/motion-0215/proposal.md\n- .nexus/motions/motion-0215/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0215",
+      "chat_search_href": "/operator/chats?q=motion-0215"
+    },
     {
       "motion_id": "motion-0214",
       "item": {
@@ -23,7 +511,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T23:06:00.000Z",
-        "updated_at": "2026-05-15T18:41:20.495Z",
+        "updated_at": "2026-05-15T18:53:04.268Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -145,7 +633,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T23:00:00.000Z",
-        "updated_at": "2026-05-15T18:41:19.737Z",
+        "updated_at": "2026-05-15T18:53:04.258Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -267,7 +755,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:54:00.000Z",
-        "updated_at": "2026-05-15T18:41:18.990Z",
+        "updated_at": "2026-05-15T18:53:04.248Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -389,7 +877,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:48:00.000Z",
-        "updated_at": "2026-05-15T18:41:18.220Z",
+        "updated_at": "2026-05-15T18:53:04.239Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []

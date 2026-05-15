@@ -1,0 +1,16 @@
+{
+  "motion_id": "motion-0218",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "operator review summary remains static, local, and read-only",
+    "no controls, runtime state, or authority expansion were introduced"
+  ]
+}

@@ -1,0 +1,4 @@
+motion_id: motion-0216
+decision: ratified
+decided_at: "2026-05-15T23:24:00.000Z"
+rationale: "Simulated blocked and failure traces make the sandbox review layer more durable without becoming runtime policy or active governance."

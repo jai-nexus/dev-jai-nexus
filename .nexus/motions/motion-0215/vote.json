@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0215",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:18:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "Documented fixture guards make simulated sandbox artifacts easier to inspect consistently without implying live governance."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The guard seam preserves canonical voter identity guidance, authority labels, and human review notes while staying review-only."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This motion adds no runtime enforcement, automation, provider dispatch, or authority expansion."
+    }
+  ]
+}
