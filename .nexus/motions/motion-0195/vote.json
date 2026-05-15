@@ -5,17 +5,17 @@
   "result": "PASS",
   "votes": [
     {
-      "voter": "ARCHITECT",
+      "voter": "jai-proposer",
       "vote": "yes",
       "reason": "The consolidation cleanly preserves dev-jai-nexus as coordinator/reference surface and avoids absorbing repo-local canon."
     },
     {
-      "voter": "VERIFIER",
+      "voter": "jai-challenger",
       "vote": "yes",
       "reason": "Validation passed and unresolved/global seams remain explicitly future-routed instead of being overclaimed."
     },
     {
-      "voter": "OPERATOR",
+      "voter": "jai-arbiter",
       "vote": "yes",
       "reason": "The control-plane canon now reflects the settled ownership sweep while preserving the no-runtime, no-cross-repo-mutation boundary."
     }
