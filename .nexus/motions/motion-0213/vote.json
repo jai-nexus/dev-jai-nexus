@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0213",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:00:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The trace fixture makes future canonical voting posture concrete while staying simulated, review-only, and non-authoritative."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Including evidence references, human intervention, and a blocked example improves inspection value without implying live workflow behavior."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam adds only a static simulated trace and introduces no live voting, autonomous ratification, runtime execution, or authority expansion."
+    }
+  ]
+}

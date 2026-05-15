@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { getAgentGovernanceSandboxModel } from "@/lib/controlPlane/agentGovernanceSandbox";
 import {
   corpusReadinessGates,
   getCorpusReadinessGateCounts,
@@ -23,6 +24,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: string }) 
 
 export default function OperatorCorpusPage() {
   const counts = getCorpusReadinessGateCounts();
+  const sandbox = getAgentGovernanceSandboxModel();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -110,6 +112,67 @@ export default function OperatorCorpusPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-lg font-medium text-gray-100">Sandbox Trace Review</h2>
+            <Badge tone="border-amber-800 bg-amber-950 text-amber-200">Fixture-only</Badge>
+            <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Simulated</Badge>
+            <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not canon</Badge>
+            <Badge tone="border-rose-800 bg-rose-950 text-rose-200">No authority</Badge>
+          </div>
+          <p className="mt-3 text-sm text-gray-400">{sandbox.note}</p>
+          <div className="mt-3 font-mono text-xs text-gray-400">{sandbox.canon_ref}</div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Sample draft trace</div>
+              <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.motion_draft.fixture_id}</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sandbox.fixtures.motion_draft.labels.map((label) => (
+                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{sandbox.fixtures.motion_draft.summary}</p>
+              <div className="mt-3 font-mono text-xs text-gray-400">
+                {sandbox.fixtures.motion_draft.source_path}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Sample vote/ratification trace</div>
+              <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.vote_ratification.fixture_id}</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sandbox.fixtures.vote_ratification.labels.map((label) => (
+                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{sandbox.fixtures.vote_ratification.summary}</p>
+              <div className="mt-3 font-mono text-xs text-gray-400">
+                {sandbox.fixtures.vote_ratification.source_path}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Validation / evidence summary</div>
+              <ul className="mt-3 space-y-1 text-sm text-gray-300">
+                {sandbox.validation_summary.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Human boundary</div>
+              <p className="mt-3 text-sm text-gray-300">{sandbox.human_boundary_note}</p>
+            </div>
           </div>
         </section>
       </div>

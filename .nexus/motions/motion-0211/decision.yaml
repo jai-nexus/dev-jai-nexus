@@ -1,0 +1,13 @@
+motion_id: motion-0211
+decision_id: decision-motion-0211
+decided_at: "2026-05-15T22:48:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:48:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a fixture-only agent-governance sandbox prototype seam only."
+rationale:
+  - "Future sandbox traces need a clear prototype definition before fixture examples are added."
+  - "The prototype clarifies categories and review posture without implying live agents."
+consequences:
+  - "Fixture traces have a clearer framing layer."
+  - "No runtime, provider, or authority expansion occurs."

@@ -1,0 +1,61 @@
+{
+  "fixture_id": "corpus-v2-motion-draft-fixture-v0",
+  "fixture_type": "motion_draft_trace",
+  "fixture_status": "simulated_review_only",
+  "fixture_labels": [
+    "Fixture-only",
+    "Simulated",
+    "Not canon",
+    "Review-only",
+    "No authority",
+    "Corpus V2 not open"
+  ],
+  "corpus_id": "corpus-v2-placeholder",
+  "draft_motion_id": "motion-0001-placeholder",
+  "draft_state": "ready_for_review",
+  "proposer_identity": "jai-proposer",
+  "role_lens_contributors": [
+    "jai-architect",
+    "jai-verifier",
+    "jai-operator"
+  ],
+  "target_repo": "dev-jai-nexus",
+  "target_domain": "Operator Control Plane",
+  "problem_statement": "Demonstrate the future shape of an internally drafted Corpus V2 motion package without creating a live agent drafting path.",
+  "proposed_scope": [
+    "show deterministic motion package expectations",
+    "show canonical proposer identity",
+    "show role/lens contributions separated from governance voting",
+    "show explicit human review requirement"
+  ],
+  "non_goals": [
+    "not a live draft",
+    "not executable",
+    "not canon",
+    "no branch write",
+    "no PR creation",
+    "no merge authority"
+  ],
+  "required_files": [
+    "motion.yaml",
+    "proposal.md",
+    "challenge.md",
+    "execution.md",
+    "vote.json",
+    "validation evidence"
+  ],
+  "validation_expectations": [
+    "schema-valid motion package",
+    "deterministic required files present",
+    "human review before any future vote path"
+  ],
+  "human_review_required": true,
+  "authority_boundary": [
+    "no provider/model dispatch",
+    "no live runtime execution",
+    "no branch write",
+    "no PR creation",
+    "no merge authority",
+    "Corpus V2 not open"
+  ]
+}

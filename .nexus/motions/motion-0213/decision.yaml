@@ -1,0 +1,13 @@
+motion_id: motion-0213
+decision_id: decision-motion-0213
+decided_at: "2026-05-15T23:00:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:00:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a static vote and ratification trace fixture seam only."
+rationale:
+  - "A concrete trace fixture makes future vote and ratification design easier to inspect."
+  - "The fixture remains simulated, review-only, and non-authoritative."
+consequences:
+  - "Canonical vote shape and human-boundary review become easier to inspect."
+  - "No live voting, autonomous ratification, or authority expansion occurs."

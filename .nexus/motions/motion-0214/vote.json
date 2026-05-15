@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0214",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:06:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact fixture-review section makes sandbox traces easier to inspect without implying that live agents are drafting, voting, or ratifying anything."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicit fixture-only labels, source paths, and human-boundary notes keep the surface useful without becoming a live governance console."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam remains read-only and introduces no controls, runtime behavior, provider dispatch, or authority expansion."
+    }
+  ]
+}

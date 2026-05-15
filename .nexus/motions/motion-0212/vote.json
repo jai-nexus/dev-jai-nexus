@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0212",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:54:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The draft fixture gives the future drafting design a concrete review artifact while remaining placeholder-only and non-executable."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The fixture keeps proposer identity separate from role/lens contributors and preserves explicit human review and no-authority language."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam adds only a static fixture and no live draft path, runtime execution, or write authority."
+    }
+  ]
+}

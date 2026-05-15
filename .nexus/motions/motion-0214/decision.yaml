@@ -1,0 +1,13 @@
+motion_id: motion-0214
+decision_id: decision-motion-0214
+decided_at: "2026-05-15T23:06:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T23:06:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a compact sandbox trace review surface seam only."
+rationale:
+  - "Operators need one compact review block for sandbox fixtures without implying live agent activity."
+  - "The review section keeps fixture traces inspectable while staying clearly non-canon and non-authoritative."
+consequences:
+  - "Fixture review posture becomes more visible."
+  - "No controls, runtime behavior, or authority expansion are introduced."

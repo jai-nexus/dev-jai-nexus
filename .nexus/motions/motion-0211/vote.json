@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0211",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:48:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The sandbox prototype gives future fixture traces a clear review-only frame without implying live agent governance."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicit trace categories and non-canon posture reduce ambiguity around what sandbox materials are allowed to show."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam is prototype canon only and introduces no provider dispatch, runtime execution, or authority expansion."
+    }
+  ]
+}
