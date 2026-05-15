@@ -1,0 +1,4 @@
+motion_id: motion-0219
+decision: ratified
+decided_at: "2026-05-15T23:42:00.000Z"
+rationale: "A small static validator makes sandbox fixtures more durable without creating runtime enforcement or authority expansion."

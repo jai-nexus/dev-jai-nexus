@@ -128,6 +128,40 @@ export default function OperatorCorpusPage() {
 
           <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
             <div className="flex flex-wrap items-center gap-2">
+              <div className="text-sm font-semibold text-gray-100">Validator posture</div>
+              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Static/manual validation</Badge>
+              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Review-only</Badge>
+              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">No runtime enforcement</Badge>
+              <Badge tone="border-rose-800 bg-rose-950 text-rose-200">No authority</Badge>
+            </div>
+            <p className="mt-3 text-sm text-gray-300">{sandbox.validator.note}</p>
+            <div className="mt-3 font-mono text-xs text-gray-400">{sandbox.validator.command}</div>
+            <div className="mt-3 grid gap-4 xl:grid-cols-2">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Checked categories</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {sandbox.validator.checked_categories.map((category) => (
+                    <li key={category}>- {category}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Source files</div>
+                <ul className="mt-2 space-y-1 font-mono text-xs text-gray-400">
+                  {sandbox.validator.source_paths.map((sourcePath) => (
+                    <li key={sourcePath}>{sourcePath}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="mt-3 grid gap-2 font-mono text-xs text-gray-400 xl:grid-cols-2">
+              <div>{sandbox.validator.evidence_ref}</div>
+              <div>{sandbox.validator.playbook_ref}</div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="text-sm font-semibold text-gray-100">Fixture guard posture</div>
               <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Guardrails only</Badge>
               <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not runtime enforcement</Badge>

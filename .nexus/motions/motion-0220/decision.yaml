@@ -1,0 +1,4 @@
+motion_id: motion-0220
+decision: ratified
+decided_at: "2026-05-15T23:48:00.000Z"
+rationale: "An evidence record keeps the validator useful for manual review without allowing PASS to be misread as operability or authority."

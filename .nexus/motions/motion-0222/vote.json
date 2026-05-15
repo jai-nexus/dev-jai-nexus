@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0222",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T00:00:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A manual drift-response playbook gives CONTROL_THREAD a consistent path for sandbox fixture issues without implying automation."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicit drift classes and response steps reduce ambiguity while preserving fixture-only and no-authority posture."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This playbook stays human-gated and introduces no runtime enforcement, automation, or authority expansion."
+    }
+  ]
+}

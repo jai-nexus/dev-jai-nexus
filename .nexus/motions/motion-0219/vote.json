@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0219",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:42:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A small static validator improves sandbox fixture durability while keeping validation manual and non-authoritative."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Checking fixture shape, canonical voter identities, labels, and human-boundary fields reduces drift without introducing runtime policy."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This validator remains local and static, with no scheduler, automation, provider dispatch, or authority expansion."
+    }
+  ]
+}

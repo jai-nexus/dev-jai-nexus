@@ -1,0 +1,14 @@
+motion_id: motion-0222
+policy:
+  validation_posture: "static/manual"
+  fixture_posture: "fixture-only / static / read-only"
+  corpus_v2_status: "not_open"
+  numbering_reset: "not_performed"
+  historical_mutation: "none"
+  live_drafting: "disabled"
+  live_voting: "disabled"
+  runtime_execution: "disabled"
+  provider_model_calls: "disabled"
+  authority_expansion: "none"
+  automation: "none"
+  runtime_enforcement: "none"
