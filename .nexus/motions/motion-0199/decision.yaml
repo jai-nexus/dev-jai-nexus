@@ -1,0 +1,13 @@
+motion_id: motion-0199
+decision_id: decision-motion-0199
+decided_at: "2026-05-15T20:06:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T20:06:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a read-only corpus schema-hygiene and compatibility clarification seam only."
+rationale:
+  - "Corpus V1 schema-era drift is now documented without rewriting historical governance outcomes."
+  - "The canon clarifies the distinction between motion role/lens assignment fields and modern canonical governance voter identities."
+consequences:
+  - "Corpus V2 inherits clearer schema guardrails for future governance behavior."
+  - "Corpus V1 remains historical canon with explicit compatibility posture and hygiene-fix boundaries."
