@@ -1,0 +1,13 @@
+motion_id: motion-0200
+decision_id: decision-motion-0200
+decided_at: "2026-05-15T21:18:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T21:18:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a docs-only Corpus V1 archive and index seam preserving Corpus V1 as searchable historical canon."
+rationale:
+  - "Corpus V1 historical phases, schema hygiene, and post-motion maintenance are now indexed without rewriting historical governance outcomes."
+  - "The archive artifact improves search, handoff, and audit posture before any future Corpus V2 opening work advances."
+consequences:
+  - "Corpus V1 remains preserved, searchable, historical, and immutable except through explicit hygiene fixes."
+  - "Corpus V2 readiness work inherits a cleaner archive boundary without opening Corpus V2 or resetting numbering."
