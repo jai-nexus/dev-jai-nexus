@@ -102,3 +102,9 @@ Likely canonical ownership by future repo/domain:
 Each repo/domain may own its own `.nexus` canon according to domain
 responsibility. `dev-jai-nexus` may route, reference, and coordinate, but
 should not absorb canon that belongs in another first-class domain repo.
+
+## Consolidation note
+
+See [cross-repo-ownership-sweep-consolidation.md](./cross-repo-ownership-sweep-consolidation.md)
+for the Q2M5 ownership-sweep consolidation that updates this routing layer with
+settled repo-local boundaries.
