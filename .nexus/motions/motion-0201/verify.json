@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0201",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T21:34:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The readiness checklist makes Corpus V2 gates inspectable without opening Corpus V2, resetting numbering, or granting live drafting, voting, or execution authority."
+  ],
+  "summary": {
+    "before_motion_count": 199,
+    "after_motion_count": 200,
+    "latest_bundled_motion": "motion-0201"
+  }
+}

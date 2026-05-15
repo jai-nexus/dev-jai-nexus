@@ -1,12 +1,134 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-15T17:06:50.264Z",
+  "generated_at": "2026-05-15T17:17:34.877Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 199,
+  "motion_count": 200,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0201",
+      "item": {
+        "motion_id": "motion-0201",
+        "title": "Corpus V2 Readiness Checklist v0",
+        "subtitle": "make Corpus V2 readiness gates visible and inspectable before any opening work advances",
+        "program": "q2-corpus-v2-readiness-checklist-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0200",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T21:34:00.000Z",
+        "updated_at": "2026-05-15T17:17:34.877Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0201/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0201\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Readiness Checklist v0\"\nsubtitle: \"make Corpus V2 readiness gates visible and inspectable before any opening work advances\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-checklist-v0\nbasis: motion-0200\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T21:34:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0201/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0201\ndecision_id: decision-motion-0201\ndecided_at: \"2026-05-15T21:34:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T21:34:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a docs-only Corpus V2 readiness checklist and tracker seam.\"\nrationale:\n  - \"Corpus V2 readiness gates are now visible and inspectable without overstating live operability.\"\n  - \"The checklist improves inspection posture before any future Corpus V2 opening work advances.\"\nconsequences:\n  - \"Corpus V2 remains gated and unopened while readiness evidence and gaps are made explicit.\"\n  - \"Corpus V1 preservation, numbering-reset policy, and authority boundaries remain intact.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0201/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0201\npolicy_id: policy-motion-0201\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T21:34:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"docs/canon only\"\n  - \"no historical outcome rewrites\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no live voting claim\"\n  - \"no provider/model call\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0201/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0201\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T21:34:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The readiness checklist makes Corpus V2 gates inspectable without opening Corpus V2, resetting numbering, or granting live drafting, voting, or execution authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 199,\n    \"after_motion_count\": 200,\n    \"latest_bundled_motion\": \"motion-0201\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0201/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0201\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T21:34:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The checklist turns the Corpus V2 gate definition into an inspectable tracker without overstating readiness or changing any historical governance outcomes.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Each gate now distinguishes canon support, missing implementation, and authority boundaries, which reduces ambiguity before any future opening work.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This is a docs-only readiness seam that preserves Corpus V1 history, keeps Corpus V2 gated, and introduces no execution, write, or persistence authority.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0201/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Readiness Checklist v0\n\n**Motion:** motion-0201\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one readiness-checklist canon artifact, one motion package, and one\nbundled snapshot refresh. No UI, runtime behavior, persistence, or authority\nchange.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- mutate historical outcomes, statuses, timestamps, results, or vote values\n- rewrite older motion packages\n- add live agent drafting, voting, or ratification enablement\n- add provider/model calls\n- add backend runtime execution\n- add branch-write, PR, merge, scheduler, or automation authority\n- add API or DB mutation\n- add hidden persistence\n- create a passalong index\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-15T21:34:00.000Z`\n\n### 2. Implementation shape\n\n- inspected existing corpus canon for model, closeout, readiness, schema\n  hygiene, and archive posture\n- added a Corpus V2 readiness checklist and tracker artifact\n- represented readiness gates from `motion-0197` with explicit statuses\n- recorded current evidence, missing requirements before V2, and authority\n  notes for each gate\n- preserved Corpus V1 immutability posture and Corpus V2 gating posture\n- refreshed the bundled motion snapshot through `motion-0201`\n\n### 3. Files changed\n\n- `.nexus/canon/corpus/corpus-v2-readiness-checklist.md`\n- `.nexus/motions/motion-0201/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\n### 4. Gate status model\n\nThe new checklist defines:\n\n- `satisfied_by_canon`\n- `partially_satisfied`\n- `unmet_future`\n- `blocked_by_authority`\n- `deferred_until_v2_opening`\n\n### 5. Readiness posture\n\nThe checklist records that:\n\n- canonical governance voter identity shape exists, but live voting does not\n- Corpus V1 historical preservation and numbering-reset policy are already\n  documented by canon\n- deterministic packaging and snapshot gates are partially present\n- live drafting, live ratification, and runtime-capable workflow execution\n  remain future work\n\n### 6. Relationship to Corpus V1 archive/index\n\nThe checklist depends on the Corpus V1 archive and index seam:\n\n- Corpus V1 remains preserved and searchable\n- Corpus V1 remains immutable except through explicit hygiene fixes\n- Corpus V2 readiness work does not reopen or rewrite Corpus V1\n\n### 7. Authority posture preserved\n\n- no provider/model calls\n- no backend runtime execution\n- no branch-write, PR, or merge authority\n- no scheduler or automation\n- no API or DB mutation\n- no hidden persistence\n- no passalong index\n- no live voting enablement\n- no Corpus V2 opening\n\n### 8. Validation commands\n\n```text\nnode portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0201/motion.yaml\nnode portal/scripts/validate-agency.mjs --domain dev.jai.nexus --repo dev-jai-nexus\npnpm -C portal typecheck\nnode portal/scripts/build-motion-snapshot.mjs --write\nnode portal/scripts/build-motion-snapshot.mjs --check\npnpm -C portal build\n```\n\n### 9. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `199`\n  - latest bundled motion: `motion-0200`\n- bundled snapshot after refresh:\n  - motion count: `200`\n  - latest bundled motion: `motion-0201`\n\n### 10. Acceptance checks\n\n- acceptance-01 pass: Corpus V2 readiness checklist artifact exists\n- acceptance-02 pass: readiness gates from `motion-0197` are represented\n- acceptance-03 pass: each gate uses the requested status model\n- acceptance-04 pass: each gate records evidence, missing work, and authority\n  note\n- acceptance-05 pass: relationship to Corpus V1 archive/index is explicit\n- acceptance-06 pass: Corpus V2 remains gated and unopened\n- acceptance-07 pass: numbering is not reset\n- acceptance-08 pass: no runtime or authority expansion was introduced\n\n### 11. Ratification closeout\n\nMotion-0201 is ratified as a docs-only Corpus V2 readiness checklist and\ntracker seam."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0201/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Readiness Checklist v0\n\n## Purpose\n\nCreate a read-only Corpus V2 readiness checklist and tracker before any Corpus\nV2 opening work advances.\n\n## Scope\n\n- inspect existing corpus canon for model, closeout, readiness, schema hygiene,\n  and archive posture\n- add `corpus-v2-readiness-checklist.md` as an inspectable tracker\n- represent readiness gates from `motion-0197` with explicit statuses\n- record current evidence, missing work before V2, and authority notes\n- add a docs/canon-only motion package for `motion-0201`\n- refresh the bundled motion snapshot through `motion-0201`\n\n## Non-goals\n\n- no opening of Corpus V2\n- no numbering reset\n- no mutation of historical outcomes, statuses, timestamps, or vote values\n- no rewriting of older motion packages\n- no live agent drafting, voting, or ratification enablement\n- no runtime execution, provider/model calls, branch-write, PR, merge,\n  scheduler, automation, API/DB mutation, or hidden persistence authority"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0201/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Readiness Checklist v0\n\n## Risks\n\n- a checklist could be misread as evidence that Corpus V2 is nearly open when\n  several gates remain explicitly unmet\n- canon-only gate satisfaction could be conflated with runtime operability\n- authority-blocked capabilities could look like implementation gaps instead of\n  intentional governance boundaries\n\n## Mitigations\n\n- define a narrow status model that distinguishes canon satisfaction from live\n  operability\n- list current evidence, missing requirements, and authority notes for every\n  gate\n- state explicitly that Corpus V2 remains gated, unopened, and unreset\n- keep the seam docs-only and canon-only with no runtime or authority change"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0201/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0201/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0201/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0201/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0201/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0201/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Readiness Checklist v0\n\n**Motion:** motion-0201\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one readiness-checklist canon artifact, one motion package, and one\nbundled snapshot refresh. No UI, runtime behavior, persistence, or authority\nchange.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- mutate historical outcomes, statuses, timestamps, results, or vote values\n- rewrite older motion packages\n- add live agent drafting, voting, or ratification enablement\n- add provider/model calls\n- add backend runtime execution\n- add branch-write, PR, merge, scheduler, or automation authority\n- add API or DB mutation\n- add hidden persistence\n- create a passalong index\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\nShared UTC timestamp used across ratification artifacts:\n\n- `2026-05-15T21:34:00.000Z`\n\n### 2. Implementation shape\n\n- inspected existing corpus canon for model, closeout, readiness, schema\n  hygiene, and archive posture\n- added a Corpus V2 readiness checklist and tracker artifact\n- represented readiness gates from `motion-0197` with explicit statuses\n- recorded current evidence, missing requirements before V2, and authority\n  notes for each gate\n- preserved Corpus V1 immutability posture and Corpus V2 gating posture\n- refreshed the bundled motion snapshot through `motion-0201`\n\n### 3. Files changed\n\n- `.nexus/canon/corpus/corpus-v2-readiness-checklist.md`\n- `.nexus/motions/motion-0201/**`\n- `portal/src/lib/motion/motionSnapshot.json`\n\n#\n...(truncated)...",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0201\nTitle: Corpus V2 Readiness Checklist v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0201/motion.yaml\n2. .nexus/motions/motion-0201/decision.yaml\n3. .nexus/motions/motion-0201/policy.yaml\n4. .nexus/motions/motion-0201/verify.json\n5. .nexus/motions/motion-0201/vote.json\n6. .nexus/motions/motion-0201/execution.md\n7. .nexus/motions/motion-0201/proposal.md\n8. .nexus/motions/motion-0201/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0201\n\nCore artifact paths:\n- .nexus/motions/motion-0201/motion.yaml\n- .nexus/motions/motion-0201/decision.yaml\n- .nexus/motions/motion-0201/policy.yaml\n- .nexus/motions/motion-0201/verify.json\n- .nexus/motions/motion-0201/vote.json\n- .nexus/motions/motion-0201/execution.md\n- .nexus/motions/motion-0201/proposal.md\n- .nexus/motions/motion-0201/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0201",
+      "chat_search_href": "/operator/chats?q=motion-0201"
+    },
     {
       "motion_id": "motion-0200",
       "item": {
@@ -23,7 +145,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:18:00.000Z",
-        "updated_at": "2026-05-15T17:06:50.264Z",
+        "updated_at": "2026-05-15T17:14:51.177Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
