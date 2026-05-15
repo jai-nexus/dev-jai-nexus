@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0199",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T20:06:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The schema-hygiene canon documents historical variants and PR #151 without changing historical results or enabling live voting."
+  ],
+  "summary": {
+    "before_motion_count": 197,
+    "after_motion_count": 198,
+    "latest_bundled_motion": "motion-0199"
+  }
+}

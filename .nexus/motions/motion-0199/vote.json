@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0199",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T20:06:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The hygiene canon captures Corpus V1 schema eras clearly and prevents recent voter-field cleanup from being mistaken for a wholesale historical rewrite."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The distinction between role/lens assignments, governance voter identities, and human intervention is now explicit, which reduces Corpus V2 inheritance risk."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "The seam is read-only and canon-only and does not open Corpus V2, reset numbering, or add runtime or write authority."
+    }
+  ]
+}
