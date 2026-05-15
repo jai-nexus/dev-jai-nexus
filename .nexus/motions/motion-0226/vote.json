@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0226",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T04:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A manual checklist makes draft fixture review more consistent while preserving the prototype's static, non-authoritative posture."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The checklist clarifies scope, contributor boundaries, and no-provider claims without becoming runtime enforcement."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam improves human review quality only and does not alter Corpus V2 status, numbering, or authority."
+    }
+  ]
+}

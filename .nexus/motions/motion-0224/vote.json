@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0224",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T02:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A static local model gives the operator surface a deterministic view of the simulated draft package without live parsing or generation."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The model stays read-only, references the source fixture path, and does not imply canon or agent activity."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam improves inspection only and preserves no-authority, no-provider posture."
+    }
+  ]
+}

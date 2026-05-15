@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0223",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T01:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A review-only boundary makes the simulated draft seam inspectable without implying provider usage or live agent drafting."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The artifact clearly separates allowed inspection behavior from prohibited runtime, authority, and promotion behaviors."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam preserves Corpus V2 gating, human review, and no-authority posture."
+    }
+  ]
+}

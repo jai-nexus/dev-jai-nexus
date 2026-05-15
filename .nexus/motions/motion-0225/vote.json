@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0225",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T03:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact read-only draft review block makes the simulated draft easier to inspect without adding live behavior or controls."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The surface preserves clear labels around simulated, not canon, and no-authority posture while exposing validation expectations."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a visibility-only seam on the existing page and does not alter authority, numbering, or Corpus V2 status."
+    }
+  ]
+}

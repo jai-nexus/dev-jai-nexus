@@ -5,6 +5,7 @@ import {
   corpusReadinessGates,
   getCorpusReadinessGateCounts,
 } from "@/lib/controlPlane/corpusReadinessGates";
+import { getDraftReviewPrototypeModel } from "@/lib/controlPlane/draftReviewPrototype";
 
 function toneForStatus(status: string): string {
   if (status === "satisfied_by_canon") return "border-emerald-800 bg-emerald-950 text-emerald-200";
@@ -25,6 +26,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: string }) 
 export default function OperatorCorpusPage() {
   const counts = getCorpusReadinessGateCounts();
   const sandbox = getAgentGovernanceSandboxModel();
+  const draftReview = getDraftReviewPrototypeModel();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -287,6 +289,103 @@ export default function OperatorCorpusPage() {
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
               <div className="text-sm font-semibold text-gray-100">Human boundary</div>
               <p className="mt-3 text-sm text-gray-300">{sandbox.human_boundary_note}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-sm font-semibold text-gray-100">Draft review prototype</div>
+              {draftReview.authority_boundary_labels.map((label) => (
+                <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                  {label}
+                </Badge>
+              ))}
+            </div>
+            <p className="mt-3 text-sm text-gray-300">{draftReview.draft_review_summary}</p>
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Draft identity</div>
+                <div className="mt-2 text-sm text-gray-300">{draftReview.fixture_id}</div>
+                <div className="mt-1 text-sm text-gray-300">
+                  {draftReview.draft_motion_id} / {draftReview.draft_state}
+                </div>
+                <div className="mt-1 text-sm text-gray-300">{draftReview.corpus_id}</div>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Target</div>
+                <div className="mt-2 text-sm text-gray-300">
+                  {draftReview.target_repo} / {draftReview.target_domain}
+                </div>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Problem statement</div>
+                <p className="mt-2 text-sm text-gray-300">{draftReview.problem_statement}</p>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Role/lens contributors</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  <li>- proposer: {draftReview.proposer}</li>
+                  {draftReview.role_lens_contributors.map((contributor) => (
+                    <li key={contributor}>- contributor: {contributor}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Proposed scope</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {draftReview.proposed_scope.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Non-goals</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {draftReview.non_goals.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Required files</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {draftReview.required_files.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Validation expectations</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {draftReview.validation_expectations.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Manual checklist summary</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {draftReview.validation_checklist_summary.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+                <div className="text-xs uppercase tracking-wide text-gray-500">Human review / authority boundary</div>
+                <p className="mt-2 text-sm text-gray-300">
+                  Human review required: {draftReview.human_review_required ? "true" : "false"}
+                </p>
+                <p className="mt-3 text-sm text-gray-300">{draftReview.no_authority_note}</p>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Source fixture</div>
+                <div className="mt-2 font-mono text-xs text-gray-400">{draftReview.source_fixture_path}</div>
+
+                <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Source canon</div>
+                <ul className="mt-2 space-y-1 font-mono text-xs text-gray-400">
+                  {draftReview.source_canon_paths.map((path) => (
+                    <li key={path}>{path}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </section>

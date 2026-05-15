@@ -1,0 +1,12 @@
+motion_id: motion-0223
+decision_id: decision-motion-0223
+decided_at: "2026-05-16T01:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T01:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a no-provider draft review prototype boundary seam only."
+rationale:
+  - "A prototype boundary is needed so operators can inspect a simulated draft package without implying live agent drafting or provider/model usage."
+consequences:
+  - "Draft review remains read-only, fixture-based, and human-gated."
+  - "No provider/model calls, runtime execution, or authority expansion are introduced."
