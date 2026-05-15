@@ -1,0 +1,23 @@
+motion_id: motion-0201
+policy_id: policy-motion-0201
+status: RATIFIED
+evaluated_at: "2026-05-15T21:34:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "docs/canon only"
+  - "no historical outcome rewrites"
+  - "Corpus V2 remains gated and unopened"
+  - "no numbering reset"
+  - "no live voting claim"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"

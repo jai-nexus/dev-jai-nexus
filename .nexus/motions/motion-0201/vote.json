@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0201",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T21:34:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The checklist turns the Corpus V2 gate definition into an inspectable tracker without overstating readiness or changing any historical governance outcomes."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Each gate now distinguishes canon support, missing implementation, and authority boundaries, which reduces ambiguity before any future opening work."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a docs-only readiness seam that preserves Corpus V1 history, keeps Corpus V2 gated, and introduces no execution, write, or persistence authority."
+    }
+  ]
+}
