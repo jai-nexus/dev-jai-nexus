@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0227",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "routing update remains docs/canon only",
+    "jai-nexus was not mutated and no implementation gates were claimed satisfied"
+  ]
+}
