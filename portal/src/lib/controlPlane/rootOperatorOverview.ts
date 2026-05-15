@@ -5,6 +5,7 @@ import {
 } from "@/lib/agents/agentRegistry";
 import { getDeterministicAgendaModel } from "@/lib/controlPlane/agendaModel";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import { getCorpusStatusModel } from "@/lib/controlPlane/corpusStatus";
 import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
 import {
   getConfiguredAgentScopeSubset,
@@ -123,6 +124,7 @@ export interface RootOperatorOverview {
     blocked_capability_count: number;
     note: string;
   };
+  corpus_transition: ReturnType<typeof getCorpusStatusModel>;
   telemetry: {
     events: RootOperatorOverviewTelemetrySummary & {
       latest_kind: string | null;
@@ -195,6 +197,7 @@ export async function getRootOperatorOverview(): Promise<RootOperatorOverview> {
   const projects = getProjectsConfig().projects;
   const canonicalAgents = getCanonicalActiveAgents();
   const paletteAgents = getPaletteDraftAgents();
+  const corpusStatus = getCorpusStatusModel();
   const motionQueue = await loadMotionQueueIndex();
 
   const [latestEvent, eventCount, latestSyncRun, syncRunCount, recentSyncRuns, latestDecision, decisionCount] =
@@ -309,6 +312,7 @@ export async function getRootOperatorOverview(): Promise<RootOperatorOverview> {
       note:
         "Read-only/display-only overview. Disabled authority remains disabled across execution, branch write, PR proposal, scheduler, provider dispatch, and mutation paths.",
     },
+    corpus_transition: corpusStatus,
     telemetry: {
       events: {
         count: eventCount,

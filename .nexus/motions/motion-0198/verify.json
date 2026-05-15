@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0198",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T18:54:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The corpus transition surface is static and read-only and does not add route state, API/DB mutation, or runtime authority."
+  ],
+  "summary": {
+    "before_motion_count": 196,
+    "after_motion_count": 197,
+    "latest_bundled_motion": "motion-0198"
+  }
+}

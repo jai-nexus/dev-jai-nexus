@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0198",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T18:54:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A small root-overview card is enough to surface corpus posture without turning corpus state into a runtime control system."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The surface keeps current and future corpus behavior explicit while preserving the distinction between visibility and enablement."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "The card remains static, read-only, and bounded, with no API, DB, execution, or write authority expansion."
+    }
+  ]
+}

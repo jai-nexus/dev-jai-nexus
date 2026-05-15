@@ -1,0 +1,13 @@
+motion_id: motion-0198
+decision_id: decision-motion-0198
+decided_at: "2026-05-15T18:54:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T18:54:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a small read-only corpus transition surface for the Operator Control Plane."
+rationale:
+  - "The root overview can safely expose corpus-era posture and blockers without adding runtime state, mutation, or authority."
+  - "A small card is sufficient to make the transition visible while preserving the existing read-only control-plane model."
+consequences:
+  - "Operators can see Corpus V1 closeout posture and Corpus V2 blockers directly from the root overview."
+  - "The control-plane surface remains static, local, and non-authoritative for runtime corpus switching."

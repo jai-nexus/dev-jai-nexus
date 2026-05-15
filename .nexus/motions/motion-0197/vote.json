@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0197",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T18:32:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The readiness gate translates Corpus V2 into explicit prerequisites without treating future capability as present fact."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The gate preserves the distinction between governance voter identities, execution roles, and human intervention while keeping live voting blocked."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "The seam defines blockers and approval boundaries cleanly without granting branch-write, PR, merge, or execution authority."
+    }
+  ]
+}

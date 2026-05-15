@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0196",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T18:10:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The corpus model creates a durable era boundary without reopening prior records or implying that Corpus V2 is already live."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The closeout framing preserves Corpus V1 as historical manual-governance canon and keeps numbering reset strictly future-gated."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "The seam is canon-first, read-only, and does not add runtime execution, live voting, or hidden authority."
+    }
+  ]
+}

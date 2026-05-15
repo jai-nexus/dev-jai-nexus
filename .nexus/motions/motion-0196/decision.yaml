@@ -1,0 +1,13 @@
+motion_id: motion-0196
+decision_id: decision-motion-0196
+decided_at: "2026-05-15T18:10:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T18:10:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a canon-first corpus-era model and Corpus V1 closeout framing seam only."
+rationale:
+  - "The corpus model cleanly separates historical manual-governance Corpus V1 from future agent-operable Corpus V2 without prematurely opening the next era."
+  - "Preservation, searchability, and hygiene-fix boundaries for prior corpus records are explicit."
+consequences:
+  - "dev-jai-nexus now has a first-class corpus-era model for future governance transitions."
+  - "Corpus V1 closeout posture is documented without renumbering, reopening, or mutating historical records."
