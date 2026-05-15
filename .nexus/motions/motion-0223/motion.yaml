@@ -1,0 +1,19 @@
+motion_id: motion-0223
+version: "0.1"
+protocol_version: "0.3.8"
+title: "No-Provider Draft Review Prototype Boundary v0"
+subtitle: "define the review-only boundary for simulated draft inspection without provider or authority"
+kind: builder-proof
+program: q2-no-provider-draft-review-prototype-batch-v0
+basis: motion-0222
+status: ratified
+created_at: "2026-05-16T01:00:00.000Z"
+decided_at: "2026-05-16T01:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]

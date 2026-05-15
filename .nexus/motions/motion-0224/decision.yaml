@@ -1,0 +1,12 @@
+motion_id: motion-0224
+decision_id: decision-motion-0224
+decided_at: "2026-05-16T02:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T02:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a static draft review data model seam only."
+rationale:
+  - "A deterministic local model keeps the draft review prototype small, stable, and explicitly separate from live agent output."
+consequences:
+  - "The draft review surface can reference a stable local representation."
+  - "No dynamic parsing, provider/model calls, or authority expansion are introduced."
