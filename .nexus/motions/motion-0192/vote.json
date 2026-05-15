@@ -5,17 +5,17 @@
   "result": "PASS",
   "votes": [
     {
-      "voter": "ARCHITECT",
+      "voter": "jai-proposer",
       "vote": "yes",
       "reason": "The routing affordance improves operator navigation without introducing any selected-candidate mutation path or runtime control."
     },
     {
-      "voter": "VERIFIER",
+      "voter": "jai-challenger",
       "vote": "yes",
       "reason": "Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged."
     },
     {
-      "voter": "OPERATOR",
+      "voter": "jai-arbiter",
       "vote": "yes",
       "reason": "The seam makes agenda-to-deliberation review clearer while keeping switching static and governance-controlled only."
     }

@@ -1,7 +1,7 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-11T22:53:05.325Z",
+  "generated_at": "2026-05-15T15:40:25.008Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
   "motion_count": 194,
@@ -23,7 +23,7 @@
         "vote_result": null,
         "created_at": "2026-05-11T00:00:00.000Z",
         "decided_at": "2026-05-11T22:52:13.4226174Z",
-        "updated_at": "2026-05-11T22:53:05.325Z",
+        "updated_at": "2026-05-15T15:40:25.008Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -62,7 +62,7 @@
           "path": ".nexus/motions/motion-0195/vote.json",
           "present": true,
           "parse_ok": true,
-          "preview": "{\n  \"motion_id\": \"motion-0195\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-11T22:52:13.4226174Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The consolidation cleanly preserves dev-jai-nexus as coordinator/reference surface and avoids absorbing repo-local canon.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation passed and unresolved/global seams remain explicitly future-routed instead of being overclaimed.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The control-plane canon now reflects the settled ownership sweep while preserving the no-runtime, no-cross-repo-mutation boundary.\"\n    }\n  ]\n}"
+          "preview": "{\n  \"motion_id\": \"motion-0195\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-11T22:52:13.4226174Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The consolidation cleanly preserves dev-jai-nexus as coordinator/reference surface and avoids absorbing repo-local canon.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation passed and unresolved/global seams remain explicitly future-routed instead of being overclaimed.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"The control-plane canon now reflects the settled ownership sweep while preserving the no-runtime, no-cross-repo-mutation boundary.\"\n    }\n  ]\n}"
         },
         {
           "key": "execution.md",
@@ -145,7 +145,7 @@
         "vote_result": null,
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-11T00:12:21.9051639Z",
-        "updated_at": "2026-05-11T22:47:54.930Z",
+        "updated_at": "2026-05-15T15:40:24.910Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -184,7 +184,7 @@
           "path": ".nexus/motions/motion-0194/vote.json",
           "present": true,
           "parse_ok": true,
-          "preview": "{\n  \"motion_id\": \"motion-0194\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-11T00:12:21.9051639Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam establishes cross-repo canon routing without collapsing ownership into dev-jai-nexus.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation passed and the canon remains planning-only with no cross-repo mutation or authority expansion.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The routing package correctly frames dev-jai-nexus as Operator Control Plane and treats audit-nexus as first-class.\"\n    }\n  ]\n}"
+          "preview": "{\n  \"motion_id\": \"motion-0194\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-11T00:12:21.9051639Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam establishes cross-repo canon routing without collapsing ownership into dev-jai-nexus.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation passed and the canon remains planning-only with no cross-repo mutation or authority expansion.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"The routing package correctly frames dev-jai-nexus as Operator Control Plane and treats audit-nexus as first-class.\"\n    }\n  ]\n}"
         },
         {
           "key": "execution.md",
@@ -267,7 +267,7 @@
         "vote_result": null,
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T23:56:56.5850630Z",
-        "updated_at": "2026-05-11T00:09:05.662Z",
+        "updated_at": "2026-05-15T15:40:24.821Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -306,7 +306,7 @@
           "path": ".nexus/motions/motion-0193/vote.json",
           "present": true,
           "parse_ok": true,
-          "preview": "{\n  \"motion_id\": \"motion-0193\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:56:56.5850630Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The review panel clarifies posture with static grouping only and does not add controls, state, or ranking.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The panel is low-noise, read-only, and improves inspection without introducing runtime switching or authority.\"\n    }\n  ]\n}"
+          "preview": "{\n  \"motion_id\": \"motion-0193\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:56:56.5850630Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The review panel clarifies posture with static grouping only and does not add controls, state, or ranking.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"The panel is low-noise, read-only, and improves inspection without introducing runtime switching or authority.\"\n    }\n  ]\n}"
         },
         {
           "key": "execution.md",
@@ -389,7 +389,7 @@
         "vote_result": null,
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T23:32:15.7600549Z",
-        "updated_at": "2026-05-10T23:54:17.299Z",
+        "updated_at": "2026-05-15T15:40:24.732Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -428,7 +428,7 @@
           "path": ".nexus/motions/motion-0192/vote.json",
           "present": true,
           "parse_ok": true,
-          "preview": "{\n  \"motion_id\": \"motion-0192\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:32:15.7600549Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The routing affordance improves operator navigation without introducing any selected-candidate mutation path or runtime control.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam makes agenda-to-deliberation review clearer while keeping switching static and governance-controlled only.\"\n    }\n  ]\n}"
+          "preview": "{\n  \"motion_id\": \"motion-0192\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:32:15.7600549Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The routing affordance improves operator navigation without introducing any selected-candidate mutation path or runtime control.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence pass, and the active selected candidate remains unchanged.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam makes agenda-to-deliberation review clearer while keeping switching static and governance-controlled only.\"\n    }\n  ]\n}"
         },
         {
           "key": "execution.md",
@@ -511,7 +511,7 @@
         "vote_result": null,
         "created_at": "2026-05-10T00:00:00.000Z",
         "decided_at": "2026-05-10T23:16:37.1497240Z",
-        "updated_at": "2026-05-10T23:27:57.982Z",
+        "updated_at": "2026-05-15T15:40:24.643Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -550,7 +550,7 @@
           "path": ".nexus/motions/motion-0191/vote.json",
           "present": true,
           "parse_ok": true,
-          "preview": "{\n  \"motion_id\": \"motion-0191\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:16:37.1497240Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"ARCHITECT\",\n      \"vote\": \"yes\",\n      \"reason\": \"The switching model stays static/local and exposes active-versus-eligible posture without route state or runtime control.\"\n    },\n    {\n      \"voter\": \"VERIFIER\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence are recorded and the current selected candidate remains deterministic and human-gated.\"\n    },\n    {\n      \"voter\": \"OPERATOR\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam hardens future switching semantics without adding persistence, API mutation, ranking, or authority expansion.\"\n    }\n  ]\n}"
+          "preview": "{\n  \"motion_id\": \"motion-0191\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-10T23:16:37.1497240Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The switching model stays static/local and exposes active-versus-eligible posture without route state or runtime control.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Validation and snapshot-gate evidence are recorded and the current selected candidate remains deterministic and human-gated.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"The seam hardens future switching semantics without adding persistence, API mutation, ranking, or authority expansion.\"\n    }\n  ]\n}"
         },
         {
           "key": "execution.md",

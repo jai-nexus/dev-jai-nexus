@@ -5,17 +5,17 @@
   "result": "PASS",
   "votes": [
     {
-      "voter": "ARCHITECT",
+      "voter": "jai-proposer",
       "vote": "yes",
       "reason": "The switching model stays static/local and exposes active-versus-eligible posture without route state or runtime control."
     },
     {
-      "voter": "VERIFIER",
+      "voter": "jai-challenger",
       "vote": "yes",
       "reason": "Validation and snapshot-gate evidence are recorded and the current selected candidate remains deterministic and human-gated."
     },
     {
-      "voter": "OPERATOR",
+      "voter": "jai-arbiter",
       "vote": "yes",
       "reason": "The seam hardens future switching semantics without adding persistence, API mutation, ranking, or authority expansion."
     }
