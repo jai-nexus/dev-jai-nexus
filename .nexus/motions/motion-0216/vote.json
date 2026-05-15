@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0216",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:24:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "Explicit failure-mode examples make sandbox review more realistic while staying simulated and non-authoritative."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Authority, validation, and human-review blockers are clearer when documented as fixture-only traces instead of implicit assumptions."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam adds no runtime rejection, provider dispatch, or enforcement behavior."
+    }
+  ]
+}

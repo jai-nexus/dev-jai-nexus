@@ -126,6 +126,43 @@ export default function OperatorCorpusPage() {
           <p className="mt-3 text-sm text-gray-400">{sandbox.note}</p>
           <div className="mt-3 font-mono text-xs text-gray-400">{sandbox.canon_ref}</div>
 
+          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-sm font-semibold text-gray-100">Fixture guard posture</div>
+              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Guardrails only</Badge>
+              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not runtime enforcement</Badge>
+              <Badge tone="border-rose-800 bg-rose-950 text-rose-200">Corpus V2 not open</Badge>
+            </div>
+            <p className="mt-3 text-sm text-gray-300">{sandbox.guardrails.note}</p>
+            <div className="mt-3 grid gap-4 xl:grid-cols-3">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Categories</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {sandbox.guardrails.categories.map((category) => (
+                    <li key={category}>- {category}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Required fields</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {sandbox.guardrails.required_fields.map((field) => (
+                    <li key={field}>- {field}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wide text-gray-500">Required labels</div>
+                <ul className="mt-2 space-y-1 text-sm text-gray-300">
+                  {sandbox.guardrails.required_labels.map((label) => (
+                    <li key={label}>- {label}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <div className="mt-3 font-mono text-xs text-gray-400">{sandbox.guardrails.source_path}</div>
+          </div>
+
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
               <div className="text-sm font-semibold text-gray-100">Sample draft trace</div>
@@ -156,6 +193,50 @@ export default function OperatorCorpusPage() {
               <p className="mt-3 text-sm text-gray-300">{sandbox.fixtures.vote_ratification.summary}</p>
               <div className="mt-3 font-mono text-xs text-gray-400">
                 {sandbox.fixtures.vote_ratification.source_path}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Failure trace examples</div>
+              <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.failure_traces.fixture_id}</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sandbox.fixtures.failure_traces.labels.map((label) => (
+                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{sandbox.fixtures.failure_traces.summary}</p>
+              <ul className="mt-3 space-y-1 text-sm text-gray-300">
+                {sandbox.failure_trace_examples.map((trace) => (
+                  <li key={trace}>- {trace}</li>
+                ))}
+              </ul>
+              <div className="mt-3 font-mono text-xs text-gray-400">
+                {sandbox.fixtures.failure_traces.source_path}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+              <div className="text-sm font-semibold text-gray-100">Gate evidence fixture</div>
+              <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.gate_evidence.fixture_id}</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sandbox.fixtures.gate_evidence.labels.map((label) => (
+                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                    {label}
+                  </Badge>
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{sandbox.fixtures.gate_evidence.summary}</p>
+              <ul className="mt-3 space-y-1 text-sm text-gray-300">
+                {sandbox.gate_evidence_summary.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 font-mono text-xs text-gray-400">
+                {sandbox.fixtures.gate_evidence.source_path}
               </div>
             </div>
           </div>

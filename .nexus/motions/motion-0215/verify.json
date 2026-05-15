@@ -1,0 +1,16 @@
+{
+  "motion_id": "motion-0215",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "schema guards are documented as review-only and not runtime enforcement",
+    "no live drafting, voting, ratification, provider dispatch, or authority expansion was introduced"
+  ]
+}

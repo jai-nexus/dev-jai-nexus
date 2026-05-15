@@ -1,0 +1,61 @@
+{
+  "fixture_id": "corpus-v2-gate-evidence-fixture-v0",
+  "fixture_type": "gate_evidence_collection",
+  "fixture_status": "simulated_review_only",
+  "fixture_labels": [
+    "Fixture-only",
+    "Simulated",
+    "Non-authoritative",
+    "Review-only",
+    "No authority",
+    "Corpus V2 not open",
+    "Not runtime enforcement"
+  ],
+  "evidence_records": [
+    {
+      "evidence_id": "drafting-fixture-shape-v0",
+      "gate_id": "drafting",
+      "evidence_type": "fixture_existence",
+      "source_ref": ".nexus/fixtures/corpus-v2/agent-governance-sandbox/motion-draft.v0.json",
+      "status_claim": "illustrates draft shape only",
+      "limitations": "does not demonstrate live agent drafting, provider dispatch, or runtime operability",
+      "authority_note": "no provider, model, or runtime authority is granted"
+    },
+    {
+      "evidence_id": "canonical-voter-shape-v0",
+      "gate_id": "canonical_voting",
+      "evidence_type": "canonical_voter_identity_example",
+      "source_ref": ".nexus/fixtures/corpus-v2/agent-governance-sandbox/vote-ratification-trace.v0.json",
+      "status_claim": "illustrates canonical voter identity shape using jai-proposer, jai-challenger, and jai-arbiter",
+      "limitations": "does not demonstrate live JAI Agent voting",
+      "authority_note": "fixture examples remain review-only and non-authoritative"
+    },
+    {
+      "evidence_id": "human-boundary-shape-v0",
+      "gate_id": "human_override",
+      "evidence_type": "human_intervention_example",
+      "source_ref": ".nexus/fixtures/corpus-v2/agent-governance-sandbox/vote-ratification-trace.v0.json",
+      "status_claim": "illustrates explicit human review and intervention fields",
+      "limitations": "does not implement approval gates or live override mechanics",
+      "authority_note": "human boundary remains required but still manual"
+    },
+    {
+      "evidence_id": "snapshot-validation-posture-v0",
+      "gate_id": "snapshot_gate",
+      "evidence_type": "process_posture_example",
+      "source_ref": ".nexus/canon/corpus/corpus-v2-machine-checkable-gates.md",
+      "status_claim": "illustrates that snapshot and validation posture are part of readiness evidence review",
+      "limitations": "does not add automation or machine enforcement",
+      "authority_note": "no scheduler or automation is granted"
+    },
+    {
+      "evidence_id": "authority-blocked-example-v0",
+      "gate_id": "authority_boundary",
+      "evidence_type": "blocked_authority_example",
+      "source_ref": ".nexus/fixtures/corpus-v2/agent-governance-sandbox/failure-traces.v0.json",
+      "status_claim": "illustrates blocked authority posture for write, merge, and execution paths",
+      "limitations": "fixture traces do not grant or enforce authority and do not satisfy the gate by themselves",
+      "authority_note": "branch-write, PR creation, merge, and execution remain disabled"
+    }
+  ]
+}

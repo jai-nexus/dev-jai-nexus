@@ -1,0 +1,16 @@
+{
+  "motion_id": "motion-0217",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "gate evidence fixtures remain illustrative and non-authoritative",
+    "no gate is machine-enforced or newly satisfied by fixture examples alone"
+  ]
+}
