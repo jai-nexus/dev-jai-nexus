@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0202",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T21:42:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A small read-only readiness surface improves operator visibility while keeping the checklist canon authoritative and leaving Corpus V2 unopened."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The surface exposes blockers and status counts without turning readiness into runtime state or machine enforcement."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam preserves the current authority boundary and adds no execution, write, or persistence capability."
+    }
+  ]
+}

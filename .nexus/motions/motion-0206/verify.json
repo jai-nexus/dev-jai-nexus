@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0206",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:06:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The opening protocol draft defines what a future Corpus V2 opening motion must prove without opening Corpus V2, resetting numbering, or granting runtime authority."
+  ],
+  "summary": {
+    "before_motion_count": 204,
+    "after_motion_count": 205,
+    "latest_bundled_motion": "motion-0206"
+  }
+}

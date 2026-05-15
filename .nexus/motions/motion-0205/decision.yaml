@@ -1,0 +1,13 @@
+motion_id: motion-0205
+decision_id: decision-motion-0205
+decided_at: "2026-05-15T22:00:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:00:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a future-state agent voting and ratification design seam only."
+rationale:
+  - "Future Corpus V2 voting needs an explicit canonical voter model and visible ratification design."
+  - "The design preserves recent voter-identity hygiene without enabling live voting."
+consequences:
+  - "Future ratification and vote records become easier to model and inspect."
+  - "No autonomous ratification, runtime execution, or write authority is granted."

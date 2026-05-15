@@ -1,0 +1,13 @@
+motion_id: motion-0206
+decision_id: decision-motion-0206
+decided_at: "2026-05-15T22:06:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:06:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a future Corpus V2 opening protocol draft seam only."
+rationale:
+  - "A later opening motion needs a clear proof and artifact protocol before any transition can occur."
+  - "The protocol draft clarifies what opening must prove without opening Corpus V2 now."
+consequences:
+  - "Future opening work has a defined evidence and output frame."
+  - "No numbering reset, no opening action, and no authority expansion occur here."

@@ -1,0 +1,13 @@
+motion_id: motion-0202
+decision_id: decision-motion-0202
+decided_at: "2026-05-15T21:42:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T21:42:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a read-only Corpus V2 readiness surface seam only."
+rationale:
+  - "Corpus V2 readiness becomes more visible from the existing operator overview without adding new runtime state."
+  - "The readiness checklist remains the source of truth while the surface stays read-only."
+consequences:
+  - "Operators can inspect gate posture and blockers faster."
+  - "No Corpus V2 opening, numbering reset, or authority expansion occurs."

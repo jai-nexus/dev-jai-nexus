@@ -1,0 +1,22 @@
+motion_id: motion-0202
+policy_id: policy-motion-0202
+status: RATIFIED
+evaluated_at: "2026-05-15T21:42:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "read-only surface only"
+  - "checklist canon remains source of truth"
+  - "Corpus V2 remains gated and unopened"
+  - "no numbering reset"
+  - "no live drafting or voting"
+  - "no runtime execution"
+  - "no write authority"

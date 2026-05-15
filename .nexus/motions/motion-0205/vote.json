@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0205",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:00:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The design makes future canonical voting and visible ratification more explicit while preserving the recent three-voter posture and PR #151 cleanup semantics."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Clarifying vote record shape, human intervention, and governance versus lens distinctions reduces ambiguity without enabling live voting."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a design-only seam with no autonomous ratification, runtime execution, or write authority."
+    }
+  ]
+}

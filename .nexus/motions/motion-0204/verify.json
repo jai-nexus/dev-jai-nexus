@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0204",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T21:54:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The drafting design defines future-state motion drafting posture without implementing live agent drafting, provider calls, or runtime authority."
+  ],
+  "summary": {
+    "before_motion_count": 202,
+    "after_motion_count": 203,
+    "latest_bundled_motion": "motion-0204"
+  }
+}

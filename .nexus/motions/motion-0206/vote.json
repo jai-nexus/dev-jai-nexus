@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0206",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:06:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The opening protocol draft gives future transition work a concrete evidence frame without opening Corpus V2 or resetting numbering today."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicit preconditions, outputs, and control-thread proof requirements reduce ambiguity around any future opening motion."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam is protocol-only and preserves current authority boundaries, historical immutability, and the gated status of Corpus V2."
+    }
+  ]
+}

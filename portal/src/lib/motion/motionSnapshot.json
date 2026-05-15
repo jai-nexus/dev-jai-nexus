@@ -1,12 +1,622 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-15T17:17:34.877Z",
+  "generated_at": "2026-05-15T17:52:36.626Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 200,
+  "motion_count": 205,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0206",
+      "item": {
+        "motion_id": "motion-0206",
+        "title": "Corpus V2 Opening Protocol Draft v0",
+        "subtitle": "draft the future protocol for opening Corpus V2 without actually opening it",
+        "program": "q2-corpus-v2-readiness-operations-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0205",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:06:00.000Z",
+        "updated_at": "2026-05-15T17:52:36.626Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0206/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0206\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Opening Protocol Draft v0\"\nsubtitle: \"draft the future protocol for opening Corpus V2 without actually opening it\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-operations-batch-v0\nbasis: motion-0205\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:06:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0206/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0206\ndecision_id: decision-motion-0206\ndecided_at: \"2026-05-15T22:06:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:06:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a future Corpus V2 opening protocol draft seam only.\"\nrationale:\n  - \"A later opening motion needs a clear proof and artifact protocol before any transition can occur.\"\n  - \"The protocol draft clarifies what opening must prove without opening Corpus V2 now.\"\nconsequences:\n  - \"Future opening work has a defined evidence and output frame.\"\n  - \"No numbering reset, no opening action, and no authority expansion occur here.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0206/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0206\npolicy_id: policy-motion-0206\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:06:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"protocol-draft seam only\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no live drafting or voting\"\n  - \"no autonomous ratification\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0206/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0206\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:06:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The opening protocol draft defines what a future Corpus V2 opening motion must prove without opening Corpus V2, resetting numbering, or granting runtime authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 204,\n    \"after_motion_count\": 205,\n    \"latest_bundled_motion\": \"motion-0206\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0206/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0206\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:06:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The opening protocol draft gives future transition work a concrete evidence frame without opening Corpus V2 or resetting numbering today.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Explicit preconditions, outputs, and control-thread proof requirements reduce ambiguity around any future opening motion.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam is protocol-only and preserves current authority boundaries, historical immutability, and the gated status of Corpus V2.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0206/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Opening Protocol Draft v0\n\n**Motion:** motion-0206\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one protocol-draft canon artifact, one motion package, and one bundled\nsnapshot refresh. No opening action is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- create `motion-0001`\n- mutate Corpus V1 records\n- enable live drafting, voting, or ratification\n- add provider/model calls\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:06:00.000Z`\n\n### 2. Implementation shape\n\n- added a future opening protocol draft artifact\n- defined opening preconditions, required proof, and required output artifacts\n- defined future `CONTROL_THREAD` decision requirements\n- preserved Corpus V1 immutability and Corpus V2 gated posture\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `204`\n  - latest bundled motion: `motion-0205`\n- bundled snapshot after refresh:\n  - motion count: `205`\n  - latest bundled motion: `motion-0206`\n\n### 4. Ratification closeout\n\nMotion-0206 is ratified as a protocol-draft seam only and does not open Corpus\nV2."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0206/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Opening Protocol Draft v0\n\n## Purpose\n\nDraft the future protocol for opening Corpus V2 without actually opening it.\n\n## Scope\n\n- add canon defining opening preconditions\n- define required proof and evidence for a future opening motion\n- define required output artifacts for the eventual opening step\n- define future `CONTROL_THREAD` decision requirements\n- keep the seam protocol-only and non-opening\n\n## Non-goals\n\n- no Corpus V2 opening\n- no numbering reset\n- no `motion-0001` creation\n- no live drafting, voting, or ratification enablement\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0206/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Opening Protocol Draft v0\n\n## Risks\n\n- an opening protocol draft could be mistaken for actual opening approval\n- numbering-reset planning could be conflated with a live reset\n- readiness waivers could be under-specified if the protocol is too loose\n\n## Mitigations\n\n- state explicitly that Corpus V2 is not opened here\n- require explicit readiness evidence and waiver treatment in a future opening\n  motion\n- require future control-thread proof before any reset or opening action"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0206/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0206/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0206/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0206/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0206/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0206/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Opening Protocol Draft v0\n\n**Motion:** motion-0206\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one protocol-draft canon artifact, one motion package, and one bundled\nsnapshot refresh. No opening action is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- create `motion-0001`\n- mutate Corpus V1 records\n- enable live drafting, voting, or ratification\n- add provider/model calls\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:06:00.000Z`\n\n### 2. Implementation shape\n\n- added a future opening protocol draft artifact\n- defined opening preconditions, required proof, and required output artifacts\n- defined future `CONTROL_THREAD` decision requirements\n- preserved Corpus V1 immutability and Corpus V2 gated posture\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `204`\n  - latest bundled motion: `motion-0205`\n- bundled snapshot after refresh:\n  - motion count: `205`\n  - latest bundled motion: `motion-0206`\n\n### 4. Ratification closeout\n\nMotion-0206 is ratified as a protocol-draft seam only and does not open Corpus\nV2.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0206\nTitle: Corpus V2 Opening Protocol Draft v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0206/motion.yaml\n2. .nexus/motions/motion-0206/decision.yaml\n3. .nexus/motions/motion-0206/policy.yaml\n4. .nexus/motions/motion-0206/verify.json\n5. .nexus/motions/motion-0206/vote.json\n6. .nexus/motions/motion-0206/execution.md\n7. .nexus/motions/motion-0206/proposal.md\n8. .nexus/motions/motion-0206/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0206\n\nCore artifact paths:\n- .nexus/motions/motion-0206/motion.yaml\n- .nexus/motions/motion-0206/decision.yaml\n- .nexus/motions/motion-0206/policy.yaml\n- .nexus/motions/motion-0206/verify.json\n- .nexus/motions/motion-0206/vote.json\n- .nexus/motions/motion-0206/execution.md\n- .nexus/motions/motion-0206/proposal.md\n- .nexus/motions/motion-0206/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0206",
+      "chat_search_href": "/operator/chats?q=motion-0206"
+    },
+    {
+      "motion_id": "motion-0205",
+      "item": {
+        "motion_id": "motion-0205",
+        "title": "Agent Voting and Ratification Design v0",
+        "subtitle": "define the future design for canonical JAI Agent voting and visible ratification",
+        "program": "q2-corpus-v2-readiness-operations-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0204",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:00:00.000Z",
+        "updated_at": "2026-05-15T17:52:36.619Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0205/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0205\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Voting and Ratification Design v0\"\nsubtitle: \"define the future design for canonical JAI Agent voting and visible ratification\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-operations-batch-v0\nbasis: motion-0204\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:00:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0205/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0205\ndecision_id: decision-motion-0205\ndecided_at: \"2026-05-15T22:00:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:00:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a future-state agent voting and ratification design seam only.\"\nrationale:\n  - \"Future Corpus V2 voting needs an explicit canonical voter model and visible ratification design.\"\n  - \"The design preserves recent voter-identity hygiene without enabling live voting.\"\nconsequences:\n  - \"Future ratification and vote records become easier to model and inspect.\"\n  - \"No autonomous ratification, runtime execution, or write authority is granted.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0205/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0205\npolicy_id: policy-motion-0205\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:00:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"design-only seam\"\n  - \"no live voting\"\n  - \"no autonomous ratification\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0205/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0205\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:00:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The voting and ratification design clarifies future canonical voter posture and human intervention modeling without enabling live voting or autonomous ratification.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 203,\n    \"after_motion_count\": 204,\n    \"latest_bundled_motion\": \"motion-0205\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0205/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0205\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:00:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The design makes future canonical voting and visible ratification more explicit while preserving the recent three-voter posture and PR #151 cleanup semantics.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Clarifying vote record shape, human intervention, and governance versus lens distinctions reduces ambiguity without enabling live voting.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This is a design-only seam with no autonomous ratification, runtime execution, or write authority.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0205/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Voting and Ratification Design v0\n\n**Motion:** motion-0205\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon design artifact, one motion package, and one bundled snapshot\nrefresh. No live voting or autonomous ratification is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live voting\n- enable autonomous ratification\n- add provider/model calls\n- add runtime execution\n- open Corpus V2\n- reset numbering\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:00:00.000Z`\n\n### 2. Implementation shape\n\n- added a future-state voting and ratification design artifact\n- defined voter identity model and vote record shape guidance\n- preserved PR `#151` posture and motion `0199` schema-hygiene distinctions\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `203`\n  - latest bundled motion: `motion-0204`\n- bundled snapshot after refresh:\n  - motion count: `204`\n  - latest bundled motion: `motion-0205`\n\n### 4. Ratification closeout\n\nMotion-0205 is ratified as a future-state voting and ratification design seam\nonly."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0205/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Voting and Ratification Design v0\n\n## Purpose\n\nDefine the future design for canonical JAI Agent voting and visible\nratification in Corpus V2.\n\n## Scope\n\n- add canon defining voter identity model\n- define future vote record shape guidance\n- define human intervention and ratification visibility posture\n- preserve PR `#151` and motion `0199` identity distinctions\n- keep the seam design-only with no live activation\n\n## Non-goals\n\n- no live voting\n- no autonomous ratification\n- no Corpus V2 opening\n- no numbering reset\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0205/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Voting and Ratification Design v0\n\n## Risks\n\n- future vote-design guidance could be mistaken for live voting enablement\n- additional governance-lane identities could be routed implicitly without a\n  later motion\n- human intervention could be hidden instead of made explicit\n\n## Mitigations\n\n- state that live voting and autonomous ratification are inactive\n- keep the recent canonical three-voter posture explicit\n- note that `jai-executor` requires later routing if ever added\n- require explicit human intervention fields where needed"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0205/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0205/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0205/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0205/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0205/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0205/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Voting and Ratification Design v0\n\n**Motion:** motion-0205\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon design artifact, one motion package, and one bundled snapshot\nrefresh. No live voting or autonomous ratification is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live voting\n- enable autonomous ratification\n- add provider/model calls\n- add runtime execution\n- open Corpus V2\n- reset numbering\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:00:00.000Z`\n\n### 2. Implementation shape\n\n- added a future-state voting and ratification design artifact\n- defined voter identity model and vote record shape guidance\n- preserved PR `#151` posture and motion `0199` schema-hygiene distinctions\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `203`\n  - latest bundled motion: `motion-0204`\n- bundled snapshot after refresh:\n  - motion count: `204`\n  - latest bundled motion: `motion-0205`\n\n### 4. Ratification closeout\n\nMotion-0205 is ratified as a future-state voting and ratification design seam\nonly.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0205\nTitle: Agent Voting and Ratification Design v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0205/motion.yaml\n2. .nexus/motions/motion-0205/decision.yaml\n3. .nexus/motions/motion-0205/policy.yaml\n4. .nexus/motions/motion-0205/verify.json\n5. .nexus/motions/motion-0205/vote.json\n6. .nexus/motions/motion-0205/execution.md\n7. .nexus/motions/motion-0205/proposal.md\n8. .nexus/motions/motion-0205/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0205\n\nCore artifact paths:\n- .nexus/motions/motion-0205/motion.yaml\n- .nexus/motions/motion-0205/decision.yaml\n- .nexus/motions/motion-0205/policy.yaml\n- .nexus/motions/motion-0205/verify.json\n- .nexus/motions/motion-0205/vote.json\n- .nexus/motions/motion-0205/execution.md\n- .nexus/motions/motion-0205/proposal.md\n- .nexus/motions/motion-0205/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0205",
+      "chat_search_href": "/operator/chats?q=motion-0205"
+    },
+    {
+      "motion_id": "motion-0204",
+      "item": {
+        "motion_id": "motion-0204",
+        "title": "Agent Motion Drafting Design v0",
+        "subtitle": "define the future design for JAI Agents drafting motions internally to dev.jai.nexus",
+        "program": "q2-corpus-v2-readiness-operations-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0203",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T21:54:00.000Z",
+        "updated_at": "2026-05-15T17:52:36.609Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0204/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0204\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Motion Drafting Design v0\"\nsubtitle: \"define the future design for JAI Agents drafting motions internally to dev.jai.nexus\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-operations-batch-v0\nbasis: motion-0203\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T21:54:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0204/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0204\ndecision_id: decision-motion-0204\ndecided_at: \"2026-05-15T21:54:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T21:54:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a future-state agent motion drafting design seam only.\"\nrationale:\n  - \"Future drafting needs an explicit state and artifact model before Corpus V2 can open.\"\n  - \"The design clarifies roles and boundaries without enabling live drafting.\"\nconsequences:\n  - \"Drafting readiness becomes more inspectable.\"\n  - \"No provider, runtime, or write authority is granted.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0204/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0204\npolicy_id: policy-motion-0204\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T21:54:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"design-only seam\"\n  - \"no live drafting\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no provider/model call\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0204/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0204\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T21:54:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The drafting design defines future-state motion drafting posture without implementing live agent drafting, provider calls, or runtime authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 202,\n    \"after_motion_count\": 203,\n    \"latest_bundled_motion\": \"motion-0204\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0204/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0204\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T21:54:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The drafting design defines a concrete future-state package and state model without claiming that live agent drafting exists today.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Separating proposer, challenger, arbiter, lens contributors, and human operator boundaries reduces ambiguity before any future activation work.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This is a design-only artifact that preserves the current authority boundary and adds no runtime or write capability.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0204/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Motion Drafting Design v0\n\n**Motion:** motion-0204\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon design artifact, one motion package, and one bundled snapshot\nrefresh. No live drafting implementation is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- implement live agent drafting\n- add provider/model calls\n- add runtime execution\n- open Corpus V2\n- reset numbering\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:54:00.000Z`\n\n### 2. Implementation shape\n\n- added a future-state drafting design artifact\n- defined draft states, roles, outputs, and human boundaries\n- preserved deterministic package expectations and identity distinctions\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `202`\n  - latest bundled motion: `motion-0203`\n- bundled snapshot after refresh:\n  - motion count: `203`\n  - latest bundled motion: `motion-0204`\n\n### 4. Ratification closeout\n\nMotion-0204 is ratified as a future-state drafting design seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0204/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Motion Drafting Design v0\n\n## Purpose\n\nDefine the future design for JAI Agents drafting motions internally to\n`dev.jai.nexus`.\n\n## Scope\n\n- add canon defining future draft states\n- define drafting roles and human boundaries\n- define required draft outputs\n- preserve the distinction between governance voters, execution or lens\n  participants, and human intervention\n- keep the seam design-only with no live implementation\n\n## Non-goals\n\n- no live drafting\n- no provider or model calls\n- no runtime execution\n- no Corpus V2 opening\n- no numbering reset\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0204/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Motion Drafting Design v0\n\n## Risks\n\n- a future drafting design could be overread as active implementation\n- draft roles could blur governance voters with lens contributors\n- draft states could look authoritative without explicit human review\n\n## Mitigations\n\n- state future-state posture explicitly\n- separate drafting roles from governance voter identities\n- preserve human operator boundaries\n- require deterministic and schema-valid outputs before any future opening"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0204/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0204/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0204/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0204/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0204/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0204/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Motion Drafting Design v0\n\n**Motion:** motion-0204\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon design artifact, one motion package, and one bundled snapshot\nrefresh. No live drafting implementation is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- implement live agent drafting\n- add provider/model calls\n- add runtime execution\n- open Corpus V2\n- reset numbering\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:54:00.000Z`\n\n### 2. Implementation shape\n\n- added a future-state drafting design artifact\n- defined draft states, roles, outputs, and human boundaries\n- preserved deterministic package expectations and identity distinctions\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `202`\n  - latest bundled motion: `motion-0203`\n- bundled snapshot after refresh:\n  - motion count: `203`\n  - latest bundled motion: `motion-0204`\n\n### 4. Ratification closeout\n\nMotion-0204 is ratified as a future-state drafting design seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0204\nTitle: Agent Motion Drafting Design v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0204/motion.yaml\n2. .nexus/motions/motion-0204/decision.yaml\n3. .nexus/motions/motion-0204/policy.yaml\n4. .nexus/motions/motion-0204/verify.json\n5. .nexus/motions/motion-0204/vote.json\n6. .nexus/motions/motion-0204/execution.md\n7. .nexus/motions/motion-0204/proposal.md\n8. .nexus/motions/motion-0204/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0204\n\nCore artifact paths:\n- .nexus/motions/motion-0204/motion.yaml\n- .nexus/motions/motion-0204/decision.yaml\n- .nexus/motions/motion-0204/policy.yaml\n- .nexus/motions/motion-0204/verify.json\n- .nexus/motions/motion-0204/vote.json\n- .nexus/motions/motion-0204/execution.md\n- .nexus/motions/motion-0204/proposal.md\n- .nexus/motions/motion-0204/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0204",
+      "chat_search_href": "/operator/chats?q=motion-0204"
+    },
+    {
+      "motion_id": "motion-0203",
+      "item": {
+        "motion_id": "motion-0203",
+        "title": "Corpus V2 Machine-Checkable Gate Model v0",
+        "subtitle": "model which readiness gates can eventually become deterministic checks without adding enforcement",
+        "program": "q2-corpus-v2-readiness-operations-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0202",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T21:48:00.000Z",
+        "updated_at": "2026-05-15T17:52:36.600Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0203/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0203\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Machine-Checkable Gate Model v0\"\nsubtitle: \"model which readiness gates can eventually become deterministic checks without adding enforcement\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-operations-batch-v0\nbasis: motion-0202\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T21:48:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0203/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0203\ndecision_id: decision-motion-0203\ndecided_at: \"2026-05-15T21:48:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T21:48:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a non-enforcement Corpus V2 machine-checkable gate model seam.\"\nrationale:\n  - \"Future checkability can be designed now without prematurely claiming gate enforcement.\"\n  - \"The gate model clarifies which readiness evidence could become deterministic later.\"\nconsequences:\n  - \"Operators gain a clearer separation between canon, schema, snapshot, human, and authority concerns.\"\n  - \"No live enforcement, automation, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0203/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0203\npolicy_id: policy-motion-0203\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T21:48:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"non-enforcement model only\"\n  - \"no automation\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no live drafting or voting\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0203/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0203\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T21:48:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The machine-checkable gate model classifies future deterministic evidence surfaces without implementing any enforcement or automation.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 201,\n    \"after_motion_count\": 202,\n    \"latest_bundled_motion\": \"motion-0203\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0203/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0203\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T21:48:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The gate model improves future implementation clarity while explicitly avoiding enforcement and preserving the current gated posture.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Separating canon-checkable, schema-checkable, snapshot-checkable, human-gated, and authority-blocked concerns reduces ambiguity in the readiness program.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This is a design-only artifact that introduces no automation, runtime authority, or opening semantics.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0203/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Machine-Checkable Gate Model v0\n\n**Motion:** motion-0203\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one motion package, and one bundled snapshot\nrefresh. No enforcement or automation work is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- implement enforcement\n- add automation\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- expand runtime or write authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:48:00.000Z`\n\n### 2. Implementation shape\n\n- added a canon model for future gate checkability\n- classified gates into canon, snapshot, schema, UI, human, and authority\n  categories\n- kept the artifact design-only and non-enforcing\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `201`\n  - latest bundled motion: `motion-0202`\n- bundled snapshot after refresh:\n  - motion count: `202`\n  - latest bundled motion: `motion-0203`\n\n### 4. Ratification closeout\n\nMotion-0203 is ratified as a non-enforcement gate-model seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0203/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Machine-Checkable Gate Model v0\n\n## Purpose\n\nModel which Corpus V2 readiness gates can eventually become deterministic\nchecks without implementing enforcement today.\n\n## Scope\n\n- add canon describing future gate checkability categories\n- define gate evidence fields and a gate table\n- relate the model to the readiness checklist, `validate-motion`, and\n  `build-motion-snapshot`\n- keep the seam design-only and non-enforcing\n\n## Non-goals\n\n- no enforcement\n- no automation\n- no Corpus V2 opening\n- no numbering reset\n- no live drafting, voting, or ratification enablement"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0203/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Machine-Checkable Gate Model v0\n\n## Risks\n\n- checkability categories could be misread as implemented gates\n- deterministic checks could be overextended into human approval territory\n- authority-blocked capabilities could be mistaken for near-term automation work\n\n## Mitigations\n\n- state non-enforcement posture explicitly\n- separate `human-gated` and `authority-blocked` categories from schema and\n  snapshot checks\n- keep the artifact tied to existing canon and current missing conditions"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0203/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0203/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0203/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0203/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0203/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0203/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Machine-Checkable Gate Model v0\n\n**Motion:** motion-0203\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one motion package, and one bundled snapshot\nrefresh. No enforcement or automation work is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- implement enforcement\n- add automation\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- expand runtime or write authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:48:00.000Z`\n\n### 2. Implementation shape\n\n- added a canon model for future gate checkability\n- classified gates into canon, snapshot, schema, UI, human, and authority\n  categories\n- kept the artifact design-only and non-enforcing\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `201`\n  - latest bundled motion: `motion-0202`\n- bundled snapshot after refresh:\n  - motion count: `202`\n  - latest bundled motion: `motion-0203`\n\n### 4. Ratification closeout\n\nMotion-0203 is ratified as a non-enforcement gate-model seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0203\nTitle: Corpus V2 Machine-Checkable Gate Model v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0203/motion.yaml\n2. .nexus/motions/motion-0203/decision.yaml\n3. .nexus/motions/motion-0203/policy.yaml\n4. .nexus/motions/motion-0203/verify.json\n5. .nexus/motions/motion-0203/vote.json\n6. .nexus/motions/motion-0203/execution.md\n7. .nexus/motions/motion-0203/proposal.md\n8. .nexus/motions/motion-0203/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0203\n\nCore artifact paths:\n- .nexus/motions/motion-0203/motion.yaml\n- .nexus/motions/motion-0203/decision.yaml\n- .nexus/motions/motion-0203/policy.yaml\n- .nexus/motions/motion-0203/verify.json\n- .nexus/motions/motion-0203/vote.json\n- .nexus/motions/motion-0203/execution.md\n- .nexus/motions/motion-0203/proposal.md\n- .nexus/motions/motion-0203/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0203",
+      "chat_search_href": "/operator/chats?q=motion-0203"
+    },
+    {
+      "motion_id": "motion-0202",
+      "item": {
+        "motion_id": "motion-0202",
+        "title": "Corpus V2 Readiness Surface v0",
+        "subtitle": "make Corpus V2 readiness visible from the Operator Control Plane without changing authority",
+        "program": "q2-corpus-v2-readiness-operations-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0201",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T21:42:00.000Z",
+        "updated_at": "2026-05-15T17:52:36.590Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0202/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0202\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Readiness Surface v0\"\nsubtitle: \"make Corpus V2 readiness visible from the Operator Control Plane without changing authority\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-operations-batch-v0\nbasis: motion-0201\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T21:42:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0202/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0202\ndecision_id: decision-motion-0202\ndecided_at: \"2026-05-15T21:42:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T21:42:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a read-only Corpus V2 readiness surface seam only.\"\nrationale:\n  - \"Corpus V2 readiness becomes more visible from the existing operator overview without adding new runtime state.\"\n  - \"The readiness checklist remains the source of truth while the surface stays read-only.\"\nconsequences:\n  - \"Operators can inspect gate posture and blockers faster.\"\n  - \"No Corpus V2 opening, numbering reset, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0202/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0202\npolicy_id: policy-motion-0202\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T21:42:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"read-only surface only\"\n  - \"checklist canon remains source of truth\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no live drafting or voting\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0202/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0202\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T21:42:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The readiness surface is visibility-only and does not implement runtime readiness control, live drafting, or authority expansion.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 200,\n    \"after_motion_count\": 201,\n    \"latest_bundled_motion\": \"motion-0202\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0202/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0202\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T21:42:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"A small read-only readiness surface improves operator visibility while keeping the checklist canon authoritative and leaving Corpus V2 unopened.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"The surface exposes blockers and status counts without turning readiness into runtime state or machine enforcement.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam preserves the current authority boundary and adds no execution, write, or persistence capability.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0202/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Readiness Surface v0\n\n**Motion:** motion-0202\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one small root overview extension, one motion\npackage, and one bundled snapshot refresh. No route expansion or runtime\nauthority change.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- add runtime execution\n- add provider/model calls\n- add branch-write, PR, merge, scheduler, or automation authority\n- add API or DB mutation\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:42:00.000Z`\n\n### 2. Implementation shape\n\n- added a read-only readiness-surface canon artifact\n- extended the existing root corpus transition surface\n- kept the readiness checklist as source of truth\n- surfaced status counts, top blockers, and non-authorizing notes only\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `200`\n  - latest bundled motion: `motion-0201`\n- bundled snapshot after refresh:\n  - motion count: `201`\n  - latest bundled motion: `motion-0202`\n\n### 4. Ratification closeout\n\nMotion-0202 is ratified as a read-only readiness visibility seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0202/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Readiness Surface v0\n\n## Purpose\n\nMake Corpus V2 readiness visible from the Operator Control Plane without\nturning the readiness checklist into runtime state or authority.\n\n## Scope\n\n- add read-only canon describing the readiness surface\n- extend the existing root corpus transition surface with static readiness\n  counts and blockers\n- keep the readiness checklist as source of truth\n- add a read-only motion package for `motion-0202`\n- refresh the bundled motion snapshot through `motion-0202`\n\n## Non-goals\n\n- no opening of Corpus V2\n- no numbering reset\n- no live drafting, voting, or ratification enablement\n- no runtime authority expansion\n- no new large route or cockpit redesign"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0202/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Readiness Surface v0\n\n## Risks\n\n- a small UI card could be overread as a runtime readiness controller\n- gate counts could be mistaken for enforcement\n- additional surface copy could drift away from canon\n\n## Mitigations\n\n- make the checklist canon the explicit source of truth\n- keep the surface static and read-only\n- keep counts and blockers local and explicit\n- state that no opening, reset, or authority expansion occurs here"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0202/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0202/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0202/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0202/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0202/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0202/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Readiness Surface v0\n\n**Motion:** motion-0202\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one small root overview extension, one motion\npackage, and one bundled snapshot refresh. No route expansion or runtime\nauthority change.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- add runtime execution\n- add provider/model calls\n- add branch-write, PR, merge, scheduler, or automation authority\n- add API or DB mutation\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T21:42:00.000Z`\n\n### 2. Implementation shape\n\n- added a read-only readiness-surface canon artifact\n- extended the existing root corpus transition surface\n- kept the readiness checklist as source of truth\n- surfaced status counts, top blockers, and non-authorizing notes only\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `200`\n  - latest bundled motion: `motion-0201`\n- bundled snapshot after refresh:\n  - motion count: `201`\n  - latest bundled motion: `motion-0202`\n\n### 4. Ratification closeout\n\nMotion-0202 is ratified as a read-only readiness visibility seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0202\nTitle: Corpus V2 Readiness Surface v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0202/motion.yaml\n2. .nexus/motions/motion-0202/decision.yaml\n3. .nexus/motions/motion-0202/policy.yaml\n4. .nexus/motions/motion-0202/verify.json\n5. .nexus/motions/motion-0202/vote.json\n6. .nexus/motions/motion-0202/execution.md\n7. .nexus/motions/motion-0202/proposal.md\n8. .nexus/motions/motion-0202/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0202\n\nCore artifact paths:\n- .nexus/motions/motion-0202/motion.yaml\n- .nexus/motions/motion-0202/decision.yaml\n- .nexus/motions/motion-0202/policy.yaml\n- .nexus/motions/motion-0202/verify.json\n- .nexus/motions/motion-0202/vote.json\n- .nexus/motions/motion-0202/execution.md\n- .nexus/motions/motion-0202/proposal.md\n- .nexus/motions/motion-0202/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0202",
+      "chat_search_href": "/operator/chats?q=motion-0202"
+    },
     {
       "motion_id": "motion-0201",
       "item": {
@@ -23,7 +633,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:34:00.000Z",
-        "updated_at": "2026-05-15T17:17:34.877Z",
+        "updated_at": "2026-05-15T17:52:36.278Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
