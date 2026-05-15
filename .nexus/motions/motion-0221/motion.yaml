@@ -1,0 +1,19 @@
+motion_id: motion-0221
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Sandbox Validation Surface Alignment v0"
+subtitle: "surface static validator posture on /operator/corpus without controls"
+kind: builder-proof
+program: q2-sandbox-fixture-validation-batch-v0
+basis: motion-0220
+status: ratified
+created_at: "2026-05-15T00:00:00.000Z"
+decided_at: "2026-05-15T23:54:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]

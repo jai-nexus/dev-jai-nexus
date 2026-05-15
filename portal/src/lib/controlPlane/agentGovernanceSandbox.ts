@@ -11,6 +11,15 @@ export interface AgentGovernanceSandboxModel {
   posture: string;
   note: string;
   canon_ref: string;
+  validator: {
+    posture: string;
+    command: string;
+    source_paths: string[];
+    checked_categories: string[];
+    note: string;
+    evidence_ref: string;
+    playbook_ref: string;
+  };
   guardrails: {
     posture: string;
     source_path: string;
@@ -37,6 +46,27 @@ export function getAgentGovernanceSandboxModel(): AgentGovernanceSandboxModel {
     note:
       "Sandbox traces are static local fixtures for review. They are not canon by default, not executable, and do not imply live agents are active.",
     canon_ref: ".nexus/canon/corpus/agent-governance-sandbox-prototype-v0.md",
+    validator: {
+      posture: "static/manual validation / review-only / not runtime enforcement",
+      command: "node portal/scripts/validate-sandbox-fixtures.mjs",
+      source_paths: [
+        ".nexus/fixtures/corpus-v2/agent-governance-sandbox/motion-draft.v0.json",
+        ".nexus/fixtures/corpus-v2/agent-governance-sandbox/vote-ratification-trace.v0.json",
+        ".nexus/fixtures/corpus-v2/agent-governance-sandbox/failure-traces.v0.json",
+        ".nexus/fixtures/corpus-v2/agent-governance-sandbox/gate-evidence.v0.json",
+      ],
+      checked_categories: [
+        "required fixture fields",
+        "allowed fixture types",
+        "canonical voter identities in vote traces",
+        "authority and review labels",
+        "human review and intervention fields",
+      ],
+      note:
+        "A passing run means fixture shape matches static expectations only. It does not open Corpus V2, activate agents, or grant authority.",
+      evidence_ref: ".nexus/canon/corpus/sandbox-validator-evidence-record-v0.md",
+      playbook_ref: ".nexus/canon/corpus/fixture-drift-response-playbook-v0.md",
+    },
     guardrails: {
       posture: "guardrails only / fixture schema guidance / not runtime enforcement",
       source_path: ".nexus/canon/corpus/sandbox-fixture-schema-guards-v0.md",
@@ -149,6 +179,7 @@ export function getAgentGovernanceSandboxModel(): AgentGovernanceSandboxModel {
     validation_summary: [
       "schema-valid fixture shape only",
       "canonical governance voter identities only",
+      "static/manual validator command documented",
       "guardrails only, not runtime enforcement",
       "explicit human review and intervention required",
       "no live voting, drafting, or ratification",

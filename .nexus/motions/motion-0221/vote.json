@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0221",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:54:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact validator posture block makes sandbox validation easier to inspect without implying that validation runs automatically."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Displaying the validator command and checked files aligns the operator surface with the settled manual-review posture."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This surface remains read-only and introduces no controls, automation, or authority."
+    }
+  ]
+}

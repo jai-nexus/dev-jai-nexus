@@ -1,0 +1,4 @@
+motion_id: motion-0222
+decision: ratified
+decided_at: "2026-05-16T00:00:00.000Z"
+rationale: "A manual drift-response playbook helps CONTROL_THREAD handle sandbox fixture issues consistently without creating runtime policy."

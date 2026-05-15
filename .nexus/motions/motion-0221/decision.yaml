@@ -1,0 +1,4 @@
+motion_id: motion-0221
+decision: ratified
+decided_at: "2026-05-15T23:54:00.000Z"
+rationale: "Showing validator posture in the existing sandbox review surface improves inspection without adding controls or runtime behavior."

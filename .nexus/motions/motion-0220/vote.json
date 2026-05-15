@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0220",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T23:48:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The evidence record keeps validator output interpretable without overstating what a passing run proves."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Explicitly separating PASS from live operability and authority reduces future ambiguity in readiness review."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam is documentation-only and preserves the no-authority sandbox posture."
+    }
+  ]
+}
