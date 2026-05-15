@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0228",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T06:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The control-plane should consolidate product and API implementation gates before any repo begins customer-console implementation work."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The artifact keeps product-shell readiness distinct from unsatisfied auth, billing, persistence, and customer-safe JAI gates while preserving JSONL boundary limits."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a routing-only cross-repo consolidation that adds no runtime behavior, authority, or repo mutation."
+    }
+  ]
+}
