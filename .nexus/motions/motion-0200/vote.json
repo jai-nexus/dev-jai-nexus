@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0200",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T21:18:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The archive index preserves Corpus V1 as searchable historical canon and links the settled closeout, readiness, and schema-hygiene seams without changing historical outcomes."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The seam improves handoff and audit posture while keeping Corpus V2 gated, leaving numbering unchanged, and avoiding any claim of live voting or runtime authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a docs-only archive layer that preserves Corpus V1 immutability and introduces no execution, provider, write, or persistence authority."
+    }
+  ]
+}

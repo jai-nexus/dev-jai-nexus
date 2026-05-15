@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0200",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T21:18:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The archive canon preserves Corpus V1 as searchable historical governance record without opening Corpus V2, resetting numbering, or changing historical results."
+  ],
+  "summary": {
+    "before_motion_count": 198,
+    "after_motion_count": 199,
+    "latest_bundled_motion": "motion-0200"
+  }
+}
