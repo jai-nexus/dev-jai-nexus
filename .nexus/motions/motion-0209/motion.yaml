@@ -1,0 +1,19 @@
+motion_id: motion-0209
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Agent Governance Sandbox Boundary v0"
+subtitle: "define the no-provider and no-authority sandbox boundary for future agent-governance experiments"
+kind: builder-proof
+program: q2-corpus-v2-readiness-inspection-batch-v0
+basis: motion-0208
+status: ratified
+created_at: "2026-05-15T00:00:00.000Z"
+decided_at: "2026-05-15T22:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]

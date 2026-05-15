@@ -1,0 +1,13 @@
+motion_id: motion-0209
+decision_id: decision-motion-0209
+decided_at: "2026-05-15T22:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a no-provider and no-authority agent-governance sandbox boundary seam only."
+rationale:
+  - "Future local experimentation needs a clearly bounded sandbox that cannot be mistaken for live activation."
+  - "The sandbox boundary reduces ambiguity around what fixture-only work may occur safely."
+consequences:
+  - "Future experiments can be discussed without implying runtime authority."
+  - "No provider, runtime, write, merge, or ratification authority is granted."

@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0208",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:24:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The drilldown surface exposes static readiness gate records for inspection only and adds no mutation, enforcement, or automation behavior."
+  ],
+  "summary": {
+    "before_motion_count": 206,
+    "after_motion_count": 207,
+    "latest_bundled_motion": "motion-0208"
+  }
+}

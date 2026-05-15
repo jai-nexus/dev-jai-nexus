@@ -191,6 +191,12 @@ export default async function HomePage() {
               <div className="mt-2 font-mono text-xs text-gray-400">
                 {overview.corpus_transition.readiness.source_of_truth}
               </div>
+              <Link
+                href="/operator/corpus"
+                className="mt-3 inline-flex text-xs font-medium text-sky-300 underline"
+              >
+                Open /operator/corpus
+              </Link>
               <p className="mt-3 text-xs text-gray-400">
                 {overview.corpus_transition.readiness.surface_note}
               </p>

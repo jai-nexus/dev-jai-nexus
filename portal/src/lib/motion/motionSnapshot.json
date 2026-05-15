@@ -1,12 +1,500 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-15T17:52:36.626Z",
+  "generated_at": "2026-05-15T18:24:16.155Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 205,
+  "motion_count": 209,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0210",
+      "item": {
+        "motion_id": "motion-0210",
+        "title": "Corpus V2 Pre-Opening Operator Checklist v0",
+        "subtitle": "give CONTROL_THREAD a concise checklist for what must be true before any opening proposal",
+        "program": "q2-corpus-v2-readiness-inspection-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0209",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:36:00.000Z",
+        "updated_at": "2026-05-15T18:24:16.155Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0210/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0210\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Pre-Opening Operator Checklist v0\"\nsubtitle: \"give CONTROL_THREAD a concise checklist for what must be true before any opening proposal\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-inspection-batch-v0\nbasis: motion-0209\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:36:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0210/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0210\ndecision_id: decision-motion-0210\ndecided_at: \"2026-05-15T22:36:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:36:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a pre-opening operator checklist seam only.\"\nrationale:\n  - \"A future opening proposal needs a concise operator checklist before it is even proposed.\"\n  - \"The checklist keeps later opening work bounded to current evidence and explicit motionization.\"\nconsequences:\n  - \"Pre-opening review posture becomes more concrete and repeatable.\"\n  - \"No opening action, reset action, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0210/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0210\npolicy_id: policy-motion-0210\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:36:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"pre-opening checklist seam only\"\n  - \"no opening action\"\n  - \"no numbering reset\"\n  - \"no live drafting or voting\"\n  - \"no automation\"\n  - \"no enforcement\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0210/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0210\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:36:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The pre-opening operator checklist makes future opening prerequisites easier to review without opening Corpus V2, resetting numbering, or adding authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 208,\n    \"after_motion_count\": 209,\n    \"latest_bundled_motion\": \"motion-0210\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0210/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0210\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:36:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"A concise pre-opening checklist gives CONTROL_THREAD a practical review frame before any future opening proposal is considered.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Requiring explicit evidence review and later motionization for opening, reset, and authority changes keeps the transition posture disciplined.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam is pre-opening only and adds no opening action, enforcement, automation, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0210/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Pre-Opening Operator Checklist v0\n\n**Motion:** motion-0210\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one operator-facing canon checklist, one motion package, and one\nbundled snapshot refresh. No opening action or authority change is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- activate live drafting, voting, or ratification\n- add automation\n- add enforcement\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:36:00.000Z`\n\n### 2. Implementation shape\n\n- added a concise pre-opening operator checklist artifact\n- defined required evidence before any future opening proposal\n- defined what still requires later explicit motionization\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `208`\n  - latest bundled motion: `motion-0209`\n- bundled snapshot after refresh:\n  - motion count: `209`\n  - latest bundled motion: `motion-0210`\n\n### 4. Ratification closeout\n\nMotion-0210 is ratified as a pre-opening operator checklist seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0210/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Pre-Opening Operator Checklist v0\n\n## Purpose\n\nGive `CONTROL_THREAD` a concise operator-facing checklist for what must be true\nbefore a future Corpus V2 opening motion can even be proposed.\n\n## Scope\n\n- add a pre-opening operator checklist canon artifact\n- define required evidence before any opening proposal\n- define what must still be motionized later\n- keep the seam pre-opening only and non-opening\n\n## Non-goals\n\n- no Corpus V2 opening\n- no numbering reset\n- no live drafting, voting, or ratification\n- no enforcement\n- no automation\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0210/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Pre-Opening Operator Checklist v0\n\n## Risks\n\n- a pre-opening checklist could be mistaken for opening approval\n- checklist completion could be overread as enough to skip later motions\n- operator-facing evidence requirements could become stale\n\n## Mitigations\n\n- state explicitly that the checklist is pre-opening only\n- require later explicit motionization for opening, reset, and authority changes\n- require current evidence review before any future opening proposal"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0210/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0210/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0210/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0210/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0210/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0210/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Pre-Opening Operator Checklist v0\n\n**Motion:** motion-0210\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one operator-facing canon checklist, one motion package, and one\nbundled snapshot refresh. No opening action or authority change is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- activate live drafting, voting, or ratification\n- add automation\n- add enforcement\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:36:00.000Z`\n\n### 2. Implementation shape\n\n- added a concise pre-opening operator checklist artifact\n- defined required evidence before any future opening proposal\n- defined what still requires later explicit motionization\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `208`\n  - latest bundled motion: `motion-0209`\n- bundled snapshot after refresh:\n  - motion count: `209`\n  - latest bundled motion: `motion-0210`\n\n### 4. Ratification closeout\n\nMotion-0210 is ratified as a pre-opening operator checklist seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0210\nTitle: Corpus V2 Pre-Opening Operator Checklist v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0210/motion.yaml\n2. .nexus/motions/motion-0210/decision.yaml\n3. .nexus/motions/motion-0210/policy.yaml\n4. .nexus/motions/motion-0210/verify.json\n5. .nexus/motions/motion-0210/vote.json\n6. .nexus/motions/motion-0210/execution.md\n7. .nexus/motions/motion-0210/proposal.md\n8. .nexus/motions/motion-0210/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0210\n\nCore artifact paths:\n- .nexus/motions/motion-0210/motion.yaml\n- .nexus/motions/motion-0210/decision.yaml\n- .nexus/motions/motion-0210/policy.yaml\n- .nexus/motions/motion-0210/verify.json\n- .nexus/motions/motion-0210/vote.json\n- .nexus/motions/motion-0210/execution.md\n- .nexus/motions/motion-0210/proposal.md\n- .nexus/motions/motion-0210/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0210",
+      "chat_search_href": "/operator/chats?q=motion-0210"
+    },
+    {
+      "motion_id": "motion-0209",
+      "item": {
+        "motion_id": "motion-0209",
+        "title": "Agent Governance Sandbox Boundary v0",
+        "subtitle": "define the no-provider and no-authority sandbox boundary for future agent-governance experiments",
+        "program": "q2-corpus-v2-readiness-inspection-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0208",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:30:00.000Z",
+        "updated_at": "2026-05-15T18:24:15.369Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0209/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0209\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Governance Sandbox Boundary v0\"\nsubtitle: \"define the no-provider and no-authority sandbox boundary for future agent-governance experiments\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-inspection-batch-v0\nbasis: motion-0208\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:30:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0209/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0209\ndecision_id: decision-motion-0209\ndecided_at: \"2026-05-15T22:30:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:30:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a no-provider and no-authority agent-governance sandbox boundary seam only.\"\nrationale:\n  - \"Future local experimentation needs a clearly bounded sandbox that cannot be mistaken for live activation.\"\n  - \"The sandbox boundary reduces ambiguity around what fixture-only work may occur safely.\"\nconsequences:\n  - \"Future experiments can be discussed without implying runtime authority.\"\n  - \"No provider, runtime, write, merge, or ratification authority is granted.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0209/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0209\npolicy_id: policy-motion-0209\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:30:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"sandbox-boundary seam only\"\n  - \"no provider/model dispatch\"\n  - \"no live agent runtime\"\n  - \"no autonomous ratification\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0209/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0209\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:30:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The sandbox boundary keeps future governance experiments fixture-only and non-authorizing, without introducing provider dispatch, live runtime, or write control.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 207,\n    \"after_motion_count\": 208,\n    \"latest_bundled_motion\": \"motion-0209\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0209/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0209\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:30:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The sandbox boundary creates a clear fixture-only posture for future experiments without allowing provider dispatch, live runtime, or authority paths.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Explicitly separating sandbox materials from canon and forbidding live authority reduces confusion around future drafting and voting experiments.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam is boundary-setting only and introduces no drafting activation, voting activation, automation, or write authority.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0209/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Governance Sandbox Boundary v0\n\n**Motion:** motion-0209\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon boundary artifact, one motion package, and one bundled\nsnapshot refresh. No sandbox runtime or authority capability is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live drafting or voting\n- enable autonomous ratification\n- dispatch providers or models\n- execute live agents\n- write branches or create PRs\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:30:00.000Z`\n\n### 2. Implementation shape\n\n- added a no-provider and no-authority sandbox boundary\n- defined fixture-only materials and disallowed authority\n- related the boundary to existing drafting and voting design seams\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `207`\n  - latest bundled motion: `motion-0208`\n- bundled snapshot after refresh:\n  - motion count: `208`\n  - latest bundled motion: `motion-0209`\n\n### 4. Ratification closeout\n\nMotion-0209 is ratified as a sandbox-boundary seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0209/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Governance Sandbox Boundary v0\n\n## Purpose\n\nDefine the future no-provider and no-authority sandbox boundary for\nagent-operable motion drafting and voting experiments.\n\n## Scope\n\n- add canon defining the sandbox boundary\n- define allowed future sandbox materials\n- define disallowed authority and fixture posture\n- relate the boundary to readiness and the drafting/voting design seams\n\n## Non-goals\n\n- no live drafting\n- no live voting\n- no autonomous ratification\n- no provider/model dispatch\n- no runtime execution\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0209/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Governance Sandbox Boundary v0\n\n## Risks\n\n- sandbox could be mistaken for a backdoor activation path\n- fixture outputs could be mistaken for canon\n- simulated traces could be overread as live ratification behavior\n\n## Mitigations\n\n- keep sandbox strictly local and fixture-only\n- state that sandbox output is not canon unless later motionized\n- explicitly forbid provider dispatch, runtime execution, and authority paths"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0209/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0209/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0209/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0209/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0209/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0209/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Governance Sandbox Boundary v0\n\n**Motion:** motion-0209\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon boundary artifact, one motion package, and one bundled\nsnapshot refresh. No sandbox runtime or authority capability is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live drafting or voting\n- enable autonomous ratification\n- dispatch providers or models\n- execute live agents\n- write branches or create PRs\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:30:00.000Z`\n\n### 2. Implementation shape\n\n- added a no-provider and no-authority sandbox boundary\n- defined fixture-only materials and disallowed authority\n- related the boundary to existing drafting and voting design seams\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `207`\n  - latest bundled motion: `motion-0208`\n- bundled snapshot after refresh:\n  - motion count: `208`\n  - latest bundled motion: `motion-0209`\n\n### 4. Ratification closeout\n\nMotion-0209 is ratified as a sandbox-boundary seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0209\nTitle: Agent Governance Sandbox Boundary v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0209/motion.yaml\n2. .nexus/motions/motion-0209/decision.yaml\n3. .nexus/motions/motion-0209/policy.yaml\n4. .nexus/motions/motion-0209/verify.json\n5. .nexus/motions/motion-0209/vote.json\n6. .nexus/motions/motion-0209/execution.md\n7. .nexus/motions/motion-0209/proposal.md\n8. .nexus/motions/motion-0209/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0209\n\nCore artifact paths:\n- .nexus/motions/motion-0209/motion.yaml\n- .nexus/motions/motion-0209/decision.yaml\n- .nexus/motions/motion-0209/policy.yaml\n- .nexus/motions/motion-0209/verify.json\n- .nexus/motions/motion-0209/vote.json\n- .nexus/motions/motion-0209/execution.md\n- .nexus/motions/motion-0209/proposal.md\n- .nexus/motions/motion-0209/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0209",
+      "chat_search_href": "/operator/chats?q=motion-0209"
+    },
+    {
+      "motion_id": "motion-0208",
+      "item": {
+        "motion_id": "motion-0208",
+        "title": "Corpus V2 Readiness Drilldown Surface v0",
+        "subtitle": "add a compact read-only operator drilldown surface for readiness gates",
+        "program": "q2-corpus-v2-readiness-inspection-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0207",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:24:00.000Z",
+        "updated_at": "2026-05-15T18:24:14.606Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0208/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0208\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Corpus V2 Readiness Drilldown Surface v0\"\nsubtitle: \"add a compact read-only operator drilldown surface for readiness gates\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-inspection-batch-v0\nbasis: motion-0207\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:24:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0208/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0208\ndecision_id: decision-motion-0208\ndecided_at: \"2026-05-15T22:24:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:24:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a compact read-only Corpus V2 readiness drilldown surface seam only.\"\nrationale:\n  - \"Operators need a deeper static view of readiness posture without adding a cockpit redesign.\"\n  - \"A compact dedicated route is lower-risk than overloading the root surface with full gate detail.\"\nconsequences:\n  - \"Inspection posture improves while remaining static and local.\"\n  - \"No controls, enforcement, or authority expansion are introduced.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0208/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0208\npolicy_id: policy-motion-0208\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:24:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"read-only drilldown surface only\"\n  - \"no controls\"\n  - \"no runtime state\"\n  - \"no enforcement\"\n  - \"no automation\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0208/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0208\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:24:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The drilldown surface exposes static readiness gate records for inspection only and adds no mutation, enforcement, or automation behavior.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 206,\n    \"after_motion_count\": 207,\n    \"latest_bundled_motion\": \"motion-0208\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0208/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0208\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:24:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"A compact static drilldown surface makes readiness inspection more practical without turning the operator layer into a control plane for opening Corpus V2.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"The drilldown route keeps the root overview compact while exposing the full static gate model and canon references.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This surface remains read-only and introduces no controls, runtime state, enforcement, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0208/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Corpus V2 Readiness Drilldown Surface v0\n\n**Motion:** motion-0208\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one compact static route, one canon seam, one motion package, and one\nbundled snapshot refresh. No route-state complexity or mutation behavior is\nintroduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- add controls\n- add runtime state\n- add API or DB mutation\n- implement enforcement\n- add automation\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:24:00.000Z`\n\n### 2. Implementation shape\n\n- added a compact `/operator/corpus` read-only page\n- displayed static gate records with evidence and authority context\n- linked the root readiness area to the drilldown surface\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `206`\n  - latest bundled motion: `motion-0207`\n- bundled snapshot after refresh:\n  - motion count: `207`\n  - latest bundled motion: `motion-0208`\n\n### 4. Ratification closeout\n\nMotion-0208 is ratified as a compact read-only drilldown-surface seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0208/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Corpus V2 Readiness Drilldown Surface v0\n\n## Purpose\n\nAdd a compact read-only operator drilldown surface for Corpus V2 readiness\ngates.\n\n## Scope\n\n- add a compact `/operator/corpus` drilldown page\n- display gate list, status, checkability, evidence, missing condition,\n  authority note, and source path\n- add a small link from the root readiness area\n- keep the surface static and read-only\n\n## Non-goals\n\n- no controls\n- no runtime state\n- no API or DB writes\n- no enforcement\n- no automation\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0208/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Corpus V2 Readiness Drilldown Surface v0\n\n## Risks\n\n- a new operator route could look more dynamic than it is\n- a drilldown table could be mistaken for machine-enforced gate status\n- a root link could be mistaken for a transition command\n\n## Mitigations\n\n- keep the route static and read-only\n- show source-artifact paths and explicit non-enforcement copy\n- avoid buttons or selector UI"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0208/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0208/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0208/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0208/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0208/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0208/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Corpus V2 Readiness Drilldown Surface v0\n\n**Motion:** motion-0208\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one compact static route, one canon seam, one motion package, and one\nbundled snapshot refresh. No route-state complexity or mutation behavior is\nintroduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- add controls\n- add runtime state\n- add API or DB mutation\n- implement enforcement\n- add automation\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:24:00.000Z`\n\n### 2. Implementation shape\n\n- added a compact `/operator/corpus` read-only page\n- displayed static gate records with evidence and authority context\n- linked the root readiness area to the drilldown surface\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `206`\n  - latest bundled motion: `motion-0207`\n- bundled snapshot after refresh:\n  - motion count: `207`\n  - latest bundled motion: `motion-0208`\n\n### 4. Ratification closeout\n\nMotion-0208 is ratified as a compact read-only drilldown-surface seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0208\nTitle: Corpus V2 Readiness Drilldown Surface v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0208/motion.yaml\n2. .nexus/motions/motion-0208/decision.yaml\n3. .nexus/motions/motion-0208/policy.yaml\n4. .nexus/motions/motion-0208/verify.json\n5. .nexus/motions/motion-0208/vote.json\n6. .nexus/motions/motion-0208/execution.md\n7. .nexus/motions/motion-0208/proposal.md\n8. .nexus/motions/motion-0208/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0208\n\nCore artifact paths:\n- .nexus/motions/motion-0208/motion.yaml\n- .nexus/motions/motion-0208/decision.yaml\n- .nexus/motions/motion-0208/policy.yaml\n- .nexus/motions/motion-0208/verify.json\n- .nexus/motions/motion-0208/vote.json\n- .nexus/motions/motion-0208/execution.md\n- .nexus/motions/motion-0208/proposal.md\n- .nexus/motions/motion-0208/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0208",
+      "chat_search_href": "/operator/chats?q=motion-0208"
+    },
+    {
+      "motion_id": "motion-0207",
+      "item": {
+        "motion_id": "motion-0207",
+        "title": "Static Readiness Gate Data Model v0",
+        "subtitle": "convert Corpus V2 readiness posture into a static local data model",
+        "program": "q2-corpus-v2-readiness-inspection-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0206",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:18:00.000Z",
+        "updated_at": "2026-05-15T18:24:13.722Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0207/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0207\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Static Readiness Gate Data Model v0\"\nsubtitle: \"convert Corpus V2 readiness posture into a static local data model\"\nkind: builder-proof\nprogram: q2-corpus-v2-readiness-inspection-batch-v0\nbasis: motion-0206\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:18:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0207/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0207\ndecision_id: decision-motion-0207\ndecided_at: \"2026-05-15T22:18:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:18:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a static readiness gate data-model seam only.\"\nrationale:\n  - \"A compact static gate model improves operator inspection posture without introducing runtime state or enforcement.\"\n  - \"The root readiness surface can now derive counts and blockers from the same local records.\"\nconsequences:\n  - \"Readiness inspection becomes more consistent across surfaces.\"\n  - \"No automation, enforcement, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0207/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0207\npolicy_id: policy-motion-0207\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:18:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"static local model only\"\n  - \"no enforcement\"\n  - \"no automation\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no numbering reset\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0207/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0207\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:18:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The static readiness gate model provides a local read-only representation of settled readiness canon without adding enforcement, automation, or authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 205,\n    \"after_motion_count\": 206,\n    \"latest_bundled_motion\": \"motion-0207\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0207/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0207\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:18:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The static gate model gives the operator surfaces a compact local representation of settled readiness posture without turning any gate into live enforcement.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Using one static model for statuses, evidence, missing conditions, and authority notes reduces drift across read-only surfaces.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam remains static and local and introduces no automation, runtime execution, or write authority.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0207/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Static Readiness Gate Data Model v0\n\n**Motion:** motion-0207\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one static local model, one motion package, and one\nbundled snapshot refresh. No enforcement or automation is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- implement enforcement\n- add automation\n- enable live drafting, voting, or ratification\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:18:00.000Z`\n\n### 2. Implementation shape\n\n- added static local readiness gate records\n- aligned fields to settled canon status and checkability posture\n- routed root readiness counts and blockers through the local model\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `205`\n  - latest bundled motion: `motion-0206`\n- bundled snapshot after refresh:\n  - motion count: `206`\n  - latest bundled motion: `motion-0207`\n\n### 4. Ratification closeout\n\nMotion-0207 is ratified as a static local gate-model seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0207/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Static Readiness Gate Data Model v0\n\n## Purpose\n\nConvert Corpus V2 readiness gate posture into a static local data model for\nread-only operator surfaces.\n\n## Scope\n\n- add a static local readiness gate model\n- align the model to settled readiness status and checkability values\n- use the static model to drive root readiness counts and blockers\n- keep canon as source-of-truth and the local model as UI representation only\n\n## Non-goals\n\n- no enforcement\n- no automation\n- no Corpus V2 opening\n- no numbering reset\n- no live drafting, voting, or ratification\n- no authority expansion"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0207/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Static Readiness Gate Data Model v0\n\n## Risks\n\n- a static local model could drift away from canon\n- UI-friendly labels could be mistaken for enforcement\n- root counts could overstate the underlying readiness posture\n\n## Mitigations\n\n- keep canon artifacts as the explicit source of truth\n- store evidence, missing conditions, and authority notes alongside status\n- keep the model local, static, and read-only"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0207/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0207/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0207/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0207/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0207/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0207/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Static Readiness Gate Data Model v0\n\n**Motion:** motion-0207\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one static local model, one motion package, and one\nbundled snapshot refresh. No enforcement or automation is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- implement enforcement\n- add automation\n- enable live drafting, voting, or ratification\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:18:00.000Z`\n\n### 2. Implementation shape\n\n- added static local readiness gate records\n- aligned fields to settled canon status and checkability posture\n- routed root readiness counts and blockers through the local model\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `205`\n  - latest bundled motion: `motion-0206`\n- bundled snapshot after refresh:\n  - motion count: `206`\n  - latest bundled motion: `motion-0207`\n\n### 4. Ratification closeout\n\nMotion-0207 is ratified as a static local gate-model seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0207\nTitle: Static Readiness Gate Data Model v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0207/motion.yaml\n2. .nexus/motions/motion-0207/decision.yaml\n3. .nexus/motions/motion-0207/policy.yaml\n4. .nexus/motions/motion-0207/verify.json\n5. .nexus/motions/motion-0207/vote.json\n6. .nexus/motions/motion-0207/execution.md\n7. .nexus/motions/motion-0207/proposal.md\n8. .nexus/motions/motion-0207/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0207\n\nCore artifact paths:\n- .nexus/motions/motion-0207/motion.yaml\n- .nexus/motions/motion-0207/decision.yaml\n- .nexus/motions/motion-0207/policy.yaml\n- .nexus/motions/motion-0207/verify.json\n- .nexus/motions/motion-0207/vote.json\n- .nexus/motions/motion-0207/execution.md\n- .nexus/motions/motion-0207/proposal.md\n- .nexus/motions/motion-0207/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0207",
+      "chat_search_href": "/operator/chats?q=motion-0207"
+    },
     {
       "motion_id": "motion-0206",
       "item": {
@@ -23,7 +511,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:06:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.626Z",
+        "updated_at": "2026-05-15T18:17:59.783Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -145,7 +633,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:00:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.619Z",
+        "updated_at": "2026-05-15T18:17:59.773Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -267,7 +755,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:54:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.609Z",
+        "updated_at": "2026-05-15T18:17:59.759Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -389,7 +877,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:48:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.600Z",
+        "updated_at": "2026-05-15T18:17:59.747Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -511,7 +999,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:42:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.590Z",
+        "updated_at": "2026-05-15T18:17:59.733Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -633,7 +1121,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T21:34:00.000Z",
-        "updated_at": "2026-05-15T17:52:36.278Z",
+        "updated_at": "2026-05-15T18:17:59.719Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []

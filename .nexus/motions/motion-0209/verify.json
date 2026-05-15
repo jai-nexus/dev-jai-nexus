@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0209",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:30:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The sandbox boundary keeps future governance experiments fixture-only and non-authorizing, without introducing provider dispatch, live runtime, or write control."
+  ],
+  "summary": {
+    "before_motion_count": 207,
+    "after_motion_count": 208,
+    "latest_bundled_motion": "motion-0209"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0207",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T22:18:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The static gate model gives the operator surfaces a compact local representation of settled readiness posture without turning any gate into live enforcement."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Using one static model for statuses, evidence, missing conditions, and authority notes reduces drift across read-only surfaces."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam remains static and local and introduces no automation, runtime execution, or write authority."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+motion_id: motion-0207
+policy_id: policy-motion-0207
+status: RATIFIED
+evaluated_at: "2026-05-15T22:18:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "static local model only"
+  - "no enforcement"
+  - "no automation"
+  - "Corpus V2 remains gated and unopened"
+  - "no numbering reset"
+  - "no runtime execution"
+  - "no write authority"

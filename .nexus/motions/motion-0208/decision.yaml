@@ -1,0 +1,13 @@
+motion_id: motion-0208
+decision_id: decision-motion-0208
+decided_at: "2026-05-15T22:24:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:24:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a compact read-only Corpus V2 readiness drilldown surface seam only."
+rationale:
+  - "Operators need a deeper static view of readiness posture without adding a cockpit redesign."
+  - "A compact dedicated route is lower-risk than overloading the root surface with full gate detail."
+consequences:
+  - "Inspection posture improves while remaining static and local."
+  - "No controls, enforcement, or authority expansion are introduced."

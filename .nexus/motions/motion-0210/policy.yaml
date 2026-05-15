@@ -1,0 +1,22 @@
+motion_id: motion-0210
+policy_id: policy-motion-0210
+status: RATIFIED
+evaluated_at: "2026-05-15T22:36:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "pre-opening checklist seam only"
+  - "no opening action"
+  - "no numbering reset"
+  - "no live drafting or voting"
+  - "no automation"
+  - "no enforcement"
+  - "no write authority"
