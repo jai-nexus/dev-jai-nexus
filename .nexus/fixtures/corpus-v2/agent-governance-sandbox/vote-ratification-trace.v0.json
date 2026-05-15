@@ -1,0 +1,55 @@
+{
+  "fixture_id": "corpus-v2-vote-ratification-fixture-v0",
+  "fixture_type": "vote_ratification_trace",
+  "fixture_status": "simulated_review_only",
+  "fixture_labels": [
+    "Fixture-only",
+    "Simulated",
+    "Not canon",
+    "Review-only",
+    "No authority",
+    "Corpus V2 not open"
+  ],
+  "vote_trace": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "Simulated proposer approval for a schema-valid draft fixture.",
+      "evidence_ref": "validate-motion:pass"
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Simulated challenger review confirms scope and non-goals are explicit.",
+      "evidence_ref": "challenge-review:clear"
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "Simulated arbiter approval is contingent on explicit human review and no-authority boundaries.",
+      "evidence_ref": "authority-boundary:preserved"
+    }
+  ],
+  "ratification_trace": {
+    "simulated_result": "ratified_if_all_required_votes_pass",
+    "human_intervention_required": true,
+    "human_intervention_field": "control_thread_review_required",
+    "validation_evidence": [
+      "schema-valid package",
+      "canonical voter identities only",
+      "authority boundary preserved"
+    ]
+  },
+  "blocked_trace_example": {
+    "simulated_result": "blocked_pending_validation_or_authority",
+    "blocker": "validation_evidence_missing_or_authority_boundary_unclear",
+    "human_intervention_required": true
+  },
+  "authority_boundary": [
+    "no live voting",
+    "no autonomous ratification",
+    "no provider/model dispatch",
+    "no runtime execution",
+    "Corpus V2 not open"
+  ]
+}

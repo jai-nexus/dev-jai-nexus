@@ -1,12 +1,500 @@
 {
   "snapshot_id": "operator-motions-snapshot-v0",
   "schema_version": "0.1.0",
-  "generated_at": "2026-05-15T18:24:16.155Z",
+  "generated_at": "2026-05-15T18:41:20.495Z",
   "source_repo": "dev-jai-nexus",
   "source_path": ".nexus/motions",
-  "motion_count": 209,
+  "motion_count": 213,
   "generator": "portal/scripts/build-motion-snapshot.mjs",
   "entries": [
+    {
+      "motion_id": "motion-0214",
+      "item": {
+        "motion_id": "motion-0214",
+        "title": "Sandbox Trace Review Surface v0",
+        "subtitle": "add a compact read-only operator section for inspecting sandbox trace fixtures",
+        "program": "q2-agent-governance-fixture-traces-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0213",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:06:00.000Z",
+        "updated_at": "2026-05-15T18:41:20.495Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0214/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0214\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Sandbox Trace Review Surface v0\"\nsubtitle: \"add a compact read-only operator section for inspecting sandbox trace fixtures\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-traces-batch-v0\nbasis: motion-0213\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:06:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0214/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0214\ndecision_id: decision-motion-0214\ndecided_at: \"2026-05-15T23:06:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T23:06:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a compact sandbox trace review surface seam only.\"\nrationale:\n  - \"Operators need one compact review block for sandbox fixtures without implying live agent activity.\"\n  - \"The review section keeps fixture traces inspectable while staying clearly non-canon and non-authoritative.\"\nconsequences:\n  - \"Fixture review posture becomes more visible.\"\n  - \"No controls, runtime behavior, or authority expansion are introduced.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0214/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0214\npolicy_id: policy-motion-0214\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T23:06:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"fixture-review surface only\"\n  - \"no controls\"\n  - \"no runtime state\"\n  - \"not canon\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0214/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0214\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T23:06:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The sandbox trace review section exposes static fixture summaries, validation notes, and human boundary posture without adding live behavior or authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 212,\n    \"after_motion_count\": 213,\n    \"latest_bundled_motion\": \"motion-0214\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0214/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0214\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:06:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"A compact fixture-review section makes sandbox traces easier to inspect without implying that live agents are drafting, voting, or ratifying anything.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Explicit fixture-only labels, source paths, and human-boundary notes keep the surface useful without becoming a live governance console.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam remains read-only and introduces no controls, runtime behavior, provider dispatch, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0214/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Sandbox Trace Review Surface v0\n\n**Motion:** motion-0214\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one static UI model, one compact review section, one motion package,\nand one bundled snapshot refresh. No runtime or live behavior is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- add controls\n- add runtime state\n- add live drafting, voting, or ratification\n- dispatch providers or models\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T23:06:00.000Z`\n\n### 2. Implementation shape\n\n- added a static local sandbox review model\n- rendered one compact review section on `/operator/corpus`\n- exposed fixture paths, labels, validation summary, and human boundary note\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `212`\n  - latest bundled motion: `motion-0213`\n- bundled snapshot after refresh:\n  - motion count: `213`\n  - latest bundled motion: `motion-0214`\n\n### 4. Ratification closeout\n\nMotion-0214 is ratified as a sandbox-trace review surface seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0214/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Sandbox Trace Review Surface v0\n\n## Purpose\n\nAdd a compact read-only operator section for inspecting sandbox trace fixtures.\n\n## Scope\n\n- add a small sandbox review section to `/operator/corpus`\n- display sandbox posture, sample draft trace summary, sample vote trace\n  summary, validation summary, and human boundary note\n- source-reference the fixture and canon paths\n- keep the surface static and non-interactive\n\n## Non-goals\n\n- no controls\n- no runtime state\n- no API or DB calls\n- no live status\n- no heartbeat\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0214/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Sandbox Trace Review Surface v0\n\n## Risks\n\n- fixture review UI could be mistaken for a live sandbox\n- static summaries could be mistaken for canonical records\n- extra surface copy could imply agents are active\n\n## Mitigations\n\n- label the section as fixture-only, simulated, not canon, review-only, and no\n  authority\n- keep the section compact and clearly separate from readiness gates\n- avoid controls, live status, and mutation paths"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0214/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0214/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0214/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0214/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0214/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0214/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Sandbox Trace Review Surface v0\n\n**Motion:** motion-0214\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one static UI model, one compact review section, one motion package,\nand one bundled snapshot refresh. No runtime or live behavior is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- add controls\n- add runtime state\n- add live drafting, voting, or ratification\n- dispatch providers or models\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T23:06:00.000Z`\n\n### 2. Implementation shape\n\n- added a static local sandbox review model\n- rendered one compact review section on `/operator/corpus`\n- exposed fixture paths, labels, validation summary, and human boundary note\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `212`\n  - latest bundled motion: `motion-0213`\n- bundled snapshot after refresh:\n  - motion count: `213`\n  - latest bundled motion: `motion-0214`\n\n### 4. Ratification closeout\n\nMotion-0214 is ratified as a sandbox-trace review surface seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0214\nTitle: Sandbox Trace Review Surface v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0214/motion.yaml\n2. .nexus/motions/motion-0214/decision.yaml\n3. .nexus/motions/motion-0214/policy.yaml\n4. .nexus/motions/motion-0214/verify.json\n5. .nexus/motions/motion-0214/vote.json\n6. .nexus/motions/motion-0214/execution.md\n7. .nexus/motions/motion-0214/proposal.md\n8. .nexus/motions/motion-0214/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0214\n\nCore artifact paths:\n- .nexus/motions/motion-0214/motion.yaml\n- .nexus/motions/motion-0214/decision.yaml\n- .nexus/motions/motion-0214/policy.yaml\n- .nexus/motions/motion-0214/verify.json\n- .nexus/motions/motion-0214/vote.json\n- .nexus/motions/motion-0214/execution.md\n- .nexus/motions/motion-0214/proposal.md\n- .nexus/motions/motion-0214/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0214",
+      "chat_search_href": "/operator/chats?q=motion-0214"
+    },
+    {
+      "motion_id": "motion-0213",
+      "item": {
+        "motion_id": "motion-0213",
+        "title": "Static Vote/Ratification Trace Fixture v0",
+        "subtitle": "add a static fixture demonstrating future canonical vote and ratification trace shape",
+        "program": "q2-agent-governance-fixture-traces-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0212",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T23:00:00.000Z",
+        "updated_at": "2026-05-15T18:41:19.737Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0213/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0213\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Static Vote/Ratification Trace Fixture v0\"\nsubtitle: \"add a static fixture demonstrating future canonical vote and ratification trace shape\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-traces-batch-v0\nbasis: motion-0212\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T23:00:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0213/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0213\ndecision_id: decision-motion-0213\ndecided_at: \"2026-05-15T23:00:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T23:00:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a static vote and ratification trace fixture seam only.\"\nrationale:\n  - \"A concrete trace fixture makes future vote and ratification design easier to inspect.\"\n  - \"The fixture remains simulated, review-only, and non-authoritative.\"\nconsequences:\n  - \"Canonical vote shape and human-boundary review become easier to inspect.\"\n  - \"No live voting, autonomous ratification, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0213/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0213\npolicy_id: policy-motion-0213\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T23:00:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"fixture-only simulated trace\"\n  - \"not canon\"\n  - \"no live voting\"\n  - \"no autonomous ratification\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0213/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0213\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T23:00:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The static vote and ratification fixture demonstrates canonical voter identities, evidence references, and human intervention without enabling live voting or autonomous ratification.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 211,\n    \"after_motion_count\": 212,\n    \"latest_bundled_motion\": \"motion-0213\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0213/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0213\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T23:00:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The trace fixture makes future canonical voting posture concrete while staying simulated, review-only, and non-authoritative.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Including evidence references, human intervention, and a blocked example improves inspection value without implying live workflow behavior.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam adds only a static simulated trace and introduces no live voting, autonomous ratification, runtime execution, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0213/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Static Vote/Ratification Trace Fixture v0\n\n**Motion:** motion-0213\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one local fixture, one small UI model update, one motion package, and\none bundled snapshot refresh. No live voting or autonomous ratification is\nintroduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live voting\n- enable autonomous ratification\n- dispatch providers or models\n- add runtime execution\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T23:00:00.000Z`\n\n### 2. Implementation shape\n\n- added a simulated vote and ratification trace fixture\n- used canonical governance voter identities only\n- included evidence refs, human intervention, and a blocked example\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `211`\n  - latest bundled motion: `motion-0212`\n- bundled snapshot after refresh:\n  - motion count: `212`\n  - latest bundled motion: `motion-0213`\n\n### 4. Ratification closeout\n\nMotion-0213 is ratified as a static vote/ratification fixture seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0213/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Static Vote/Ratification Trace Fixture v0\n\n## Purpose\n\nAdd a static fixture demonstrating future canonical vote and ratification trace\nshape.\n\n## Scope\n\n- add a local JSON fixture for a simulated vote and ratification trace\n- demonstrate canonical voter identities, reasons, evidence refs, and human\n  intervention\n- include a concise blocked example\n- keep the fixture simulated, review-only, and non-authoritative\n\n## Non-goals\n\n- no live voting\n- no autonomous ratification\n- no provider/model dispatch\n- no runtime execution\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0213/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Static Vote/Ratification Trace Fixture v0\n\n## Risks\n\n- simulated votes could be mistaken for live votes\n- ratification traces could imply autonomous approval\n- blocked examples could look like active workflow rules\n\n## Mitigations\n\n- label the fixture as simulated, fixture-only, and non-authoritative\n- require explicit human intervention fields\n- keep blocked traces illustrative rather than normative"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0213/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0213/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0213/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0213/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0213/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0213/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Static Vote/Ratification Trace Fixture v0\n\n**Motion:** motion-0213\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one local fixture, one small UI model update, one motion package, and\none bundled snapshot refresh. No live voting or autonomous ratification is\nintroduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live voting\n- enable autonomous ratification\n- dispatch providers or models\n- add runtime execution\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T23:00:00.000Z`\n\n### 2. Implementation shape\n\n- added a simulated vote and ratification trace fixture\n- used canonical governance voter identities only\n- included evidence refs, human intervention, and a blocked example\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `211`\n  - latest bundled motion: `motion-0212`\n- bundled snapshot after refresh:\n  - motion count: `212`\n  - latest bundled motion: `motion-0213`\n\n### 4. Ratification closeout\n\nMotion-0213 is ratified as a static vote/ratification fixture seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0213\nTitle: Static Vote/Ratification Trace Fixture v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0213/motion.yaml\n2. .nexus/motions/motion-0213/decision.yaml\n3. .nexus/motions/motion-0213/policy.yaml\n4. .nexus/motions/motion-0213/verify.json\n5. .nexus/motions/motion-0213/vote.json\n6. .nexus/motions/motion-0213/execution.md\n7. .nexus/motions/motion-0213/proposal.md\n8. .nexus/motions/motion-0213/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0213\n\nCore artifact paths:\n- .nexus/motions/motion-0213/motion.yaml\n- .nexus/motions/motion-0213/decision.yaml\n- .nexus/motions/motion-0213/policy.yaml\n- .nexus/motions/motion-0213/verify.json\n- .nexus/motions/motion-0213/vote.json\n- .nexus/motions/motion-0213/execution.md\n- .nexus/motions/motion-0213/proposal.md\n- .nexus/motions/motion-0213/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0213",
+      "chat_search_href": "/operator/chats?q=motion-0213"
+    },
+    {
+      "motion_id": "motion-0212",
+      "item": {
+        "motion_id": "motion-0212",
+        "title": "Static Motion Draft Fixture v0",
+        "subtitle": "add a static fixture demonstrating future agent motion drafting shape",
+        "program": "q2-agent-governance-fixture-traces-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0211",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:54:00.000Z",
+        "updated_at": "2026-05-15T18:41:18.990Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0212/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0212\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Static Motion Draft Fixture v0\"\nsubtitle: \"add a static fixture demonstrating future agent motion drafting shape\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-traces-batch-v0\nbasis: motion-0211\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:54:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0212/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0212\ndecision_id: decision-motion-0212\ndecided_at: \"2026-05-15T22:54:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:54:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a static motion-draft fixture seam only.\"\nrationale:\n  - \"A concrete draft fixture makes the future drafting design easier to review.\"\n  - \"The fixture remains placeholder-only and non-authoritative.\"\nconsequences:\n  - \"Draft-shape review becomes more concrete.\"\n  - \"No live drafting, runtime execution, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0212/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0212\npolicy_id: policy-motion-0212\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:54:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"fixture-only static draft\"\n  - \"not canon\"\n  - \"not executable\"\n  - \"no live drafting\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0212/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0212\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:54:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The static motion-draft fixture demonstrates future drafting shape without creating a live draft, branch authority, or Corpus V2 opening path.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 210,\n    \"after_motion_count\": 211,\n    \"latest_bundled_motion\": \"motion-0212\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0212/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0212\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:54:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The draft fixture gives the future drafting design a concrete review artifact while remaining placeholder-only and non-executable.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"The fixture keeps proposer identity separate from role/lens contributors and preserves explicit human review and no-authority language.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam adds only a static fixture and no live draft path, runtime execution, or write authority.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0212/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Static Motion Draft Fixture v0\n\n**Motion:** motion-0212\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one local fixture, one small UI model update, one motion package, and\none bundled snapshot refresh. No live drafting behavior is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live drafting\n- enable branch-write or PR authority\n- dispatch providers or models\n- add runtime execution\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:54:00.000Z`\n\n### 2. Implementation shape\n\n- added a simulated draft-motion fixture\n- preserved placeholder IDs, human review requirement, and no-authority language\n- exposed the fixture through a static review model\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `210`\n  - latest bundled motion: `motion-0211`\n- bundled snapshot after refresh:\n  - motion count: `211`\n  - latest bundled motion: `motion-0212`\n\n### 4. Ratification closeout\n\nMotion-0212 is ratified as a static motion-draft fixture seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0212/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Static Motion Draft Fixture v0\n\n## Purpose\n\nAdd a static fixture demonstrating the future shape of an internally drafted\nCorpus V2 motion package.\n\n## Scope\n\n- add a local JSON fixture for a simulated draft motion\n- expose the fixture through a compact static UI model if helpful\n- keep the fixture example-only, not canon, and not executable\n\n## Non-goals\n\n- no live draft\n- no branch-write or PR authority\n- no provider/model dispatch\n- no runtime execution\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0212/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Static Motion Draft Fixture v0\n\n## Risks\n\n- a fixture draft could be misread as a real proposal\n- placeholder IDs could look like active Corpus V2 numbering\n- role/lens contributors could be confused with live voter identities\n\n## Mitigations\n\n- label the fixture as simulated, review-only, and not canon\n- use placeholder corpus and motion IDs explicitly\n- preserve the distinction between proposer identity and role/lens contributors"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0212/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0212/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0212/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0212/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0212/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0212/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Static Motion Draft Fixture v0\n\n**Motion:** motion-0212\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one local fixture, one small UI model update, one motion package, and\none bundled snapshot refresh. No live drafting behavior is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- enable live drafting\n- enable branch-write or PR authority\n- dispatch providers or models\n- add runtime execution\n- open Corpus V2\n- reset numbering\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:54:00.000Z`\n\n### 2. Implementation shape\n\n- added a simulated draft-motion fixture\n- preserved placeholder IDs, human review requirement, and no-authority language\n- exposed the fixture through a static review model\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `210`\n  - latest bundled motion: `motion-0211`\n- bundled snapshot after refresh:\n  - motion count: `211`\n  - latest bundled motion: `motion-0212`\n\n### 4. Ratification closeout\n\nMotion-0212 is ratified as a static motion-draft fixture seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0212\nTitle: Static Motion Draft Fixture v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0212/motion.yaml\n2. .nexus/motions/motion-0212/decision.yaml\n3. .nexus/motions/motion-0212/policy.yaml\n4. .nexus/motions/motion-0212/verify.json\n5. .nexus/motions/motion-0212/vote.json\n6. .nexus/motions/motion-0212/execution.md\n7. .nexus/motions/motion-0212/proposal.md\n8. .nexus/motions/motion-0212/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0212\n\nCore artifact paths:\n- .nexus/motions/motion-0212/motion.yaml\n- .nexus/motions/motion-0212/decision.yaml\n- .nexus/motions/motion-0212/policy.yaml\n- .nexus/motions/motion-0212/verify.json\n- .nexus/motions/motion-0212/vote.json\n- .nexus/motions/motion-0212/execution.md\n- .nexus/motions/motion-0212/proposal.md\n- .nexus/motions/motion-0212/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0212",
+      "chat_search_href": "/operator/chats?q=motion-0212"
+    },
+    {
+      "motion_id": "motion-0211",
+      "item": {
+        "motion_id": "motion-0211",
+        "title": "Agent Governance Sandbox Prototype v0",
+        "subtitle": "add the first fixture-only sandbox prototype for future agent-governance traces",
+        "program": "q2-agent-governance-fixture-traces-batch-v0",
+        "kind": "builder-proof",
+        "basis": "motion-0210",
+        "motion_status": "ratified",
+        "decision_status": "RATIFIED",
+        "required_ok": null,
+        "eligible_to_vote": true,
+        "vote_result": null,
+        "created_at": "2026-05-15T00:00:00.000Z",
+        "decided_at": "2026-05-15T22:48:00.000Z",
+        "updated_at": "2026-05-15T18:41:18.220Z",
+        "queue_state": "ratified",
+        "attention_flags": [],
+        "missing_files": []
+      },
+      "core_artifacts": [
+        {
+          "key": "motion.yaml",
+          "path": ".nexus/motions/motion-0211/motion.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0211\nversion: \"0.1\"\nprotocol_version: \"0.3.8\"\ntitle: \"Agent Governance Sandbox Prototype v0\"\nsubtitle: \"add the first fixture-only sandbox prototype for future agent-governance traces\"\nkind: builder-proof\nprogram: q2-agent-governance-fixture-traces-batch-v0\nbasis: motion-0210\nstatus: ratified\ncreated_at: \"2026-05-15T00:00:00.000Z\"\ndecided_at: \"2026-05-15T22:48:00.000Z\"\nproposer: ARCHITECT\nchallenger: VERIFIER\narbiter: OPERATOR\ntarget:\n  domain: \"dev.jai.nexus\"\n  repo: \"dev-jai-nexus\"\nchecks_required: [validate_motion, validate_agency, typecheck]\nchecks_optional: [build]"
+        },
+        {
+          "key": "decision.yaml",
+          "path": ".nexus/motions/motion-0211/decision.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0211\ndecision_id: decision-motion-0211\ndecided_at: \"2026-05-15T22:48:00.000Z\"\nratified_by: \"CONTROL_THREAD\"\nlast_updated: \"2026-05-15T22:48:00.000Z\"\nstatus: RATIFIED\ndecision_summary: \"Ratified as a fixture-only agent-governance sandbox prototype seam only.\"\nrationale:\n  - \"Future sandbox traces need a clear prototype definition before fixture examples are added.\"\n  - \"The prototype clarifies categories and review posture without implying live agents.\"\nconsequences:\n  - \"Fixture traces have a clearer framing layer.\"\n  - \"No runtime, provider, or authority expansion occurs.\""
+        },
+        {
+          "key": "policy.yaml",
+          "path": ".nexus/motions/motion-0211/policy.yaml",
+          "present": true,
+          "parse_ok": true,
+          "preview": "motion_id: motion-0211\npolicy_id: policy-motion-0211\nstatus: RATIFIED\nevaluated_at: \"2026-05-15T22:48:00.000Z\"\nrequired_ok: true\neligible_to_vote: true\nrecommended_vote: \"yes\"\nchecks:\n  required:\n    - validate_motion\n    - validate_agency\n    - typecheck\n  optional:\n    - build\nguardrails:\n  - \"fixture-only sandbox prototype\"\n  - \"not canon by default\"\n  - \"no live drafting or voting\"\n  - \"no autonomous ratification\"\n  - \"Corpus V2 remains gated and unopened\"\n  - \"no runtime execution\"\n  - \"no write authority\""
+        },
+        {
+          "key": "verify.json",
+          "path": ".nexus/motions/motion-0211/verify.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0211\",\n  \"status\": \"RATIFIED\",\n  \"evaluated_at\": \"2026-05-15T22:48:00.000Z\",\n  \"required_ok\": true,\n  \"checks\": {\n    \"validate_motion\": \"pass\",\n    \"validate_agency\": \"pass\",\n    \"typecheck\": \"pass\",\n    \"snapshot_write\": \"pass\",\n    \"snapshot_check\": \"pass\",\n    \"build\": \"pass\"\n  },\n  \"notes\": [\n    \"The sandbox prototype canon defines fixture-only trace categories and review posture without enabling live agent behavior or authority.\"\n  ],\n  \"summary\": {\n    \"before_motion_count\": 209,\n    \"after_motion_count\": 210,\n    \"latest_bundled_motion\": \"motion-0211\"\n  }\n}"
+        },
+        {
+          "key": "vote.json",
+          "path": ".nexus/motions/motion-0211/vote.json",
+          "present": true,
+          "parse_ok": true,
+          "preview": "{\n  \"motion_id\": \"motion-0211\",\n  \"status\": \"RATIFIED\",\n  \"decided_at\": \"2026-05-15T22:48:00.000Z\",\n  \"result\": \"PASS\",\n  \"votes\": [\n    {\n      \"voter\": \"jai-proposer\",\n      \"vote\": \"yes\",\n      \"reason\": \"The sandbox prototype gives future fixture traces a clear review-only frame without implying live agent governance.\"\n    },\n    {\n      \"voter\": \"jai-challenger\",\n      \"vote\": \"yes\",\n      \"reason\": \"Explicit trace categories and non-canon posture reduce ambiguity around what sandbox materials are allowed to show.\"\n    },\n    {\n      \"voter\": \"jai-arbiter\",\n      \"vote\": \"yes\",\n      \"reason\": \"This seam is prototype canon only and introduces no provider dispatch, runtime execution, or authority expansion.\"\n    }\n  ]\n}"
+        },
+        {
+          "key": "execution.md",
+          "path": ".nexus/motions/motion-0211/execution.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Execution: Agent Governance Sandbox Prototype v0\n\n**Motion:** motion-0211\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one motion package, and one bundled snapshot\nrefresh. No live behavior or authority capability is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- dispatch providers or models\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:48:00.000Z`\n\n### 2. Implementation shape\n\n- added canon defining the first sandbox prototype\n- defined fixture-only trace categories\n- preserved non-canon and no-authority posture\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `209`\n  - latest bundled motion: `motion-0210`\n- bundled snapshot after refresh:\n  - motion count: `210`\n  - latest bundled motion: `motion-0211`\n\n### 4. Ratification closeout\n\nMotion-0211 is ratified as a fixture-only sandbox-prototype seam only."
+        },
+        {
+          "key": "proposal.md",
+          "path": ".nexus/motions/motion-0211/proposal.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Proposal: Agent Governance Sandbox Prototype v0\n\n## Purpose\n\nAdd the first fixture-only sandbox prototype for future agent-governance\ndrafting, voting, and ratification review.\n\n## Scope\n\n- add canon defining sandbox prototype categories and constraints\n- tie the prototype to the sandbox boundary and existing drafting/voting designs\n- keep fixture outputs review-only and non-canon by default\n\n## Non-goals\n\n- no live drafting\n- no live voting\n- no autonomous ratification\n- no provider/model dispatch\n- no runtime execution\n- no Corpus V2 opening or numbering reset"
+        },
+        {
+          "key": "challenge.md",
+          "path": ".nexus/motions/motion-0211/challenge.md",
+          "present": true,
+          "parse_ok": null,
+          "preview": "# Challenge: Agent Governance Sandbox Prototype v0\n\n## Risks\n\n- sandbox traces could be overread as proto-live governance\n- fixture categories could be mistaken for canon outputs\n- sandbox review could be mistaken for readiness satisfaction\n\n## Mitigations\n\n- label all outputs as fixture-only, simulated, and not canon\n- tie the prototype explicitly to the sandbox boundary\n- preserve explicit human review and no-authority language"
+        }
+      ],
+      "secondary_artifacts": [
+        {
+          "label": "decision.md",
+          "path": ".nexus/motions/motion-0211/decision.md",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.handoff.json",
+          "path": ".nexus/motions/motion-0211/execution.handoff.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.activation.json",
+          "path": ".nexus/motions/motion-0211/execution.activation.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "execution.receipt.json",
+          "path": ".nexus/motions/motion-0211/execution.receipt.json",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "escalation.yaml",
+          "path": ".nexus/motions/motion-0211/escalation.yaml",
+          "present": false,
+          "detail": null
+        },
+        {
+          "label": "panels",
+          "path": ".nexus/motions/motion-0211/panels",
+          "present": false,
+          "detail": null
+        }
+      ],
+      "execution_excerpt": "# Execution: Agent Governance Sandbox Prototype v0\n\n**Motion:** motion-0211\n**Role:** BUILDER\n**Date:** 2026-05-15\n**Status:** RATIFIED\n\n---\n\n## Cost estimate\n\nCategory: small\nBasis: one canon artifact, one motion package, and one bundled snapshot\nrefresh. No live behavior or authority capability is introduced.\n\n---\n\n## Boundary confirmation\n\nThis motion must not:\n\n- open Corpus V2\n- reset numbering\n- enable live drafting, voting, or ratification\n- dispatch providers or models\n- add runtime execution\n- expand write or execution authority\n\n---\n\n## Evidence log\n\n### 1. Final ratification timestamp\n\n- `2026-05-15T22:48:00.000Z`\n\n### 2. Implementation shape\n\n- added canon defining the first sandbox prototype\n- defined fixture-only trace categories\n- preserved non-canon and no-authority posture\n\n### 3. Snapshot gate result\n\n- bundled snapshot before refresh:\n  - motion count: `209`\n  - latest bundled motion: `motion-0210`\n- bundled snapshot after refresh:\n  - motion count: `210`\n  - latest bundled motion: `motion-0211`\n\n### 4. Ratification closeout\n\nMotion-0211 is ratified as a fixture-only sandbox-prototype seam only.",
+      "prompt_pack": "Repo: dev-jai-nexus\nMotion: motion-0211\nTitle: Agent Governance Sandbox Prototype v0\nQueue state: ratified\nDecision status: RATIFIED\nRequired gates ok: null\nVote result: null\n\nAttention flags:\n- none\n\nRead order:\n1. .nexus/motions/motion-0211/motion.yaml\n2. .nexus/motions/motion-0211/decision.yaml\n3. .nexus/motions/motion-0211/policy.yaml\n4. .nexus/motions/motion-0211/verify.json\n5. .nexus/motions/motion-0211/vote.json\n6. .nexus/motions/motion-0211/execution.md\n7. .nexus/motions/motion-0211/proposal.md\n8. .nexus/motions/motion-0211/challenge.md\n\nRead-only boundary:\n- inspect the motion package only\n- do not dispatch, vote, ratify, or mutate repo artifacts unless separately instructed",
+      "handoff_pack": "Motion handoff pack for motion-0211\n\nCore artifact paths:\n- .nexus/motions/motion-0211/motion.yaml\n- .nexus/motions/motion-0211/decision.yaml\n- .nexus/motions/motion-0211/policy.yaml\n- .nexus/motions/motion-0211/verify.json\n- .nexus/motions/motion-0211/vote.json\n- .nexus/motions/motion-0211/execution.md\n- .nexus/motions/motion-0211/proposal.md\n- .nexus/motions/motion-0211/challenge.md\n\nSecondary evidence surfaces:\n- none\n\nChat search:\n- /operator/chats?q=motion-0211",
+      "chat_search_href": "/operator/chats?q=motion-0211"
+    },
     {
       "motion_id": "motion-0210",
       "item": {
@@ -23,7 +511,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:36:00.000Z",
-        "updated_at": "2026-05-15T18:24:16.155Z",
+        "updated_at": "2026-05-15T18:34:34.795Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -145,7 +633,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:30:00.000Z",
-        "updated_at": "2026-05-15T18:24:15.369Z",
+        "updated_at": "2026-05-15T18:34:34.790Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -267,7 +755,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:24:00.000Z",
-        "updated_at": "2026-05-15T18:24:14.606Z",
+        "updated_at": "2026-05-15T18:34:34.781Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []
@@ -389,7 +877,7 @@
         "vote_result": null,
         "created_at": "2026-05-15T00:00:00.000Z",
         "decided_at": "2026-05-15T22:18:00.000Z",
-        "updated_at": "2026-05-15T18:24:13.722Z",
+        "updated_at": "2026-05-15T18:34:34.773Z",
         "queue_state": "ratified",
         "attention_flags": [],
         "missing_files": []

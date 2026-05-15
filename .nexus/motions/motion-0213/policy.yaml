@@ -1,0 +1,22 @@
+motion_id: motion-0213
+policy_id: policy-motion-0213
+status: RATIFIED
+evaluated_at: "2026-05-15T23:00:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "fixture-only simulated trace"
+  - "not canon"
+  - "no live voting"
+  - "no autonomous ratification"
+  - "Corpus V2 remains gated and unopened"
+  - "no runtime execution"
+  - "no write authority"

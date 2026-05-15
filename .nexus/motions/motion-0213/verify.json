@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0213",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T23:00:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The static vote and ratification fixture demonstrates canonical voter identities, evidence references, and human intervention without enabling live voting or autonomous ratification."
+  ],
+  "summary": {
+    "before_motion_count": 211,
+    "after_motion_count": 212,
+    "latest_bundled_motion": "motion-0213"
+  }
+}

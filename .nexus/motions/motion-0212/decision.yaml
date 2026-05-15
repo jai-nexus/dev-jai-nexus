@@ -1,0 +1,13 @@
+motion_id: motion-0212
+decision_id: decision-motion-0212
+decided_at: "2026-05-15T22:54:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T22:54:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a static motion-draft fixture seam only."
+rationale:
+  - "A concrete draft fixture makes the future drafting design easier to review."
+  - "The fixture remains placeholder-only and non-authoritative."
+consequences:
+  - "Draft-shape review becomes more concrete."
+  - "No live drafting, runtime execution, or authority expansion occurs."

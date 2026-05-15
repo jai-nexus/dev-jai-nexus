@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0212",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:54:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The static motion-draft fixture demonstrates future drafting shape without creating a live draft, branch authority, or Corpus V2 opening path."
+  ],
+  "summary": {
+    "before_motion_count": 210,
+    "after_motion_count": 211,
+    "latest_bundled_motion": "motion-0212"
+  }
+}
