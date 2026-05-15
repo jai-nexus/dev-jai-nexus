@@ -1,0 +1,12 @@
+motion_id: motion-0227
+decision_id: decision-motion-0227
+decided_at: "2026-05-16T05:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T05:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only update for the settled jai-nexus product readiness arc."
+rationale:
+  - "The control-plane canon should record that jai-nexus has reached a stable product-readiness placeholder posture through PR #23 without claiming implementation gates are complete."
+consequences:
+  - "Cross-repo routing becomes clearer for future product implementation seams."
+  - "No runtime behavior, implementation authority, or Corpus V2 change is introduced."
