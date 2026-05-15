@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0197",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T18:32:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The readiness gate defines blockers and prerequisites only and does not authorize Corpus V2 opening or authority expansion."
+  ],
+  "summary": {
+    "before_motion_count": 195,
+    "after_motion_count": 196,
+    "latest_bundled_motion": "motion-0197"
+  }
+}

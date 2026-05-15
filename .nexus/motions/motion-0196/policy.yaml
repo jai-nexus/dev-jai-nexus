@@ -1,0 +1,22 @@
+motion_id: motion-0196
+policy_id: policy-motion-0196
+status: RATIFIED
+evaluated_at: "2026-05-15T18:10:00.000Z"
+required_ok: true
+eligible_to_vote: true
+recommended_vote: "yes"
+checks:
+  required:
+    - validate_motion
+    - validate_agency
+    - typecheck
+  optional:
+    - build
+guardrails:
+  - "canon and historical framing only"
+  - "Corpus V2 remains gated and unopened"
+  - "no numbering reset yet"
+  - "no mutation of historical Corpus V1 records beyond explicit hygiene fixes"
+  - "no provider/model call"
+  - "no runtime execution"
+  - "no write authority"

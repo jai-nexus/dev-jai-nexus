@@ -141,6 +141,57 @@ export default async function HomePage() {
           <div className="grid gap-4 xl:grid-cols-3">
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Corpus transition</h3>
+                <ToneBadge tone="amber">
+                  {overview.corpus_transition.current_corpus.status}
+                </ToneBadge>
+                <ToneBadge tone="slate">
+                  {overview.corpus_transition.future_corpus.status}
+                </ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>
+                  - current corpus: {overview.corpus_transition.current_corpus.label}
+                </li>
+                <li>
+                  - governance posture:{" "}
+                  {overview.corpus_transition.current_corpus.governance_posture}
+                </li>
+                <li>
+                  - latest Corpus V1 motion:{" "}
+                  {overview.corpus_transition.current_corpus.latest_motion_id}
+                </li>
+                <li>
+                  - future corpus: {overview.corpus_transition.future_corpus.label}
+                </li>
+                <li>
+                  - future posture:{" "}
+                  {overview.corpus_transition.future_corpus.governance_posture}
+                </li>
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Blockers</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {overview.corpus_transition.blockers.map((blocker) => (
+                  <li key={blocker}>- {blocker}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Canon refs</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {overview.corpus_transition.canon_refs.map((refPath) => (
+                  <li key={refPath} className="font-mono">
+                    - {refPath}
+                  </li>
+                ))}
+              </ul>
+              <ul className="mt-3 space-y-1 text-xs text-gray-400">
+                {overview.corpus_transition.notes.map((note) => (
+                  <li key={note}>- {note}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Motion snapshot posture</h3>
                 <ToneBadge tone="emerald">
                   {overview.bundled_motion_snapshot.latest_motion_queue_state ?? "unknown"}

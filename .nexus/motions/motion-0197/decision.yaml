@@ -1,0 +1,13 @@
+motion_id: motion-0197
+decision_id: decision-motion-0197
+decided_at: "2026-05-15T18:32:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T18:32:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as an explicit readiness-gate definition for Corpus V2 only."
+rationale:
+  - "Corpus V2 opening conditions are now explicit without falsely claiming that live agent drafting, voting, or ratification already exists."
+  - "The gate preserves human override, historical immutability, and current authority boundaries."
+consequences:
+  - "Future Corpus V2 opening can be evaluated against a visible checklist rather than inferred from manual-era behavior."
+  - "Operator surfaces can reference concrete blockers without enabling runtime switching or execution."

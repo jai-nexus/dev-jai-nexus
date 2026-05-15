@@ -1,0 +1,19 @@
+motion_id: motion-0196
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Corpus V1 Closeout and Corpus Model v0"
+subtitle: "define Corpus as a first-class governance era model while keeping Corpus V2 gated and preserving Corpus V1 as historical manual-governance canon"
+kind: builder-proof
+program: q2-corpus-v1-closeout-v2-readiness-v0
+basis: motion-0195
+status: ratified
+created_at: "2026-05-15T00:00:00.000Z"
+decided_at: "2026-05-15T18:10:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, typecheck]
+checks_optional: [build]
