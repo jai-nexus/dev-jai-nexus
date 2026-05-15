@@ -175,6 +175,31 @@ export default async function HomePage() {
                   <li key={blocker}>- {blocker}</li>
                 ))}
               </ul>
+              <div className="mt-3 text-xs text-gray-400">Readiness gate counts</div>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                <ToneBadge tone="emerald">
+                  canon satisfied {overview.corpus_transition.readiness.gate_counts.satisfied_by_canon}
+                </ToneBadge>
+                <ToneBadge tone="amber">
+                  partial {overview.corpus_transition.readiness.gate_counts.partially_satisfied}
+                </ToneBadge>
+                <ToneBadge tone="rose">
+                  unmet {overview.corpus_transition.readiness.gate_counts.unmet_future}
+                </ToneBadge>
+              </div>
+              <div className="mt-3 text-xs text-gray-400">Readiness source</div>
+              <div className="mt-2 font-mono text-xs text-gray-400">
+                {overview.corpus_transition.readiness.source_of_truth}
+              </div>
+              <p className="mt-3 text-xs text-gray-400">
+                {overview.corpus_transition.readiness.surface_note}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Top readiness blockers</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {overview.corpus_transition.readiness.top_blockers.map((blocker) => (
+                  <li key={blocker}>- {blocker}</li>
+                ))}
+              </ul>
               <div className="mt-3 text-xs text-gray-400">Canon refs</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {overview.corpus_transition.canon_refs.map((refPath) => (

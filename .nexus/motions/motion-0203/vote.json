@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0203",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T21:48:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The gate model improves future implementation clarity while explicitly avoiding enforcement and preserving the current gated posture."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Separating canon-checkable, schema-checkable, snapshot-checkable, human-gated, and authority-blocked concerns reduces ambiguity in the readiness program."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a design-only artifact that introduces no automation, runtime authority, or opening semantics."
+    }
+  ]
+}

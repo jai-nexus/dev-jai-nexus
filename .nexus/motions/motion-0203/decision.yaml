@@ -1,0 +1,13 @@
+motion_id: motion-0203
+decision_id: decision-motion-0203
+decided_at: "2026-05-15T21:48:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T21:48:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a non-enforcement Corpus V2 machine-checkable gate model seam."
+rationale:
+  - "Future checkability can be designed now without prematurely claiming gate enforcement."
+  - "The gate model clarifies which readiness evidence could become deterministic later."
+consequences:
+  - "Operators gain a clearer separation between canon, schema, snapshot, human, and authority concerns."
+  - "No live enforcement, automation, or authority expansion occurs."

@@ -1,0 +1,22 @@
+{
+  "motion_id": "motion-0205",
+  "status": "RATIFIED",
+  "evaluated_at": "2026-05-15T22:00:00.000Z",
+  "required_ok": true,
+  "checks": {
+    "validate_motion": "pass",
+    "validate_agency": "pass",
+    "typecheck": "pass",
+    "snapshot_write": "pass",
+    "snapshot_check": "pass",
+    "build": "pass"
+  },
+  "notes": [
+    "The voting and ratification design clarifies future canonical voter posture and human intervention modeling without enabling live voting or autonomous ratification."
+  ],
+  "summary": {
+    "before_motion_count": 203,
+    "after_motion_count": 204,
+    "latest_bundled_motion": "motion-0205"
+  }
+}

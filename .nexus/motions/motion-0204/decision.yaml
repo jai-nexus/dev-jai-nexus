@@ -1,0 +1,13 @@
+motion_id: motion-0204
+decision_id: decision-motion-0204
+decided_at: "2026-05-15T21:54:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-15T21:54:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a future-state agent motion drafting design seam only."
+rationale:
+  - "Future drafting needs an explicit state and artifact model before Corpus V2 can open."
+  - "The design clarifies roles and boundaries without enabling live drafting."
+consequences:
+  - "Drafting readiness becomes more inspectable."
+  - "No provider, runtime, or write authority is granted."

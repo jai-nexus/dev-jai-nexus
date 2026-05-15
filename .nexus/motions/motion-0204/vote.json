@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0204",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-15T21:54:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The drafting design defines a concrete future-state package and state model without claiming that live agent drafting exists today."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "Separating proposer, challenger, arbiter, lens contributors, and human operator boundaries reduces ambiguity before any future activation work."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a design-only artifact that preserves the current authority boundary and adds no runtime or write capability."
+    }
+  ]
+}
