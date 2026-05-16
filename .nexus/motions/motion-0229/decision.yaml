@@ -1,0 +1,12 @@
+motion_id: motion-0229
+decision_id: decision-motion-0229
+decided_at: "2026-05-16T11:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T11:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only update that records the jai-nexus PR #24 billing model and usage-ledger posture in dev-jai-nexus canon."
+rationale:
+  - "The control-plane should capture the bounded billing-model posture before any repo begins live billing, auth, backend, or customer-data work."
+consequences:
+  - "Cross-repo billing routing and placeholder boundaries become clearer."
+  - "No payment authority, runtime behavior, or repo mutation outside dev-jai-nexus is introduced."

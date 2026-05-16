@@ -1,0 +1,12 @@
+motion_id: motion-0232
+decision_id: decision-motion-0232
+decided_at: "2026-05-16T14:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T14:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a gate-only definition of the minimum conditions required before paid beta can open."
+rationale:
+  - "Paid-beta planning requires an explicit gate list so formation/admin progress is not mistaken for launch readiness."
+consequences:
+  - "Future commercial, infrastructure, privacy, and interface work now has a clearer gate baseline."
+  - "No paid beta opening, implementation authority, or customer-facing runtime behavior is introduced."

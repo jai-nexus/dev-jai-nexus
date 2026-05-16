@@ -1,0 +1,12 @@
+motion_id: motion-0230
+decision_id: decision-motion-0230
+decided_at: "2026-05-16T12:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T12:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a planning-only unit-economics boundary for future paid-beta pricing and plan-envelope work."
+rationale:
+  - "Paid-beta planning needs explicit economic guardrails before any external pricing or live cost-bearing behavior is considered."
+consequences:
+  - "Future pricing and usage-envelope work has a bounded planning baseline."
+  - "No commercial offer, runtime behavior, or implementation authority is introduced."

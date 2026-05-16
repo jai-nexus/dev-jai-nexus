@@ -1,0 +1,19 @@
+motion_id: motion-0232
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Paid Beta Readiness Gate v0"
+subtitle: "define the minimum gates before paid beta can be offered to real customers"
+kind: builder-proof
+program: q2-paid-beta-readiness-gate-v0
+basis: motion-0231
+status: ratified
+created_at: "2026-05-16T14:00:00.000Z"
+decided_at: "2026-05-16T14:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]

@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0231",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T13:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The control-plane needs an explicit rule that personal and local machines cannot serve real customers during paid-beta planning."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The boundary clearly separates local experimentation from future hosted infrastructure without selecting a production stack prematurely."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is boundary-only canon that adds no deployment authority, runtime behavior, or cross-repo mutation."
+    }
+  ]
+}

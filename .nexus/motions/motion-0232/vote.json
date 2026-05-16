@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0232",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T14:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The control-plane should define the minimum gates for paid beta before company-formation progress is mistaken for launch readiness."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The gate list correctly keeps pricing, infrastructure, privacy, usage semantics, and support posture unsatisfied until later routed evidence exists."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is gate-only canon that opens no paid beta, adds no runtime behavior, and does not mutate other repos."
+    }
+  ]
+}
