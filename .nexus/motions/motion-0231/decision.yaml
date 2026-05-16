@@ -1,0 +1,12 @@
+motion_id: motion-0231
+decision_id: decision-motion-0231
+decided_at: "2026-05-16T13:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T13:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a boundary-only clarification that local machines are not customer-serving production infrastructure."
+rationale:
+  - "Paid-beta and product-readiness planning require an explicit prohibition on serving real customers from personal/local machines."
+consequences:
+  - "Infrastructure planning now has a hard local-versus-production boundary."
+  - "No production stack selection, deployment authority, or customer-data authority is introduced."

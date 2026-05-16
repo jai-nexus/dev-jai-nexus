@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0230",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T12:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A paid beta needs explicit economic guardrails before any external pricing or live usage exposure is considered."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The boundary correctly rejects unlimited AI economics and keeps enterprise/custom handling explicit without authorizing product implementation."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is planning-only canon that adds no commercial authority, runtime behavior, or cross-repo mutation."
+    }
+  ]
+}

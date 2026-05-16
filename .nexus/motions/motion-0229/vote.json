@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0229",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T11:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The control-plane should record the bounded billing model and usage-ledger posture before any live billing or customer data handling is considered."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The artifact preserves product-surface routing while keeping Stripe, auth, backend, and payment collection explicitly non-live."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a routing-only update that adds no payment authority, runtime behavior, or cross-repo mutation."
+    }
+  ]
+}

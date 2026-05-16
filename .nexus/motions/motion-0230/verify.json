@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0230",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "paid beta unit economics boundary remains docs/canon/routing/planning only",
+    "no commercial offer, payment collection, or implementation authority was introduced"
+  ]
+}
