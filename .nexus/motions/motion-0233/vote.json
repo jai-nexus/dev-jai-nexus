@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0233",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T15:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A single readiness matrix gives the control-plane a clear cross-repo planning view before any paid-beta implementation work begins."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The matrix keeps evidence, missing artifacts, and implementation authorization posture explicit without overstating readiness."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This seam improves routing clarity only and does not open paid beta or add authority."
+    }
+  ]
+}

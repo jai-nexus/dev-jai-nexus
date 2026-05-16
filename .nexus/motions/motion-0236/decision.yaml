@@ -1,0 +1,12 @@
+motion_id: motion-0236
+decision_id: decision-motion-0236
+decided_at: "2026-05-16T18:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T18:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only recommendation for the next paid-beta planning seam."
+rationale:
+  - "After the cross-repo matrix and status model are in place, the control-plane should record one likely next route so paid-beta planning stays coherent."
+consequences:
+  - "The next planning seam becomes clearer without authorizing downstream implementation."
+  - "No paid beta opening, repo mutation, or implementation authority is introduced."

@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0236",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "next-routing decision remains recommendation-only",
+    "no destination repo mutation or implementation authorization was introduced"
+  ]
+}

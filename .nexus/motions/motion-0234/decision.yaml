@@ -1,0 +1,12 @@
+motion_id: motion-0234
+decision_id: decision-motion-0234
+decided_at: "2026-05-16T16:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T16:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a static status-model seam for paid-beta gate tracking."
+rationale:
+  - "A bounded status vocabulary makes cross-repo paid-beta planning easier to read without implying workflow automation or implementation authority."
+consequences:
+  - "Paid-beta readiness descriptions become more consistent across canon and UI."
+  - "No implementation authorization, automation, or runtime enforcement is introduced."

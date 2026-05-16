@@ -1,0 +1,19 @@
+motion_id: motion-0235
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Paid Beta Operator Summary Surface v0"
+subtitle: "expose a compact read-only paid-beta readiness summary in dev.jai.nexus"
+kind: builder-proof
+program: q2-paid-beta-readiness-matrix-batch-v0
+basis: motion-0234
+status: ratified
+created_at: "2026-05-16T17:00:00.000Z"
+decided_at: "2026-05-16T17:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]
