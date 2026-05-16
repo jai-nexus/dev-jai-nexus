@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0236",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T18:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "Recording the likely next route helps keep paid-beta planning coherent after the readiness matrix is consolidated."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The recommendation favors customer-facing value framing first, which fits the current billing, economics, and privacy preflight posture."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a routing-only recommendation and does not authorize paid beta, implementation, or repo mutation."
+    }
+  ]
+}

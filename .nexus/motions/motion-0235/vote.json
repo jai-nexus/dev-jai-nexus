@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0235",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T17:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A compact root summary makes paid-beta readiness easier to inspect without creating a dashboard or operational control surface."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The card keeps the most important prohibitions and next route visible while staying read-only and canon-backed."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a visibility-only seam with no customer-data handling, runtime behavior, or authority expansion."
+    }
+  ]
+}

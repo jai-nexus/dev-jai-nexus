@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0234",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T16:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A small status vocabulary gives the operator surface and canon a consistent language for paid-beta gate posture."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The model explicitly excludes implementation authorization and runtime enforcement, which keeps the seam safely descriptive."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This improves readability only and does not change authority, beta status, or runtime behavior."
+    }
+  ]
+}

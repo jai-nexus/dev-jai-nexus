@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0233",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "cross-repo paid-beta matrix remains routing/canon only",
+    "no implementation gates were authorized and no repo outside dev-jai-nexus was mutated"
+  ]
+}

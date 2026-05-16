@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import { getPaidBetaReadinessModel } from "@/lib/controlPlane/paidBetaReadiness";
 import { getRootOperatorOverview } from "@/lib/controlPlane/rootOperatorOverview";
 import { formatCentral, formatCentralTooltip } from "@/lib/time";
 
@@ -81,6 +82,7 @@ function formatTimestamp(value: Date | null): string {
 export default async function HomePage() {
   const overview = await getRootOperatorOverview();
   const authority = getControlPlaneAuthorityPosture();
+  const paidBeta = getPaidBetaReadinessModel();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -106,7 +108,7 @@ export default async function HomePage() {
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
           <SummaryCard
             label="Latest bundled motion"
             value={overview.bundled_motion_snapshot.latest_motion_id ?? "none"}
@@ -131,6 +133,11 @@ export default async function HomePage() {
             label="Repo registry"
             value={String(overview.repo_registry.repo_count)}
             detail={`${overview.repo_registry.configured_scope_count} configured scope keys remain a curated subset.`}
+          />
+          <SummaryCard
+            label="Paid beta"
+            value="not open"
+            detail={`${paidBeta.counts.boundary_defined + paidBeta.counts.preflight_defined} planning gates defined; ${paidBeta.counts.implementation_authorized} implementation-authorized.`}
           />
         </section>
 
@@ -367,6 +374,37 @@ export default async function HomePage() {
                 <ToneBadge tone="rose">propose_pr disabled</ToneBadge>
                 <ToneBadge tone="rose">execute_runtime disabled</ToneBadge>
               </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Paid beta readiness</h3>
+                <ToneBadge tone="rose">not open</ToneBadge>
+                <ToneBadge tone="rose">payment not authorized</ToneBadge>
+                <ToneBadge tone="rose">customer data not authorized</ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- production infrastructure: not selected</li>
+                <li>- local machines: not customer-serving</li>
+                <li>- recommended next route: {paidBeta.recommended_next_route}</li>
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Gate counts</div>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                <ToneBadge tone="amber">planned {paidBeta.counts.planned}</ToneBadge>
+                <ToneBadge tone="sky">boundary {paidBeta.counts.boundary_defined}</ToneBadge>
+                <ToneBadge tone="emerald">preflight {paidBeta.counts.preflight_defined}</ToneBadge>
+                <ToneBadge tone="rose">blocked {paidBeta.counts.blocked_by_security_review + paidBeta.counts.blocked_by_infrastructure + paidBeta.counts.blocked_by_auth_billing + paidBeta.counts.blocked_by_missing_owner}</ToneBadge>
+                <ToneBadge tone="slate">not started {paidBeta.counts.not_started}</ToneBadge>
+              </div>
+              <p className="mt-3 text-xs text-gray-400">{paidBeta.note}</p>
+              <div className="mt-3 text-xs text-gray-400">Canon refs</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {paidBeta.source_refs.map((refPath) => (
+                  <li key={refPath} className="font-mono">
+                    - {refPath}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </Section>

@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0235",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "operator summary remains compact, read-only, and routing-focused",
+    "no controls, no customer-data handling, and no implementation authorization were introduced"
+  ]
+}
