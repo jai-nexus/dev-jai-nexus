@@ -19,6 +19,7 @@ implementation gate is authorized by this artifact.
 - `jai-nexus` is settled through PR `#24`
 - `api-nexus` is settled through PR `#5`
 - `audit-nexus` is settled through PR `#9` / `AUD-2026Q2-001`
+- `jai` is settled through PR `#15`
 
 ## Readiness Input Sources
 
@@ -26,6 +27,7 @@ implementation gate is authorized by this artifact.
 - `jai-nexus` PR `#24`: Customer Billing Model & Usage Ledger v0
 - `api-nexus` PR `#5`: Customer Console API Interface Contract Plan v0
 - `audit-nexus` PR `#9` / `AUD-2026Q2-001`: Paid Beta Privacy/Security Preflight
+- `jai` PR `#15`: Customer-Safe JAI Substrate Boundary v0
 
 ## Readiness Matrix
 
@@ -40,7 +42,7 @@ implementation gate is authorized by this artifact.
 | production infrastructure | later infrastructure owner | `dev-jai-nexus`, `api-nexus`, `jai-nexus` | blocked_by_infrastructure | `motion-0231`, `production-infrastructure-boundary-v0.md` | production infrastructure selection and deployment boundary | no |
 | privacy/security preflight | `audit-nexus` | `dev-jai-nexus`, `jai-nexus`, `api-nexus` | preflight_defined | PR `#9` / `AUD-2026Q2-001` | privacy/security evidence checklist follow-up | no |
 | customer data boundary | later boundary owner routed via `jai-nexus`/`api-nexus` | `audit-nexus`, `dev-jai-nexus` | blocked_by_security_review | `motion-0232`, PR `#9`, PR `#5` | customer data boundary plan | no |
-| provider/model data exposure | `jai` for substrate semantics; `jai-nexus` for product posture | `api-nexus` if interface routing is needed later | not_started | `motion-0232`, product posture notes | customer-safe JAI substrate boundary | no |
+| provider/model data exposure | `jai` for substrate semantics; `jai-nexus` for product posture | `api-nexus` if interface routing is needed later | boundary_defined | `jai` PR `#15`; `docs/architecture/customer-safe-jai-substrate-boundary-v0.md`; `motion-0232` | customer-safe JAI product/application boundary follow-up | no |
 | usage metering/rate limits | `jai-nexus` for product posture; `api-nexus` for interface | `dev-jai-nexus` routing only | planned | PR `#24`, PR `#5` | usage/billing interface contract follow-up | no |
 | logs/observability | later infrastructure/API owner | `audit-nexus`, `dev-jai-nexus` | not_started | `motion-0231`, PR `#9` | observability/logging boundary plan | no |
 | retention/deletion | later data-boundary owner | `audit-nexus`, `api-nexus`, `jai-nexus` | not_started | PR `#24`, PR `#9` | retention/deletion boundary plan | no |
@@ -61,6 +63,13 @@ Current explicit posture:
 - no live Stripe/auth/backend/persistence work is authorized
 - no customer-facing provider/model behavior is authorized
 - no local/personal machine may serve customers
+
+Customer-safe JAI intake note:
+
+- `jai` PR `#15` now settles the portable substrate boundary for customer-safe JAI semantics
+- this improves readiness evidence for substrate-level boundary definition only
+- it does not authorize customer-facing provider/model behavior
+- it does not authorize customer memory, product/customer UX, account/workspace/project models, billing semantics, API gateway interfaces, auth/session semantics, DB/persistence authority, execution authority, or autonomous agent behavior
 
 ## Non-Goals
 

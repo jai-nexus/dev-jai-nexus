@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0237",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-16T19:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The paid-beta matrix should record that jai PR #15 now settles the customer-safe substrate boundary for future planning."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The intake keeps substrate ownership clear while preserving that customer-facing JAI behavior and implementation remain unauthorized."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a routing-only canon update with no repo mutation, no paid-beta opening, and no authority expansion."
+    }
+  ]
+}

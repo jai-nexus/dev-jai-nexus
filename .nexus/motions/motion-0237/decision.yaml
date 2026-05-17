@@ -1,0 +1,12 @@
+motion_id: motion-0237
+decision_id: decision-motion-0237
+decided_at: "2026-05-16T19:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-16T19:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only intake of the settled jai customer-safe substrate boundary into paid-beta canon."
+rationale:
+  - "The paid-beta matrix should reflect that jai PR #15 now settles the customer-safe substrate boundary without overstating implementation readiness."
+consequences:
+  - "Paid-beta routing canon becomes more current for customer-safe JAI planning."
+  - "No paid beta opening, provider/model authorization, or implementation authority is introduced."
