@@ -28,9 +28,15 @@ Recommended next route:
 - billing model framing exists in `jai-nexus` PR `#24`
 - unit economics boundary exists in `dev-jai-nexus` `motion-0230`
 - privacy/security preflight exists in `audit-nexus` PR `#9` / `AUD-2026Q2-001`
+- customer-safe substrate boundary now exists in `jai` PR `#15`
 - product shell posture already exists in `jai-nexus`
 - customer-facing value framing should be clarified before deeper API,
   billing, or infrastructure implementation planning
+
+Updated posture:
+
+- `jai` customer-safe substrate boundary is no longer an unresolved prerequisite for routing customer-facing value copy
+- recommendation remains routing-only and does not mutate `jai-nexus`
 
 ## Non-Goals
 

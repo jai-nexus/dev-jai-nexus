@@ -1,0 +1,17 @@
+{
+  "motion_id": "motion-0237",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "jai substrate boundary intake remains docs/canon/routing only",
+    "no paid-beta gate reaches implementation_authorized and no repo outside dev-jai-nexus was mutated"
+  ]
+}
