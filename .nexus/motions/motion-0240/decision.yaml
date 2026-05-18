@@ -1,0 +1,13 @@
+motion_id: motion-0240
+decision_id: decision-motion-0240
+decided_at: "2026-05-18T02:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-18T02:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only dry-run visibility boundary and static Edge Runner surface update."
+rationale:
+  - "The control-plane should define exactly how dry-run plan and evidence record concepts may be shown without ingesting live orchestrator state."
+  - "Evidence record language should remain separated from execution proof and runtime mutation claims."
+consequences:
+  - "Dry-run plan metadata and evidence posture become easier to reference safely from canon and the root overview."
+  - "No live ingestion, polling, execution, scheduler, or cross-repo authority is introduced."

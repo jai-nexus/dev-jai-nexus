@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0240",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-18T02:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A visibility boundary lets the control plane describe dry-run plans and evidence records safely without ingesting live orchestrator state."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The boundary keeps generation and validation evidence clearly separated from execution, scheduler, and runner authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a static, read-only update that preserves denied execution, polling, and cross-repo mutation posture."
+    }
+  ]
+}

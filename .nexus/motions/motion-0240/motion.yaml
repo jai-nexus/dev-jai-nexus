@@ -1,0 +1,19 @@
+motion_id: motion-0240
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Dry-Run Plan Visibility Boundary v0"
+subtitle: "define how dry-run plans and evidence records may be surfaced read-only without live orchestrator state or execution authority"
+kind: builder-proof
+program: q2-dry-run-plan-visibility-boundary-v0
+basis: motion-0239
+status: ratified
+created_at: "2026-05-18T02:00:00.000Z"
+decided_at: "2026-05-18T02:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]

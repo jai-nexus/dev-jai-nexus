@@ -2,6 +2,10 @@ export interface EdgeRunnerAutomationSubstrateModel {
   posture: string;
   summary: string;
   fleet: string[];
+  visibility_boundary_note: string;
+  evidence_record_note: string;
+  surfaceable_metadata_fields: string[];
+  unsurfaced_live_behaviors: string[];
   readiness_rows: Array<{
     label: string;
     state: string;
@@ -19,11 +23,40 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
   return {
     posture: "non-executing dry-run generation + validation only",
     summary:
-      "orchestrator-nexus now provides a tested dry-run automation substrate for plan generation, schema validation, fixture-harness review, and expanded fixture coverage, but execution authority remains denied.",
+      "orchestrator-nexus now provides a tested dry-run automation substrate for plan generation, schema validation, fixture-harness review, expanded fixture coverage, and evidence record modeling, but execution authority remains denied.",
     fleet: [
       "Work Desktop - primary operator workstation",
       "Work MacBook - portable operator / secondary validation workstation",
       "Raspberry Pi - always-on edge node / syncd / lightweight runtime lab",
+    ],
+    visibility_boundary_note:
+      "dev-jai-nexus may show static/example dry-run metadata and evidence posture only. It does not ingest live orchestrator artifacts and does not poll orchestrator-nexus.",
+    evidence_record_note:
+      "Evidence records prove dry-run plan generation and validation posture only. They do not prove execution, runtime mutation, deployment, customer workloads, customer data handling, payment handling, provider/model output, scheduler action, runner action, branch write, PR creation, PR merge, or cross-repo mutation.",
+    surfaceable_metadata_fields: [
+      "dry-run plan id",
+      "evidence record id",
+      "target device",
+      "target repo",
+      "target lane",
+      "command class",
+      "validation status",
+      "confirmation required",
+      "human approval required",
+      "no-execution guarantee",
+      "evidence status",
+      "source canon / source repo reference",
+    ],
+    unsurfaced_live_behaviors: [
+      "live dry-run plan ingestion",
+      "live orchestrator polling",
+      "file watchers",
+      "command execution controls",
+      "runner controls",
+      "scheduler controls",
+      "branch/PR automation controls",
+      "provider/model controls",
+      "customer workload controls",
     ],
     readiness_rows: [
       {
@@ -112,7 +145,8 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
     source_refs: [
       ".nexus/canon/edge-runner-automation-substrate-intake-v0.md",
       ".nexus/canon/edge-runner-readiness-matrix-v0.md",
-      "orchestrator-nexus PR #12",
+      ".nexus/canon/dry-run-plan-visibility-boundary-v0.md",
+      "orchestrator-nexus PR #13",
     ],
   };
 }

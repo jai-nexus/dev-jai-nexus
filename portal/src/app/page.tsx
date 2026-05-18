@@ -455,6 +455,26 @@ export default async function HomePage() {
                   <li key={item}>- {item}</li>
                 ))}
               </ul>
+              <div className="mt-3 text-xs text-gray-400">Visibility boundary</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunner.visibility_boundary_note}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Evidence record posture</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunner.evidence_record_note}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Surfaceable metadata</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.surfaceable_metadata_fields.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Not surfaced yet</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.unsurfaced_live_behaviors.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
               <div className="mt-3 text-xs text-gray-400">Next gates</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {edgeRunner.next_gates.map((item) => (
