@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0238",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-18T00:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "The control-plane should record that orchestrator-nexus now has a tested dry-run substrate for future visibility without granting execution authority."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The intake keeps the allowed generation and validation posture separate from denied execution, scheduler, and automation authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a routing-only and read-only visibility seam with no runtime behavior or cross-repo mutation."
+    }
+  ]
+}
