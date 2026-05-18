@@ -1,0 +1,12 @@
+motion_id: motion-0239
+decision_id: decision-motion-0239
+decided_at: "2026-05-18T01:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-18T01:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only Edge Runner readiness matrix and static visibility update."
+rationale:
+  - "The control-plane should show current dry-run readiness, fixture coverage, and denied authority posture without implying execution approval."
+consequences:
+  - "Edge Runner readiness becomes easier to inspect from canon and the root overview."
+  - "No execution, runner, scheduler, or cross-repo authority is introduced."

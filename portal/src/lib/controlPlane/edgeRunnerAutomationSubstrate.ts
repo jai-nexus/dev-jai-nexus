@@ -2,8 +2,16 @@ export interface EdgeRunnerAutomationSubstrateModel {
   posture: string;
   summary: string;
   fleet: string[];
+  readiness_rows: Array<{
+    label: string;
+    state: string;
+    execution_authorized: "no";
+  }>;
+  valid_fixture_coverage: string[];
+  invalid_fixture_coverage: string[];
   allowed: string[];
   denied: string[];
+  next_gates: string[];
   source_refs: string[];
 }
 
@@ -11,11 +19,71 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
   return {
     posture: "non-executing dry-run generation + validation only",
     summary:
-      "orchestrator-nexus now provides a tested dry-run automation substrate for plan generation, schema validation, and fixture-harness review, but execution authority remains denied.",
+      "orchestrator-nexus now provides a tested dry-run automation substrate for plan generation, schema validation, fixture-harness review, and expanded fixture coverage, but execution authority remains denied.",
     fleet: [
       "Work Desktop - primary operator workstation",
       "Work MacBook - portable operator / secondary validation workstation",
       "Raspberry Pi - always-on edge node / syncd / lightweight runtime lab",
+    ],
+    readiness_rows: [
+      {
+        label: "device roles and fleet posture",
+        state: "defined",
+        execution_authorized: "no",
+      },
+      {
+        label: "capability records",
+        state: "defined",
+        execution_authorized: "no",
+      },
+      {
+        label: "dry-run plan generator",
+        state: "available",
+        execution_authorized: "no",
+      },
+      {
+        label: "structured plan schema",
+        state: "available",
+        execution_authorized: "no",
+      },
+      {
+        label: "validator and fixture harness",
+        state: "available",
+        execution_authorized: "no",
+      },
+      {
+        label: "expanded fixture coverage",
+        state: "available",
+        execution_authorized: "no",
+      },
+    ],
+    valid_fixture_coverage: [
+      "Work Desktop / validation-bundle",
+      "Work Desktop / repo-sync-check",
+      "Work MacBook / validation-bundle",
+      "Work MacBook / lane-targeted repo-sync-check",
+      "Raspberry Pi / syncd-state-mirror-check",
+      "Raspberry Pi / docker-context-check",
+      "lane-targeted validation-bundle requiring confirmation",
+    ],
+    invalid_fixture_coverage: [
+      "missing target device",
+      "unknown target device",
+      "missing target repo and target lane",
+      "missing command class",
+      "missing capability record",
+      "capability record mismatch",
+      "lane target with confirmation_required false",
+      "confirmation required but missing evidence output path",
+      "missing proposed commands",
+      "proposed command text that implies execution",
+      "missing no_execution_guarantee",
+      "no_execution_guarantee false",
+      "denied command class",
+      "confirmation required with empty confirmation reasons",
+      "missing human_approval_required",
+      "unsupported status",
+      "unsupported schema_version",
     ],
     allowed: [
       "generate dry-run plans",
@@ -34,9 +102,17 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
       "production deployment",
       "customer workloads",
     ],
+    next_gates: [
+      "additional orchestrator-nexus fixture expansion",
+      "dev-jai-nexus read-only dry-run plan visibility",
+      "human review workflow shape",
+      "dry-run evidence record model",
+      "execution authority review, explicitly deferred and not authorized",
+    ],
     source_refs: [
       ".nexus/canon/edge-runner-automation-substrate-intake-v0.md",
-      "orchestrator-nexus PR #11",
+      ".nexus/canon/edge-runner-readiness-matrix-v0.md",
+      "orchestrator-nexus PR #12",
     ],
   };
 }

@@ -423,6 +423,26 @@ export default async function HomePage() {
                   <li key={item}>- {item}</li>
                 ))}
               </ul>
+              <div className="mt-3 text-xs text-gray-400">Readiness matrix</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.readiness_rows.map((row) => (
+                  <li key={row.label}>
+                    - {row.label}: {row.state}; execution authorized {row.execution_authorized}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Valid fixture coverage</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.valid_fixture_coverage.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Invalid fixture coverage</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.invalid_fixture_coverage.slice(0, 6).map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
               <div className="mt-3 text-xs text-gray-400">Allowed</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {edgeRunner.allowed.map((item) => (
@@ -432,6 +452,12 @@ export default async function HomePage() {
               <div className="mt-3 text-xs text-gray-400">Denied</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {edgeRunner.denied.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Next gates</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.next_gates.map((item) => (
                   <li key={item}>- {item}</li>
                 ))}
               </ul>
