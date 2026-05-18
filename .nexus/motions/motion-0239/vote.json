@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0239",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-18T01:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A readiness matrix makes the current Edge Runner dry-run posture and fixture coverage easier to inspect without implying execution authority."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The matrix keeps device coverage, invalid fixture coverage, and denied authority visible while staying static and read-only."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a visibility-only update that preserves denied execution, scheduler, automation, and cross-repo mutation authority."
+    }
+  ]
+}
