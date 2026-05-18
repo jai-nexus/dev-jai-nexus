@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
+import { getEdgeRunnerAutomationSubstrateModel } from "@/lib/controlPlane/edgeRunnerAutomationSubstrate";
 import { getPaidBetaReadinessModel } from "@/lib/controlPlane/paidBetaReadiness";
 import { getRootOperatorOverview } from "@/lib/controlPlane/rootOperatorOverview";
 import { formatCentral, formatCentralTooltip } from "@/lib/time";
@@ -83,6 +84,7 @@ export default async function HomePage() {
   const overview = await getRootOperatorOverview();
   const authority = getControlPlaneAuthorityPosture();
   const paidBeta = getPaidBetaReadinessModel();
+  const edgeRunner = getEdgeRunnerAutomationSubstrateModel();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -400,6 +402,42 @@ export default async function HomePage() {
               <div className="mt-3 text-xs text-gray-400">Canon refs</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {paidBeta.source_refs.map((refPath) => (
+                  <li key={refPath} className="font-mono">
+                    - {refPath}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Edge Runner substrate</h3>
+                <ToneBadge tone="amber">dry-run only</ToneBadge>
+                <ToneBadge tone="rose">execution denied</ToneBadge>
+                <ToneBadge tone="rose">scheduler denied</ToneBadge>
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{edgeRunner.summary}</p>
+              <div className="mt-3 text-xs text-gray-400">Fleet</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.fleet.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Allowed</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.allowed.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Denied</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.denied.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Canon refs</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunner.source_refs.map((refPath) => (
                   <li key={refPath} className="font-mono">
                     - {refPath}
                   </li>

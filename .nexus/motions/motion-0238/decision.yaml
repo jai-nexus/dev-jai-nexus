@@ -1,0 +1,12 @@
+motion_id: motion-0238
+decision_id: decision-motion-0238
+decided_at: "2026-05-18T00:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-18T00:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only intake of the tested Edge Runner dry-run substrate."
+rationale:
+  - "The control-plane canon should record that orchestrator-nexus now has a validated non-executing automation substrate suitable for future visibility references."
+consequences:
+  - "Dry-run automation substrate readiness becomes visible in dev-jai-nexus."
+  - "No execution authority, scheduler authority, or cross-repo mutation is introduced."

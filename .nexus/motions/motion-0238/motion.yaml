@@ -1,0 +1,19 @@
+motion_id: motion-0238
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Edge Runner Automation Substrate Intake v0"
+subtitle: "intake the tested orchestrator-nexus dry-run substrate while preserving denied execution authority"
+kind: builder-proof
+program: q2-edge-runner-automation-substrate-intake-v0
+basis: motion-0237
+status: ratified
+created_at: "2026-05-18T00:00:00.000Z"
+decided_at: "2026-05-18T00:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]
