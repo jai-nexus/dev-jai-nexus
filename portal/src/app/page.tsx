@@ -232,6 +232,10 @@ export default async function HomePage() {
                 Corpus V1 = manual governance corpus. Corpus V2 = future reset
                 gated by agent operability and schema readiness.
               </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Snapshot namespace model defined / not implemented. Corpus V1
+                active; Corpus V2 future-gated.
+              </p>
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">

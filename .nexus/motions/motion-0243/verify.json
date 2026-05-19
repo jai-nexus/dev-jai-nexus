@@ -1,0 +1,18 @@
+{
+  "motion_id": "motion-0243",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "corpus namespace and snapshot model remain docs/canon/static UI only",
+    "Corpus V2 is not opened and numbering is not reset",
+    "current Corpus V1 snapshot format remains unchanged"
+  ]
+}
