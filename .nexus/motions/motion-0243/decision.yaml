@@ -1,0 +1,13 @@
+motion_id: motion-0243
+decision_id: decision-motion-0243
+decided_at: "2026-05-19T02:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-19T02:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a future corpus namespace and snapshot model clarification without opening Corpus V2 or changing current Corpus V1 snapshot behavior."
+rationale:
+  - "The control plane needs a clear namespace and snapshot model before any future Corpus V2 opening can be considered."
+  - "Corpus-local reset semantics and historical Corpus V1 archive boundaries must remain explicit before any implementation work."
+consequences:
+  - "Future corpus-aware snapshot and decision-record requirements become easier to inspect from canon and the root overview."
+  - "No corpus opening, numbering reset, Corpus V2 file creation, or snapshot-format migration is introduced."

@@ -1,0 +1,19 @@
+motion_id: motion-0243
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Corpus Namespace Snapshot Model v0"
+subtitle: "define the future corpus namespace and snapshot model without opening Corpus V2 or resetting numbering"
+kind: builder-proof
+program: q2-corpus-namespace-snapshot-model-v0
+basis: motion-0242
+status: ratified
+created_at: "2026-05-19T02:00:00.000Z"
+decided_at: "2026-05-19T02:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]

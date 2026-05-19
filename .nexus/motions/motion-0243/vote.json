@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0243",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-19T02:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A corpus-aware namespace model is needed before Corpus V2 can open and before any numbering reset is considered."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The model cleanly separates current Corpus V1 snapshot lineage from future Corpus V2 lineage without changing current behavior."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a static clarification seam that preserves current snapshot format and denied runtime authority."
+    }
+  ]
+}
