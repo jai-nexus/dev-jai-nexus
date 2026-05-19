@@ -423,6 +423,24 @@ export default async function HomePage() {
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Infrastructure split</h3>
+                <ToneBadge tone="amber">local fleet private</ToneBadge>
+                <ToneBadge tone="sky">servers future</ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- local fleet: private workflow acceleration</li>
+                <li>- servers: future customer production</li>
+                <li>- next Toolchain lane: jai-pilot</li>
+              </ul>
+              <p className="mt-3 text-xs text-gray-400">
+                Work Desktop, Work MacBook, and Raspberry Pi remain private
+                operator infrastructure only. Future hosted app, API, database,
+                auth, billing, and deployment paths remain separately gated.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner substrate</h3>
                 <ToneBadge tone="amber">dry-run only</ToneBadge>
                 <ToneBadge tone="rose">execution denied</ToneBadge>

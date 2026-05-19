@@ -1,0 +1,19 @@
+motion_id: motion-0245
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Device-to-Server Infrastructure Split v0"
+subtitle: "define what local private devices own versus future customer-serving server infrastructure"
+kind: builder-proof
+program: q2-device-to-server-infrastructure-split-v0
+basis: motion-0244
+status: ratified
+created_at: "2026-05-19T16:00:00.000Z"
+decided_at: "2026-05-19T16:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]
