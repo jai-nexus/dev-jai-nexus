@@ -228,6 +228,10 @@ export default async function HomePage() {
                   <li key={note}>- {note}</li>
                 ))}
               </ul>
+              <p className="mt-3 text-xs text-gray-400">
+                Corpus V1 = manual governance corpus. Corpus V2 = future reset
+                gated by agent operability and schema readiness.
+              </p>
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
