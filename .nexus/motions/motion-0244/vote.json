@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0244",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-19T03:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A customer-configurable corpus concept gives future product history compartments a clean canon model without disturbing internal corpus governance."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The model keeps internal Corpus V1/V2 semantics separate from future customer/project segmentation and avoids implying product implementation exists."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a static clarification seam that preserves current authority denials and adds no customer data, persistence, or automation behavior."
+    }
+  ]
+}
