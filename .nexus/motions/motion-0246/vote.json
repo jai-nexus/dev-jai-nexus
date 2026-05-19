@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0246",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-19T17:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A cross-lane readiness matrix gives the control plane one bounded view of Toolchain ownership and future integration gates without implying runtime behavior."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The matrix preserves the existing jai-pilot, vscode-nexus, and api-nexus boundaries while making denied authority and SoT limits easier to inspect."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is static coordination only, keeps api-nexus JSONL repo-local, and leaves runtime integration, polling, and execution explicitly unauthorized."
+    }
+  ]
+}

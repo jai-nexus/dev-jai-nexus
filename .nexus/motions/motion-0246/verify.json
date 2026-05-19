@@ -1,0 +1,18 @@
+{
+  "motion_id": "motion-0246",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "toolchain integration readiness remains docs/canon/static UI only",
+    "jai-pilot, vscode-nexus, and api-nexus stay bounded to existing lane posture without runtime integration",
+    "no API expansion, event ingestion behavior, provider/model calls, customer data behavior, or execution authority was introduced"
+  ]
+}
