@@ -236,6 +236,10 @@ export default async function HomePage() {
                 Snapshot namespace model defined / not implemented. Corpus V1
                 active; Corpus V2 future-gated.
               </p>
+              <p className="mt-2 text-xs text-gray-400">
+                Customer/project corpuses = future configurable project-history
+                compartments.
+              </p>
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">

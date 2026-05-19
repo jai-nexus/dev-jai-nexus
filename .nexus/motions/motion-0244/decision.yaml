@@ -1,0 +1,13 @@
+motion_id: motion-0244
+decision_id: decision-motion-0244
+decided_at: "2026-05-19T03:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-19T03:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a future customer/project corpus concept without changing the internal corpus model or implementing product behavior."
+rationale:
+  - "Corpus semantics should extend beyond internal governance epochs so future customer/project history compartments can be modeled cleanly."
+  - "The internal Corpus V1 and Corpus V2 model should remain distinct from future customer-configurable project-history compartments."
+consequences:
+  - "Customer/project corpus concepts become easier to reason about from canon and the root overview."
+  - "No customer corpus UI, persistence, API behavior, or authority expansion is introduced."
