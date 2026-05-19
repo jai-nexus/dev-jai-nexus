@@ -1,0 +1,13 @@
+motion_id: motion-0245
+decision_id: decision-motion-0245
+decided_at: "2026-05-19T16:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-19T16:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified the device-to-server split as a boundary artifact separating private local workflow devices from future customer-serving server infrastructure."
+rationale:
+  - "JAI NEXUS needs a clear split between local operator hardware and later production infrastructure before customer-serving architecture is routed."
+  - "The local fleet can accelerate private validation and dry-run review without implying customer workload, deployment, or data authority."
+consequences:
+  - "Desktop, MacBook, and Raspberry Pi ownership is easier to reason about from canon and the root overview."
+  - "Future hosted app, API, database, auth, billing, secrets, and rollback work remain explicitly gated server-side follow-ons."

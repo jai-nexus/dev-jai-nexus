@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0245",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-19T16:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "This split gives the control plane a clean boundary between private operator hardware and future customer-serving server classes."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The canon keeps Work Desktop, Work MacBook, and Raspberry Pi useful for validation and dry-run support without implying production authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "The motion preserves no-local-customer-serving posture, keeps jai-edge non-authoritative for deployment, and leaves server planning separately gated."
+    }
+  ]
+}
