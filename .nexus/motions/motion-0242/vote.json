@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0242",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-19T01:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A readiness taxonomy clarifies the difference between current manual Corpus V1 governance and the future gated Corpus V2 opening."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The taxonomy cleanly separates reset semantics, carry-forward boundaries, and agent operability from execution authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This is a static clarification seam that preserves denied runtime, provider/model, and automation authority."
+    }
+  ]
+}
