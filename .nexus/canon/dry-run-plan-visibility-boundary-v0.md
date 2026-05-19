@@ -13,6 +13,8 @@ authority.
 - `orchestrator-nexus` is settled through PR `#13`
 - existing `dev-jai-nexus` Edge Runner surfaces already record dry-run
   generation, validation, fixture coverage, and denied execution authority
+- follow-up source-side evidence validation is later recorded in
+  `.nexus/canon/edge-runner-evidence-validation-intake-v0.md`
 
 ## orchestrator-nexus PR #13 source-side evidence record context
 

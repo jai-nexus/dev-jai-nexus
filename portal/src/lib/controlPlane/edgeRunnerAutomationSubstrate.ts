@@ -4,6 +4,7 @@ export interface EdgeRunnerAutomationSubstrateModel {
   fleet: string[];
   visibility_boundary_note: string;
   evidence_record_note: string;
+  evidence_validation_note: string;
   surfaceable_metadata_fields: string[];
   unsurfaced_live_behaviors: string[];
   readiness_rows: Array<{
@@ -33,6 +34,8 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
       "dev-jai-nexus may show static/example dry-run metadata and evidence posture only. It does not ingest live orchestrator artifacts and does not poll orchestrator-nexus.",
     evidence_record_note:
       "Evidence records prove dry-run plan generation and validation posture only. They do not prove execution, runtime mutation, deployment, customer workloads, customer data handling, payment handling, provider/model output, scheduler action, runner action, branch write, PR creation, PR merge, or cross-repo mutation.",
+    evidence_validation_note:
+      "Evidence validation: source-side validator plus valid/invalid fixtures and repeatable harness are available; execution proof is not claimed.",
     surfaceable_metadata_fields: [
       "dry-run plan id",
       "evidence record id",
@@ -146,7 +149,8 @@ export function getEdgeRunnerAutomationSubstrateModel(): EdgeRunnerAutomationSub
       ".nexus/canon/edge-runner-automation-substrate-intake-v0.md",
       ".nexus/canon/edge-runner-readiness-matrix-v0.md",
       ".nexus/canon/dry-run-plan-visibility-boundary-v0.md",
-      "orchestrator-nexus PR #13",
+      ".nexus/canon/edge-runner-evidence-validation-intake-v0.md",
+      "orchestrator-nexus PR #14",
     ],
   };
 }
