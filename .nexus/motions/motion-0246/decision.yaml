@@ -1,0 +1,13 @@
+motion_id: motion-0246
+decision_id: decision-motion-0246
+decided_at: "2026-05-19T17:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-19T17:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified a static Toolchain integration readiness matrix aligning jai-pilot, vscode-nexus, and api-nexus without authorizing runtime integration."
+rationale:
+  - "The control plane needs one static cross-repo view of Toolchain lane ownership and future integration gates before any runtime implementation is considered."
+  - "A shared readiness matrix reduces ambiguity while preserving repo-local boundaries, SoT limits, and denied authority posture."
+consequences:
+  - "Toolchain lane readiness is easier to inspect from canon and the root/operator overview."
+  - "API-side validation, identity, context handoff, and privacy/security review remain explicit future gates rather than implied runtime authority."

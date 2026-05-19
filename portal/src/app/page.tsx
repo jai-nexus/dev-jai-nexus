@@ -441,6 +441,24 @@ export default async function HomePage() {
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Toolchain readiness</h3>
+                <ToneBadge tone="amber">lanes bounded</ToneBadge>
+                <ToneBadge tone="rose">runtime not authorized</ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- Toolchain lanes: jai-pilot, vscode-nexus, api-nexus</li>
+                <li>- runtime integration: not authorized</li>
+                <li>- next gates: API-side validation + privacy/security review</li>
+              </ul>
+              <p className="mt-3 text-xs text-gray-400">
+                Browser/extension, IDE/editor, and API/interface seams are
+                bounded separately. Toolchain events are not global SoT by
+                default, and raw JSONL remains repo-local ingress evidence only.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner substrate</h3>
                 <ToneBadge tone="amber">dry-run only</ToneBadge>
                 <ToneBadge tone="rose">execution denied</ToneBadge>
