@@ -463,6 +463,10 @@ export default async function HomePage() {
               <p className="mt-2 text-xs text-gray-400">
                 {edgeRunner.evidence_record_note}
               </p>
+              <div className="mt-3 text-xs text-gray-400">Evidence validation</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunner.evidence_validation_note}
+              </p>
               <div className="mt-3 text-xs text-gray-400">Surfaceable metadata</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {edgeRunner.surfaceable_metadata_fields.map((item) => (

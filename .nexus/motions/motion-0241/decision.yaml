@@ -1,0 +1,13 @@
+motion_id: motion-0241
+decision_id: decision-motion-0241
+decided_at: "2026-05-19T00:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-19T00:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified as a routing-only intake of the settled dry-run evidence validation layer and one compact static surface note."
+rationale:
+  - "The control-plane should record that source-side evidence validation, fixtures, and harness coverage now exist in orchestrator-nexus."
+  - "Evidence validation language should remain separated from execution proof and live runtime telemetry claims."
+consequences:
+  - "Dry-run evidence validation posture becomes easier to reference safely from canon and the root overview."
+  - "No live ingestion, execution evidence claim, polling, scheduler, or cross-repo authority is introduced."
