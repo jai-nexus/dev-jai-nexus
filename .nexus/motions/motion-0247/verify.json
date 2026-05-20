@@ -1,0 +1,18 @@
+{
+  "motion_id": "motion-0247",
+  "status": "verified",
+  "checks": [
+    "validate_motion",
+    "validate_agency",
+    "validate_sandbox_fixtures",
+    "typecheck",
+    "build_motion_snapshot_write",
+    "build_motion_snapshot_check",
+    "build"
+  ],
+  "notes": [
+    "toolchain runtime gate tracking remains docs/canon/static UI only",
+    "runtime Toolchain integration remains not authorized and API-side validation remains planned, not implemented",
+    "no API routes, schema enforcement, provider/model calls, customer data behavior, or execution authority were introduced"
+  ]
+}

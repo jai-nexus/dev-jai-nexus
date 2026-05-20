@@ -1,0 +1,13 @@
+motion_id: motion-0247
+decision_id: decision-motion-0247
+decided_at: "2026-05-20T00:30:00.000Z"
+ratified_by: "CONTROL_THREAD"
+last_updated: "2026-05-20T00:30:00.000Z"
+status: RATIFIED
+decision_summary: "Ratified a static Toolchain runtime integration gate tracker aligning readiness, API validation boundaries, and audit privacy/context-inclusion gates without authorizing runtime behavior."
+rationale:
+  - "The control plane needs one static place to see which Toolchain, API, and audit gates are settled versus still future-gated before any runtime integration is routed."
+  - "A gate tracker reduces ambiguity while preserving denied authority around validation implementation, event promotion, execution, and customer data."
+consequences:
+  - "Runtime Toolchain integration prerequisites are easier to inspect from canon and the root/operator overview."
+  - "API-side validation implementation, context-inclusion UX, token handling, and evidence-routing remain explicit future follow-ons rather than implied authorization."

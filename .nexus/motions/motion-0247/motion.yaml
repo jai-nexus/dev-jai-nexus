@@ -1,0 +1,19 @@
+motion_id: motion-0247
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Toolchain Runtime Integration Gate Tracker v0"
+subtitle: "track what must be true before any runtime Toolchain integration can be routed"
+kind: builder-proof
+program: q2-toolchain-runtime-integration-gate-tracker-v0
+basis: motion-0246
+status: ratified
+created_at: "2026-05-20T00:00:00.000Z"
+decided_at: "2026-05-20T00:30:00.000Z"
+proposer: ARCHITECT
+challenger: VERIFIER
+arbiter: OPERATOR
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+checks_required: [validate_motion, validate_agency, validate_sandbox_fixtures, typecheck]
+checks_optional: [build]
