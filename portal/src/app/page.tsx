@@ -459,6 +459,24 @@ export default async function HomePage() {
 
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Toolchain gate tracker</h3>
+                <ToneBadge tone="emerald">boundaries settled</ToneBadge>
+                <ToneBadge tone="rose">runtime not authorized</ToneBadge>
+              </div>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- gate tracker: boundaries settled; runtime integration not authorized</li>
+                <li>- next possible gates: API-side fixture alignment</li>
+                <li>- next possible gates: context-inclusion UX + token handling runbook</li>
+              </ul>
+              <p className="mt-3 text-xs text-gray-400">
+                API-side validation remains planned, not implemented. Audit
+                privacy/context review is settled, but raw JSONL stays repo-local
+                ingress evidence only and is not promoted here.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner substrate</h3>
                 <ToneBadge tone="amber">dry-run only</ToneBadge>
                 <ToneBadge tone="rose">execution denied</ToneBadge>

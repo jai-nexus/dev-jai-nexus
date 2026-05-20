@@ -1,0 +1,23 @@
+{
+  "motion_id": "motion-0247",
+  "status": "RATIFIED",
+  "decided_at": "2026-05-20T00:30:00.000Z",
+  "result": "PASS",
+  "votes": [
+    {
+      "voter": "jai-proposer",
+      "vote": "yes",
+      "reason": "A static gate tracker gives the control plane a clean view of what remains unsatisfied before any runtime Toolchain integration can even be considered."
+    },
+    {
+      "voter": "jai-challenger",
+      "vote": "yes",
+      "reason": "The tracker makes settled boundaries, planned validation work, and explicit denials visible without overstating current API or audit authority."
+    },
+    {
+      "voter": "jai-arbiter",
+      "vote": "yes",
+      "reason": "This preserves the current not-authorized posture for runtime integration, execution, and data promotion while clarifying the next gate path."
+    }
+  ]
+}
