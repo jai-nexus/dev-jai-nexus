@@ -67,12 +67,12 @@ The static card should include these fields:
 | Evidence classification | Display state | Routing posture |
 | --- | --- | --- |
 | `edge_runner_healthy` | `status_ok` | `pass_control_thread_status_ok` |
-| `edge_runner_partial_health_failure` | `degraded` | `targeted_service_review` |
-| `edge_runner_unreachable` | `blocked` or `review_needed` | `local_connectivity_review` |
-| `evidence_format_invalid` | `review_needed` | `evidence_normalization_review` |
-| `evidence_command_failed` | `review_needed` | `operator_machine_review` |
-| `blocked_until_manual_review` | `hold` | `hold` |
-| `blocked_until_control_thread_routing` | `control_thread_decision_required` | `control_thread_decision_required` |
+| `edge_runner_partial_health_failure` | `degraded` | `pass_control_thread_targeted_service_review` |
+| `edge_runner_unreachable` | `blocked` or `review_needed` | `pass_control_thread_local_connectivity_review` |
+| `evidence_format_invalid` | `review_needed` | `pass_control_thread_evidence_normalization_review` |
+| `evidence_command_failed` | `review_needed` | `pass_control_thread_operator_machine_review` |
+| `blocked_until_manual_review` | `insufficient_evidence` or `hold` | `pass_control_thread_evidence_normalization_review` |
+| `blocked_until_control_thread_routing` | `stale` or `control_thread_decision_required` | `hold_for_control_thread_review` |
 
 Additional display-state overlays may apply:
 
@@ -84,12 +84,12 @@ Additional display-state overlays may apply:
 | Display state / route | Next recommended action |
 | --- | --- |
 | `status_ok` | `Continue normal monitoring. Wait for the next human-run snapshot.` |
-| `degraded` / `targeted_service_review` | `Route targeted service review for the failed service(s). Do not restart or remediate automatically.` |
-| `blocked` or `review_needed` / `local_connectivity_review` | `Route local connectivity review. Do not SSH, ping sweep, call endpoints, or inspect Docker automatically.` |
-| `review_needed` / `evidence_normalization_review` | `Route evidence normalization review. Do not infer beyond submitted evidence.` |
-| `review_needed` / `operator_machine_review` | `Route operator machine review. Do not automatically retry.` |
+| `degraded` / `pass_control_thread_targeted_service_review` | `Route targeted service review for the failed service(s). Do not restart or remediate automatically.` |
+| `blocked` or `review_needed` / `pass_control_thread_local_connectivity_review` | `Route local connectivity review. Do not SSH, ping sweep, call endpoints, or inspect Docker automatically.` |
+| `review_needed` / `pass_control_thread_evidence_normalization_review` | `Route evidence normalization review. Do not infer beyond submitted evidence.` |
+| `review_needed` / `pass_control_thread_operator_machine_review` | `Route operator machine review. Do not automatically retry.` |
 | `hold` | `Hold until manual review completes.` |
-| `control_thread_decision_required` | `Hold until CONTROL_THREAD selects the next route.` |
+| `control_thread_decision_required` or `hold_for_control_thread_review` | `Hold until CONTROL_THREAD selects the next route.` |
 | `stale` | `Show stale evidence as historical/manual evidence only. Request a new human-run snapshot if needed.` |
 | `insufficient_evidence` | `Do not render as status_ok. Request corrected evidence or route review.` |
 
@@ -176,7 +176,7 @@ Overall classification: edge_runner_partial_health_failure
 Display state: degraded
 Service count: 3 / 4 healthy
 Exit code: 0
-Routing recommendation: targeted_service_review
+Routing recommendation: pass_control_thread_targeted_service_review
 Freshness/staleness state: fresh
 
 Service statuses
@@ -206,7 +206,7 @@ Overall classification: edge_runner_unreachable
 Display state: blocked
 Service count: 0 / 0 confirmed
 Exit code: 0
-Routing recommendation: local_connectivity_review
+Routing recommendation: pass_control_thread_local_connectivity_review
 Freshness/staleness state: fresh
 
 Service statuses
@@ -222,13 +222,15 @@ No live connectivity checks are performed by this surface. No Pi inspection. No 
 If the source classification is instead `blocked_until_manual_review`, the card
 should show:
 
-- `display state: hold`
-- `next recommended action: Hold until manual review completes.`
+- `display state: insufficient_evidence` or `hold`
+- `routing recommendation: pass_control_thread_evidence_normalization_review`
+- `next recommended action: Do not render as status_ok. Request corrected evidence or route review.`
 
 If the source classification is `blocked_until_control_thread_routing`, the
 card should show:
 
-- `display state: control_thread_decision_required`
+- `display state: stale` or `control_thread_decision_required`
+- `routing recommendation: hold_for_control_thread_review`
 - `next recommended action: Hold until CONTROL_THREAD selects the next route.`
 
 ## Malformed evidence example
@@ -245,7 +247,7 @@ Overall classification: evidence_format_invalid
 Display state: review_needed
 Service count: not trustworthy from submitted evidence
 Exit code: unknown from malformed evidence
-Routing recommendation: evidence_normalization_review
+Routing recommendation: pass_control_thread_evidence_normalization_review
 Freshness/staleness state: review_needed
 
 Service statuses
@@ -272,7 +274,7 @@ Overall classification: evidence_command_failed
 Display state: review_needed
 Service count: no trustworthy service count
 Exit code: <nonzero_exit_code>
-Routing recommendation: operator_machine_review
+Routing recommendation: pass_control_thread_operator_machine_review
 Freshness/staleness state: fresh
 
 Service statuses
@@ -295,11 +297,11 @@ Source repo/tool: jai-edge / scripts/edge_health_snapshot.py
 Snapshot captured at: <older_snapshot_timestamp_utc>
 Last submitted evidence: manual evidence intake
 
-Overall classification: edge_runner_healthy
-Display state: status_ok
+Overall classification: blocked_until_control_thread_routing
+Display state: stale
 Service count: 4 / 4 healthy in submitted snapshot
 Exit code: 0
-Routing recommendation: pass_control_thread_status_ok
+Routing recommendation: hold_for_control_thread_review
 Freshness/staleness state: stale
 
 Service statuses
