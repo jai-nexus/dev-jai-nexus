@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getEdgeRunnerAutomationSubstrateModel } from "@/lib/controlPlane/edgeRunnerAutomationSubstrate";
+import { getEdgeRunnerHealthStatusCardModel } from "@/lib/controlPlane/edgeRunnerHealthStatusCard";
 import { getPaidBetaReadinessModel } from "@/lib/controlPlane/paidBetaReadiness";
 import { getRootOperatorOverview } from "@/lib/controlPlane/rootOperatorOverview";
 import { formatCentral, formatCentralTooltip } from "@/lib/time";
@@ -85,6 +86,7 @@ export default async function HomePage() {
   const authority = getControlPlaneAuthorityPosture();
   const paidBeta = getPaidBetaReadinessModel();
   const edgeRunner = getEdgeRunnerAutomationSubstrateModel();
+  const edgeRunnerHealthCard = getEdgeRunnerHealthStatusCardModel();
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -554,6 +556,70 @@ export default async function HomePage() {
               <div className="mt-3 text-xs text-gray-400">Canon refs</div>
               <ul className="mt-2 space-y-1 text-xs text-gray-400">
                 {edgeRunner.source_refs.map((refPath) => (
+                  <li key={refPath} className="font-mono">
+                    - {refPath}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-100">Edge Runner health status</h3>
+                <ToneBadge tone="sky">static example</ToneBadge>
+                <ToneBadge tone="emerald">{edgeRunnerHealthCard.display_state}</ToneBadge>
+                <ToneBadge tone="amber">manual evidence only</ToneBadge>
+              </div>
+              <p className="mt-3 text-sm text-gray-300">{edgeRunnerHealthCard.static_example_note}</p>
+              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <li>- target host: {edgeRunnerHealthCard.target_host}</li>
+                <li>- source repo/tool: {edgeRunnerHealthCard.source_repo_tool}</li>
+                <li>- snapshot captured at: {edgeRunnerHealthCard.snapshot_timestamp}</li>
+                <li>- last submitted evidence: manual evidence intake</li>
+                <li>- overall classification: {edgeRunnerHealthCard.overall_classification}</li>
+                <li>- display state: {edgeRunnerHealthCard.display_state}</li>
+                <li>- service count: {edgeRunnerHealthCard.service_count_healthy}/{edgeRunnerHealthCard.service_count_total} healthy</li>
+                <li>- exit code: {edgeRunnerHealthCard.exit_code}</li>
+                <li>- routing recommendation: {edgeRunnerHealthCard.routing_recommendation}</li>
+                <li>- freshness/staleness state: {edgeRunnerHealthCard.freshness_state}</li>
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Service statuses</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunnerHealthCard.service_statuses.map((service) => (
+                  <li key={service.service_name}>
+                    - {service.service_name}: {service.status_note}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Evidence source/reference</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunnerHealthCard.evidence_source_reference}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Next recommended action</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunnerHealthCard.next_recommended_action}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Authority boundary</div>
+              <p className="mt-2 text-xs text-gray-400">
+                {edgeRunnerHealthCard.authority_boundary}
+              </p>
+              <div className="mt-3 text-xs text-gray-400">Static variants</div>
+              <ul className="mt-2 space-y-2 text-xs text-gray-400">
+                {edgeRunnerHealthCard.variants.map((variant) => (
+                  <li key={variant.variant_id}>
+                    - {variant.variant_label}: {variant.overall_classification}; {variant.display_state}; routing {variant.routing_recommendation}; {variant.service_count_healthy === null || variant.service_count_total === null ? "service count unavailable" : `service count ${variant.service_count_healthy}/${variant.service_count_total}`}; freshness {variant.freshness_state}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Out of scope</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunnerHealthCard.out_of_scope.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+              <div className="mt-3 text-xs text-gray-400">Canon refs</div>
+              <ul className="mt-2 space-y-1 text-xs text-gray-400">
+                {edgeRunnerHealthCard.source_refs.map((refPath) => (
                   <li key={refPath} className="font-mono">
                     - {refPath}
                   </li>
