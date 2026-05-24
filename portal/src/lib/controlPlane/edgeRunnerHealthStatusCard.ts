@@ -59,7 +59,7 @@ export function getEdgeRunnerHealthStatusCardModel(): EdgeRunnerHealthStatusCard
     title: "Edge Runner health status",
     posture: "static read-only operator card",
     static_example_note:
-      "Static example from manual evidence intake only. This surface does not poll, auto-refresh, or claim live runtime state.",
+      "Static example from the last submitted evidence only. Verified via orchestrator-nexus manual runner. This surface does not poll, auto-refresh, or claim live runtime state.",
     target_host: "jai-nexus-pi4",
     source_repo_tool: "jai-edge / scripts/edge_health_snapshot.py",
     snapshot_timestamp: "<snapshot_timestamp_utc>",
@@ -95,13 +95,13 @@ export function getEdgeRunnerHealthStatusCardModel(): EdgeRunnerHealthStatusCard
     ],
     exit_code: 0,
     evidence_source_reference:
-      "manual evidence intake from orchestrator-nexus-normalized jai-edge snapshot output",
+      "Last submitted evidence: orchestrator-nexus PR #22 / Edge Runner Manual Runner Live Verification v1. Manual evidence intake normalized from jai-edge / scripts/edge_health_snapshot.py output and verified via orchestrator-nexus manual runner.",
     routing_recommendation: "pass_control_thread_status_ok",
     freshness_state: "fresh",
     next_recommended_action:
-      "Continue normal monitoring. Wait for the next human-run snapshot.",
+      "Operationally verified through orchestrator-nexus PR #22. Orchestrator-nexus is paused for this lane; dev-jai-nexus shows the static example only and waits for the next human-run snapshot.",
     authority_boundary:
-      "No automated action. Manual evidence only. No live telemetry, no polling, and no remediation authority.",
+      "No automated action. Manual evidence only. Not live telemetry. No polling, remediation, deployment, or runtime mutation authority.",
     source_refs: [
       "docs/plans/EDGE_RUNNER_HEALTH_SNAPSHOT_CONTROL_PLANE_VISIBILITY_PLAN_V0.md",
       "docs/reference/EDGE_RUNNER_HEALTH_STATUS_CARD_V0.md",
@@ -124,17 +124,19 @@ export function getEdgeRunnerHealthStatusCardModel(): EdgeRunnerHealthStatusCard
         overall_classification: "edge_runner_healthy",
         display_state: "status_ok",
         routing_recommendation: "pass_control_thread_status_ok",
-        evidence_example_source: "settled jai-nexus-pi4 healthy snapshot baseline",
+        evidence_example_source:
+          "orchestrator-nexus PR #22 / Edge Runner Manual Runner Live Verification v1 for the jai-nexus-pi4 static example",
         freshness_state: "fresh",
         service_count_healthy: 4,
         service_count_total: 4,
         next_recommended_action:
-          "Continue normal monitoring. Wait for the next human-run snapshot.",
+          "End-to-end read-only workflow verified. Orchestrator-nexus is paused for this lane; keep this as a static example and wait for the next human-run snapshot.",
         operator_copy:
-          "Static example from the last submitted evidence. Manual evidence only. No automated remediation.",
+          "Static example from the last submitted evidence. Verified via orchestrator-nexus manual runner. Manual evidence only. No automated remediation.",
         authority_boundary:
-          "No automated action. Manual evidence only. No live telemetry, no polling, and no remediation authority.",
-        note: "All observed services report HTTP 200 / healthy in the submitted snapshot.",
+          "No automated action. Manual evidence only. Not live telemetry. No polling, remediation, deployment, or runtime mutation authority.",
+        note:
+          "First verified end-to-end read-only workflow: jai-edge health snapshot utility -> orchestrator-nexus manual runner -> normalized Edge Runner evidence -> CONTROL_THREAD routing recommendation.",
       },
       {
         variant_id: "degraded",
