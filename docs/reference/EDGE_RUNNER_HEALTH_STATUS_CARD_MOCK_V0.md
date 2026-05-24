@@ -95,8 +95,22 @@ Additional display-state overlays may apply:
 
 ## Healthy-state example
 
-This example uses the settled `jai-nexus-pi4` snapshot shape from the current
-cross-repo baseline.
+This example uses the successful `orchestrator-nexus` PR `#22` / Edge Runner
+Manual Runner Live Verification v1 evidence result for the settled
+`jai-nexus-pi4` snapshot shape.
+
+The healthy example is a static example only. It references the first verified
+end-to-end read-only workflow:
+
+- `jai-edge` health snapshot utility
+- `orchestrator-nexus` manual runner
+- normalized Edge Runner evidence
+- `CONTROL_THREAD` routing recommendation
+
+This does not authorize live telemetry, polling, remediation, deployment, or
+runtime mutation. `orchestrator-nexus` is paused for this lane as
+operationally verified, and `dev-jai-nexus` is aligning static reference/model
+copy only.
 
 ```yaml
 card_title: "Edge Runner Health Snapshot"
@@ -125,11 +139,11 @@ service_statuses:
     reported_health: "healthy"
     card_copy: "HTTP 200 / healthy"
 exit_code: 0
-evidence_source_reference: "last submitted evidence / manual evidence intake"
+evidence_source_reference: "last submitted evidence / orchestrator-nexus PR #22 / Edge Runner Manual Runner Live Verification v1 / manual evidence intake"
 routing_recommendation: "pass_control_thread_status_ok"
 freshness_staleness_state: "fresh"
-next_recommended_action: "Continue normal monitoring. Wait for the next human-run snapshot."
-authority_boundary: "Manual evidence only. No automated action, no live endpoint calls, no polling, no remediation authority."
+next_recommended_action: "Operationally verified through orchestrator-nexus PR #22. Orchestrator-nexus is paused for this lane; keep this as a static example and wait for the next human-run snapshot."
+authority_boundary: "Manual evidence only. Not live telemetry. No automated action, no live endpoint calls, no polling, no remediation, deployment, or runtime mutation authority."
 ```
 
 Illustrative pseudo-card:
@@ -141,6 +155,7 @@ Target host: jai-nexus-pi4
 Source repo/tool: jai-edge / scripts/edge_health_snapshot.py
 Snapshot captured at: <snapshot_timestamp_utc>
 Last submitted evidence: manual evidence intake
+Verified via orchestrator-nexus manual runner: PR #22 / Edge Runner Manual Runner Live Verification v1
 
 Overall classification: edge_runner_healthy
 Display state: status_ok
@@ -156,10 +171,10 @@ Service statuses
 - writer-stub: HTTP 200 / healthy
 
 Next recommended action
-Continue normal monitoring. Wait for the next human-run snapshot.
+Operationally verified through orchestrator-nexus PR #22. Orchestrator-nexus is paused for this lane; keep this as a static example and wait for the next human-run snapshot.
 
 Authority boundary
-Manual evidence only. No automated action. No live endpoint calls. No automated remediation.
+Manual evidence only. Not live telemetry. No automated action. No live endpoint calls. No polling. No automated remediation.
 ```
 
 ## Degraded / partial-failure example
