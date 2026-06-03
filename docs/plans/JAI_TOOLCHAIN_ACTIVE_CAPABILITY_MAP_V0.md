@@ -197,7 +197,7 @@ useful, even though the foundational boundaries are stronger now.
 - boundary: schema/reference only
 - likely usefulness: medium unless a downstream consumer is ready
 
-### Candidate 4 - `vscode-nexus` local packet display / handoff planning
+### Candidate 4 - `jai-vscode` local packet display / handoff planning
 
 - value: IDE operator utility
 - risk: context over-collection if not bounded
@@ -279,7 +279,7 @@ This artifact does not authorize:
 | `orchestrator-nexus` | dry-run planning lane, manual runner lane, Edge Runner health evidence lane, Pi scheduled observer lane, evidence normalization | currently operational | yes | evidence/dry-run/manual-run owner | evidence remains harder to consume broadly without a unified static index | evidence index / `latest.json` consumption planning | no broad execution authority beyond separately governed scope |
 | `jai-edge` | read-only health snapshot utility, Pi health evidence source, private/local evidence node | currently operational | yes | read-only signal source owner | narrow scope; not a general Toolchain execution surface | preserve as read-only source and connect only through governed evidence lanes | no deployment authority, no customer workload authority |
 | `jai` | portable substrate, council reasoning semantics, motion/council semantics | reference/static only | yes, as semantics baseline | substrate semantics owner | no visible downstream product/operator surface by itself | continue semantics stewardship or support downstream packet/approval clarity | no product UI, no API runtime, no execution authority |
-| `vscode-nexus` | IDE bridge, role packet/preflight direction, repo-context bridge, explicit context inclusion posture | future tooling candidate | not yet | future IDE-side review surface owner | no selected handoff implementation and no visible local packet surface yet | local packet display / handoff planning | no hidden file capture, no autonomous repo mutation, no global SoT |
+| `jai-vscode` | IDE bridge, role packet/preflight direction, repo-context bridge, explicit context inclusion posture | future tooling candidate | not yet | future IDE-side review surface owner | no selected handoff implementation and no visible local packet surface yet | local packet display / handoff planning | no hidden file capture, no autonomous repo mutation, no global SoT |
 | `jai-pilot` | future desktop/browser/operator handoff surface, explicit user-approved handoff UX candidate | future UI candidate | not yet | future browser/desktop handoff owner | no approved UX boundary implementation | handoff boundary planning | no hidden scraping, no credential capture, no autonomous browser/desktop actions |
 | `api-nexus` | future interface/integration/data-contract surface | future runtime candidate | not yet | future interface boundary owner | no runtime Toolchain integration and no downstream enforcement | interface planning only after clearer packet consumer demand | no global SoT by default, no downstream enforcement, no runtime Toolchain authority |
 | `audit-nexus` | packet/context/privacy/security review lane | planning-only | not directly | review gate candidate | review lane not yet paired with a concrete client-handoff seam | packet/schema authority and privacy review | does not grant implementation authority by itself |

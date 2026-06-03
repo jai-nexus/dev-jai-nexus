@@ -709,7 +709,7 @@ Alternative future routes:
 - `audit-nexus` authority/privacy review for passalong intake and assisted
   reconciliation
 - `orchestrator-nexus` evidence index / `latest.json` planning
-- `vscode-nexus` context/work packet handoff boundary
+- `jai-vscode` context/work packet handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 
 Routing constraint:

@@ -134,7 +134,7 @@ following gates:
 - `docs-nexus` = documentation/source intelligence
 - `jai` = portable substrate
 - `jai-pilot` = future browser/extension Toolchain product lane
-- `vscode-nexus` = future IDE Toolchain product lane
+- `jai-vscode` / JAI for VS Code = future IDE Toolchain product lane
 
 ## Toolchain next-target note
 

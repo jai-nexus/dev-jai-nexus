@@ -189,7 +189,7 @@ Additional recommended warning copy:
 
 Additional downstream boundary facts:
 
-- `vscode-nexus`, `orchestrator-nexus`, `api-nexus`, and `jai` remain
+- `jai-vscode`, `orchestrator-nexus`, `api-nexus`, and `jai` remain
   unelected as consumers unless separately routed
 - `jai-format` remains owner of workflow-packet schema/profile artifacts
 - strict schema status does not alter authority in any downstream repo
@@ -289,7 +289,7 @@ Likely `dev-jai-nexus` follow-up only if `CONTROL_THREAD` wants visibility:
 Alternative valid routes:
 
 - `audit-nexus` packet/schema authority and privacy review
-- `vscode-nexus` context/work packet handoff boundary after grammar/schema is
+- `jai-vscode` context/work packet handoff boundary after grammar/schema is
   more settled
 - `orchestrator-nexus` dispatch packet dry-run schema alignment after
   workflow-packet grammar is stable

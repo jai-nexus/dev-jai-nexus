@@ -155,7 +155,7 @@ later, may show:
 - next downstream consumers:
   - `dev-jai-nexus` static visibility
   - `jai-format` packet grammar/schema continuation
-  - `vscode-nexus` explicit context handoff boundary
+  - `jai-vscode` explicit context handoff boundary
   - `jai-pilot` explicit handoff UX boundary
   - `audit-nexus` packet/context privacy review
 
@@ -310,7 +310,7 @@ Preferred next route:
 Alternative valid next routes:
 
 - `jai-format` workflow packet grammar/schema continuation
-- `vscode-nexus` explicit context handoff boundary
+- `jai-vscode` explicit context handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 - `audit-nexus` packet/context privacy review
 

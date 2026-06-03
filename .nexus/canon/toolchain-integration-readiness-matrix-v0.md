@@ -3,7 +3,7 @@
 ## Purpose
 
 Add a `dev-jai-nexus` canon/readiness matrix tying together `jai-pilot`,
-`vscode-nexus`, and `api-nexus` Toolchain integration boundaries so the
+`jai-vscode`, and `api-nexus` Toolchain integration boundaries so the
 Operator Control Plane has a static readiness view of Toolchain product-lane
 ownership and future API/interface gates without adding runtime behavior.
 
@@ -14,11 +14,11 @@ runtime integration, event ingestion, API expansion, or client automation.
 
 - `dev-jai-nexus` is settled through `motion-0245`
 - `jai-pilot` completed Product / Extension Ownership Boundary v0
-- `vscode-nexus` completed IDE Toolchain Product-Lane Ownership Boundary v0
-- `vscode-nexus` completed Extension Authority Hardening v0
-- `vscode-nexus` completed Packaging / Test Harness Stabilization v0
-- `vscode-nexus` completed Token / Event Payload Boundary v0
-- `vscode-nexus` completed Event Schema Fixtures v0
+- `jai-vscode` completed IDE Toolchain Product-Lane Ownership Boundary v0
+- `jai-vscode` completed Extension Authority Hardening v0
+- `jai-vscode` completed Packaging / Test Harness Stabilization v0
+- `jai-vscode` completed Token / Event Payload Boundary v0
+- `jai-vscode` completed Event Schema Fixtures v0
 - `api-nexus` completed Toolchain Integration Interface Boundary v0
 - Toolchain events and client payloads are not global SoT by default
 - `api-nexus` raw JSONL remains repo-local ingress evidence only
@@ -26,7 +26,8 @@ runtime integration, event ingestion, API expansion, or client automation.
 ## Current Toolchain lane posture
 
 - `jai-pilot` owns browser/extension Toolchain product-lane concepts
-- `vscode-nexus` owns IDE/editor Toolchain product-lane behavior
+- `jai-vscode` owns JAI for VS Code / IDE-editor Toolchain product-lane
+  behavior
 - `api-nexus` owns future API/interface seams for Toolchain clients, if later
   implemented
 - `dev-jai-nexus` coordinates cross-repo routing and implementation gates
@@ -43,7 +44,7 @@ runtime integration, event ingestion, API expansion, or client automation.
 - no API calls by default
 - no customer data persistence
 
-## `vscode-nexus` readiness posture
+## `jai-vscode` / JAI for VS Code readiness posture
 
 - IDE/editor lane
 - ownership boundary exists
@@ -73,7 +74,7 @@ runtime integration, event ingestion, API expansion, or client automation.
 | Lane / owner | Current boundary posture | Current runtime posture | Evidence posture | Explicit denials | Implementation authorized |
 | --- | --- | --- | --- | --- | --- |
 | `jai-pilot` | browser/extension ownership boundary exists | no API calls by default; no autonomous browser action | product-lane boundary only | no hidden scraping, no credential/session/token capture, no provider/model calls, no customer data persistence | no |
-| `vscode-nexus` | IDE/editor ownership boundary and authority hardening exist | file text inclusion opt-in; agent controls disabled by default | token/event payload boundary, event schema fixtures, packaging/test harness stabilization | no global SoT authority, no default agent control, no hidden telemetry | no |
+| `jai-vscode` | IDE/editor ownership boundary and authority hardening exist | file text inclusion opt-in; agent controls disabled by default | token/event payload boundary, event schema fixtures, packaging/test harness stabilization | no global SoT authority, no default agent control, no hidden telemetry | no |
 | `api-nexus` | Toolchain integration interface boundary exists | current runtime only `GET /healthz` and `POST /ingest/events` | raw JSONL is repo-local ingress evidence only | no new API routes, no replay queue, no audit canon promotion, no execution authority, no global SoT | no |
 
 ## Future integration gates
@@ -109,7 +110,7 @@ following gates:
 ## Non-goals
 
 - mutating `jai-pilot`
-- mutating `vscode-nexus`
+- mutating `jai-vscode`
 - mutating `api-nexus`
 - mutating `jai-nexus`
 - mutating `jai`
@@ -129,7 +130,7 @@ following gates:
 ## Authority boundary
 
 - `dev-jai-nexus` owns static routing/readiness visibility only
-- `jai-pilot`, `vscode-nexus`, and `api-nexus` remain their own lane owners
+- `jai-pilot`, `jai-vscode`, and `api-nexus` remain their own lane owners
 - Toolchain events and payloads are not promoted to global SoT here
 - `api-nexus` raw JSONL remains repo-local ingress evidence only
 - no runtime integration, scheduler authority, branch-write authority,

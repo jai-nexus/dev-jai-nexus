@@ -170,7 +170,7 @@ The future static surface should cover these repos and lanes:
 - `jai`
   - portable substrate / council reasoning semantics
   - motion/council semantics
-- `vscode-nexus`
+- `jai-vscode`
   - IDE bridge
   - role packet / preflight direction
   - repo-context bridge
@@ -399,7 +399,7 @@ Alternative valid next routes:
 
 - `orchestrator-nexus` evidence index / `latest.json` consumption planning
 - `audit-nexus` packet/schema authority and privacy review
-- `vscode-nexus` context/work packet handoff boundary
+- `jai-vscode` context/work packet handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 - `jai-format` typed-reference fixture examples
 

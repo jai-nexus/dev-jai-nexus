@@ -62,7 +62,7 @@ Likely ownership routing:
   - operator coordination and visibility
 - `jai-pilot`
   - future toolchain lane
-- `vscode-nexus`
+- `jai-vscode`
   - future editor/product lane
 - `api-nexus`
   - interface and integration-contract layer

@@ -110,11 +110,11 @@ Does not own:
 - cross-repo orchestration policy
 - customer-serving execution
 
-## `vscode-nexus`
+## `jai-vscode` / JAI for VS Code
 
 Primary role:
 
-- IDE-side Toolchain client
+- JAI for VS Code adapter / IDE-side Toolchain client
 - repo-context bridge
 - packet/repo-context review surface
 - explicit file/context inclusion
@@ -208,8 +208,8 @@ The intended coordinated workflow posture is:
 - `jai-format` defines shared packet grammar
 - `jai` defines reasoning and motion semantics
 - `orchestrator-nexus` packages dispatch and normalizes evidence
-- `vscode-nexus` and `jai-pilot` become explicit user-approved client handoff
-  surfaces
+- `jai-vscode` / JAI for VS Code and `jai-pilot` become explicit
+  user-approved client handoff surfaces
 - `jai-edge` remains a private local evidence/observation lane
 - `api-nexus` remains a future interface boundary
 - `audit-nexus` reviews authority/privacy posture

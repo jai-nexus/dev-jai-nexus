@@ -27,7 +27,7 @@ integration, schema enforcement, API expansion, or client execution behavior.
 - `api-nexus` Toolchain Integration Interface Boundary
 - `api-nexus` Toolchain Event Schema Validation Boundary
 - `audit-nexus` `AUD-2026Q2-002` Toolchain Privacy / Context-Inclusion Review
-- `vscode-nexus` Event Schema Fixtures
+- `jai-vscode` Event Schema Fixtures
 - `jai-pilot` Product / Extension Ownership Boundary
 
 ## Gate status vocabulary
@@ -47,9 +47,9 @@ integration, schema enforcement, API expansion, or client execution behavior.
 | API event schema validation boundary | `settled_boundary` | `api-nexus` Toolchain Event Schema Validation Boundary | validation boundary is defined, not implemented | API-side validation implementation plan | no |
 | privacy/context-inclusion review completed | `settled_boundary` | `audit-nexus` `AUD-2026Q2-002` | privacy and context-inclusion review posture is documented | follow-on runbook or evidence-routing plan | no |
 | API-side schema validation implementation plan | `planned_not_implemented` | interface + validation boundary canon | validation is still conceptual only | implementation plan in `api-nexus` | no |
-| API-side event fixture alignment | `planned_not_implemented` | `vscode-nexus` Event Schema Fixtures | fixture posture exists source-side | alignment plan for accepted Toolchain payloads | no |
-| explicit file/context inclusion UX | `future_gated` | audit privacy/context review; `vscode-nexus` opt-in posture | inclusion must remain visible and user-approved | product/IDE/browser UX boundary follow-up | no |
-| token/secret leakage controls | `future_gated` | `vscode-nexus` token/event payload boundary; audit review | leakage controls remain bounded conceptually | token handling runbook / control plan | no |
+| API-side event fixture alignment | `planned_not_implemented` | `jai-vscode` Event Schema Fixtures | fixture posture exists source-side | alignment plan for accepted Toolchain payloads | no |
+| explicit file/context inclusion UX | `future_gated` | audit privacy/context review; `jai-vscode` opt-in posture | inclusion must remain visible and user-approved | product/IDE/browser UX boundary follow-up | no |
+| token/secret leakage controls | `future_gated` | `jai-vscode` token/event payload boundary; audit review | leakage controls remain bounded conceptually | token handling runbook / control plan | no |
 | client identity / installation identity plan | `future_gated` | Toolchain readiness matrix | no identity implementation exists | identity boundary plan | no |
 | payload minimization policy | `future_gated` | audit privacy/context review | minimization is expected but not implemented here | explicit payload-minimization policy | no |
 | raw JSONL boundary preserved | `settled_boundary` | `api-nexus` interface boundary; `motion-0246` | raw ingress evidence stays repo-local only | later evidence-routing boundary if chosen | no |
@@ -97,7 +97,7 @@ Recommended current statuses remain:
 ## Non-goals
 
 - mutating `jai-pilot`
-- mutating `vscode-nexus`
+- mutating `jai-vscode`
 - mutating `api-nexus`
 - mutating `audit-nexus`
 - mutating `jai-nexus`
@@ -118,7 +118,7 @@ Recommended current statuses remain:
 ## Authority boundary
 
 - `dev-jai-nexus` owns static gate visibility and routing only
-- lane owners remain `jai-pilot`, `vscode-nexus`, `api-nexus`, and
+- lane owners remain `jai-pilot`, `jai-vscode`, `api-nexus`, and
   `audit-nexus` within their own settled boundaries
 - runtime Toolchain integration is not routed or authorized here
 - Toolchain events are not promoted to global SoT here
