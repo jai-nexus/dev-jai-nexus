@@ -178,7 +178,7 @@ Interpretation notes:
 
 - Purpose: names the single repo assigned to the lane.
 - Expected value or shape: repo name such as `dev-jai-nexus`,
-  `audit-nexus`, `orchestrator-nexus`, `vscode-nexus`, or `jai-pilot`.
+  `audit-nexus`, `orchestrator-nexus`, `jai-vscode`, or `jai-pilot`.
 - Required: yes.
 - Interpretation notes: the repo-local chat may mutate only that repo and only
   within the routed scope.
@@ -803,7 +803,7 @@ lanes:
     passalong_required: true
 
   - lane_id: example-vscode-context-handoff-boundary
-    repo: vscode-nexus
+    repo: jai-vscode
     scope: context handoff boundary planning
     mode: REPO_EXECUTION / docs-reference only
     branch: docs/example-context-handoff-boundary

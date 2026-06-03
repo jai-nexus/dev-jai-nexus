@@ -92,7 +92,7 @@ explicit before any implementation authority is considered.
 
 ### Step 7 - Tool/client execution or handoff
 
-- possible lanes: `vscode-nexus`, `jai-pilot`, `jai-edge`,
+- possible lanes: `jai-vscode`, `jai-pilot`, `jai-edge`,
   `orchestrator-nexus`
 - output: execution result packet, user-confirmed handoff, or read-only local
   evidence
@@ -134,8 +134,8 @@ explicit before any implementation authority is considered.
   normalization, and dispatch target semantics within approved authority
 - `jai-edge` remains a private Edge Runner / local evidence node for read-only
   local observation
-- `vscode-nexus` is the IDE-side Toolchain client and explicit repo-context
-  handoff surface
+- `jai-vscode` / JAI for VS Code is the IDE-side Toolchain client and
+  explicit repo-context handoff surface
 - `jai-pilot` is the browser/desktop-side Toolchain client and explicit
   user-approved handoff surface
 - `api-nexus` is the future packet/event interface boundary, not a global SoT
@@ -264,9 +264,9 @@ Minimum conceptual fields for the shared packet vocabulary should include:
 - collect customer data
 - bypass user approval
 
-## `vscode-nexus` role
+## `jai-vscode` / JAI for VS Code role
 
-`vscode-nexus` should mature as:
+`jai-vscode` should mature as JAI for VS Code:
 
 - an IDE-side packet/repo-context review surface
 - a repo-context bridge
@@ -274,7 +274,7 @@ Minimum conceptual fields for the shared packet vocabulary should include:
 - an explicit file inclusion surface
 - a work packet preview surface
 
-`vscode-nexus` must preserve:
+`jai-vscode` must preserve:
 
 - file/context inclusion remains explicit and user-visible
 - agent controls remain disabled unless explicitly authorized
@@ -389,7 +389,7 @@ Recommended safe next seams:
 
 - `jai-format` packet schema draft v0
 - `dev-jai-nexus` static packet-flow visibility reference
-- `vscode-nexus` user-approved context handoff boundary
+- `jai-vscode` user-approved context handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 - `orchestrator-nexus` dispatch packet dry-run schema
 - `audit-nexus` authority/privacy review for packet payloads
@@ -413,7 +413,7 @@ Preferred next route after this planning package:
 Alternative valid next routes:
 
 - `dev-jai-nexus` static packet-flow visibility reference
-- `vscode-nexus` context handoff boundary
+- `jai-vscode` context handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 - `audit-nexus` packet payload privacy/security review
 - `orchestrator-nexus` dispatch packet dry-run schema
@@ -422,7 +422,7 @@ Recommended sequencing:
 
 1. `jai-format` packet grammar v0
 2. `orchestrator-nexus` dispatch/evidence dry-run schema alignment
-3. `vscode-nexus` and `jai-pilot` explicit handoff boundaries
+3. `jai-vscode` and `jai-pilot` explicit handoff boundaries
 4. `dev-jai-nexus` visibility/reference follow-up for operator surfaces
 
 ## Residual risks

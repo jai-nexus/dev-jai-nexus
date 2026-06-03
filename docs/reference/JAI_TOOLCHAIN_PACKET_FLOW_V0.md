@@ -324,7 +324,7 @@ Non-goals / blocked behaviors:
 
 Purpose:
 
-- transfer approved, scoped work to `vscode-nexus`, `jai-pilot`, `jai-edge`,
+- transfer approved, scoped work to `jai-vscode`, `jai-pilot`, `jai-edge`,
   or another approved client/tool lane with explicit user-visible context
 
 Owner repo:
@@ -337,7 +337,7 @@ Source:
 
 Destination:
 
-- `vscode-nexus`, `jai-pilot`, `jai-edge`, or an approved runner lane
+- `jai-vscode`, `jai-pilot`, `jai-edge`, or an approved runner lane
 
 Minimum fields:
 
@@ -380,7 +380,7 @@ Owner repo:
 
 Source:
 
-- `vscode-nexus`, `jai-pilot`, `jai-edge`, or `orchestrator-nexus`
+- `jai-vscode`, `jai-pilot`, `jai-edge`, or `orchestrator-nexus`
 
 Destination:
 

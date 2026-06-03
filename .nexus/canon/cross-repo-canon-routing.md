@@ -94,7 +94,7 @@ Likely canonical ownership:
 
 Likely canonical ownership by future repo/domain:
 - `jai-pilot`
-- `vscode-nexus`
+- `jai-vscode`
 - future JAI Toolchain developer-product lanes
 
 ## Ownership rule

@@ -33,7 +33,8 @@ Settled posture:
 - `dev-jai-nexus` owns Operator Control Plane posture.
 - `CONTROL_THREAD` owns cross-repo prioritization and dependency
   reconciliation.
-- `vscode-nexus` remains the VS Code adapter / IDE-boundary repo for now.
+- `jai-vscode` remains the JAI for VS Code adapter / IDE-boundary repo for
+  now.
 - `jai-pilot` remains the browser/extension lane and is held.
 - JAI Workbench is the broader future product concept.
 - Runtime Toolchain integration is not authorized.
@@ -99,11 +100,11 @@ Does not transfer to `jai-workbench`:
 - cross-repo dependency reconciliation
 - acceptance of passalongs as reconciled
 
-### `vscode-nexus`
+### `jai-vscode` / JAI for VS Code
 
 Remains owner of:
 
-- VS Code adapter / IDE-boundary repo
+- JAI for VS Code adapter / IDE-boundary repo
 - IDE-side context handoff boundary
 - editor-specific UX and extension behavior
 - explicit file/context inclusion rules for IDE surfaces
@@ -225,13 +226,13 @@ and developer workflow affordances.
 
 JAI IDE is a product concept, not the current implementation repo by itself.
 
-### `vscode-nexus`
+### `jai-vscode` / JAI for VS Code
 
-`vscode-nexus` is the current VS Code adapter / IDE-boundary repo. It remains
-the concrete repo for VS Code extension boundary planning and implementation
-if separately routed.
+`jai-vscode` is the current repo for JAI for VS Code, the VS Code adapter /
+IDE-boundary lane. It remains the concrete repo for VS Code extension boundary
+planning and implementation if separately routed.
 
-`vscode-nexus` is narrower than JAI Workbench. It is IDE-specific and does not
+`jai-vscode` is narrower than JAI Workbench. It is IDE-specific and does not
 own browser handoff, global product shell, or control-plane routing authority.
 
 ### `jai-pilot`
@@ -425,7 +426,7 @@ Do not create the repo in this task.
 Rationale:
 
 - the boundary is not yet accepted
-- ownership separation across `dev-jai-nexus`, `vscode-nexus`, `jai-pilot`,
+- ownership separation across `dev-jai-nexus`, `jai-vscode`, `jai-pilot`,
   `orchestrator-nexus`, `audit-nexus`, `jai`, `jai-format`, and `api-nexus`
   must remain explicit
 - creating the repo too early may imply implementation momentum or product
@@ -439,7 +440,7 @@ Rationale:
   should it remain a concept in `dev-jai-nexus` until UI boundaries are ready?
 - Should JAI Workbench eventually be local-first desktop, web-based local app,
   IDE-adjacent app, or a composition of separate adapter surfaces?
-- What exact boundary separates JAI Workbench from JAI IDE once `vscode-nexus`
+- What exact boundary separates JAI Workbench from JAI IDE once `jai-vscode`
   remains the VS Code adapter?
 - Which passalong, portfolio batch, and `.jai` representations should be
   visible in a future Workbench before any runtime behavior exists?
@@ -451,7 +452,7 @@ Rationale:
 - JAI Workbench could be mistaken for implementation approval.
 - A standalone repo could create pressure to build UI or runtime behavior
   before gates are satisfied.
-- Product naming could blur ownership with `vscode-nexus` or `jai-pilot`.
+- Product naming could blur ownership with `jai-vscode` or `jai-pilot`.
 - Workbench scope could drift into terminal execution, browser control, or repo
   mutation.
 - Provider/model assistance could be overread as provider/model dispatch
@@ -476,4 +477,3 @@ If not accepted, the next route is:
 
 - keep JAI Workbench as a future product concept in `dev-jai-nexus` planning
   and continue routing concrete adapter work through existing repos
-

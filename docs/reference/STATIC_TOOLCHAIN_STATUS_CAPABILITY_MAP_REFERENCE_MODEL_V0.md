@@ -85,7 +85,7 @@ Required posture:
 
 - Purpose: identifies the repo or repo lane described by the record.
 - Expected values or shape: repo name string such as `dev-jai-nexus`,
-  `jai-format`, `orchestrator-nexus`, `jai-edge`, `jai`, `vscode-nexus`,
+  `jai-format`, `orchestrator-nexus`, `jai-edge`, `jai`, `jai-vscode`,
   `jai-pilot`, `api-nexus`, `audit-nexus`, or `docs-nexus`.
 - Required: yes.
 - Interpretation notes: names the lane owner or visibility target; it does not
@@ -551,7 +551,7 @@ schema, and not a source of runtime truth.
   risk_level: low
   recommended_route: pause or route semantics clarification only if needed
 
-- repo: vscode-nexus
+- repo: jai-vscode
   lane: ide-context-handoff
   capability: IDE bridge / role packet / preflight direction
   category: future_ui_candidate
@@ -565,7 +565,7 @@ schema, and not a source of runtime truth.
   implementation_status: future_candidate
   explicit_non_authority: no hidden file capture, no autonomous repo mutation
   risk_level: high
-  recommended_route: vscode-nexus context/work packet handoff boundary after audit posture is explicit
+  recommended_route: jai-vscode context/work packet handoff boundary after audit posture is explicit
 
 - repo: jai-pilot
   lane: browser-desktop-handoff
@@ -753,7 +753,7 @@ Alternative valid routes:
 - `audit-nexus` packet/schema authority and privacy review before any
   client-side handoff work
 - `orchestrator-nexus` evidence index/latest.json consumption planning
-- `vscode-nexus` context/work packet handoff boundary
+- `jai-vscode` context/work packet handoff boundary
 - `jai-pilot` explicit handoff UX boundary
 
 ## Authority boundary

@@ -33,7 +33,7 @@ Likely routing map:
   - formatting and representation discipline
 - `jai-pilot`
   - future developer-product lane
-- `vscode-nexus`
+- `jai-vscode`
   - future editor/product lane
 - future toolchain repos
   - additional developer-product lanes under later governance
