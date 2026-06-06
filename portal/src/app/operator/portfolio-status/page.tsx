@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 
 import {
   getPortfolioStatusFixture,
-  type PortfolioLaneStatus,
   type PortfolioStatusLane,
 } from "@/lib/controlPlane/portfolioStatusFixture";
+
+const FALLBACK_TEXT = "Not recorded in the checked-in fixture.";
 
 function ToneBadge({
   children,
@@ -36,12 +37,25 @@ function ToneBadge({
   );
 }
 
-function statusTone(status: PortfolioLaneStatus): "sky" | "amber" | "emerald" | "rose" | "slate" {
+function statusTone(status?: string): "sky" | "amber" | "emerald" | "rose" | "slate" {
   if (status === "active") return "sky";
   if (status === "queued") return "amber";
   if (status === "completed") return "emerald";
   if (status === "blocked") return "rose";
   return "slate";
+}
+
+function safeText(value: string | undefined, fallback = FALLBACK_TEXT) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : fallback;
+}
+
+function safeArray<T>(items: T[] | undefined) {
+  return Array.isArray(items) ? items : [];
+}
+
+function formatStatus(status: string | undefined) {
+  return safeText(status, "unknown").replace(/_/g, " ");
 }
 
 function Section({
@@ -73,14 +87,16 @@ function EmptyState({ label }: { label: string }) {
 }
 
 function TextList({ items, label }: { items?: string[]; label: string }) {
-  if (!items || items.length === 0) {
+  const safeItems = safeArray(items).filter((item) => item.trim().length > 0);
+
+  if (safeItems.length === 0) {
     return <EmptyState label={label} />;
   }
 
   return (
     <ul className="space-y-1 text-sm text-gray-300">
-      {items.map((item) => (
-        <li key={item}>- {item}</li>
+      {safeItems.map((item, index) => (
+        <li key={`${label}-${index}`}>- {item}</li>
       ))}
     </ul>
   );
@@ -110,26 +126,26 @@ function LaneCard({ lane }: { lane: PortfolioStatusLane }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">{lane.title}</h3>
-            <ToneBadge tone={statusTone(lane.status)}>{lane.status}</ToneBadge>
-            <ToneBadge tone="slate">{lane.repo}</ToneBadge>
+            <h3 className="text-base font-semibold text-gray-100">{safeText(lane.title)}</h3>
+            <ToneBadge tone={statusTone(lane.status)}>{formatStatus(lane.status)}</ToneBadge>
+            <ToneBadge tone="slate">{safeText(lane.repo, "unknown repo")}</ToneBadge>
           </div>
-          <p className="max-w-4xl text-sm text-gray-300">{lane.scope}</p>
+          <p className="max-w-4xl text-sm text-gray-300">{safeText(lane.scope)}</p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-3">
         <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
           <div className="text-[11px] uppercase tracking-wide text-gray-500">Branch</div>
-          <div className="mt-2 font-mono text-xs text-gray-300">{lane.branch}</div>
+          <div className="mt-2 font-mono text-xs text-gray-300">{safeText(lane.branch)}</div>
         </div>
         <div className="rounded-lg border border-gray-800 bg-black/30 p-3 lg:col-span-2">
           <div className="text-[11px] uppercase tracking-wide text-gray-500">Artifact</div>
-          <div className="mt-2 font-mono text-xs text-gray-300">{lane.artifact}</div>
+          <div className="mt-2 font-mono text-xs text-gray-300">{safeText(lane.artifact)}</div>
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-4">
+      <div className="mt-4 grid gap-4 xl:grid-cols-5">
         <div>
           <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Active work</div>
           <TextList items={lane.active_work} label="active work" />
@@ -137,6 +153,10 @@ function LaneCard({ lane }: { lane: PortfolioStatusLane }) {
         <div>
           <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Queued work</div>
           <TextList items={lane.queued_work} label="queued work" />
+        </div>
+        <div>
+          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Deferred work</div>
+          <TextList items={lane.deferred_work} label="deferred work" />
         </div>
         <div>
           <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Risks</div>
@@ -153,12 +173,15 @@ function LaneCard({ lane }: { lane: PortfolioStatusLane }) {
 
 export default function OperatorPortfolioStatusPage() {
   const fixture = getPortfolioStatusFixture();
-  const activeCount = fixture.lanes.filter((lane) => lane.status === "active").length;
-  const queuedCount = fixture.lanes.filter((lane) => lane.status === "queued").length;
-  const completedCount = fixture.lanes.filter((lane) => lane.status === "completed").length;
+  const batches = safeArray(fixture.batches);
+  const lanes = safeArray(fixture.lanes);
+  const deferredWork = safeArray(fixture.deferred_work);
+  const activeCount = lanes.filter((lane) => lane.status === "active").length;
+  const queuedCount = lanes.filter((lane) => lane.status === "queued").length;
+  const completedCount = lanes.filter((lane) => lane.status === "completed").length;
   const deferredCount =
-    fixture.lanes.filter((lane) => lane.status === "deferred" || lane.status === "held").length +
-    fixture.deferred_work.length;
+    lanes.filter((lane) => lane.status === "deferred" || lane.status === "held").length +
+    deferredWork.length;
 
   return (
     <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
@@ -167,9 +190,10 @@ export default function OperatorPortfolioStatusPage() {
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-semibold">Operator Portfolio Status</h1>
             <ToneBadge tone="amber">static</ToneBadge>
-            <ToneBadge tone="sky">local fixture</ToneBadge>
-            <ToneBadge tone="slate">checked-in data</ToneBadge>
+            <ToneBadge tone="sky">local</ToneBadge>
+            <ToneBadge tone="slate">fixture-backed</ToneBadge>
             <ToneBadge tone="rose">non-live</ToneBadge>
+            <ToneBadge tone="amber">non-canonical unless accepted</ToneBadge>
           </div>
           <p className="max-w-5xl text-sm text-gray-400">
             Static Operator Control Plane surface for portfolio batches and repo
@@ -177,15 +201,15 @@ export default function OperatorPortfolioStatusPage() {
             non-canonical until accepted by CONTROL_THREAD.
           </p>
           <div className="rounded-xl border border-amber-800 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {fixture.status_note}
+            {safeText(fixture.status_note)}
           </div>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
             label="Current batches"
-            value={fixture.batches.length}
-            detail={fixture.generated_label}
+            value={batches.length}
+            detail={safeText(fixture.generated_label)}
           />
           <SummaryCard
             label="Active lanes"
@@ -213,23 +237,23 @@ export default function OperatorPortfolioStatusPage() {
           title="Current Batches"
           description="Checked-in fixture batches. Batch state is local display data only."
         >
-          {fixture.batches.length === 0 ? (
+          {batches.length === 0 ? (
             <EmptyState label="batches" />
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
-              {fixture.batches.map((batch) => (
+              {batches.map((batch) => (
                 <article key={batch.batch_id} className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-100">{batch.title}</h3>
-                    <ToneBadge tone="slate">{batch.status.replace(/_/g, " ")}</ToneBadge>
+                    <h3 className="text-base font-semibold text-gray-100">{safeText(batch.title)}</h3>
+                    <ToneBadge tone="slate">{formatStatus(batch.status)}</ToneBadge>
                   </div>
-                  <p className="mt-3 text-sm text-gray-300">{batch.summary}</p>
+                  <p className="mt-3 text-sm text-gray-300">{safeText(batch.summary)}</p>
                   <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Lane IDs</div>
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {batch.lane_ids.length === 0 ? (
+                    {safeArray(batch.lane_ids).length === 0 ? (
                       <ToneBadge tone="slate">none recorded</ToneBadge>
                     ) : (
-                      batch.lane_ids.map((laneId) => (
+                      safeArray(batch.lane_ids).map((laneId) => (
                         <ToneBadge key={laneId} tone="sky">
                           {laneId}
                         </ToneBadge>
@@ -246,11 +270,11 @@ export default function OperatorPortfolioStatusPage() {
           title="Repo Lanes"
           description="Repo lane cards show fixture status, active work, queued work, risks, and next prompts."
         >
-          {fixture.lanes.length === 0 ? (
+          {lanes.length === 0 ? (
             <EmptyState label="repo lanes" />
           ) : (
             <div className="space-y-4">
-              {fixture.lanes.map((lane) => (
+              {lanes.map((lane) => (
                 <LaneCard key={lane.lane_id} lane={lane} />
               ))}
             </div>
@@ -300,17 +324,30 @@ export default function OperatorPortfolioStatusPage() {
             <ToneBadge tone="amber">not canonical</ToneBadge>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {fixture.non_authorizations.map((item) => (
-              <div key={item} className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-300">
-                {item}
+            {safeArray(fixture.non_authorizations).length === 0 ? (
+              <div className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-500">
+                No non-authorizations recorded in the checked-in fixture.
               </div>
-            ))}
+            ) : (
+              safeArray(fixture.non_authorizations).map((item, index) => (
+                <div
+                  key={`non-authorization-${index}`}
+                  className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-300"
+                >
+                  {item}
+                </div>
+              ))
+            )}
           </div>
           <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Source refs</div>
           <ul className="mt-2 space-y-1 font-mono text-xs text-gray-400">
-            {fixture.source_refs.map((sourceRef) => (
-              <li key={sourceRef}>{sourceRef}</li>
-            ))}
+            {safeArray(fixture.source_refs).length === 0 ? (
+              <li>No source refs recorded in the checked-in fixture.</li>
+            ) : (
+              safeArray(fixture.source_refs).map((sourceRef, index) => (
+                <li key={`source-ref-${index}`}>{sourceRef}</li>
+              ))
+            )}
           </ul>
         </section>
       </div>
