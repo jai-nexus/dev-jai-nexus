@@ -48,6 +48,20 @@ function safeArrayOfString(v: unknown): string[] {
     return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : null;
+}
+
+function repoEntryMap(value: unknown): Record<string, RepoIndexEntry> {
+    return (asRecord(value) ?? {}) as Record<string, RepoIndexEntry>;
+}
+
+function agentsByRepoMap(value: unknown): Record<string, AgentsByRepoEntry> {
+    return (asRecord(value) ?? {}) as Record<string, AgentsByRepoEntry>;
+}
+
 function formatIsoDay(ts?: string) {
     if (!ts) return "—";
     const d = new Date(ts);
@@ -77,15 +91,11 @@ export default async function RegistryCoveragePage() {
 
     const registry = registryRaw as unknown as RegistryIndexes;
 
-    const reposMap: Record<string, RepoIndexEntry> =
-        (registry as any)?.repos?.repos ??
-        ((registry as any)?.repos && typeof (registry as any).repos === "object" ? (registry as any).repos : null) ??
-        {};
+    const reposMap =
+        registry.repos?.repos ?? repoEntryMap(registry.repos);
 
-    const agentsByRepo: Record<string, AgentsByRepoEntry> =
-        (registry as any)?.agents?.by_repo ??
-        ((registry as any)?.agents && typeof (registry as any).agents === "object" ? (registry as any).agents : null) ??
-        {};
+    const agentsByRepo =
+        registry.agents?.by_repo ?? agentsByRepoMap(registry.agents);
 
     const repoIds = Object.keys(reposMap).sort();
 
@@ -310,8 +320,8 @@ export default async function RegistryCoveragePage() {
                                 const primaryDomain = safeString(repo?.primary_domain);
                                 const secondaryDomains = safeArrayOfString(repo?.secondary_domains);
 
-                                const external = safeBool(repo?.external ?? (byRepo as any)?.external);
-                                const applyAllowed = safeBool(repo?.apply ?? (byRepo as any)?.apply);
+                                const external = safeBool(repo?.external ?? byRepo?.external);
+                                const applyAllowed = safeBool(repo?.apply ?? byRepo?.apply);
 
                                 const healthInfo = health[repoId];
                                 const healthStatus = safeString(healthInfo?.status);

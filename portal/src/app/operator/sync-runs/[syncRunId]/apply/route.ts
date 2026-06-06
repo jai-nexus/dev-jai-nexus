@@ -73,9 +73,9 @@ export async function POST(
             { ok: res.ok, status: res.status, payload },
             { status: res.ok ? 200 : res.status }
         );
-    } catch (e: any) {
+    } catch (e: unknown) {
         return NextResponse.json(
-            { ok: false, error: e?.message || "Operator apply failed" },
+            { ok: false, error: e instanceof Error ? e.message : "Operator apply failed" },
             { status: 500 }
         );
     }

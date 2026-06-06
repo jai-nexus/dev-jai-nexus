@@ -33,10 +33,10 @@ function hasAnyNonzeroScore(scores: unknown): boolean {
     for (const entry of Object.values(scores)) {
         if (!isObject(entry)) continue;
 
-        const total = num((entry as any).total, 0);
+        const total = num(entry.total, 0);
         if (total > 0) return true;
 
-        const breakdown = (entry as any).breakdown;
+        const breakdown = entry.breakdown;
         if (isObject(breakdown)) {
             for (const v of Object.values(breakdown)) {
                 if (num(v, 0) > 0) return true;
@@ -62,12 +62,13 @@ export function computePanelProgress(selection: unknown): PanelProgress {
         };
     }
 
-    const winner = safeStr((selection as any).winner, "UNKNOWN");
-    const evidence_commands = Array.isArray((selection as any)?.evidence_plan?.commands)
-        ? (selection as any).evidence_plan.commands.length
+    const evidencePlan = isObject(selection.evidence_plan) ? selection.evidence_plan : {};
+    const evidence_commands = Array.isArray(evidencePlan.commands)
+        ? evidencePlan.commands.length
         : 0;
 
-    const scores = (selection as any).scores;
+    const winner = safeStr(selection.winner, "UNKNOWN");
+    const scores = selection.scores;
     if (!isObject(scores)) {
         return {
             status: "INVALID",

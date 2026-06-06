@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { loadPanelView } from "@/lib/panels/panelStore";
 import { loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
+import type { PanelMeta } from "@/lib/panels/panelStore";
 import { computeSelection, computeSlotTotal, normalizeBreakdown } from "@/lib/panels/panelSelectCore.mjs";
 import { computePanelProgress, type PanelProgress } from "@/lib/panels/panelProgress";
 import { redirect } from "next/navigation";
@@ -14,6 +15,29 @@ function safeStr(v: unknown, fallback = "UNKNOWN") {
 
 function num(v: unknown, fallback = 0) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+    return value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
+}
+
+function panelCandidates(panel: PanelMeta): string[] {
+    return Array.isArray(panel.candidates)
+        ? panel.candidates.filter((candidate) => typeof candidate === "string")
+        : [];
+}
+
+function scoreBreakdown(value: unknown): Record<string, number> {
+    const record = asRecord(value);
+    const out: Record<string, number> = {};
+
+    for (const [key, score] of Object.entries(record)) {
+        out[key] = num(score, 0);
+    }
+
+    return out;
 }
 
 function clamp10(v: unknown) {
@@ -99,7 +123,7 @@ async function saveSlotScores(formData: FormData) {
 
     const nextBreakdown: Record<string, number> = { ...(entry.breakdown || {}) };
     for (const r of rubric) {
-        const id = String((r as any)?.id ?? "").trim();
+        const id = String(r.id ?? "").trim();
         if (!id) continue;
         const v = clamp10(formData.get(`score_${id}`));
         nextBreakdown[id] = v;
@@ -142,8 +166,8 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
     try {
         view = await loadPanelView({ motionId, panelId });
-    } catch (e: any) {
-        err = e?.message || String(e);
+    } catch (e: unknown) {
+        err = e instanceof Error ? e.message : String(e);
     }
 
     if (!view) {
@@ -203,8 +227,8 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
     const scoreEntries = Object.entries(scoresObj).map(([slot, v]) => ({
         slot,
-        total: num((v as any)?.total, 0),
-        breakdown: (v as any)?.breakdown ?? {},
+        total: num(v.total, 0),
+        breakdown: scoreBreakdown(v.breakdown),
     }));
 
     scoreEntries.sort((a, b) => {
@@ -214,8 +238,8 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
     const winner = safeStr(selection.winner, "UNKNOWN");
 
-    const candidateSlots = Array.isArray((panel as any).candidates) ? ((panel as any).candidates as string[]) : [];
-    const selectorSlot = safeStr((panel as any).selector, "");
+    const candidateSlots = panelCandidates(panel);
+    const selectorSlot = safeStr(panel.selector, "");
 
     const bindingRows = Array.from(new Set([...(candidateSlots ?? []), ...(selectorSlot ? [selectorSlot] : [])]))
         .filter((s) => typeof s === "string" && s.length > 0)
@@ -250,15 +274,15 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                     <div className="text-sm text-gray-300 space-y-1">
                         <div>
                             <span className="text-gray-500">role_id:</span>{" "}
-                            <span className="font-mono">{safeStr((panel as any).role_id)}</span>
+                            <span className="font-mono">{safeStr(panel.role_id)}</span>
                         </div>
                         <div>
                             <span className="text-gray-500">selector:</span>{" "}
-                            <span className="font-mono">{safeStr((panel as any).selector)}</span>
+                            <span className="font-mono">{safeStr(panel.selector)}</span>
                         </div>
                         <div>
                             <span className="text-gray-500">candidates:</span>{" "}
-                            <span className="font-mono">{((panel as any).candidates ?? []).join(", ") || "—"}</span>
+                            <span className="font-mono">{panelCandidates(panel).join(", ") || "—"}</span>
                         </div>
                     </div>
                 </div>
@@ -389,14 +413,14 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-zinc-800">
-                                            {rubric.map((r: any) => (
+                                            {rubric.map((r) => (
                                                 <tr key={r.id}>
                                                     <td className="px-3 py-2 font-mono text-gray-200">{r.id}</td>
                                                     <td className="px-3 py-2 font-mono text-gray-400">{Number(r.weight).toFixed(2)}</td>
                                                     <td className="px-3 py-2">
                                                         <input
                                                             name={`score_${r.id}`}
-                                                            defaultValue={num((e.breakdown as any)?.[r.id], 0)}
+                                                            defaultValue={num(e.breakdown[r.id], 0)}
                                                             className="w-24 px-2 py-1 rounded bg-zinc-950 border border-zinc-800 font-mono text-gray-200"
                                                         />
                                                     </td>
@@ -436,7 +460,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                             <tr>
                                 <th className="px-4 py-2">Slot</th>
                                 <th className="px-4 py-2">Total</th>
-                                {rubric.map((r: any) => (
+                                {rubric.map((r) => (
                                     <th key={r.id} className="px-4 py-2">
                                         {r.id} <span className="text-gray-600">({Number(r.weight).toFixed(2)})</span>
                                     </th>
@@ -454,9 +478,9 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                                             {e.slot}
                                         </td>
                                         <td className="px-4 py-2 font-mono text-gray-200">{e.total}</td>
-                                        {rubric.map((r: any) => (
+                                        {rubric.map((r) => (
                                             <td key={r.id} className="px-4 py-2 font-mono text-gray-400">
-                                                {num((e.breakdown as any)?.[r.id], 0)}
+                                                {num(e.breakdown[r.id], 0)}
                                             </td>
                                         ))}
                                     </tr>

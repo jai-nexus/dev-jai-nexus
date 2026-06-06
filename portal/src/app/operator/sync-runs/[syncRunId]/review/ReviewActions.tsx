@@ -9,6 +9,13 @@ type ApiResult =
     | { ok: true; data?: unknown; detail?: unknown }
     | { ok: false; error: string; detail?: unknown };
 
+function payloadMessage(payload: unknown): string | null {
+    if (!payload || typeof payload !== "object") return null;
+    if ("error" in payload && typeof payload.error === "string") return payload.error;
+    if ("message" in payload && typeof payload.message === "string") return payload.message;
+    return null;
+}
+
 function prettyJson(v: unknown) {
     try {
         return JSON.stringify(v, null, 2);
@@ -42,7 +49,7 @@ export default function ReviewButtons({ syncRunId }: { syncRunId: number }) {
                 headers: { "Content-Type": "application/json" },
             });
 
-            let payload: any = null;
+            let payload: unknown = null;
             const contentType = res.headers.get("content-type") || "";
             if (contentType.includes("application/json")) {
                 try {
@@ -63,9 +70,7 @@ export default function ReviewButtons({ syncRunId }: { syncRunId: number }) {
                 setResult({ ok: true, data: payload });
                 router.refresh();
             } else {
-                const msg =
-                    (payload && (payload.error || payload.message)) ||
-                    `Request failed (${res.status})`;
+                const msg = payloadMessage(payload) || `Request failed (${res.status})`;
                 setResult({ ok: false, error: msg, detail: payload ?? undefined });
             }
         } catch (e: unknown) {

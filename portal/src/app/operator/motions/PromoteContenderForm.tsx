@@ -253,6 +253,7 @@ export function PromoteContenderForm({
   const [confirmationText, setConfirmationText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<PromotionResult | null>(null);
+  const blockingReasons = promotion.blocking_reasons;
   const promotionBlockingKey = promotion.blocking_reasons.join("||");
 
   useEffect(() => {
@@ -276,6 +277,7 @@ export function PromoteContenderForm({
     promotion.base_branch,
     promotion.target_repo,
     promotion.enabled,
+    promotion,
     promotionBlockingKey,
   ]);
 
@@ -288,11 +290,11 @@ export function PromoteContenderForm({
       current.map((contender) =>
         syncMotionContenderAvailability(contender, {
           promotionEnabled: promotion.enabled,
-          blockingReasons: promotion.blocking_reasons,
+          blockingReasons,
         }),
       ),
     );
-  }, [promotion.enabled, promotionBlockingKey]);
+  }, [blockingReasons, promotion.enabled, promotionBlockingKey]);
 
   useEffect(() => {
     if (contenders.length === 0) {

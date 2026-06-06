@@ -236,6 +236,8 @@ function truncatePreviewLegacy(text: string, maxLength = 6000): string {
   return `${normalized.slice(0, maxLength)}\n…(truncated)…`;
 }
 
+void truncatePreviewLegacy;
+
 function asString(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
@@ -566,7 +568,13 @@ async function scanMotion(motionId: string, repoRoot: string): Promise<MotionSur
 
   return {
     item: queueItem,
-    core_artifacts: coreArtifacts.map(({ rawText: _rawText, ...artifact }) => artifact),
+    core_artifacts: coreArtifacts.map((artifact) => ({
+      key: artifact.key,
+      path: artifact.path,
+      present: artifact.present,
+      parse_ok: artifact.parse_ok,
+      preview: artifact.preview,
+    })),
     secondary_artifacts: secondaryArtifacts,
     repo_root: repoRoot,
     motions_root: motionsRoot,

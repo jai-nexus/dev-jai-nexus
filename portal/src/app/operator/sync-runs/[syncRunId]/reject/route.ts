@@ -70,9 +70,9 @@ export async function POST(
             { ok: res.ok, status: res.status, payload },
             { status: res.ok ? 200 : res.status }
         );
-    } catch (e: any) {
+    } catch (e: unknown) {
         return NextResponse.json(
-            { ok: false, error: e?.message || "Operator reject failed" },
+            { ok: false, error: e instanceof Error ? e.message : "Operator reject failed" },
             { status: 500 }
         );
     }

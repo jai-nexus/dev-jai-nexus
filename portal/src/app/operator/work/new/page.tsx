@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
@@ -379,12 +380,12 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
             Apply role filter
           </button>
 
-          <a
+          <Link
             href="/operator/work/new"
             className="rounded-md border border-gray-700 bg-black px-3 py-2 text-sm text-gray-200 hover:bg-zinc-900"
           >
             Reset
-          </a>
+          </Link>
         </form>
 
         <div className="mt-3 text-xs text-gray-500">

@@ -114,6 +114,13 @@ export function GridView({ config }: { config: GridConfig }) {
   const [connSource, setConnSource] = useState<AgencyAgent | null>(null);
   const [connError, setConnError] = useState<string | null>(null);
 
+  const exitConnMode = useCallback(() => {
+    setConnMode(false);
+    setConnType(null);
+    setConnSource(null);
+    setConnError(null);
+  }, []);
+
   // Motion draft modal state
   const [showDiff, setShowDiff] = useState(false);
   const [scaffold, setScaffold] = useState<MotionDraftScaffold | null>(null);
@@ -133,8 +140,7 @@ export function GridView({ config }: { config: GridConfig }) {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connMode]);
+  }, [connMode, exitConnMode]);
 
   const layout = applyDraftToLayout(config, draft);
   const hasDraft =
@@ -150,13 +156,6 @@ export function GridView({ config }: { config: GridConfig }) {
   }, []);
 
   // ── Connection drawing ───────────────────────────────────────────────────
-
-  function exitConnMode() {
-    setConnMode(false);
-    setConnType(null);
-    setConnSource(null);
-    setConnError(null);
-  }
 
   function handleConnectClick(agent: AgencyAgent) {
     if (!connType) {
@@ -820,7 +819,7 @@ function ZoneCard({
 
 function AgentRow({
   ea,
-  rank: _rank,
+  rank,
   isSelected,
   isConnSource,
   isDragSource,
@@ -870,6 +869,7 @@ function AgentRow({
       onDragEnd={connMode ? undefined : onDragEnd}
       onClick={onClick}
       className={rowClass}
+      data-rank={rank}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium truncate">{agent.label}</span>
@@ -898,7 +898,7 @@ function AgentRow({
 
 function DraggableGovernanceChip({
   ea,
-  rank: _rank,
+  rank,
   connMode,
   connSource,
   isSelected,
@@ -926,6 +926,7 @@ function DraggableGovernanceChip({
       onDragStart={connMode ? undefined : onDragStart}
       onDragEnd={connMode ? undefined : onDragEnd}
       onClick={onClick}
+      data-rank={rank}
       className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] select-none transition-colors ${
         connMode ? "cursor-crosshair" : "cursor-grab active:cursor-grabbing"
       } ${
