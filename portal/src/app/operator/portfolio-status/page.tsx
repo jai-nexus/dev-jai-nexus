@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import {
   getPortfolioStatusFixture,
-  type PortfolioStatusLane,
+  type PortfolioStatusLaneCard,
 } from "@/lib/controlPlane/portfolioStatusFixture";
 
 const FALLBACK_TEXT = "Not recorded in the checked-in fixture.";
@@ -120,13 +120,13 @@ function SummaryCard({
   );
 }
 
-function LaneCard({ lane }: { lane: PortfolioStatusLane }) {
+function LaneCard({ lane }: { lane: PortfolioStatusLaneCard }) {
   return (
     <article className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">{safeText(lane.title)}</h3>
+            <h3 className="text-base font-semibold text-gray-100">{safeText(lane.display_title)}</h3>
             <ToneBadge tone={statusTone(lane.status)}>{formatStatus(lane.status)}</ToneBadge>
             <ToneBadge tone="slate">{safeText(lane.repo, "unknown repo")}</ToneBadge>
           </div>
@@ -173,9 +173,10 @@ function LaneCard({ lane }: { lane: PortfolioStatusLane }) {
 
 export default function OperatorPortfolioStatusPage() {
   const fixture = getPortfolioStatusFixture();
-  const batches = safeArray(fixture.batches);
-  const lanes = safeArray(fixture.lanes);
-  const deferredWork = safeArray(fixture.deferred_work);
+  const statusSummary = fixture.status_summary;
+  const batches = safeArray(fixture.batch_summaries);
+  const lanes = safeArray(fixture.lane_cards);
+  const deferredWork = safeArray(statusSummary?.deferred_work);
   const activeCount = lanes.filter((lane) => lane.status === "active").length;
   const queuedCount = lanes.filter((lane) => lane.status === "queued").length;
   const completedCount = lanes.filter((lane) => lane.status === "completed").length;
@@ -188,7 +189,7 @@ export default function OperatorPortfolioStatusPage() {
       <div className="mx-auto max-w-7xl space-y-8">
         <header className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">Operator Portfolio Status</h1>
+            <h1 className="text-3xl font-semibold">{safeText(fixture.display_title)}</h1>
             <ToneBadge tone="amber">static</ToneBadge>
             <ToneBadge tone="sky">local</ToneBadge>
             <ToneBadge tone="slate">fixture-backed</ToneBadge>
@@ -200,8 +201,11 @@ export default function OperatorPortfolioStatusPage() {
             lanes. This page is backed only by checked-in fixture data and is
             non-canonical until accepted by CONTROL_THREAD.
           </p>
+          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-200">
+            {safeText(fixture.authority_boundary_label)}
+          </div>
           <div className="rounded-xl border border-amber-800 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {safeText(fixture.status_note)}
+            {safeText(statusSummary?.status_note)}
           </div>
         </header>
 
@@ -209,7 +213,7 @@ export default function OperatorPortfolioStatusPage() {
           <SummaryCard
             label="Current batches"
             value={batches.length}
-            detail={safeText(fixture.generated_label)}
+            detail={safeText(statusSummary?.generated_label)}
           />
           <SummaryCard
             label="Active lanes"
@@ -244,7 +248,9 @@ export default function OperatorPortfolioStatusPage() {
               {batches.map((batch) => (
                 <article key={batch.batch_id} className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-100">{safeText(batch.title)}</h3>
+                    <h3 className="text-base font-semibold text-gray-100">
+                      {safeText(batch.display_title)}
+                    </h3>
                     <ToneBadge tone="slate">{formatStatus(batch.status)}</ToneBadge>
                   </div>
                   <p className="mt-3 text-sm text-gray-300">{safeText(batch.summary)}</p>
@@ -285,19 +291,19 @@ export default function OperatorPortfolioStatusPage() {
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
             <h2 className="text-lg font-medium text-gray-100">Active Work</h2>
             <div className="mt-3">
-              <TextList items={fixture.active_work} label="active work" />
+              <TextList items={statusSummary?.active_work} label="active work" />
             </div>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
             <h2 className="text-lg font-medium text-gray-100">Queued Work</h2>
             <div className="mt-3">
-              <TextList items={fixture.queued_work} label="queued work" />
+              <TextList items={statusSummary?.queued_work} label="queued work" />
             </div>
           </div>
           <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
             <h2 className="text-lg font-medium text-gray-100">Deferred Work</h2>
             <div className="mt-3">
-              <TextList items={fixture.deferred_work} label="deferred work" />
+              <TextList items={statusSummary?.deferred_work} label="deferred work" />
             </div>
           </div>
         </section>
@@ -306,7 +312,7 @@ export default function OperatorPortfolioStatusPage() {
           <div className="rounded-xl border border-rose-900 bg-rose-950/30 p-4">
             <h2 className="text-lg font-medium text-rose-100">Risks</h2>
             <div className="mt-3">
-              <TextList items={fixture.risks} label="risks" />
+              <TextList items={fixture.risk_summary?.risks} label="risks" />
             </div>
           </div>
           <div className="rounded-xl border border-sky-900 bg-sky-950/30 p-4">
