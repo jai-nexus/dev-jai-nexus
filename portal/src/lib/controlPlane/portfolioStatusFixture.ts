@@ -6,11 +6,19 @@ export type PortfolioLaneStatus =
   | "held"
   | "blocked";
 
-export interface PortfolioStatusLane {
+export interface PortfolioStatusSummary {
+  generated_label: string;
+  status_note: string;
+  active_work: string[];
+  queued_work: string[];
+  deferred_work: string[];
+}
+
+export interface PortfolioStatusLaneCard {
   lane_id: string;
   repo: string;
-  title: string;
-  status: PortfolioLaneStatus;
+  display_title: string;
+  status: PortfolioLaneStatus | string;
   scope: string;
   branch: string;
   artifact: string;
@@ -21,32 +29,58 @@ export interface PortfolioStatusLane {
   next_prompts?: string[];
 }
 
-export interface PortfolioStatusBatch {
+export interface PortfolioStatusBatchSummary {
   batch_id: string;
-  title: string;
-  status: "static_fixture_active" | "static_fixture_review" | "static_fixture_closed";
+  display_title: string;
+  status: "static_fixture_active" | "static_fixture_review" | "static_fixture_closed" | string;
   summary: string;
   lane_ids: string[];
 }
 
+export interface PortfolioRiskSummary {
+  risks: string[];
+}
+
 export interface PortfolioStatusFixture {
-  generated_label: string;
-  status_note: string;
+  display_title: string;
+  authority_boundary_label: string;
+  status_summary: PortfolioStatusSummary;
+  batch_summaries: PortfolioStatusBatchSummary[];
+  lane_cards: PortfolioStatusLaneCard[];
+  risk_summary: PortfolioRiskSummary;
+  next_prompts: string[];
   source_refs: string[];
   non_authorizations: string[];
-  batches: PortfolioStatusBatch[];
-  lanes: PortfolioStatusLane[];
-  active_work: string[];
-  queued_work: string[];
-  deferred_work: string[];
-  risks: string[];
-  next_prompts: string[];
 }
 
 const portfolioStatusFixture: PortfolioStatusFixture = {
-  generated_label: "Q2M6 static checked-in fixture, 2026-06-05",
-  status_note:
-    "Static local fixture only. Non-live, non-canonical until accepted by CONTROL_THREAD. No passalong ingestion, repo sync, validation execution, API/DB reads, telemetry, or customer data.",
+  display_title: "Operator Portfolio Status",
+  authority_boundary_label:
+    "Static local fixture only. Non-live and non-canonical unless accepted by CONTROL_THREAD.",
+  status_summary: {
+    generated_label: "Q2M6 static checked-in fixture, 2026-06-05",
+    status_note:
+      "Static local fixture only. Non-live, non-canonical until accepted by CONTROL_THREAD. No passalong ingestion, repo sync, validation execution, API/DB reads, telemetry, or customer data.",
+    active_work: [
+      "dev-jai-nexus Operator Portfolio Status Surface v0",
+      "manual CONTROL_THREAD review of fixture-backed status wording",
+    ],
+    queued_work: [
+      "audit-nexus rename sweep",
+      "jai-format rename sweep",
+      "jai rename sweep",
+      "jai-edge rename sweep",
+      "api-nexus rename sweep",
+    ],
+    deferred_work: [
+      "standalone jai-workbench repo creation",
+      "runtime Toolchain integration",
+      "provider/model dispatch",
+      "branch/PR automation",
+      "browser/desktop control",
+      "customer or production workload authority",
+    ],
+  },
   source_refs: [
     "docs/reference/CONTROL_THREAD_PORTFOLIO_ROUTING_PROTOCOL_V0.md",
     "docs/plans/CONTROL_THREAD_TO_JAI_NEXUS_OPERATING_MODEL_MIGRATION_PLAN_V0.md",
@@ -64,10 +98,10 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     "no customer data handling",
     "not canonical until CONTROL_THREAD accepts it",
   ],
-  batches: [
+  batch_summaries: [
     {
       batch_id: "q2m6-static-operating-loop",
-      title: "Q2M6 JAI NEXUS Static Operating Loop",
+      display_title: "Q2M6 JAI NEXUS Static Operating Loop",
       status: "static_fixture_active",
       summary:
         "Manual portfolio workflow is beginning to move into static local Operator visibility without live ingestion or execution authority.",
@@ -79,7 +113,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     },
     {
       batch_id: "q2m6-rename-sweep-remaining",
-      title: "Cross-Repo jai-vscode Rename Sweep Remaining Lanes",
+      display_title: "Cross-Repo jai-vscode Rename Sweep Remaining Lanes",
       status: "static_fixture_review",
       summary:
         "Remaining repo sweeps are represented as queued fixture lanes only. This page does not route them or update repo state.",
@@ -93,11 +127,11 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
       ],
     },
   ],
-  lanes: [
+  lane_cards: [
     {
       lane_id: "dev-jai-nexus-portfolio-status-surface-v0",
       repo: "dev-jai-nexus",
-      title: "Operator Portfolio Status Surface v0",
+      display_title: "Operator Portfolio Status Surface v0",
       status: "active",
       scope: "Local static Operator UI backed by checked-in fixture data.",
       branch: "impl/q2m6-operator-portfolio-status-surface-v0",
@@ -116,7 +150,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "orchestrator-nexus-static-tracker-surfaces",
       repo: "orchestrator-nexus",
-      title: "Static portfolio artifact generator / tracker surfaces",
+      display_title: "Static portfolio artifact generator / tracker surfaces",
       status: "queued",
       scope: "Tracker and artifact surfaces remain repo-local planning context.",
       branch: "not routed in this fixture",
@@ -128,7 +162,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "jai-vscode-rename-sweep",
       repo: "jai-vscode",
-      title: "Repo-local rename sweep",
+      display_title: "Repo-local rename sweep",
       status: "completed",
       scope: "Repo-local README and documentation rename sweep accepted.",
       branch: "completed upstream",
@@ -140,7 +174,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "audit-nexus-rename-sweep",
       repo: "audit-nexus",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "queued",
       scope: "Docs/reference sweep for old VS Code repo identity.",
       branch: "not yet routed",
@@ -152,7 +186,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "jai-format-rename-sweep",
       repo: "jai-format",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "queued",
       scope: "Docs/reference sweep for packet and .jai representation references.",
       branch: "not yet routed",
@@ -164,7 +198,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "jai-rename-sweep",
       repo: "jai",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "queued",
       scope: "Docs/reference sweep for substrate and reasoning references.",
       branch: "not yet routed",
@@ -176,7 +210,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "jai-edge-rename-sweep",
       repo: "jai-edge",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "queued",
       scope: "Docs/reference sweep for edge evidence references.",
       branch: "not yet routed",
@@ -188,7 +222,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "api-nexus-rename-sweep",
       repo: "api-nexus",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "queued",
       scope: "Docs/reference sweep for API/interface boundary references.",
       branch: "not yet routed",
@@ -200,7 +234,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
     {
       lane_id: "jai-pilot-rename-sweep",
       repo: "jai-pilot",
-      title: "jai-vscode rename reference sweep",
+      display_title: "jai-vscode rename reference sweep",
       status: "held",
       scope: "Browser/extension lane remains held; rename sweep should stay docs-only.",
       branch: "not yet routed",
@@ -210,31 +244,14 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
       next_prompts: ["Route only if CONTROL_THREAD releases held posture."],
     },
   ],
-  active_work: [
-    "dev-jai-nexus Operator Portfolio Status Surface v0",
-    "manual CONTROL_THREAD review of fixture-backed status wording",
-  ],
-  queued_work: [
-    "audit-nexus rename sweep",
-    "jai-format rename sweep",
-    "jai rename sweep",
-    "jai-edge rename sweep",
-    "api-nexus rename sweep",
-  ],
-  deferred_work: [
-    "standalone jai-workbench repo creation",
-    "runtime Toolchain integration",
-    "provider/model dispatch",
-    "branch/PR automation",
-    "browser/desktop control",
-    "customer or production workload authority",
-  ],
-  risks: [
-    "Static fixture may stale.",
-    "Surface could be mistaken for live status.",
-    "Repo-lane status is not canon until CONTROL_THREAD accepts it.",
-    "Queued lanes may change order after cross-repo reconciliation.",
-  ],
+  risk_summary: {
+    risks: [
+      "Static fixture may stale.",
+      "Surface could be mistaken for live status.",
+      "Repo-lane status is not canon until CONTROL_THREAD accepts it.",
+      "Queued lanes may change order after cross-repo reconciliation.",
+    ],
+  },
   next_prompts: [
     "CONTROL_THREAD acceptance/review prompt for Operator Portfolio Status Surface v0.",
     "Next repo sweep prompt for audit-nexus or jai-format.",
@@ -242,7 +259,7 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
   ],
 };
 
-function cloneLane(lane: PortfolioStatusLane): PortfolioStatusLane {
+function cloneLane(lane: PortfolioStatusLaneCard): PortfolioStatusLaneCard {
   return {
     ...lane,
     active_work: [...(lane.active_work ?? [])],
@@ -256,17 +273,23 @@ function cloneLane(lane: PortfolioStatusLane): PortfolioStatusLane {
 export function getPortfolioStatusFixture(): PortfolioStatusFixture {
   return {
     ...portfolioStatusFixture,
+    status_summary: {
+      ...portfolioStatusFixture.status_summary,
+      active_work: [...portfolioStatusFixture.status_summary.active_work],
+      queued_work: [...portfolioStatusFixture.status_summary.queued_work],
+      deferred_work: [...portfolioStatusFixture.status_summary.deferred_work],
+    },
     source_refs: [...portfolioStatusFixture.source_refs],
     non_authorizations: [...portfolioStatusFixture.non_authorizations],
-    batches: portfolioStatusFixture.batches.map((batch) => ({
+    batch_summaries: portfolioStatusFixture.batch_summaries.map((batch) => ({
       ...batch,
       lane_ids: [...batch.lane_ids],
     })),
-    lanes: portfolioStatusFixture.lanes.map(cloneLane),
-    active_work: [...portfolioStatusFixture.active_work],
-    queued_work: [...portfolioStatusFixture.queued_work],
-    deferred_work: [...portfolioStatusFixture.deferred_work],
-    risks: [...portfolioStatusFixture.risks],
+    lane_cards: portfolioStatusFixture.lane_cards.map(cloneLane),
+    risk_summary: {
+      ...portfolioStatusFixture.risk_summary,
+      risks: [...portfolioStatusFixture.risk_summary.risks],
+    },
     next_prompts: [...portfolioStatusFixture.next_prompts],
   };
 }
