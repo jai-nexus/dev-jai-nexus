@@ -51,6 +51,20 @@ type ModelSlotsDoc = {
     slots?: Record<string, { provider?: unknown; model?: unknown; notes?: unknown }>;
 };
 
+type PanelJsonDoc = {
+    role_id?: unknown;
+    selector?: unknown;
+    candidates?: unknown;
+};
+
+type SelectionJsonDoc = {
+    winner?: unknown;
+    task?: unknown;
+    evidence_plan?: {
+        commands?: unknown;
+    };
+};
+
 async function pathExists(p: string): Promise<boolean> {
     try {
         await fs.access(p);
@@ -221,8 +235,8 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
             const selectorMdPath = path.join(panelDir, "selector.md");
             const candidatesDir = path.join(panelDir, "candidates");
 
-            const panel = await safeReadJson<any>(panelJsonPath);
-            const selection = await safeReadJson<any>(selectionJsonPath);
+            const panel = await safeReadJson<PanelJsonDoc>(panelJsonPath);
+            const selection = await safeReadJson<SelectionJsonDoc>(selectionJsonPath);
 
             // candidates count + stat paths
             let candidates_count = 0;
@@ -261,7 +275,7 @@ export async function listPanelsIndex(filters: ListPanelsIndexFilters = {}): Pro
             if (filters.progress && filters.progress !== progress.status) continue;
 
             const candidateSlots = Array.isArray(panel?.candidates)
-                ? panel.candidates.filter((x: any) => typeof x === "string")
+                ? panel.candidates.filter((x): x is string => typeof x === "string")
                 : [];
             const selectorSlot = typeof panel?.selector === "string" ? panel.selector : null;
 

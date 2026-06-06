@@ -16,8 +16,7 @@
 //     → MotionDraftModal (copy each section into .nexus/motions/motion-XXXX/)
 //     → validate-motion gate catches schema errors before commit
 
-import type { StructuralDiff, NormalizedPositionChange } from "./gridDiff";
-import type { ConnectionChange } from "./gridDraft";
+import type { StructuralDiff } from "./gridDiff";
 
 // ── Public types ──────────────────────────────────────────────────────────────
 

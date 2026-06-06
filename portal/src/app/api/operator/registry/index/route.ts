@@ -13,9 +13,10 @@ export async function GET() {
         // Calling the library function directly as requested
         const registry = await loadRegistryIndexes();
         return NextResponse.json({ ok: true, registry });
-    } catch (e: any) {
+    } catch (e: unknown) {
+        const detail = e instanceof Error ? e.message : String(e);
         return NextResponse.json(
-            { ok: false, error: "Registry Unavailable", detail: e.message },
+            { ok: false, error: "Registry Unavailable", detail },
             { status: 503 }
         );
     }

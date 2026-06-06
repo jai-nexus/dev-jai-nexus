@@ -84,8 +84,10 @@ function nextStatusForAction(
 
 function nextInboxStatusForAction(
     action: PacketRouteAction,
-    _current: InboxItemStatus,
+    current: InboxItemStatus,
 ): InboxItemStatus {
+    void current;
+
     if (action === "REQUEST_CHANGES") {
         return InboxItemStatus.BLOCKED;
     }
