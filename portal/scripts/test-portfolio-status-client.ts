@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 
+import {
+  assertFutureApiSourceUnavailableForRuntime,
+  readPortfolioStatusFromApiBoundaryForTestOnly,
+} from "../src/lib/controlPlane/portfolioStatusApiClientAdapter.testSupport";
 import {
   DEFAULT_PORTFOLIO_STATUS_SOURCE,
   getPortfolioStatusReadModel,
@@ -66,11 +72,94 @@ try {
   assert.deepEqual(emptyReadModel.risk_summary.risks, []);
   assert.deepEqual(emptyReadModel.next_prompts, []);
 
+  const apiShapedMockReadModel = readPortfolioStatusFromApiBoundaryForTestOnly({
+    read_model: {
+      display_title: "Mock Portfolio Status",
+      authority_boundary_label:
+        "Static local fixture only. Non-live and non-canonical unless accepted by CONTROL_THREAD.",
+      static_baseline_metadata: {
+        status_date: "2026-06-07",
+        artifact_version: "mock-static-artifact-v0",
+        read_model_version: "q2m6-portfolio-status-ui-read-model-v0",
+        handoff_manifest_path: "local/mock/manifest.json",
+        source_baseline_note: "Local mock response for test-only adapter coverage.",
+        checksum: "mock-checksum",
+        checksum_algorithm: "mock-token",
+        checksum_scope: "test-only local mock response",
+      },
+      status_summary: {
+        generated_label: "mock generated label",
+        status_note: "Mock static API-shaped response; not live.",
+        active_work: ["mock active work"],
+        queued_work: [],
+        deferred_work: [],
+      },
+      batch_summaries: [
+        {
+          batch_id: "mock-batch",
+          display_title: "Mock Batch",
+          status: "static_fixture_review",
+          summary: "Mock batch summary.",
+          lane_ids: ["mock-lane"],
+        },
+      ],
+      lane_cards: [
+        {
+          lane_id: "mock-lane",
+          repo: "dev-jai-nexus",
+          display_title: "Mock Lane",
+          status: "active",
+          scope: "Test-only adapter mock lane.",
+          branch: "local-test-only",
+          artifact: "local mock response",
+        },
+      ],
+      risk_summary: {
+        risks: ["mock risk"],
+      },
+      next_prompts: ["mock next prompt"],
+      source_refs: ["local mock response"],
+      non_authorizations: ["no network/API fetch"],
+    },
+  });
+
+  assert.equal(apiShapedMockReadModel.display_title, "Mock Portfolio Status");
+  assert.equal(apiShapedMockReadModel.batch_summaries[0]?.batch_id, "mock-batch");
+  assert.equal(apiShapedMockReadModel.lane_cards[0]?.lane_id, "mock-lane");
+  assert.deepEqual(apiShapedMockReadModel.risk_summary.risks, ["mock risk"]);
+
+  const emptyApiShapedMockReadModel = readPortfolioStatusFromApiBoundaryForTestOnly({
+    data: {
+      display_title: "",
+      status_summary: {
+        generated_label: "",
+        status_note: "",
+        active_work: [],
+        queued_work: [],
+        deferred_work: [],
+      },
+    },
+  });
+  assert.equal(emptyApiShapedMockReadModel.display_title, "Operator Portfolio Status");
+  assert.deepEqual(emptyApiShapedMockReadModel.batch_summaries, []);
+  assert.deepEqual(emptyApiShapedMockReadModel.lane_cards, []);
+
+  const operatorPageSource = fs.readFileSync(
+    path.join(process.cwd(), "src", "app", "operator", "portfolio-status", "page.tsx"),
+    "utf8",
+  );
+  assert.match(operatorPageSource, /getPortfolioStatusFixture/);
+  assert.doesNotMatch(operatorPageSource, /portfolioStatusApiClientAdapter/);
+  assert.match(operatorPageSource, /Static/);
+  assert.match(operatorPageSource, /non-live/i);
+  assert.match(operatorPageSource, /fixture-backed/i);
+
   assert.throws(
     () => getPortfolioStatusReadModel({ kind: "future-api" }),
     /not authorized or connected/i,
   );
   assert.throws(() => readPortfolioStatusFromFutureApi(), /not authorized or connected/i);
+  assert.throws(() => assertFutureApiSourceUnavailableForRuntime(), /not authorized or connected/i);
   assert.equal(fetchCalls, 0);
 
   console.log("portfolio status client boundary tests passed");
