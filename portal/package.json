@@ -44,6 +44,7 @@
     "extract:decisions": "dotenv -e .env.local -- tsx scripts/extract-decisions.ts",
     "validate:agency": "node scripts/validate-agency.mjs",
     "verify:portfolio-status-fixture": "tsx scripts/verify-portfolio-status-fixture.ts",
+    "test:portfolio-status-client": "tsx scripts/test-portfolio-status-client.ts",
     "dct:extract": "dotenv -e .env.local -- tsx scripts/dct-extract.ts",
     "dct:replay-check": "dotenv -e .env.local -- tsx scripts/dct-replay-check.ts"
   },
