@@ -17,6 +17,26 @@ type CheckResult = {
   ok: boolean;
 };
 
+type ChecksumResult =
+  | {
+      kind: "match";
+      expected: string;
+      actual: string;
+    }
+  | {
+      kind: "mismatch";
+      expected: string;
+      actual: string;
+    }
+  | {
+      kind: "missing-local";
+      actual: string | null;
+    }
+  | {
+      kind: "missing-supplied";
+      expected: string;
+    };
+
 const LOCAL_ONLY_SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
 
 const FIELD_CANDIDATES = {
@@ -172,6 +192,86 @@ function firstFound(values: Array<string | null>): string | null {
   return values.find((value): value is string => typeof value === "string" && value.length > 0) ?? null;
 }
 
+function compareChecksum(localChecksum: string | undefined, suppliedChecksum: string | null): ChecksumResult {
+  const expected = localChecksum?.trim() ?? "";
+
+  if (!expected) {
+    return {
+      kind: "missing-local",
+      actual: suppliedChecksum,
+    };
+  }
+
+  if (!suppliedChecksum) {
+    return {
+      kind: "missing-supplied",
+      expected,
+    };
+  }
+
+  if (expected === suppliedChecksum) {
+    return {
+      kind: "match",
+      expected,
+      actual: suppliedChecksum,
+    };
+  }
+
+  return {
+    kind: "mismatch",
+    expected,
+    actual: suppliedChecksum,
+  };
+}
+
+function printChecksumResult(result: ChecksumResult, note: string | undefined) {
+  if (result.kind === "match") {
+    console.log(
+      [
+        "PASS checksum / integrity",
+        `  expected: ${result.expected}`,
+        `  actual:   ${result.actual}`,
+        `  note:     ${note ?? "(none)"}`,
+      ].join("\n"),
+    );
+    return;
+  }
+
+  if (result.kind === "mismatch") {
+    console.log(
+      [
+        "FAIL checksum / integrity",
+        `  expected: ${result.expected}`,
+        `  actual:   ${result.actual}`,
+        `  note:     ${note ?? "(none)"}`,
+      ].join("\n"),
+    );
+    return;
+  }
+
+  if (result.kind === "missing-local") {
+    console.log(
+      [
+        "INFO checksum / integrity",
+        "  local fixture: no checksum stored",
+        `  supplied:      ${result.actual ?? "(not found)"}`,
+        `  note:          ${note ?? "manual-review only"}`,
+      ].join("\n"),
+    );
+    return;
+  }
+
+  console.log(
+    [
+      "INFO checksum / integrity",
+      `  local fixture: ${result.expected}`,
+      "  supplied:      (not found)",
+      "  result:        checksum comparison skipped because supplied local files do not expose a checksum field.",
+      `  note:          ${note ?? "(none)"}`,
+    ].join("\n"),
+  );
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.manifestPath) {
@@ -230,6 +330,7 @@ async function main() {
     findStringByKeys(manifest, FIELD_CANDIDATES.checksum),
     findStringByKeys(readModel, FIELD_CANDIDATES.checksum),
   ]);
+  const checksumResult = compareChecksum(metadata.checksum, manifestChecksum);
 
   console.log("Operator portfolio status fixture verify");
   console.log("Mode: local check only; no remote fetch; no mutation.\n");
@@ -238,28 +339,13 @@ async function main() {
     console.log(formatResult(result));
   }
 
-  if (manifestChecksum) {
-    console.log(
-      [
-        "INFO checksum / integrity",
-        `  handoff checksum: ${manifestChecksum}`,
-        `  local fixture:    ${metadata.checksum_integrity_note ?? "No local checksum stored."}`,
-        "  result:           manual-review only; checksum is not compared because no checksum is stored locally.",
-      ].join("\n"),
-    );
-  } else {
-    console.log(
-      [
-        "INFO checksum / integrity",
-        `  local fixture: ${metadata.checksum_integrity_note ?? "No local checksum stored."}`,
-        "  result:        manual-review only; no handoff checksum found in supplied local files.",
-      ].join("\n"),
-    );
-  }
+  printChecksumResult(checksumResult, metadata.checksum_integrity_note);
 
   const failed = results.filter((result) => !result.ok);
-  if (failed.length > 0) {
-    console.error(`\nFixture metadata verification failed: ${failed.length} mismatch(es).`);
+  const checksumFailed = checksumResult.kind === "mismatch";
+  if (failed.length > 0 || checksumFailed) {
+    const checksumMessage = checksumFailed ? " plus checksum mismatch" : "";
+    console.error(`\nFixture metadata verification failed: ${failed.length} metadata mismatch(es)${checksumMessage}.`);
     process.exit(1);
   }
 

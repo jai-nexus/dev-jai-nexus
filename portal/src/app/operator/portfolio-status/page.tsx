@@ -266,9 +266,25 @@ export default function OperatorPortfolioStatusPage() {
               value={baselineMetadata?.source_baseline_note}
             />
             <MetadataItem
-              label="Checksum / integrity"
-              value={baselineMetadata?.checksum_integrity_note}
+              label="Checksum"
+              value={baselineMetadata?.checksum}
             />
+            <MetadataItem
+              label="Checksum algorithm"
+              value={baselineMetadata?.checksum_algorithm}
+            />
+            <MetadataItem
+              label="Checksum scope"
+              value={baselineMetadata?.checksum_scope}
+            />
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+            <div className="text-[11px] uppercase tracking-wide text-gray-500">
+              Checksum / integrity note
+            </div>
+            <div className="mt-2 text-sm text-gray-300">
+              {safeText(baselineMetadata?.checksum_integrity_note)}
+            </div>
           </div>
           <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
             <div className="text-[11px] uppercase tracking-wide text-gray-500">
