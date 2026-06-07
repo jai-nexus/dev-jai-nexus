@@ -47,6 +47,9 @@ export interface StaticBaselineMetadata {
   read_model_version: string;
   handoff_manifest_path: string;
   source_baseline_note: string;
+  checksum: string;
+  checksum_algorithm: string;
+  checksum_scope: string;
   checksum_integrity_note?: string;
 }
 
@@ -75,8 +78,12 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
       "orchestrator-nexus/generated/portfolio-status/handoff/q2m6-static-status-handoff-bundle-v0/manifest.json",
     source_baseline_note:
       "Manual checked-in fixture refresh from accepted Q2M6 static status baseline. The upstream handoff path is source context only and is not fetched or connected.",
+    checksum: "q2m6-static-status-handoff-bundle-v0-local-integrity-baseline",
+    checksum_algorithm: "static-baseline-token",
+    checksum_scope:
+      "Documentary local parity token for the accepted Q2M6 static handoff baseline; not a cryptographic digest.",
     checksum_integrity_note:
-      "No checksum is stored in this local fixture; integrity remains manual-review only for this static baseline.",
+      "Local fixture stores a documentary integrity token for parity checks. Cryptographic artifact integrity remains manual-review only unless a future routed baseline supplies a digest.",
   },
   status_summary: {
     generated_label: "Q2M6 refreshed static checked-in fixture, 2026-06-06",
