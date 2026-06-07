@@ -41,9 +41,19 @@ export interface PortfolioRiskSummary {
   risks: string[];
 }
 
+export interface StaticBaselineMetadata {
+  status_date: string;
+  artifact_version: string;
+  read_model_version: string;
+  handoff_manifest_path: string;
+  source_baseline_note: string;
+  checksum_integrity_note?: string;
+}
+
 export interface PortfolioStatusFixture {
   display_title: string;
   authority_boundary_label: string;
+  static_baseline_metadata: StaticBaselineMetadata;
   status_summary: PortfolioStatusSummary;
   batch_summaries: PortfolioStatusBatchSummary[];
   lane_cards: PortfolioStatusLaneCard[];
@@ -57,6 +67,17 @@ const portfolioStatusFixture: PortfolioStatusFixture = {
   display_title: "Operator Portfolio Status",
   authority_boundary_label:
     "Static local fixture only. Non-live and non-canonical unless accepted by CONTROL_THREAD.",
+  static_baseline_metadata: {
+    status_date: "2026-06-06",
+    artifact_version: "q2m6-static-status-handoff-bundle-v0",
+    read_model_version: "q2m6-portfolio-status-ui-read-model-v0",
+    handoff_manifest_path:
+      "orchestrator-nexus/generated/portfolio-status/handoff/q2m6-static-status-handoff-bundle-v0/manifest.json",
+    source_baseline_note:
+      "Manual checked-in fixture refresh from accepted Q2M6 static status baseline. The upstream handoff path is source context only and is not fetched or connected.",
+    checksum_integrity_note:
+      "No checksum is stored in this local fixture; integrity remains manual-review only for this static baseline.",
+  },
   status_summary: {
     generated_label: "Q2M6 refreshed static checked-in fixture, 2026-06-06",
     status_note:
@@ -337,6 +358,7 @@ function cloneLane(lane: PortfolioStatusLaneCard): PortfolioStatusLaneCard {
 export function getPortfolioStatusFixture(): PortfolioStatusFixture {
   return {
     ...portfolioStatusFixture,
+    static_baseline_metadata: { ...portfolioStatusFixture.static_baseline_metadata },
     status_summary: {
       ...portfolioStatusFixture.status_summary,
       active_work: [...portfolioStatusFixture.status_summary.active_work],

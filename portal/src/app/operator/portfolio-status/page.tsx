@@ -120,6 +120,17 @@ function SummaryCard({
   );
 }
 
+function MetadataItem({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+      <div className="text-[11px] uppercase tracking-wide text-gray-500">{label}</div>
+      <div className="mt-2 break-words font-mono text-xs text-gray-300">
+        {safeText(value)}
+      </div>
+    </div>
+  );
+}
+
 function LaneCard({ lane }: { lane: PortfolioStatusLaneCard }) {
   return (
     <article className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
@@ -174,6 +185,7 @@ function LaneCard({ lane }: { lane: PortfolioStatusLaneCard }) {
 export default function OperatorPortfolioStatusPage() {
   const fixture = getPortfolioStatusFixture();
   const statusSummary = fixture.status_summary;
+  const baselineMetadata = fixture.static_baseline_metadata;
   const batches = safeArray(fixture.batch_summaries);
   const lanes = safeArray(fixture.lane_cards);
   const deferredWork = safeArray(statusSummary?.deferred_work);
@@ -236,6 +248,37 @@ export default function OperatorPortfolioStatusPage() {
             detail="Deferred items do not imply implementation approval."
           />
         </section>
+
+        <Section
+          title="Static Baseline Metadata"
+          description="Manual checked-in baseline context for this fixture. This metadata is not live sync and does not fetch upstream artifacts."
+        >
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <MetadataItem label="Status date" value={baselineMetadata?.status_date} />
+            <MetadataItem label="Artifact version" value={baselineMetadata?.artifact_version} />
+            <MetadataItem label="Read model version" value={baselineMetadata?.read_model_version} />
+            <MetadataItem
+              label="Authority boundary"
+              value={fixture.authority_boundary_label}
+            />
+            <MetadataItem
+              label="Source baseline note"
+              value={baselineMetadata?.source_baseline_note}
+            />
+            <MetadataItem
+              label="Checksum / integrity"
+              value={baselineMetadata?.checksum_integrity_note}
+            />
+          </div>
+          <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
+            <div className="text-[11px] uppercase tracking-wide text-gray-500">
+              Handoff manifest path
+            </div>
+            <div className="mt-2 break-words font-mono text-xs text-gray-300">
+              {safeText(baselineMetadata?.handoff_manifest_path)}
+            </div>
+          </div>
+        </Section>
 
         <Section
           title="Current Batches"
