@@ -8,6 +8,16 @@ type JsonRecord = Record<string, unknown>;
 type Args = {
   manifestPath: string | null;
   readModelPath: string | null;
+  update: boolean;
+};
+
+type BaselineMetadata = {
+  statusDate: string;
+  artifactVersion: string;
+  readModelVersion: string;
+  authorityBoundaryLabel: string;
+  sourceBaselineNote: string;
+  checksum: string | null;
 };
 
 type CheckResult = {
@@ -38,6 +48,15 @@ type ChecksumResult =
     };
 
 const LOCAL_ONLY_SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
+const WINDOWS_DRIVE_PATH = /^[a-zA-Z]:[\\/]/;
+const WINDOWS_UNC_PATH = /^\\\\[^\\]+\\[^\\]+/;
+const FIXTURE_PATH = path.resolve(
+  process.cwd(),
+  "src",
+  "lib",
+  "controlPlane",
+  "portfolioStatusFixture.ts",
+);
 
 const FIELD_CANDIDATES = {
   statusDate: ["status_date", "statusDate", "baseline_date", "baselineDate", "generated_date"],
@@ -79,6 +98,7 @@ function parseArgs(argv: string[]): Args {
   const args: Args = {
     manifestPath: null,
     readModelPath: null,
+    update: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -94,6 +114,11 @@ function parseArgs(argv: string[]): Args {
     if (arg === "--read-model") {
       args.readModelPath = next ?? null;
       index += 1;
+      continue;
+    }
+
+    if (arg === "--update") {
+      args.update = true;
       continue;
     }
 
@@ -113,25 +138,44 @@ function printUsage() {
     [
       "Usage:",
       "  pnpm -C portal verify:portfolio-status-fixture -- --manifest <local manifest.json> [--read-model <local read-model.json>]",
+      "  pnpm -C portal verify:portfolio-status-fixture -- --update --manifest <local manifest.json> [--read-model <local read-model.json>]",
       "",
       "Notes:",
       "  - Local file paths only.",
       "  - No remote fetch, repo sync, API, DB, or fixture mutation.",
       "  - Default mode is verify/check only.",
+      "  - Update mode is explicit, manual, local-only, and rewrites checked-in fixture metadata.",
     ].join("\n"),
   );
 }
 
 function assertLocalPath(inputPath: string, label: string): string {
-  if (LOCAL_ONLY_SCHEME.test(inputPath)) {
-    throw new Error(`${label} must be a local file path, not a URL: ${inputPath}`);
+  const trimmed = inputPath.trim();
+
+  if (!trimmed) {
+    throw new Error(`${label} path is required and cannot be empty.`);
   }
 
-  return path.resolve(process.cwd(), inputPath);
+  if (
+    LOCAL_ONLY_SCHEME.test(trimmed) ||
+    (!WINDOWS_DRIVE_PATH.test(trimmed) && /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed))
+  ) {
+    throw new Error(`${label} must be a local file path, not a URI or URL: ${inputPath}`);
+  }
+
+  if (WINDOWS_UNC_PATH.test(trimmed)) {
+    throw new Error(`${label} must be a local file path, not a UNC/network path: ${inputPath}`);
+  }
+
+  return path.resolve(process.cwd(), trimmed);
 }
 
 async function readJsonFile(inputPath: string, label: string): Promise<unknown> {
   const resolvedPath = assertLocalPath(inputPath, label);
+  const stat = await fs.stat(resolvedPath);
+  if (!stat.isFile()) {
+    throw new Error(`${label} must be a local file: ${inputPath}`);
+  }
   const text = (await fs.readFile(resolvedPath, "utf8")).replace(/^\uFEFF/, "");
   return JSON.parse(text) as unknown;
 }
@@ -190,6 +234,50 @@ function formatResult(result: CheckResult): string {
 
 function firstFound(values: Array<string | null>): string | null {
   return values.find((value): value is string => typeof value === "string" && value.length > 0) ?? null;
+}
+
+function extractSuppliedMetadata(manifest: unknown, readModel: unknown): BaselineMetadata {
+  return {
+    statusDate: firstFound([
+      findStringByKeys(manifest, FIELD_CANDIDATES.statusDate),
+      findStringByKeys(readModel, FIELD_CANDIDATES.statusDate),
+    ]) ?? "",
+    artifactVersion: findStringByKeys(manifest, FIELD_CANDIDATES.artifactVersion) ?? "",
+    readModelVersion: firstFound([
+      findStringByKeys(manifest, FIELD_CANDIDATES.readModelVersion),
+      findStringByKeys(readModel, FIELD_CANDIDATES.readModelVersion),
+    ]) ?? "",
+    authorityBoundaryLabel: firstFound([
+      findStringByKeys(manifest, FIELD_CANDIDATES.authorityBoundaryLabel),
+      findStringByKeys(readModel, FIELD_CANDIDATES.authorityBoundaryLabel),
+    ]) ?? "",
+    sourceBaselineNote: firstFound([
+      findStringByKeys(manifest, FIELD_CANDIDATES.sourceBaselineNote),
+      findStringByKeys(readModel, FIELD_CANDIDATES.sourceBaselineNote),
+    ]) ?? "",
+    checksum: firstFound([
+      findStringByKeys(manifest, FIELD_CANDIDATES.checksum),
+      findStringByKeys(readModel, FIELD_CANDIDATES.checksum),
+    ]),
+  };
+}
+
+function validateSuppliedMetadata(metadata: BaselineMetadata) {
+  const missing = [
+    ["status date", metadata.statusDate],
+    ["artifact version", metadata.artifactVersion],
+    ["read model version", metadata.readModelVersion],
+    ["authority boundary label", metadata.authorityBoundaryLabel],
+    ["source/baseline note", metadata.sourceBaselineNote],
+  ].filter(([, value]) => !value);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Supplied local baseline metadata is incomplete: ${missing
+        .map(([label]) => label)
+        .join(", ")}`,
+    );
+  }
 }
 
 function compareChecksum(localChecksum: string | undefined, suppliedChecksum: string | null): ChecksumResult {
@@ -272,6 +360,125 @@ function printChecksumResult(result: ChecksumResult, note: string | undefined) {
   );
 }
 
+function compareFixtureToSupplied(
+  supplied: BaselineMetadata,
+  fixture = getPortfolioStatusFixture(),
+): { results: CheckResult[]; checksumResult: ChecksumResult } {
+  const metadata = fixture.static_baseline_metadata;
+  const results: CheckResult[] = [
+    compareField("status date", metadata.status_date, supplied.statusDate),
+    compareField("artifact version", metadata.artifact_version, supplied.artifactVersion),
+    compareField("read model version", metadata.read_model_version, supplied.readModelVersion),
+    compareField("authority boundary label", fixture.authority_boundary_label, supplied.authorityBoundaryLabel),
+    compareField("source/baseline note", metadata.source_baseline_note, supplied.sourceBaselineNote),
+  ];
+
+  return {
+    results,
+    checksumResult: compareChecksum(metadata.checksum, supplied.checksum),
+  };
+}
+
+function fixtureMetadataIsUsable() {
+  const fixture = getPortfolioStatusFixture();
+  const metadata = fixture.static_baseline_metadata;
+  const requiredValues = [
+    fixture.authority_boundary_label,
+    metadata.status_date,
+    metadata.artifact_version,
+    metadata.read_model_version,
+    metadata.source_baseline_note,
+  ];
+
+  return requiredValues.every((value) => typeof value === "string" && value.trim().length > 0);
+}
+
+function replaceStringField(source: string, fieldName: string, value: string): string {
+  const broadPattern = new RegExp(`(${fieldName}:\\s*)"(?:\\\\.|[^"\\\\])*"`, "m");
+  if (!broadPattern.test(source)) {
+    throw new Error(`Could not find fixture field: ${fieldName}`);
+  }
+
+  const next = source.replace(broadPattern, `$1${JSON.stringify(value)}`);
+  return next;
+}
+
+function replaceGeneratedLabel(source: string, statusDate: string): string {
+  const label = `Q2M6 refreshed static checked-in fixture, ${statusDate}`;
+  return replaceStringField(source, "generated_label", label);
+}
+
+function updateFixtureText(source: string, supplied: BaselineMetadata): string {
+  let next = source;
+  next = replaceStringField(next, "authority_boundary_label", supplied.authorityBoundaryLabel);
+  next = replaceStringField(next, "status_date", supplied.statusDate);
+  next = replaceStringField(next, "artifact_version", supplied.artifactVersion);
+  next = replaceStringField(next, "read_model_version", supplied.readModelVersion);
+  next = replaceStringField(next, "source_baseline_note", supplied.sourceBaselineNote);
+
+  if (supplied.checksum) {
+    next = replaceStringField(next, "checksum", supplied.checksum);
+  }
+
+  next = replaceGeneratedLabel(next, supplied.statusDate);
+  return next;
+}
+
+async function runUpdateMode(supplied: BaselineMetadata) {
+  console.log("Manual update mode: explicit local fixture metadata update.");
+  console.log("Mode: local-only; no remote fetch; no API/DB; writes checked-in fixture metadata only.\n");
+
+  if (!fixtureMetadataIsUsable()) {
+    throw new Error("Current fixture baseline is incomplete; refusing to mutate.");
+  }
+
+  console.log("PASS current fixture baseline loaded and contains required metadata.");
+  validateSuppliedMetadata(supplied);
+  console.log("PASS supplied local manifest/read-model metadata is complete.");
+
+  const original = await fs.readFile(FIXTURE_PATH, "utf8");
+  const updated = updateFixtureText(original, supplied);
+
+  if (updated === original) {
+    console.log("No fixture metadata changes needed; supplied metadata matches current fixture text.");
+  } else {
+    await fs.writeFile(FIXTURE_PATH, updated, "utf8");
+    console.log(`Updated fixture metadata: ${path.relative(process.cwd(), FIXTURE_PATH)}`);
+  }
+
+  try {
+    const postUpdateText = await fs.readFile(FIXTURE_PATH, "utf8");
+    const postUpdateChecks = [
+      supplied.statusDate,
+      supplied.artifactVersion,
+      supplied.readModelVersion,
+      supplied.authorityBoundaryLabel,
+      supplied.sourceBaselineNote,
+      supplied.checksum,
+    ].filter((value): value is string => typeof value === "string" && value.length > 0);
+    const missing = postUpdateChecks.filter((value) => !postUpdateText.includes(value));
+
+    if (missing.length > 0) {
+      throw new Error(`Post-update fixture text verification failed; missing value(s): ${missing.join(", ")}`);
+    }
+
+    console.log("PASS post-update fixture text verification.");
+
+    const postUpdateResult = compareChecksum(supplied.checksum ?? undefined, supplied.checksum);
+    printChecksumResult(postUpdateResult, "Post-update supplied checksum parity check.");
+
+    if (postUpdateResult.kind === "mismatch") {
+      throw new Error("Post-update checksum verification failed.");
+    }
+  } catch (error) {
+    await fs.writeFile(FIXTURE_PATH, original, "utf8");
+    console.error("Rollback attempted: restored original fixture file from in-memory snapshot.");
+    throw error;
+  }
+
+  console.log("\nManual fixture update completed.");
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.manifestPath) {
@@ -285,52 +492,14 @@ async function main() {
   const readModel = args.readModelPath
     ? await readJsonFile(args.readModelPath, "read model")
     : null;
+  const suppliedMetadata = extractSuppliedMetadata(manifest, readModel);
 
-  const results: CheckResult[] = [
-    compareField(
-      "status date",
-      metadata.status_date,
-      firstFound([
-        findStringByKeys(manifest, FIELD_CANDIDATES.statusDate),
-        findStringByKeys(readModel, FIELD_CANDIDATES.statusDate),
-      ]),
-    ),
-    compareField(
-      "artifact version",
-      metadata.artifact_version,
-      findStringByKeys(manifest, FIELD_CANDIDATES.artifactVersion),
-    ),
-    compareField(
-      "read model version",
-      metadata.read_model_version,
-      firstFound([
-        findStringByKeys(manifest, FIELD_CANDIDATES.readModelVersion),
-        findStringByKeys(readModel, FIELD_CANDIDATES.readModelVersion),
-      ]),
-    ),
-    compareField(
-      "authority boundary label",
-      fixture.authority_boundary_label,
-      firstFound([
-        findStringByKeys(manifest, FIELD_CANDIDATES.authorityBoundaryLabel),
-        findStringByKeys(readModel, FIELD_CANDIDATES.authorityBoundaryLabel),
-      ]),
-    ),
-    compareField(
-      "source/baseline note",
-      metadata.source_baseline_note,
-      firstFound([
-        findStringByKeys(manifest, FIELD_CANDIDATES.sourceBaselineNote),
-        findStringByKeys(readModel, FIELD_CANDIDATES.sourceBaselineNote),
-      ]),
-    ),
-  ];
+  if (args.update) {
+    await runUpdateMode(suppliedMetadata);
+    return;
+  }
 
-  const manifestChecksum = firstFound([
-    findStringByKeys(manifest, FIELD_CANDIDATES.checksum),
-    findStringByKeys(readModel, FIELD_CANDIDATES.checksum),
-  ]);
-  const checksumResult = compareChecksum(metadata.checksum, manifestChecksum);
+  const { results, checksumResult } = compareFixtureToSupplied(suppliedMetadata, fixture);
 
   console.log("Operator portfolio status fixture verify");
   console.log("Mode: local check only; no remote fetch; no mutation.\n");
