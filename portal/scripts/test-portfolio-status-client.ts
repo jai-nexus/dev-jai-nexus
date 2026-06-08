@@ -128,6 +128,59 @@ try {
   assert.equal(apiShapedMockReadModel.lane_cards[0]?.lane_id, "mock-lane");
   assert.deepEqual(apiShapedMockReadModel.risk_summary.risks, ["mock risk"]);
 
+  const copiedFixturePath = path.join(
+    process.cwd(),
+    "src",
+    "lib",
+    "controlPlane",
+    "__fixtures__",
+    "q2m6-test-only-portfolio-status-response-v0.json",
+  );
+  const copiedApiResponse = JSON.parse(fs.readFileSync(copiedFixturePath, "utf8")) as unknown;
+  const copiedReadModel = readPortfolioStatusFromApiBoundaryForTestOnly(copiedApiResponse);
+
+  assert.equal(copiedReadModel.display_title, "Q2M6 Portfolio Status");
+  assert.equal(
+    copiedReadModel.authority_boundary_label,
+    "Local static status only; not live telemetry or production state.",
+  );
+  assert.equal(
+    copiedReadModel.static_baseline_metadata.read_model_version,
+    "q2m6-portfolio-status-ui-read-model-v0",
+  );
+  assert.equal(copiedReadModel.batch_summaries[0]?.batch_id, "q2m6");
+  assert.equal(
+    copiedReadModel.batch_summaries[0]?.display_title,
+    "Q2M6 JAI NEXUS operating model transition",
+  );
+  assert.equal(
+    copiedReadModel.lane_cards[0]?.lane_id,
+    "q2m6-static-portfolio-status-artifact-v0",
+  );
+  assert.equal(copiedReadModel.lane_cards[0]?.repo, "orchestrator-nexus");
+  assert.equal(
+    copiedReadModel.lane_cards[1]?.lane_id,
+    "q2m6-static-status-read-model-contract-validator-v0",
+  );
+  assert.deepEqual(copiedReadModel.risk_summary.risks, [
+    "Static status must not be interpreted as live telemetry or production state.",
+    "A local draft contract could be mistaken for a deployed API contract.",
+  ]);
+  assert.ok(
+    copiedReadModel.source_refs.includes(
+      "api-nexus/fixtures/static/q2m6-test-only-portfolio-status-response-v0.json",
+    ),
+  );
+
+  for (const wrapperKey of ["read_model", "data", "portfolio_status"] as const) {
+    const wrappedReadModel = readPortfolioStatusFromApiBoundaryForTestOnly({
+      [wrapperKey]: copiedApiResponse,
+    });
+    assert.equal(wrappedReadModel.display_title, copiedReadModel.display_title);
+    assert.equal(wrappedReadModel.batch_summaries[0]?.batch_id, "q2m6");
+    assert.equal(wrappedReadModel.lane_cards.length, 2);
+  }
+
   const emptyApiShapedMockReadModel = readPortfolioStatusFromApiBoundaryForTestOnly({
     data: {
       display_title: "",
