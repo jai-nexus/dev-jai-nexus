@@ -1,0 +1,73 @@
+{
+  "authority_boundary_label": "Local static status only; not live telemetry or production state.",
+  "batch_summaries": [
+    {
+      "batch_id": "q2m6",
+      "lane_count": 2,
+      "status_counts": {
+        "active": 1,
+        "completed": 1
+      },
+      "summary": "Representative local fixture for static contract-shape validation.",
+      "title": "Q2M6 JAI NEXUS operating model transition"
+    }
+  ],
+  "display_title": "Q2M6 Portfolio Status",
+  "lane_cards": [
+    {
+      "active_work": [],
+      "canon_references": [
+        "docs/reference/static-portfolio-status-artifact-v0.md"
+      ],
+      "deferred_work": [],
+      "lane_id": "q2m6-static-portfolio-status-artifact-v0",
+      "mode": "STATIC-ARTIFACT-ONLY",
+      "next_prompts": [],
+      "queued_work": [],
+      "repo": "orchestrator-nexus",
+      "risks": [
+        "Static status must not be interpreted as live telemetry or production state."
+      ],
+      "status": "completed",
+      "status_label": "Completed",
+      "summary": "Produces the accepted static portfolio status read model shape.",
+      "title": "Static Portfolio Status Artifact v0"
+    },
+    {
+      "active_work": [
+        "Validate the static read model contract shape locally."
+      ],
+      "canon_references": [],
+      "deferred_work": [
+        "Live API exposure remains out of scope."
+      ],
+      "lane_id": "q2m6-static-status-read-model-contract-validator-v0",
+      "mode": "LOCAL-CONTRACT-VALIDATION-ONLY",
+      "next_prompts": [
+        "Review the local static contract before any future API design."
+      ],
+      "queued_work": [],
+      "repo": "api-nexus",
+      "risks": [
+        "A local draft contract could be mistaken for a deployed API contract."
+      ],
+      "status": "active",
+      "status_label": "Active",
+      "summary": "Validates the static read model shape without creating runtime behavior.",
+      "title": "Static Status Read Model Contract Validator v0"
+    }
+  ],
+  "next_prompts": [
+    "Review the local static contract before any future API design."
+  ],
+  "read_model_version": "q2m6-portfolio-status-ui-read-model-v0",
+  "risk_summary": [
+    "Static status must not be interpreted as live telemetry or production state.",
+    "A local draft contract could be mistaken for a deployed API contract."
+  ],
+  "source_artifact": "generated/portfolio-status/q2m6-portfolio-status-v0.json",
+  "status_summary": {
+    "active": 1,
+    "completed": 1
+  }
+}
