@@ -310,7 +310,7 @@ export default function OperatingContextPage() {
 
         <Section
           title="Dashboard Modules"
-          description="Modules are representational dashboard defaults, not route execution or live module activation."
+          description="Modules are fixture-backed configuration only, not custom dashboard generation, route execution, or live module activation."
         >
           {safeArray(context.dashboard_modules).length === 0 ? (
             <EmptyState label="dashboard modules" />
