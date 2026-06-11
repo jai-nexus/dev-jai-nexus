@@ -3,9 +3,9 @@ import type { VersionedOperatingContextFixture } from "./versionedOperatingConte
 const versionedOperatingContextFixture: VersionedOperatingContextFixture = {
   generated_label: "Q2M6 Versioned Operating Context static fixture v0",
   status_note:
-    "Static local fixture only. Non-live, non-mutating, and non-canonical unless accepted by CONTROL_THREAD. No settings storage, API/DB reads, remote fetch, telemetry, billing, customer data, provider/model calls, runtime ingestion, or route execution.",
+    "Static local fixture only. Non-live, non-mutating, and non-canonical unless accepted by CONTROL_THREAD. Excludes .nexus repository governance envelope semantics, ASCII/symbolic projection behavior, and custom dashboard generation. No settings storage, API/DB reads, remote fetch, telemetry, billing, customer data, provider/model calls, runtime ingestion, or route execution.",
   authority_boundary_label:
-    "Versioned Operating Context is displayed as checked-in local context doctrine only.",
+    "Versioned Operating Context is displayed as checked-in local context doctrine only; it does not interpret .nexus repository governance envelopes or generate projections or dashboards.",
   context: {
     current_context_id: "voc-q2m6-operator-control-plane-v0",
     object_id: "VERSIONED_OPERATING_CONTEXT_V0",
@@ -38,19 +38,22 @@ const versionedOperatingContextFixture: VersionedOperatingContextFixture = {
         module_id: "operator-portfolio-status",
         label: "Operator Portfolio Status",
         status: "static_fixture_visible",
-        summary: "Shows portfolio batches and repo lanes from checked-in fixture data.",
+        summary:
+          "Fixture-backed module configuration for displaying portfolio batches and repo lanes; no dashboard generation occurs.",
       },
       {
         module_id: "jai-project-registry",
         label: "JAI Project Registry",
         status: "static_fixture_visible",
-        summary: "Shows active and frozen JAI Project objects from checked-in fixture data.",
+        summary:
+          "Fixture-backed module configuration for displaying active and frozen JAI Project objects; no dashboard generation occurs.",
       },
       {
         module_id: "versioned-operating-context",
         label: "Versioned Operating Context",
         status: "static_viewer_candidate",
-        summary: "Shows this context object as a non-mutating local static viewer.",
+        summary:
+          "Fixture-backed module configuration for this non-mutating local static viewer; no dashboard generation occurs.",
       },
     ],
     custom_metrics: [
@@ -125,7 +128,7 @@ const versionedOperatingContextFixture: VersionedOperatingContextFixture = {
       },
     ],
     authority_boundary:
-      "This context viewer is display-only. It does not create live settings, mutate context state, execute rollback, call providers, ingest runtime data, or alter production behavior.",
+      "This context viewer is display-only. It does not interpret .nexus repository governance envelope semantics, produce ASCII/symbolic projections, generate custom dashboards, create live settings, mutate context state, execute rollback, call providers, ingest runtime data, or alter production behavior.",
     blocked_settings: [
       {
         setting_id: "live-settings-storage",
@@ -206,6 +209,9 @@ const versionedOperatingContextFixture: VersionedOperatingContextFixture = {
     "no runtime ingestion",
     "no route execution",
     "no branch/PR automation",
+    "no .nexus repository governance envelope semantics",
+    "no ASCII/symbolic projection behavior",
+    "no custom dashboard generation",
     "no production readiness claim",
   ],
 };
