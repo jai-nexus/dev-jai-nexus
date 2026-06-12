@@ -81,3 +81,5 @@ dr-snapshot/
 # Control plane (generated)
 # -------------------------
 control-plane/
+!portal/src/app/operator/control-plane/
+!portal/src/app/operator/control-plane/**
