@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
 
 import { controlPlanePrototypeFixture } from "@/lib/controlPlane/controlPlanePrototypeFixture";
+import { readControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
 
 import { ControlPlaneBadge } from "./_components/ControlPlaneBadges";
 import { ControlPlanePanels } from "./_components/ControlPlanePanels";
 
 export const metadata: Metadata = {
-  title: "Operator Control Plane",
+  title: "Operator Control Plane | dev.jai.nexus",
   description: "Local static, non-authorizing Operator Control Plane prototype.",
 };
 
-export default function OperatorControlPlanePage() {
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export default async function OperatorControlPlanePage() {
   const fixture = controlPlanePrototypeFixture;
+  const canonicalPosture = await readControlPlaneCanonicalPosture();
 
   return (
     <main className="min-h-screen bg-black px-6 py-8 text-gray-100 lg:px-8">
@@ -24,8 +29,8 @@ export default function OperatorControlPlanePage() {
               </div>
               <h1 className="mt-2 text-3xl font-semibold">{fixture.title}</h1>
               <p className="mt-2 max-w-4xl text-sm text-gray-400">
-                Local static prototype extracted from the v0 import. All displayed records are
-                checked-in synthetic fixture data. Nothing on this page executes, dispatches,
+                Read-only operator cockpit combining canonical motion posture with clearly
+                labeled synthetic fixture panels. Nothing on this page executes, dispatches,
                 persists, or mutates system state.
               </p>
             </div>
@@ -63,7 +68,7 @@ export default function OperatorControlPlanePage() {
           </nav>
         </header>
 
-        <ControlPlanePanels fixture={fixture} />
+        <ControlPlanePanels fixture={fixture} canonicalPosture={canonicalPosture} />
 
         <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
           <div className="flex flex-wrap items-center gap-2">
@@ -82,8 +87,11 @@ export default function OperatorControlPlanePage() {
           </div>
         </section>
 
-        <footer className="text-center font-mono text-[10px] uppercase tracking-widest text-gray-500">
-          {fixture.fixture_id} / synthetic SYN-* data / local static snapshot / not production
+        <footer className="flex flex-wrap items-center justify-center gap-2 text-center font-mono text-[10px] uppercase tracking-widest text-gray-500">
+          <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+          <span>
+            {fixture.fixture_id} / synthetic SYN-* data / local static snapshot / not production
+          </span>
         </footer>
       </div>
     </main>
