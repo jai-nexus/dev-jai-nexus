@@ -2,6 +2,7 @@ import type {
   ControlPlanePrototypeFixture,
   ControlPlaneRisk,
 } from "@/lib/controlPlane/controlPlanePrototypeFixture";
+import type { ControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
 
 import {
   ControlPlaneBadge,
@@ -62,8 +63,10 @@ function riskTone(risk: ControlPlaneRisk) {
 
 export function ControlPlanePanels({
   fixture,
+  canonicalPosture,
 }: {
   fixture: ControlPlanePrototypeFixture;
+  canonicalPosture: ControlPlaneCanonicalPosture;
 }) {
   const activeMotions = fixture.motions.filter((motion) => motion.status !== "accepted").length;
   const pendingCloseouts = fixture.closeouts.filter(
@@ -83,6 +86,13 @@ export function ControlPlanePanels({
         description={`${fixture.control_thread.syn_id} / ${fixture.control_thread.authority_state}`}
         className="lg:col-span-12"
       >
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-300">
+            Synthetic baseline posture
+          </h3>
+          <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+          <ControlPlaneBadge tone="amber">{fixture.control_thread.syn_id}</ControlPlaneBadge>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
           {[
             ["Doctrine baseline", fixture.control_thread.doctrine_baseline],
@@ -93,7 +103,10 @@ export function ControlPlanePanels({
             ["Held capabilities", heldCapabilities],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg border border-gray-800 bg-black/30 p-3">
-              <div className="text-[10px] uppercase tracking-wide text-gray-500">{label}</div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] uppercase tracking-wide text-gray-500">{label}</span>
+                <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+              </div>
               <div className="mt-2 break-words font-mono text-sm font-semibold text-gray-100">
                 {value}
               </div>
@@ -106,6 +119,43 @@ export function ControlPlanePanels({
           </ControlPlaneBadge>
           <strong className="text-sm text-rose-100">ALL EXECUTION GATES CLOSED</strong>
         </div>
+        <div className="my-5 border-t border-gray-800" />
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-300">
+            Canonical motion posture
+          </h3>
+          <ControlPlaneBadge tone="emerald">{canonicalPosture.source_kind}</ControlPlaneBadge>
+          <ControlPlaneBadge tone="sky">READ-ONLY</ControlPlaneBadge>
+          <ControlPlaneBadge tone="amber">NON-AUTHORIZING</ControlPlaneBadge>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          {[
+            ["Latest motion", canonicalPosture.latest_motion_id ?? "none"],
+            ["Motion count", canonicalPosture.motion_count],
+            ["Attention", canonicalPosture.attention_count],
+            ["Ratified", canonicalPosture.ratified_count],
+            ["Status mismatches", canonicalPosture.status_mismatch_count],
+            ["Source mode", canonicalPosture.source_kind],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-emerald-900/60 bg-emerald-950/10 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] uppercase tracking-wide text-gray-500">{label}</span>
+                <ControlPlaneBadge tone="emerald">CANONICAL</ControlPlaneBadge>
+              </div>
+              <div className="mt-2 break-words font-mono text-sm font-semibold text-gray-100">
+                {value}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 rounded-lg border border-gray-800 bg-black/30 p-3 text-xs text-gray-400">
+          Source: <span className="font-mono text-gray-200">{canonicalPosture.source_label}</span>
+        </div>
+        {canonicalPosture.warning ? (
+          <div className="mt-3 rounded-lg border border-amber-900 bg-amber-950/20 p-3 text-xs text-amber-200">
+            {canonicalPosture.warning}
+          </div>
+        ) : null}
       </Panel>
 
       <Panel
@@ -131,7 +181,12 @@ export function ControlPlanePanels({
             <tbody>
               {fixture.motions.map((motion) => (
                 <tr key={motion.syn_id} className="border-b border-gray-800 last:border-0">
-                  <td className="py-3 font-mono text-gray-300">{motion.syn_id}</td>
+                  <td className="py-3 font-mono text-gray-300">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {motion.syn_id}
+                      <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                    </div>
+                  </td>
                   <td className="py-3 pr-4 text-gray-200">{motion.title}</td>
                   <td className="py-3">
                     <ControlPlaneBadge tone={statusTone(motion.status)}>
@@ -162,7 +217,10 @@ export function ControlPlanePanels({
           {fixture.routes.map((route) => (
             <article key={route.syn_id} className="rounded-lg border border-gray-800 bg-black/30 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs font-semibold text-gray-100">{route.syn_id}</span>
+                <span className="flex flex-wrap items-center gap-2 font-mono text-xs font-semibold text-gray-100">
+                  {route.syn_id}
+                  <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                </span>
                 <ControlPlaneBadge tone={statusTone(route.state)}>{route.state}</ControlPlaneBadge>
               </div>
               <div className="mt-2 font-mono text-xs text-sky-300">{route.target_repo}</div>
@@ -195,7 +253,10 @@ export function ControlPlanePanels({
           {fixture.council_slots.map((slot) => (
             <article key={slot.syn_id} className="rounded-lg border border-gray-800 bg-black/30 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <strong className="text-sm text-gray-100">{slot.name}</strong>
+                <strong className="flex flex-wrap items-center gap-2 text-sm text-gray-100">
+                  {slot.name}
+                  <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                </strong>
                 <ControlPlaneBadge>{slot.status}</ControlPlaneBadge>
               </div>
               <p className="mt-1 text-xs text-gray-400">{slot.role}</p>
@@ -221,7 +282,10 @@ export function ControlPlanePanels({
           {fixture.agent_lanes.map((lane) => (
             <article key={lane.syn_id} className="rounded-lg border border-gray-800 bg-black/30 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <strong className="text-sm text-gray-100">{lane.name}</strong>
+                <strong className="flex flex-wrap items-center gap-2 text-sm text-gray-100">
+                  {lane.name}
+                  <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                </strong>
                 <ControlPlaneBadge tone="rose">GATED</ControlPlaneBadge>
               </div>
               <div className="mt-1 font-mono text-[10px] text-gray-500">{lane.syn_id}</div>
@@ -265,7 +329,12 @@ export function ControlPlanePanels({
             <tbody>
               {fixture.repos.map((repo) => (
                 <tr key={repo.syn_id} className="border-b border-gray-800 last:border-0">
-                  <td className="py-3 font-mono text-gray-200">{repo.name}</td>
+                  <td className="py-3 font-mono text-gray-200">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {repo.name}
+                      <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                    </div>
+                  </td>
                   <td className="py-3 text-gray-400">{repo.current_lane}</td>
                   <td className="py-3 font-mono text-emerald-300">{repo.accepted_artifacts}</td>
                   <td className="py-3 font-mono text-rose-300">{repo.held_capabilities}</td>
@@ -293,6 +362,9 @@ export function ControlPlanePanels({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-xs font-semibold text-gray-100">
                   {closeout.syn_id}
+                  <span className="ml-2">
+                    <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                  </span>
                 </span>
                 <ControlPlaneBadge tone={statusTone(closeout.disposition)}>
                   {closeout.disposition}
@@ -326,7 +398,10 @@ export function ControlPlanePanels({
           {fixture.execution_gates.map((gate) => (
             <li key={gate.syn_id} className="rounded-lg border border-rose-900 bg-rose-950/20 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-medium text-gray-100">{gate.label}</span>
+                <span className="flex flex-wrap items-center gap-2 text-xs font-medium text-gray-100">
+                  {gate.label}
+                  <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                </span>
                 <ControlPlaneBadge tone="rose">CLOSED</ControlPlaneBadge>
               </div>
               <p className="mt-1 text-[10px] uppercase tracking-wide text-rose-200">{gate.note}</p>
@@ -346,7 +421,10 @@ export function ControlPlanePanels({
           {fixture.next_prompts.map((prompt) => (
             <article key={prompt.syn_id} className="rounded-lg border border-gray-800 bg-black/30 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs font-semibold text-gray-100">{prompt.syn_id}</span>
+                <span className="flex flex-wrap items-center gap-2 font-mono text-xs font-semibold text-gray-100">
+                  {prompt.syn_id}
+                  <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                </span>
                 <span className="font-mono text-xs text-sky-300">{prompt.target}</span>
               </div>
               <div className="mt-2">

@@ -15,6 +15,7 @@ const links = [
   { href: "/operator/waves", label: "Waves" },
   { href: "/operator/chats", label: "Chats" },
   { href: "/operator/jai", label: "JAI" },
+  { href: "/operator/control-plane", label: "Control Plane" },
   { href: "/operator/motions", label: "Motions" },
   { href: "/operator/decisions", label: "Decisions" },
   { href: "/operator/dct", label: "DCT" },
