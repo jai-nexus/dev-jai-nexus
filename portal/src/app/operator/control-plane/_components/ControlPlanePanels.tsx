@@ -4,6 +4,7 @@ import type {
 } from "@/lib/controlPlane/controlPlanePrototypeFixture";
 import type { ControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
 
+import { CloseoutIntakeComposer } from "./CloseoutIntakeComposer";
 import {
   ControlPlaneBadge,
   InertControl,
@@ -354,30 +355,44 @@ export function ControlPlanePanels({
         id="closeout-intake"
         title="Closeout / Receipt Intake"
         description="Receipts are evidence records; acceptance is not automatic."
-        className="lg:col-span-5"
+        className="lg:col-span-12"
       >
-        <div className="space-y-3">
-          {fixture.closeouts.map((closeout) => (
-            <article key={closeout.syn_id} className="rounded-lg border border-gray-800 bg-black/30 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs font-semibold text-gray-100">
-                  {closeout.syn_id}
-                  <span className="ml-2">
-                    <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
-                  </span>
-                </span>
-                <ControlPlaneBadge tone={statusTone(closeout.disposition)}>
-                  {closeout.disposition}
-                </ControlPlaneBadge>
-              </div>
-              <div className="mt-2">
-                <Field label="Source" value={closeout.source_repo} />
-                <Field label="Evidence" value={closeout.evidence_basis} />
-                <Field label="Validation" value={closeout.validation_status} />
-                <Field label="Approval" value={closeout.approval_state} />
-              </div>
-            </article>
-          ))}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
+          <section>
+            <h3 className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+              Fixture intake records
+            </h3>
+            <div className="space-y-3">
+              {fixture.closeouts.map((closeout) => (
+                <article
+                  key={closeout.syn_id}
+                  className="rounded-lg border border-gray-800 bg-black/30 p-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-semibold text-gray-100">
+                      {closeout.syn_id}
+                      <span className="ml-2">
+                        <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                      </span>
+                    </span>
+                    <ControlPlaneBadge tone={statusTone(closeout.disposition)}>
+                      {closeout.disposition}
+                    </ControlPlaneBadge>
+                  </div>
+                  <div className="mt-2">
+                    <Field label="Source" value={closeout.source_repo} />
+                    <Field label="Evidence" value={closeout.evidence_basis} />
+                    <Field
+                      label="Validation"
+                      value={closeout.validation_status}
+                    />
+                    <Field label="Approval" value={closeout.approval_state} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+          <CloseoutIntakeComposer />
         </div>
       </Panel>
 
