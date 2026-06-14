@@ -3,6 +3,18 @@ export const revalidate = 0;
 
 import type { ReactNode } from "react";
 import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
+import {
   getAgentConfigurationRegistry,
   getCanonicalActiveAgents,
   getPaletteDraftAgents,
@@ -18,20 +30,24 @@ import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPos
 import { getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
 
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="readOnly" label="READ-ONLY" />}
+      />
+      <p className="max-w-5xl text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -47,47 +63,24 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
-  );
-}
-
-function ToneBadge({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
-}) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
+    <OperatorPanel>
+      <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+        {label}
+      </div>
+      <div className="mt-2 font-mono text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
 function capabilityTone(
   state: AgentRegistryCapabilityState,
-): "emerald" | "amber" | "rose" {
-  if (state === "enabled") return "emerald";
-  if (state === "preview_only") return "amber";
-  return "rose";
+): OperatorSlateTone {
+  if (state === "enabled") return "readOnly";
+  if (state === "preview_only") return "pending";
+  return "blocked";
 }
 
 function capabilityLabel(key: AgentRegistryCapabilityKey): string {
@@ -105,22 +98,25 @@ function scopeLabel(scope: AgentRegistryScopeKey): string {
 
 function IdentityCard({ identity }: { identity: AgentRegistryIdentity }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+    <OperatorPanel>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-gray-100">{identity.label}</h3>
-        <ToneBadge tone={identity.kind === "shared_alias" ? "amber" : "sky"}>
-          {identity.kind === "shared_alias" ? "shared alias" : "human operator"}
-        </ToneBadge>
-        <ToneBadge tone="rose">execution disabled</ToneBadge>
+        <h3 className="text-sm font-semibold text-slate-100">{identity.label}</h3>
+        <OperatorStatusChip
+          status={identity.kind === "shared_alias" ? "SHARED ALIAS" : "HUMAN OPERATOR"}
+          tone={identity.kind === "shared_alias" ? "advisory" : "readOnly"}
+        />
+        <OperatorBadge tone="blocked" label="EXECUTION DISABLED" />
       </div>
-      <div className="mt-2 font-mono text-xs text-gray-400">{identity.handle}</div>
-      <p className="mt-3 text-sm text-gray-300">{identity.summary}</p>
-      <ul className="mt-3 space-y-1 text-xs text-gray-400">
+      <div className="mt-2">
+        <OperatorIdChip>{identity.handle}</OperatorIdChip>
+      </div>
+      <p className="mt-3 text-sm text-slate-300">{identity.summary}</p>
+      <ul className="mt-3 space-y-1 text-xs text-slate-400">
         {identity.notes.map((note) => (
           <li key={note}>- {note}</li>
         ))}
       </ul>
-    </div>
+    </OperatorPanel>
   );
 }
 
@@ -131,64 +127,88 @@ function AgentCard({ agent }: { agent: AgentRegistryAgent }) {
   );
 
   return (
-    <div id={agent.key} className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-gray-100">{agent.label}</h3>
-        <ToneBadge tone={agent.agent_class === "canonical_active" ? "emerald" : "amber"}>
-          {agent.agent_class === "canonical_active" ? "canonical active" : "palette draft"}
-        </ToneBadge>
-        {agent.canonical_lane ? (
-          <ToneBadge tone={agent.canonical_lane === "governance" ? "sky" : "slate"}>
-            {agent.canonical_lane} lane
-          </ToneBadge>
-        ) : null}
-        <ToneBadge tone="rose">execution disabled</ToneBadge>
-      </div>
-      <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-400">
-        <span className="font-mono">{agent.handle}</span>
-        {agent.nh_id ? <span className="font-mono">NH {agent.nh_id}</span> : null}
-      </div>
-      <p className="mt-3 text-sm text-gray-300">{agent.summary}</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {agent.canonical_key ? (
-          <ToneBadge tone="emerald">canonical key: {agent.canonical_key}</ToneBadge>
-        ) : null}
-        {agent.palette_proposed_role ? (
-          <ToneBadge tone="amber">
-            palette proposed role: {agent.palette_proposed_role}
-          </ToneBadge>
-        ) : null}
-      </div>
-      <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-3">
-        <div className="text-xs uppercase tracking-wide text-gray-500">
-          Configured scope subset targets
+    <OperatorPanel className="scroll-mt-4">
+      <div id={agent.key}>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-100">{agent.label}</h3>
+          <OperatorStatusChip
+            status={
+              agent.agent_class === "canonical_active"
+                ? "CANONICAL ACTIVE"
+                : "PALETTE DRAFT"
+            }
+            tone={
+              agent.agent_class === "canonical_active" ? "canonical" : "advisory"
+            }
+          />
+          {agent.canonical_lane ? (
+            <OperatorBadge
+              tone={agent.canonical_lane === "governance" ? "readOnly" : "neutral"}
+              label={`${agent.canonical_lane} LANE`}
+            />
+          ) : null}
+          <OperatorBadge tone="blocked" label="EXECUTION DISABLED" />
         </div>
-        <ul className="mt-2 space-y-2 text-xs text-gray-300">
-          {scopeEntries.map((scope) => (
-            <li key={`${agent.key}-${scope.key}`}>
-              <div className="font-medium text-gray-100">{scope.key}</div>
-              <div className="font-mono text-[11px] text-sky-200">
-                {scope.repo_full_name}
-              </div>
-              <div className="text-gray-400">surfaces: {scope.surface_labels.join(", ")}</div>
-            </li>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <OperatorIdChip>{agent.handle}</OperatorIdChip>
+          {agent.nh_id ? <OperatorIdChip>NH {agent.nh_id}</OperatorIdChip> : null}
+        </div>
+        <p className="mt-3 text-sm text-slate-300">{agent.summary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {agent.canonical_key ? (
+            <OperatorBadge
+              tone="canonical"
+              label={`CANONICAL KEY: ${agent.canonical_key}`}
+            />
+          ) : null}
+          {agent.palette_proposed_role ? (
+            <OperatorBadge
+              tone="advisory"
+              label={`PROPOSED ROLE: ${agent.palette_proposed_role}`}
+            />
+          ) : null}
+        </div>
+        <OperatorGateCard className="mt-4">
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+            Configured scope subset targets
+          </div>
+          <div className="mt-2">
+            <OperatorBadge
+              tone="readOnly"
+              label="SCOPE CONFIGURATION IS NOT AUTHORITY"
+            />
+          </div>
+          <ul className="mt-2 space-y-2 text-xs text-slate-300">
+            {scopeEntries.map((scope) => (
+              <li key={`${agent.key}-${scope.key}`}>
+                <div className="flex flex-wrap gap-2">
+                  <OperatorIdChip>{scope.key}</OperatorIdChip>
+                  <OperatorIdChip>{scope.repo_full_name}</OperatorIdChip>
+                </div>
+                <div className="mt-1 text-slate-400">
+                  surfaces: {scope.surface_labels.join(", ")}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </OperatorGateCard>
+        <ul className="mt-3 space-y-1 text-xs text-slate-400">
+          {agent.notes.map((note) => (
+            <li key={note}>- {note}</li>
           ))}
         </ul>
       </div>
-      <ul className="mt-3 space-y-1 text-xs text-gray-400">
-        {agent.notes.map((note) => (
-          <li key={note}>- {note}</li>
-        ))}
-      </ul>
-    </div>
+    </OperatorPanel>
   );
 }
 
 function CapabilityMatrix({
+  index,
   title,
   description,
   agents,
 }: {
+  index: string;
   title: string;
   description: string;
   agents: AgentRegistryAgent[];
@@ -196,43 +216,46 @@ function CapabilityMatrix({
   const registry = getAgentConfigurationRegistry();
 
   return (
-    <Section title={title} description={description}>
-      <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
-        <table className="min-w-full divide-y divide-gray-800 text-sm">
-          <thead className="bg-zinc-950">
+    <Section index={index} title={title} description={description}>
+      <OperatorPanel className="overflow-x-auto p-0">
+        <table className="min-w-full divide-y divide-slate-800 text-sm">
+          <thead className="bg-slate-950">
             <tr>
-              <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+              <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                 Agent
               </th>
               {registry.capability_keys.map((capability) => (
                 <th
                   key={capability}
-                  className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500"
+                  className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500"
                 >
                   {capabilityLabel(capability)}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-900">
+          <tbody className="divide-y divide-slate-800">
             {agents.map((agent) => (
               <tr key={`${title}-${agent.key}`}>
                 <td className="px-4 py-3 align-top">
-                  <div className="font-medium text-gray-100">{agent.label}</div>
-                  <div className="font-mono text-xs text-gray-500">{agent.handle}</div>
+                  <div className="font-medium text-slate-100">{agent.label}</div>
+                  <div className="mt-1">
+                    <OperatorIdChip>{agent.handle}</OperatorIdChip>
+                  </div>
                 </td>
                 {registry.capability_keys.map((capability) => (
                   <td key={`${agent.key}-${capability}`} className="px-4 py-3">
-                    <ToneBadge tone={capabilityTone(agent.capabilities[capability])}>
-                      {agent.capabilities[capability]}
-                    </ToneBadge>
+                    <OperatorStatusChip
+                      status={agent.capabilities[capability]}
+                      tone={capabilityTone(agent.capabilities[capability])}
+                    />
                   </td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </OperatorPanel>
     </Section>
   );
 }
@@ -251,28 +274,62 @@ export default function AgentsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS - Agent Registry</h1>
-            <ToneBadge tone="emerald">canonical baseline</ToneBadge>
-            <ToneBadge tone="amber">JAI Palette drafts preserved</ToneBadge>
-            <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Read-only operator registry for human identities, canonical active JAI
-            agents, and JAI Palette draft agent designs. Configured scope subset keys
-            remain visible here, but scope configuration is not the same thing as
-            agent identity.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              Canonical active agents are the stable baseline. JAI Palette draft agents
-              remain available for future design and grid composition work, and become
-              canonical only through later motion and ratification.
+    <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <OperatorPanel className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="gated" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="readOnly" label="READ-ONLY REGISTRY" />
+              <OperatorBadge tone="canonical" label="CANONICAL BASELINE" />
+              <OperatorBadge tone="advisory" label="PALETTE DRAFTS" />
+              <OperatorBadge tone="blocked" label="NO EXECUTION" />
+              <OperatorBadge tone="blocked" label="NO DISPATCH" />
+              <OperatorBadge tone="gated" label="ZERO GATES GRANTED" />
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.22em] text-slate-500">
+                Operator Slate / Identity and capability posture
+              </div>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+                JAI NEXUS Agent Registry
+              </h1>
+            </div>
+            <p className="max-w-4xl text-sm text-slate-400">
+              Read-only operator registry for human identities, canonical active JAI
+              agents, and JAI Palette draft agent designs. Configured scope subset keys
+              remain visible here, but scope configuration is not identity, permission,
+              dispatch authority, or execution authority.
             </p>
-          </div>
+            <OperatorGateCard>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="canonical" label="CANONICAL IDENTITY" />
+                <OperatorBadge tone="advisory" label="DRAFT DESIGN" />
+                <OperatorBadge tone="readOnly" label="CONFIGURED SCOPE" />
+              </div>
+              <p className="mt-2 text-sm text-slate-300">
+                Canonical-active records are the accepted identity baseline. Palette
+                drafts remain advisory designs and become canonical only through a
+                later motion and ratification. Dashboard display does not authorize
+                action.
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail
+            title="Agent Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Dispatch model</OperatorBlockedAction>
+              <OperatorBlockedAction>Run Agent</OperatorBlockedAction>
+              <OperatorBlockedAction>Write branch</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Agent records are staged configuration and identity references. No
+              capability shown here opens an execution gate.
+            </p>
+          </OperatorSafetyRail>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -304,6 +361,7 @@ export default function AgentsPage() {
         </section>
 
         <Section
+          index="01"
           title="Identity boundaries"
           description="Human operator identities, shared aliases, canonical active agents, and palette drafts are intentionally separate layers."
         >
@@ -314,27 +372,30 @@ export default function AgentsPage() {
             {registry.shared_aliases.map((identity) => (
               <IdentityCard key={identity.id} identity={identity} />
             ))}
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-100">Registry boundary</h3>
-                <ToneBadge tone="sky">identity != scope</ToneBadge>
-                <ToneBadge tone="amber">palette != canon</ToneBadge>
+                <h3 className="text-sm font-semibold text-slate-100">
+                  Registry boundary
+                </h3>
+                <OperatorBadge tone="readOnly" label="IDENTITY != SCOPE" />
+                <OperatorBadge tone="advisory" label="PALETTE != CANON" />
               </div>
-              <p className="mt-3 text-sm text-gray-300">
+              <p className="mt-3 text-sm text-slate-300">
                 Configured scope subset keys describe where an identity can review bounded
                 work. They do not define whether that identity is canonical active or a
                 JAI Palette draft design.
               </p>
-              <ul className="mt-3 space-y-1 text-xs text-gray-400">
+              <ul className="mt-3 space-y-1 text-xs text-slate-400">
                 <li>- execution_identity is false for every named agent in this seam</li>
                 <li>- palette drafts do not become canonical without motion and ratification</li>
                 <li>- no draft/custom identity gains execution authority here</li>
               </ul>
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
         <Section
+          index="02"
           title="Canonical active JAI agents - Execution lane"
           description="Execution-lane canonical agents are part of the baseline identity model even though runtime authority remains disabled."
         >
@@ -346,6 +407,7 @@ export default function AgentsPage() {
         </Section>
 
         <Section
+          index="03"
           title="Canonical active JAI agents - Governance lane"
           description="Governance-lane canonical agents anchor council and motion posture without enabling vote mutation or authority expansion."
         >
@@ -357,6 +419,7 @@ export default function AgentsPage() {
         </Section>
 
         <Section
+          index="04"
           title="JAI Palette - Draft agent designs"
           description="Palette draft agents remain available as future design/custom layers for JAI Grid and future ratified agent work."
         >
@@ -368,99 +431,107 @@ export default function AgentsPage() {
         </Section>
 
         <Section
+          index="05"
           title="Configured scope subset"
           description="Configured agent scope keys resolve to curated operator targets. They remain visible here as scope configuration and not as identity canon or the full repo registry."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label="CONFIGURED SCOPE" />
+              <OperatorBadge tone="gated" label="NOT AN AUTHORITY GRANT" />
+            </div>
             <p>
               These five configured scope keys are curated operator targets only. The full
               repo registry lives at <span className="font-mono">/repos</span> and currently
               contains 38 repos.
             </p>
-          </div>
-          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
-            <table className="min-w-full divide-y divide-gray-800 text-sm">
-              <thead className="bg-zinc-950">
+          </OperatorGateCard>
+          <OperatorPanel className="overflow-x-auto p-0">
+            <table className="min-w-full divide-y divide-slate-800 text-sm">
+              <thead className="bg-slate-950">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                     Scope key
                   </th>
-                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                     Actual repo
                   </th>
-                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                     Surfaces
                   </th>
-                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                     Meaning
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-900">
+              <tbody className="divide-y divide-slate-800">
                 {registry.configured_scopes.map((scope) => (
                   <tr key={scope.key}>
                     <td className="px-4 py-3">
-                      <ToneBadge tone="sky">{scope.key}</ToneBadge>
+                      <OperatorStatusChip status={scope.key} tone="readOnly" />
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-300">
-                      {scope.repo_full_name}
+                    <td className="px-4 py-3">
+                      <OperatorIdChip>{scope.repo_full_name}</OperatorIdChip>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-300">
+                    <td className="px-4 py-3 text-xs text-slate-300">
                       {scope.surface_labels.join(", ")}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">{scope.summary}</td>
+                    <td className="px-4 py-3 text-xs text-slate-400">{scope.summary}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <CapabilityMatrix
+          index="06"
           title="Capability matrix - canonical baseline"
           description="Canonical active agents share the baseline capability posture. Write and execution capability remain disabled."
           agents={canonicalActiveAgents}
         />
 
         <CapabilityMatrix
+          index="07"
           title="Capability matrix - palette draft posture"
           description="Palette draft agents are visible for future design work, but they do not present as canonical active baseline identities."
           agents={paletteDraftAgents}
         />
 
         <Section
+          index="08"
           title="Configured scope coverage matrix"
           description="This matrix shows each agent's configured review subset. It is not the full repo registry, and configured scope keys are curated operator targets rather than the full repo list."
         >
-          <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
-            <table className="min-w-full divide-y divide-gray-800 text-sm">
-              <thead className="bg-zinc-950">
+          <OperatorPanel className="overflow-x-auto p-0">
+            <table className="min-w-full divide-y divide-slate-800 text-sm">
+              <thead className="bg-slate-950">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
                     Agent
                   </th>
                   {registry.configured_scope_keys.map((scope) => (
                     <th
                       key={scope}
-                      className="px-4 py-3 text-left text-xs uppercase tracking-wide text-gray-500"
+                      className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500"
                     >
                       {scopeLabel(scope)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-900">
+              <tbody className="divide-y divide-slate-800">
                 {registry.named_agents.map((agent) => (
                   <tr key={`${agent.key}-scope`}>
-                    <td className="px-4 py-3 font-medium text-gray-100">
+                    <td className="px-4 py-3 font-medium text-slate-100">
                       {agent.label}
                     </td>
                     {registry.configured_scope_keys.map((scope) => (
                       <td key={`${agent.key}-${scope}`} className="px-4 py-3">
                         {agent.configured_scope_keys.includes(scope) ? (
-                          <ToneBadge tone="emerald">in scope</ToneBadge>
+                          <OperatorStatusChip status="IN SCOPE" tone="readOnly" />
                         ) : (
-                          <span className="text-xs text-gray-600">out</span>
+                          <OperatorStatusChip status="OUT" tone="neutral" />
                         )}
                       </td>
                     ))}
@@ -468,102 +539,123 @@ export default function AgentsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="09"
           title="Credential posture"
           description="Env variable names are shown for future execution posture only. No values are rendered or committed."
         >
           <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {registry.named_agents.map((agent) => (
-              <div key={`${agent.key}-credentials`} className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <OperatorPanel key={`${agent.key}-credentials`}>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-100">{agent.label}</h3>
-                  <ToneBadge tone={agent.agent_class === "canonical_active" ? "emerald" : "amber"}>
-                    {agent.agent_class === "canonical_active" ? "canonical active" : "palette draft"}
-                  </ToneBadge>
-                  <ToneBadge tone="amber">env names only</ToneBadge>
+                  <h3 className="text-sm font-semibold text-slate-100">{agent.label}</h3>
+                  <OperatorStatusChip
+                    status={
+                      agent.agent_class === "canonical_active"
+                        ? "CANONICAL ACTIVE"
+                        : "PALETTE DRAFT"
+                    }
+                    tone={
+                      agent.agent_class === "canonical_active"
+                        ? "canonical"
+                        : "advisory"
+                    }
+                  />
+                  <OperatorBadge tone="advisory" label="ENV NAMES ONLY" />
+                  <OperatorBadge tone="blocked" label="NOT READ IN V0" />
                 </div>
                 <ul className="mt-3 space-y-3">
                   {agent.credential_posture.map((credential) => (
                     <li key={credential.key} className="space-y-1">
-                      <div className="font-mono text-xs text-sky-200">{credential.env_var}</div>
-                      <div className="text-xs text-gray-400">{credential.purpose}</div>
+                      <OperatorIdChip>{credential.env_var}</OperatorIdChip>
+                      <div className="text-xs text-slate-400">{credential.purpose}</div>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </OperatorPanel>
             ))}
           </div>
         </Section>
 
         <Section
+          index="10"
           title="Control-plane authority posture"
           description="Workflow roles, docs-ops levels, disabled authority, and Agent Assets Library status remain visible here as read-only control-plane reference."
         >
           <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-100">Workflow roles</h3>
-                <ToneBadge tone="sky">motion-0173 canon</ToneBadge>
-                <ToneBadge tone="rose">no authority grant</ToneBadge>
+                <h3 className="text-sm font-semibold text-slate-100">Workflow roles</h3>
+                <OperatorBadge tone="canonical" label="MOTION-0173 CANON" />
+                <OperatorBadge tone="gated" label="NO AUTHORITY GRANT" />
               </div>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
                 {authorityPosture.workflow_roles.map((role) => (
-                  <div key={role.key} className="rounded-lg border border-gray-800 bg-black/30 p-3">
-                    <div className="font-mono text-xs text-sky-200">{role.key}</div>
-                    <p className="mt-2 text-sm text-gray-300">{role.summary}</p>
-                  </div>
+                  <OperatorGateCard key={role.key}>
+                    <OperatorStatusChip status={role.key} tone="readOnly" />
+                    <p className="mt-2 text-sm text-slate-300">{role.summary}</p>
+                  </OperatorGateCard>
                 ))}
               </div>
-            </div>
+            </OperatorPanel>
 
             <div className="space-y-4">
-              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+              <OperatorPanel>
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-100">Agent Assets Library</h3>
-                  <ToneBadge tone="amber">static material</ToneBadge>
-                  <ToneBadge tone="rose">authority: none</ToneBadge>
+                  <h3 className="text-sm font-semibold text-slate-100">
+                    Agent Assets Library
+                  </h3>
+                  <OperatorBadge tone="fixture" label="STATIC MATERIAL" />
+                  <OperatorBadge tone="blocked" label="AUTHORITY: NONE" />
                 </div>
-                <div className="mt-3 font-mono text-xs text-sky-200">
-                  {authorityPosture.agent_assets.location}
+                <div className="mt-3">
+                  <OperatorIdChip>
+                    {authorityPosture.agent_assets.location}
+                  </OperatorIdChip>
                 </div>
-                <p className="mt-3 text-sm text-gray-300">{authorityPosture.agent_assets.summary}</p>
-                <ul className="mt-3 space-y-1 text-xs text-gray-400">
+                <p className="mt-3 text-sm text-slate-300">
+                  {authorityPosture.agent_assets.summary}
+                </p>
+                <ul className="mt-3 space-y-1 text-xs text-slate-400">
                   <li>- assets do not grant authority</li>
                   <li>- assets do not replace workflow-role canon</li>
                   <li>- assets do not activate docs-ops Level 3, 4, or 5</li>
                 </ul>
-              </div>
+              </OperatorPanel>
 
-              <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">
+              <OperatorPanel>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                   Read-only authority notes
                 </div>
-                <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <ul className="mt-3 space-y-2 text-sm text-slate-300">
                   {authorityPosture.notes.map((note) => (
                     <li key={note}>- {note}</li>
                   ))}
                 </ul>
-              </div>
+              </OperatorPanel>
             </div>
           </div>
         </Section>
 
         <Section
+          index="11"
           title="Blocked capabilities"
           description="These remain disabled across the current control-plane posture and are shown here to avoid ambiguity."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+          <OperatorPanel>
             <div className="flex flex-wrap gap-2">
               {authorityPosture.blocked_capabilities.map((capability) => (
-                <ToneBadge key={capability} tone="rose">
-                  {capability}
-                </ToneBadge>
+                <OperatorBadge
+                  key={capability}
+                  tone="blocked"
+                  label={capability}
+                />
               ))}
             </div>
-          </div>
+          </OperatorPanel>
         </Section>
       </div>
     </main>
