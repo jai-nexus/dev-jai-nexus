@@ -56,6 +56,7 @@ export default async function OperatorControlPlanePage() {
               ["Council", "council-slots"],
               ["Agent lanes", "agent-lanes"],
               ["Execution gates", "execution-gates"],
+              ["Security gate model", "security-gate-model"],
             ].map(([label, target]) => (
               <a
                 key={target}
