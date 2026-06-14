@@ -1,7 +1,18 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+
+import {
+    OPERATOR_SAFETY_INVARIANTS,
+    OperatorBadge,
+    OperatorComposeButton,
+    OperatorContradictionCard,
+    OperatorDecisionComposer,
+    OperatorDissentCard,
+    OperatorSafetyRail,
+    OperatorSectionHeader,
+    type OperatorSlateTone,
+} from "@/components/operator/slate";
 
 type IconProps = {
     className?: string;
@@ -12,9 +23,6 @@ function Glyph({ children, className = "", size = 12 }: IconProps & { children: 
     return <span className={className} style={{ fontSize: size }} aria-hidden="true">{children}</span>;
 }
 
-const Copy = (props: IconProps) => <Glyph {...props}>CP</Glyph>;
-const Check = (props: IconProps) => <Glyph {...props}>OK</Glyph>;
-const ShieldAlert = (props: IconProps) => <Glyph {...props}>!!</Glyph>;
 const Lock = (props: IconProps) => <Glyph {...props}>X</Glyph>;
 const AlertTriangle = (props: IconProps) => <Glyph {...props}>!</Glyph>;
 
@@ -223,11 +231,10 @@ const RAIL_LINES = [
 ];
 
 const INVARIANTS = [
+    ...OPERATOR_SAFETY_INVARIANTS,
     "Council output is advisory only.",
     "Council agreement is not acceptance.",
     "Claims are not facts.",
-    "CONTROL_THREAD decides.",
-    "ZERO GATES GRANTED.",
     "No model dispatch in v0.",
     "No Agent execution in v0.",
 ];
@@ -244,43 +251,38 @@ const DEPTHS = ["skim", "sampled", "full"];
 
 /* ------------------------------ SMALL HELPERS ----------------------------- */
 
-const TAG_STYLES = {
-    "REAL-COMPOSE": "border-emerald-600 text-emerald-400",
-    "DERIVED-DISPLAY": "border-sky-700 text-sky-400",
-    FIXTURE: "border-slate-600 text-slate-400",
-    GATED: "border-amber-600 text-amber-400",
-    MOCK: "border-slate-600 text-slate-500 border-dashed",
-    BLOCKED: "border-red-700 text-red-400",
-};
-
-type TagKind = keyof typeof TAG_STYLES;
+type TagKind =
+    | "REAL-COMPOSE"
+    | "DERIVED-DISPLAY"
+    | "FIXTURE"
+    | "GATED"
+    | "MOCK"
+    | "BLOCKED";
 type Tone = "slate" | "amber" | "red" | "emerald" | "sky";
 
+const toneMap: Record<Tone, OperatorSlateTone> = {
+    slate: "neutral",
+    amber: "advisory",
+    red: "danger",
+    emerald: "canonical",
+    sky: "pending",
+};
+
+const tagToneMap: Record<TagKind, OperatorSlateTone> = {
+    "REAL-COMPOSE": "composeOnly",
+    "DERIVED-DISPLAY": "pending",
+    FIXTURE: "fixture",
+    GATED: "gated",
+    MOCK: "neutral",
+    BLOCKED: "blocked",
+};
+
 function Tag({ kind }: { kind: TagKind }) {
-    return (
-        <span
-            className={`inline-block rounded border px-1.5 py-0.5 font-mono text-xs uppercase tracking-wider ${TAG_STYLES[kind]}`}
-        >
-            {kind}
-        </span>
-    );
+    return <OperatorBadge label={kind} tone={tagToneMap[kind]} />;
 }
 
 function Badge({ children, tone = "slate" }: { children: ReactNode; tone?: Tone }) {
-    const tones = {
-        slate: "bg-slate-800 text-slate-300 border-slate-700",
-        amber: "bg-amber-950 text-amber-300 border-amber-800",
-        red: "bg-red-950 text-red-300 border-red-800",
-        emerald: "bg-emerald-950 text-emerald-300 border-emerald-800",
-        sky: "bg-sky-950 text-sky-300 border-sky-800",
-    };
-    return (
-        <span
-            className={`inline-block rounded border px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide ${tones[tone]}`}
-        >
-            {children}
-        </span>
-    );
+    return <OperatorBadge tone={toneMap[tone]}>{children}</OperatorBadge>;
 }
 
 function SectionHeader({
@@ -292,41 +294,7 @@ function SectionHeader({
     title: string;
     right?: ReactNode;
 }) {
-    return (
-        <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-1.5">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-slate-400">
-                <span className="text-slate-600">{index} / </span>
-                {title}
-            </h2>
-            <div className="flex items-center gap-2">{right}</div>
-        </div>
-    );
-}
-
-function copyToClipboard(text: string) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text).then(
-            () => true,
-            () => fallbackCopy(text)
-        );
-    }
-    return Promise.resolve(fallbackCopy(text));
-}
-
-function fallbackCopy(text: string) {
-    try {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.setAttribute("readonly", "");
-        ta.className = "absolute -left-full";
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        return true;
-    } catch {
-        return false;
-    }
+    return <OperatorSectionHeader index={index} title={title} right={right} />;
 }
 
 function CopyButton({
@@ -338,28 +306,10 @@ function CopyButton({
     children: ReactNode;
     disabled?: boolean;
 }) {
-    const [copied, setCopied] = useState(false);
     return (
-        <button
-            type="button"
-            disabled={disabled}
-            onClick={() => {
-                if (disabled) return;
-                copyToClipboard(buildText()).then((ok) => {
-                    if (ok) {
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 1600);
-                    }
-                });
-            }}
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs uppercase tracking-wide ${disabled
-                    ? "cursor-not-allowed border-slate-800 text-slate-600"
-                    : "border-emerald-700 text-emerald-300 hover:bg-emerald-950"
-                }`}
-        >
-            {copied ? <Check size={12} /> : <Copy size={12} />}
-            {copied ? "Copied to clipboard" : children}
-        </button>
+        <OperatorComposeButton text={buildText} disabled={disabled}>
+            {children}
+        </OperatorComposeButton>
     );
 }
 
@@ -549,9 +499,6 @@ function ReturnCard({ ret }: { ret: (typeof RETURNS)[number] }) {
 /* ------------------------------ MAIN COMPONENT ---------------------------- */
 
 export default function CouncilPanelPrototype() {
-    const [decision, setDecision] = useState("");
-    const [depth, setDepth] = useState("");
-
     return (
         <div className="min-h-screen bg-slate-950 p-4 font-sans text-slate-300 md:p-6">
             <div className="mx-auto flex max-w-6xl flex-col gap-4 lg:flex-row">
@@ -628,9 +575,9 @@ export default function CouncilPanelPrototype() {
                             right={<Badge tone="red">append-only</Badge>}
                         />
                         {DISSENTS.map((d) => (
-                            <div
+                            <OperatorDissentCard
                                 key={d.id}
-                                className="rounded border border-red-900 bg-red-950 p-4"
+                                className="p-4"
                             >
                                 <div className="flex flex-wrap items-center gap-2">
                                     <AlertTriangle size={16} className="text-red-400" />
@@ -655,9 +602,9 @@ export default function CouncilPanelPrototype() {
                                         {d.grounds}
                                     </div>
                                 </div>
-                            </div>
+                            </OperatorDissentCard>
                         ))}
-                        <div className="mt-2 rounded border border-slate-800 bg-slate-900 p-3 font-mono text-xs text-slate-400">
+                        <OperatorContradictionCard className="mt-2 font-mono text-xs text-slate-400">
                             {CONTRADICTIONS.map((c) => (
                                 <div key={c.id} className="flex flex-wrap items-center gap-2">
                                     <span className="text-slate-200">{c.id}</span>
@@ -668,7 +615,7 @@ export default function CouncilPanelPrototype() {
                                     <Tag kind="DERIVED-DISPLAY" />
                                 </div>
                             ))}
-                        </div>
+                        </OperatorContradictionCard>
                     </section>
 
                     {/* 5 · SYNTHESIS DRAFT — must not look accepted */}
@@ -751,70 +698,25 @@ export default function CouncilPanelPrototype() {
                             title="CONTROL_THREAD decision composer"
                             right={<Tag kind="REAL-COMPOSE" />}
                         />
-                        <div className="rounded border border-slate-800 bg-slate-900 p-4">
-                            <div className="grid gap-3 md:grid-cols-2">
-                                <label className="block text-xs text-slate-400">
-                                    <span className="font-mono uppercase tracking-wider text-slate-500">
-                                        Decision <Tag kind="MOCK" />
-                                    </span>
-                                    <select
-                                        value={decision}
-                                        onChange={(e) => setDecision(e.target.value)}
-                                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-2 font-mono text-xs text-slate-200"
-                                    >
-                                        <option value="">— select —</option>
-                                        {DECISIONS.map((d) => (
-                                            <option key={d} value={d}>
-                                                {d}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
-                                <div className="text-xs text-slate-400">
-                                    <span className="font-mono uppercase tracking-wider text-slate-500">
-                                        Review depth <Tag kind="MOCK" />
-                                    </span>
-                                    <div className="mt-2 flex gap-3">
-                                        {DEPTHS.map((d) => (
-                                            <label key={d} className="flex items-center gap-1.5">
-                                                <input
-                                                    type="radio"
-                                                    name="depth"
-                                                    value={d}
-                                                    checked={depth === d}
-                                                    onChange={() => setDepth(d)}
-                                                    className="accent-amber-500"
-                                                />
-                                                <span className="font-mono text-xs uppercase">{d}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <pre className="mt-3 overflow-x-auto rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-slate-400">
-                                {buildDecisionRecord(decision, depth)}
-                            </pre>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                                <CopyButton buildText={() => buildDecisionRecord(decision, depth)}>
-                                    Copy decision record
-                                </CopyButton>
-                                <span className="font-mono text-xs uppercase tracking-wide text-amber-400">
-                                    Manual review required — copy-only output
-                                </span>
-                            </div>
-                        </div>
+                        <OperatorDecisionComposer
+                            decisions={DECISIONS}
+                            depths={DEPTHS}
+                            buildDraft={({ decision, depth }) =>
+                                buildDecisionRecord(decision, depth)
+                            }
+                            copyLabel="Copy decision record"
+                            className="p-4"
+                        />
                     </section>
                 </div>
 
                 {/* ----------------------- 7 · SAFETY / AUTHORITY RAIL ---------------- */}
                 <aside className="w-full shrink-0 lg:w-72">
-                    <div className="space-y-3 rounded border border-slate-800 bg-slate-900 p-4 lg:sticky lg:top-4">
-                        <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                            <ShieldAlert size={16} className="text-amber-400" />
-                            <span className="font-mono text-xs uppercase tracking-widest text-slate-300">
-                                Safety / authority rail
-                            </span>
-                        </div>
+                    <OperatorSafetyRail
+                        title="Safety / authority rail"
+                        invariants={INVARIANTS}
+                        className="p-4 lg:sticky lg:top-4"
+                    >
                         <ul className="space-y-2">
                             {RAIL_LINES.map((l) => (
                                 <li key={l} className="flex items-start gap-2 text-xs text-slate-300">
@@ -823,25 +725,10 @@ export default function CouncilPanelPrototype() {
                                 </li>
                             ))}
                         </ul>
-                        <div className="border-t border-slate-800 pt-3">
-                            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
-                                Invariants (exact wording)
-                            </div>
-                            <ul className="mt-2 space-y-1.5">
-                                {INVARIANTS.map((l) => (
-                                    <li
-                                        key={l}
-                                        className="rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-amber-300"
-                                    >
-                                        {l}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
                         <div className="border-t border-slate-800 pt-3 font-mono text-xs text-slate-500">
                             snapshot: local constants · SYN-* data only · <Tag kind="FIXTURE" />
                         </div>
-                    </div>
+                    </OperatorSafetyRail>
                 </aside>
             </div>
 
