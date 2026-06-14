@@ -10,6 +10,7 @@ import {
   InertControl,
   statusTone,
 } from "./ControlPlaneBadges";
+import { OperatorSecurityGateModelPanel } from "./OperatorSecurityGateModelPanel";
 
 function Panel({
   index,
@@ -455,6 +456,8 @@ export function ControlPlanePanels({
           ))}
         </div>
       </Panel>
+
+      <OperatorSecurityGateModelPanel />
     </div>
   );
 }
