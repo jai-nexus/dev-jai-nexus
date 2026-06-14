@@ -4,6 +4,16 @@ export const revalidate = 0;
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getEdgeRunnerAutomationSubstrateModel } from "@/lib/controlPlane/edgeRunnerAutomationSubstrate";
 import { getEdgeRunnerHealthStatusCardModel } from "@/lib/controlPlane/edgeRunnerHealthStatusCard";
@@ -22,10 +32,12 @@ function Section({
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index="SLATE"
+        title={title}
+        right={<OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>}
+      />
+      <p className="-mt-2 text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -41,13 +53,25 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel className="min-h-32">
+      <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+      <div className="mt-2 break-words text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
+
+const rootToneMap = {
+  sky: "readOnly",
+  amber: "advisory",
+  emerald: "canonical",
+  rose: "blocked",
+  slate: "neutral",
+} as const satisfies Record<string, OperatorSlateTone>;
 
 function ToneBadge({
   children,
@@ -56,24 +80,7 @@ function ToneBadge({
   children: ReactNode;
   tone: "sky" | "amber" | "emerald" | "rose" | "slate";
 }) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
+  return <OperatorBadge tone={rootToneMap[tone]}>{children}</OperatorBadge>;
 }
 
 function formatTimestamp(value: Date | null): string {
@@ -89,27 +96,50 @@ export default async function HomePage() {
   const edgeRunnerHealthCard = getEdgeRunnerHealthStatusCardModel();
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS - dev.jai.nexus</h1>
-            <ToneBadge tone="sky">operator control plane overview</ToneBadge>
-            <ToneBadge tone="amber">read-only / display-only</ToneBadge>
-            <ToneBadge tone="rose">execution disabled</ToneBadge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Front-door overview for the dev.jai.nexus control plane. Root now leads
-            with motion, agenda, registry, agent, authority, and freshness posture
-            instead of centering Sync Runs as if they were a live heartbeat.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              This surface stays read-only. No provider/model calls, no execution,
-              no branch write, no PR proposal, no scheduler, and no mutation
-              authority is introduced here.
+    <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-300 lg:px-8">
+      <div className="mx-auto max-w-[1600px] space-y-8">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / root / operator overview
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold text-slate-100">
+                JAI NEXUS - dev.jai.nexus
+              </h1>
+              <ToneBadge tone="sky">operator control plane overview</ToneBadge>
+              <ToneBadge tone="amber">READ-ONLY / DISPLAY-ONLY</ToneBadge>
+              <ToneBadge tone="rose">NO EXECUTION</ToneBadge>
+              <ToneBadge tone="rose">NO DISPATCH</ToneBadge>
+              <ToneBadge tone="rose">ZERO GATES GRANTED</ToneBadge>
+            </div>
+            <p className="mt-4 max-w-4xl text-sm text-slate-400">
+              Front-door overview for the dev.jai.nexus control plane. Root now
+              leads with motion, agenda, registry, agent, authority, and
+              freshness posture instead of centering Sync Runs as if they were
+              a live heartbeat.
             </p>
-          </div>
+            <div className="mt-4 rounded border border-amber-800 bg-amber-950/40 p-3 text-sm text-amber-200">
+              This surface stays read-only and non-authorizing. No provider/model
+              calls, execution, branch write, PR proposal, scheduler, or mutation
+              authority is introduced here.
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="readOnly">READ-ONLY CANONICAL + DERIVED</OperatorBadge>
+              <OperatorBadge tone="advisory">MIXED SOURCE OVERVIEW</OperatorBadge>
+              <OperatorBadge tone="fixture">STATIC EXAMPLES LABELED</OperatorBadge>
+              <OperatorIdChip>{overview.control_plane_repo}</OperatorIdChip>
+            </div>
+          </OperatorPanel>
+          <OperatorSafetyRail
+            title="Root Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="space-y-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBlockedAction>Execution and mutation</OperatorBlockedAction>
+            </div>
+          </OperatorSafetyRail>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
@@ -408,7 +438,7 @@ export default async function HomePage() {
               <div className="mt-2 flex flex-wrap gap-2 text-xs">
                 <ToneBadge tone="amber">planned {paidBeta.counts.planned}</ToneBadge>
                 <ToneBadge tone="sky">boundary {paidBeta.counts.boundary_defined}</ToneBadge>
-                <ToneBadge tone="emerald">preflight {paidBeta.counts.preflight_defined}</ToneBadge>
+                <ToneBadge tone="sky">preflight {paidBeta.counts.preflight_defined}</ToneBadge>
                 <ToneBadge tone="rose">blocked {paidBeta.counts.blocked_by_security_review + paidBeta.counts.blocked_by_infrastructure + paidBeta.counts.blocked_by_auth_billing + paidBeta.counts.blocked_by_missing_owner}</ToneBadge>
                 <ToneBadge tone="slate">not started {paidBeta.counts.not_started}</ToneBadge>
               </div>
@@ -567,7 +597,7 @@ export default async function HomePage() {
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner health status</h3>
                 <ToneBadge tone="sky">static example</ToneBadge>
-                <ToneBadge tone="emerald">{edgeRunnerHealthCard.display_state}</ToneBadge>
+                <ToneBadge tone="slate">{edgeRunnerHealthCard.display_state}</ToneBadge>
                 <ToneBadge tone="amber">manual evidence only</ToneBadge>
               </div>
               <p className="mt-3 text-sm text-gray-300">{edgeRunnerHealthCard.static_example_note}</p>

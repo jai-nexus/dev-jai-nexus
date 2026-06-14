@@ -3,6 +3,10 @@ import type {
   ControlPlaneRisk,
 } from "@/lib/controlPlane/controlPlanePrototypeFixture";
 import type { ControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
+import {
+  OperatorPanel,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
 
 import { CloseoutIntakeComposer } from "./CloseoutIntakeComposer";
 import {
@@ -19,6 +23,7 @@ function Panel({
   description,
   children,
   className = "",
+  dataPosture = "FIXTURE PANEL",
 }: {
   index: number;
   id: string;
@@ -26,24 +31,27 @@ function Panel({
   description: string;
   children: React.ReactNode;
   className?: string;
+  dataPosture?: string;
 }) {
   return (
     <section
       id={id}
-      className={`scroll-mt-6 overflow-hidden rounded-xl border border-gray-800 bg-zinc-950 ${className}`}
+      className={`scroll-mt-6 ${className}`}
     >
-      <header className="flex flex-wrap items-start gap-3 border-b border-gray-800 bg-black/30 px-4 py-3">
-        <span className="font-mono text-xs text-gray-500">{String(index).padStart(2, "0")}</span>
-        <div>
-          <h2 className="font-semibold text-gray-100">{title}</h2>
-          <p className="mt-1 text-xs text-gray-400">{description}</p>
-        </div>
-        <div className="ml-auto flex flex-wrap gap-2">
-          <ControlPlaneBadge tone="amber">NON-AUTHORIZING</ControlPlaneBadge>
-          <ControlPlaneBadge>fixture</ControlPlaneBadge>
-        </div>
-      </header>
-      <div className="p-4">{children}</div>
+      <OperatorPanel className="h-full overflow-hidden p-4">
+        <OperatorSectionHeader
+          index={String(index).padStart(2, "0")}
+          title={title}
+          right={
+            <>
+              <ControlPlaneBadge tone="amber">NON-AUTHORIZING</ControlPlaneBadge>
+              <ControlPlaneBadge>{dataPosture}</ControlPlaneBadge>
+            </>
+          }
+        />
+        <p className="mb-4 text-xs text-slate-400">{description}</p>
+        {children}
+      </OperatorPanel>
     </section>
   );
 }
@@ -58,7 +66,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function riskTone(risk: ControlPlaneRisk) {
-  if (risk === "low") return "emerald";
+  if (risk === "low") return "slate";
   if (risk === "moderate") return "amber";
   return "rose";
 }
@@ -87,6 +95,7 @@ export function ControlPlanePanels({
         title="Control Thread Status"
         description={`${fixture.control_thread.syn_id} / ${fixture.control_thread.authority_state}`}
         className="lg:col-span-12"
+        dataPosture="MIXED: CANONICAL + FIXTURE"
       >
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-300">
@@ -338,7 +347,7 @@ export function ControlPlanePanels({
                     </div>
                   </td>
                   <td className="py-3 text-gray-400">{repo.current_lane}</td>
-                  <td className="py-3 font-mono text-emerald-300">{repo.accepted_artifacts}</td>
+                  <td className="py-3 font-mono text-gray-300">{repo.accepted_artifacts}</td>
                   <td className="py-3 font-mono text-rose-300">{repo.held_capabilities}</td>
                   <td className="py-3 text-gray-400">{repo.next_route}</td>
                   <td className="py-3">
