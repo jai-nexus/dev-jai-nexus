@@ -1,5 +1,17 @@
 import Link from "next/link";
 import { getServerAuthSession } from "@/auth";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { PromoteContenderForm } from "./PromoteContenderForm";
 import { parseMotionNumber } from "@/lib/motion/motionContenders";
 import { readMotionPromotionAvailability } from "@/lib/motion/motionPromotion";
@@ -103,20 +115,20 @@ function matchesSearch(item: MotionQueueItem, query?: string) {
   return haystacks.some((value) => value?.toLowerCase().includes(needle));
 }
 
-function queueStateTone(queueState: MotionQueueState) {
+function queueStateTone(queueState: MotionQueueState): OperatorSlateTone {
   switch (queueState) {
     case "attention":
-      return "border-amber-800/60 bg-amber-900/10 text-amber-200";
+      return "warning";
     case "settled":
-      return "border-emerald-800/60 bg-emerald-900/10 text-emerald-200";
+      return "canonical";
     case "ratified":
-      return "border-sky-800/60 bg-sky-900/20 text-sky-200";
+      return "canonical";
     case "ready_for_vote":
-      return "border-violet-800/60 bg-violet-900/20 text-violet-200";
+      return "pending";
     case "draft":
-      return "border-zinc-700 bg-zinc-900/60 text-zinc-200";
+      return "advisory";
     default:
-      return "border-zinc-800 bg-zinc-950 text-gray-300";
+      return "neutral";
   }
 }
 
@@ -139,14 +151,14 @@ function buildStatusMismatchCount(items: MotionQueueItem[]) {
 
 function renderStateField(label: string, value: string | null) {
   return (
-    <div className="rounded border border-zinc-800 bg-zinc-900/40 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+    <OperatorGateCard>
+      <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
         {label}
       </div>
-      <div className="mt-1 font-mono text-sm text-gray-100">
+      <div className="mt-1 font-mono text-sm text-slate-100">
         {value ?? "null"}
       </div>
-    </div>
+    </OperatorGateCard>
   );
 }
 
@@ -201,68 +213,105 @@ export default async function MotionsPage(props: {
   const promotionAvailability = readMotionPromotionAvailability(session?.user?.email ?? null);
 
   return (
-    <main className="min-h-screen bg-black px-8 py-8 text-gray-100">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="text-xs uppercase tracking-[0.28em] text-sky-400">
-              Operator Surface
+    <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-300 lg:px-8">
+      <div className="mx-auto flex max-w-[1600px] flex-col gap-6">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / operator / motions
             </div>
-            <h1 className="mt-2 text-3xl font-semibold text-gray-50">
+            <h1 className="mt-2 text-3xl font-semibold text-slate-100">
               JAI NEXUS Motions
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-gray-400">
-              Contender-first motion operations surface for this repo only. Generated
-              contenders stay preview only until explicit guarded promotion, while
-              canonical motion packages remain below as a separate read-only reference
-              derived from
-              <span className="mx-1 font-mono text-gray-300">.nexus/motions</span>.
+            <p className="mt-2 max-w-4xl text-sm text-slate-400">
+              Contender previews and the guarded promotion workflow remain
+              separate from the read-only canonical motion browser. Existing
+              motion packages are derived from{" "}
+              <span className="font-mono text-slate-300">.nexus/motions</span>.
+              Display, validation, and receipt artifacts do not authorize action.
             </p>
-          </div>
-
-          <div className="rounded border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs text-gray-400">
-            Repo: <span className="font-mono text-gray-200">dev-jai-nexus</span>
-            <div className="mt-1">
-              Contenders:{" "}
-              <span className="font-mono text-gray-200">session-local preview only</span>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY CANONICAL</OperatorBadge>
+              <OperatorBadge tone="advisory">GUARDED PROMOTION SEPARATE</OperatorBadge>
+              <OperatorBadge tone="blocked">NO AUTOMATIC EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
             </div>
-          </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorIdChip>dev-jai-nexus</OperatorIdChip>
+              <OperatorBadge tone="fixture">SESSION-LOCAL PREVIEW QUEUE</OperatorBadge>
+              <OperatorBadge tone="readOnly">{queueIndex.source_mode.toUpperCase()} SOURCE</OperatorBadge>
+            </div>
+          </OperatorPanel>
+          <OperatorSafetyRail
+            title="Motion Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <p className="text-xs text-slate-400">
+              Motion state is displayed, not mutated by the canonical browser.
+              Promotion remains behind its existing explicit guards.
+            </p>
+          </OperatorSafetyRail>
         </header>
 
-        <PromoteContenderForm
-          highestMotionNumber={highestMotionNumber}
-          motionIdStrategy={
-            queueIndex.source_mode === "live"
-              ? "derive_from_canonical_live_state"
-              : "assign_at_promotion"
-          }
-          selectedMotionId={detail?.item.motion_id ?? selectedMotionId ?? null}
-          selectedMotionTitle={detail?.item.title ?? null}
-          selectedMotionProgram={detail?.item.program ?? null}
-          promotion={promotionAvailability}
-        />
+        <section>
+          <OperatorSectionHeader
+            index="01"
+            title="Contender Preview And Guarded Promotion"
+            right={
+              <>
+                <OperatorBadge tone="fixture">SESSION-LOCAL PREVIEW</OperatorBadge>
+                <OperatorBadge tone="gated">EXPLICIT GUARDS REQUIRED</OperatorBadge>
+              </>
+            }
+          />
+          <p className="mb-3 text-xs text-slate-400">
+            Existing interactive behavior is preserved. Preview generation is
+            not a motion, and promotion is not acceptance or CONTROL_THREAD
+            approval.
+          </p>
+          <PromoteContenderForm
+            highestMotionNumber={highestMotionNumber}
+            motionIdStrategy={
+              queueIndex.source_mode === "live"
+                ? "derive_from_canonical_live_state"
+                : "assign_at_promotion"
+            }
+            selectedMotionId={detail?.item.motion_id ?? selectedMotionId ?? null}
+            selectedMotionTitle={detail?.item.title ?? null}
+            selectedMotionProgram={detail?.item.program ?? null}
+            promotion={promotionAvailability}
+          />
+        </section>
 
-        <section className="space-y-4 rounded border border-zinc-800 bg-zinc-950/40 p-4">
+        <OperatorPanel className="space-y-4 p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <div className="text-sm font-semibold text-gray-100">
-                Canonical Motion Reference
-              </div>
-              <div className="mt-1 max-w-3xl text-xs text-gray-500">
+              <OperatorSectionHeader
+                index="02"
+                title="Canonical Motion Reference"
+                right={
+                  <>
+                    <OperatorBadge tone="canonical">CANONICAL SOURCE</OperatorBadge>
+                    <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+                  </>
+                }
+              />
+              <div className="mt-1 max-w-3xl text-xs text-slate-400">
                 Existing motion packages under
-                <span className="mx-1 font-mono text-gray-300">.nexus/motions/**</span>
+                <span className="mx-1 font-mono text-slate-300">.nexus/motions/**</span>
                 remain read-only here. This browser is reference state only, not the
                 primary contender queue and not a scheduler or governance authority.
               </div>
             </div>
 
-            <div className="rounded border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-gray-400">
-              Source: <span className="font-mono text-gray-200">{sourceLabel}</span>
+            <OperatorGateCard className="text-xs text-slate-400">
+              Source: <span className="font-mono text-slate-200">{sourceLabel}</span>
               <div className="mt-1">
                 Mode:{" "}
-                <span className="font-mono text-gray-200">{queueIndex.source_mode}</span>
+                <span className="font-mono text-slate-200">{queueIndex.source_mode}</span>
               </div>
-            </div>
+            </OperatorGateCard>
           </div>
 
           {queueIndex.warning ? (
@@ -272,30 +321,30 @@ export default async function MotionsPage(props: {
           ) : null}
 
           <section className="grid gap-3 md:grid-cols-4">
-            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+            <OperatorPanel>
+              <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
                 Total canonical motions
               </div>
-              <div className="mt-1 font-mono text-2xl text-gray-100">{totalCount}</div>
-            </div>
-            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+              <div className="mt-1 font-mono text-2xl text-slate-100">{totalCount}</div>
+            </OperatorPanel>
+            <OperatorPanel>
+              <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
                 Attention
               </div>
               <div className="mt-1 font-mono text-2xl text-amber-300">{attentionCount}</div>
-            </div>
-            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+            </OperatorPanel>
+            <OperatorPanel>
+              <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
                 Ratified
               </div>
               <div className="mt-1 font-mono text-2xl text-emerald-300">{ratifiedCount}</div>
-            </div>
-            <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">
+            </OperatorPanel>
+            <OperatorPanel>
+              <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
                 Status mismatches
               </div>
               <div className="mt-1 font-mono text-2xl text-amber-300">{mismatchCount}</div>
-            </div>
+            </OperatorPanel>
           </section>
 
           <form
@@ -413,13 +462,10 @@ export default async function MotionsPage(props: {
                           ) : null}
                         </div>
 
-                        <span
-                          className={`inline-flex rounded border px-2 py-1 text-[11px] font-mono ${queueStateTone(
-                            item.queue_state,
-                          )}`}
-                        >
-                          {item.queue_state}
-                        </span>
+                        <OperatorStatusChip
+                          status={item.queue_state}
+                          tone={queueStateTone(item.queue_state)}
+                        />
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-400">
@@ -438,9 +484,9 @@ export default async function MotionsPage(props: {
                       </div>
 
                       {item.attention_flags.length > 0 ? (
-                        <div className="mt-3 rounded border border-amber-900/50 bg-amber-950/20 px-2 py-2 text-[11px] text-amber-200">
+                        <OperatorContradictionCard className="mt-3 px-2 py-2 text-[11px] text-red-200">
                           {item.attention_flags[0]}
-                        </div>
+                        </OperatorContradictionCard>
                       ) : null}
                     </Link>
                   );
@@ -458,9 +504,7 @@ export default async function MotionsPage(props: {
               <div className="space-y-6 p-6">
                 <div className="flex flex-col gap-4 border-b border-zinc-800 pb-6 lg:flex-row lg:items-start lg:justify-between">
                   <div>
-                    <div className="font-mono text-sm text-sky-300">
-                      {detail.item.motion_id}
-                    </div>
+                    <OperatorIdChip>{detail.item.motion_id}</OperatorIdChip>
                     <h2 className="mt-1 text-2xl font-semibold text-gray-50">
                       {detail.item.title}
                     </h2>
@@ -510,18 +554,15 @@ export default async function MotionsPage(props: {
                       </div>
 
                       {detail.item.attention_flags.length > 0 ? (
-                        <ul className="mt-3 space-y-2 text-sm text-amber-200">
+                        <ul className="mt-3 space-y-2 text-sm text-red-200">
                           {detail.item.attention_flags.map((flag) => (
-                            <li
-                              key={flag}
-                              className="rounded border border-amber-900/50 bg-amber-950/20 px-3 py-2"
-                            >
-                              {flag}
+                            <li key={flag}>
+                              <OperatorContradictionCard>{flag}</OperatorContradictionCard>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <div className="mt-3 rounded border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-sm text-emerald-200">
+                        <div className="mt-3 rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-300">
                           No attention flags on the selected motion package.
                         </div>
                       )}
@@ -702,7 +743,7 @@ export default async function MotionsPage(props: {
             )}
           </div>
           </section>
-        </section>
+        </OperatorPanel>
       </div>
     </main>
   );
