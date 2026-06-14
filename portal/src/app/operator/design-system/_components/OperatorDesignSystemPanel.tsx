@@ -1,7 +1,20 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+
+import {
+    OperatorBadge,
+    OperatorBlockedAction,
+    OperatorComposeButton,
+    OperatorContradictionCard,
+    OperatorDissentCard,
+    OperatorGatedAction,
+    OperatorIdChip,
+    OperatorPanel,
+    OperatorReadOnlyAction,
+    OperatorSectionHeader,
+    type OperatorSlateTone,
+} from "@/components/operator/slate";
 
 type IconProps = {
     className?: string;
@@ -12,9 +25,6 @@ function Glyph({ children, className = "", size = 12 }: IconProps & { children: 
     return <span className={className} style={{ fontSize: size }} aria-hidden="true">{children}</span>;
 }
 
-const Copy = (props: IconProps) => <Glyph {...props}>CP</Glyph>;
-const Check = (props: IconProps) => <Glyph {...props}>OK</Glyph>;
-const Lock = (props: IconProps) => <Glyph {...props}>X</Glyph>;
 const AlertTriangle = (props: IconProps) => <Glyph {...props}>!</Glyph>;
 const Ban = (props: IconProps) => <Glyph {...props}>NO</Glyph>;
 const ExternalLink = (props: IconProps) => <Glyph {...props}>RO</Glyph>;
@@ -111,30 +121,22 @@ const UNSAFE = [
 
 /* ------------------------------- PRIMITIVES -------------------------------- */
 
-const TONE = {
-    slate: "bg-slate-800 text-slate-300 border-slate-600",
-    amber: "bg-amber-950 text-amber-300 border-amber-700",
-    red: "bg-red-950 text-red-300 border-red-800",
-    emerald: "bg-emerald-950 text-emerald-300 border-emerald-700",
-    sky: "bg-sky-950 text-sky-300 border-sky-800",
+type Tone = "slate" | "amber" | "red" | "emerald" | "sky";
+
+const toneMap: Record<Tone, OperatorSlateTone> = {
+    slate: "neutral",
+    amber: "advisory",
+    red: "danger",
+    emerald: "canonical",
+    sky: "pending",
 };
 
-type Tone = keyof typeof TONE;
-
 function B({ label, tone = "slate" }: { label: string; tone?: Tone }) {
-    return (
-        <span className={`inline-block whitespace-nowrap rounded border px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide ${TONE[tone]}`}>
-            {label}
-        </span>
-    );
+    return <OperatorBadge label={label} tone={toneMap[tone]} />;
 }
 
 function Id({ children }: { children: ReactNode }) {
-    return (
-        <span className="rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 font-mono text-xs text-slate-300">
-            {children}
-        </span>
-    );
+    return <OperatorIdChip>{children}</OperatorIdChip>;
 }
 
 function Hash({ value }: { value: string }) {
@@ -146,32 +148,7 @@ function Hash({ value }: { value: string }) {
 }
 
 function H({ n, title }: { n: string; title: string }) {
-    return (
-        <div className="mb-3 flex items-baseline gap-3 border-b border-slate-800 pb-2">
-            <span className="font-mono text-xs text-slate-600">{n}</span>
-            <h2 className="font-mono text-sm uppercase tracking-widest text-slate-200">{title}</h2>
-        </div>
-    );
-}
-
-function copyText(text: string) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(text).then(() => true, () => fallback(text));
-    }
-    return Promise.resolve(fallback(text));
-}
-function fallback(text: string) {
-    try {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        return true;
-    } catch {
-        return false;
-    }
+    return <OperatorSectionHeader index={n} title={title} className="mb-3" />;
 }
 
 function ComposeButton({
@@ -183,35 +160,17 @@ function ComposeButton({
     children: ReactNode;
     disabled?: boolean;
 }) {
-    const [done, setDone] = useState(false);
     return (
-        <button
-            type="button"
-            disabled={disabled}
-            onClick={() =>
-                !disabled &&
-                copyText(build()).then((ok) => {
-                    if (ok) {
-                        setDone(true);
-                        setTimeout(() => setDone(false), 1500);
-                    }
-                })
-            }
-            className={`inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-xs uppercase tracking-wide ${disabled
-                    ? "cursor-not-allowed border-slate-800 text-slate-600"
-                    : "border-emerald-700 text-emerald-300 hover:bg-emerald-950"
-                }`}
-        >
-            {done ? <Check size={12} /> : <Copy size={12} />}
-            {done ? "Copied" : children}
-        </button>
+        <OperatorComposeButton text={build} disabled={disabled}>
+            {children}
+        </OperatorComposeButton>
     );
 }
 
 /* ----------------------------- CARD ARCHETYPES ----------------------------- */
 
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-    return <div className={`rounded border border-slate-800 bg-slate-900 p-3 ${className}`}>{children}</div>;
+    return <OperatorPanel className={className}>{children}</OperatorPanel>;
 }
 
 function CardHead({
@@ -417,7 +376,7 @@ export default function OperatorDesignSystemPanel() {
                         </Card>
 
                         {/* dissent card */}
-                        <div className="rounded border border-red-900 border-l-4 border-l-red-500 bg-red-950 p-3">
+                        <OperatorDissentCard>
                             <div className="flex flex-wrap items-center gap-2">
                                 <AlertTriangle size={14} className="text-red-400" />
                                 <span className="font-mono text-sm font-semibold uppercase tracking-wider text-red-200">Dissent</span>
@@ -428,10 +387,10 @@ export default function OperatorDesignSystemPanel() {
                             <div className="mt-2 text-xs text-red-100">
                                 Loudest element on the page. Never collapsed, never paraphrased, never quietly resolved.
                             </div>
-                        </div>
+                        </OperatorDissentCard>
 
                         {/* contradiction card */}
-                        <Card className="border-red-900">
+                        <OperatorContradictionCard>
                             <CardHead title="Contradiction" id="SYN-CON-0001" badges={<B label="CONTRADICTION OPEN" tone="red" />} />
                             <div className="mt-2 flex items-center gap-2 font-mono text-xs text-slate-300">
                                 <span>SYN-RET-001·c2</span>
@@ -439,7 +398,7 @@ export default function OperatorDesignSystemPanel() {
                                 <span>SYN-RET-002·c2</span>
                                 <B label="DERIVED-DISPLAY" tone="sky" />
                             </div>
-                        </Card>
+                        </OperatorContradictionCard>
 
                         {/* route recommendation */}
                         <Card>
@@ -513,10 +472,9 @@ export default function OperatorDesignSystemPanel() {
                             <span className="text-xs text-slate-500">copies text; nothing else</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
-                            <span className="inline-flex items-center gap-1.5 rounded border border-sky-800 px-2 py-1 font-mono text-xs uppercase tracking-wide text-sky-300">
-                                <ExternalLink size={12} /> Open read-only source
-                            </span>
-                            <B label="READ-ONLY" tone="sky" />
+                            <OperatorReadOnlyAction>
+                                Open read-only source
+                            </OperatorReadOnlyAction>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="inline-flex items-center rounded border border-dashed border-slate-600 px-2 py-1 font-mono text-xs uppercase tracking-wide text-slate-500">
@@ -526,17 +484,13 @@ export default function OperatorDesignSystemPanel() {
                             <span className="text-xs text-slate-500">illustrative; the real act is a committed snippet</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
-                            <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded border border-amber-800 bg-slate-900 px-2 py-1 font-mono text-xs uppercase tracking-wide text-amber-600">
-                                <Lock size={12} /> Model dispatch — GATED / DISABLED
-                            </span>
-                            <B label="GATED" tone="amber" />
+                            <OperatorGatedAction>Model dispatch</OperatorGatedAction>
                             <span className="text-xs text-slate-500">gate class named on click; teaches doctrine, never acts</span>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
-                            <span className="inline-flex cursor-not-allowed items-center gap-1.5 rounded border border-red-900 bg-slate-900 px-2 py-1 font-mono text-xs uppercase tracking-wide text-red-700">
-                                <Ban size={12} /> Modify blocked settings
-                            </span>
-                            <B label="BLOCKED" tone="red" />
+                            <OperatorBlockedAction>
+                                Modify blocked settings
+                            </OperatorBlockedAction>
                         </div>
                         <div className="border-t border-slate-800 pt-3">
                             <div className="font-mono text-xs uppercase tracking-wider text-slate-500">
@@ -544,9 +498,7 @@ export default function OperatorDesignSystemPanel() {
                             </div>
                             <div className="mt-2 flex flex-wrap gap-2">
                                 {["Model dispatch", "Agent dispatch", "Push branch", "Open PR", "Merge", "Deploy", "Change gate", "Modify blocked settings"].map((a) => (
-                                    <span key={a} className="inline-flex cursor-not-allowed items-center gap-1 rounded border border-slate-800 px-2 py-0.5 font-mono text-xs uppercase text-slate-600">
-                                        <Lock size={10} /> {a} — GATED / DISABLED
-                                    </span>
+                                    <OperatorGatedAction key={a}>{a}</OperatorGatedAction>
                                 ))}
                             </div>
                         </div>

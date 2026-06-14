@@ -3,6 +3,20 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 
+import {
+    OPERATOR_SAFETY_INVARIANTS,
+    OperatorBadge,
+    OperatorBlockedAction,
+    OperatorComposeButton,
+    OperatorDecisionComposer,
+    OperatorGatedAction,
+    OperatorIdChip,
+    OperatorReadOnlyAction,
+    OperatorSafetyRail,
+    OperatorSectionHeader,
+    type OperatorSlateTone,
+} from "@/components/operator/slate";
+
 type IconProps = {
     className?: string;
     size?: number;
@@ -12,11 +26,6 @@ function Glyph({ children, className = "", size = 12 }: IconProps & { children: 
     return <span className={className} style={{ fontSize: size }} aria-hidden="true">{children}</span>;
 }
 
-const Copy = (props: IconProps) => <Glyph {...props}>CP</Glyph>;
-const Check = (props: IconProps) => <Glyph {...props}>OK</Glyph>;
-const Lock = (props: IconProps) => <Glyph {...props}>X</Glyph>;
-const Ban = (props: IconProps) => <Glyph {...props}>NO</Glyph>;
-const ExternalLink = (props: IconProps) => <Glyph {...props}>RO</Glyph>;
 const ShieldAlert = (props: IconProps) => <Glyph {...props}>!!</Glyph>;
 const AlertTriangle = (props: IconProps) => <Glyph {...props}>!</Glyph>;
 const RefreshCw = (props: IconProps) => <Glyph {...props}>ST</Glyph>;
@@ -126,15 +135,7 @@ const SIGNALS = [
     { source: "Blocked-settings registry", provenance: "doctrine sample", updated: "2d", state: "FRESH", labels: ["READ-ONLY SAMPLE", "BLOCKED CLASSES"] },
 ];
 
-const RAIL_STRINGS = [
-    "CONTROL_THREAD decides.",
-    "Validation is not acceptance.",
-    "Receipts record; they do not decide.",
-    "Routes recommend; they do not execute.",
-    "Council agreement is not authority.",
-    "Agents are staged, not executing.",
-    "ZERO GATES GRANTED.",
-];
+const RAIL_STRINGS = OPERATOR_SAFETY_INVARIANTS;
 
 const SAFE_COMMANDS = [
     { label: "Compose next route", compose: true, text: "ROUTE DRAFT — RECEIPT_SCHEMA_V0\nTARGET: jai-format · DOCS ONLY\nNON-AUTHORIZING · GATES GRANTED: 0" },
@@ -152,30 +153,22 @@ const DEPTHS = ["skim", "sampled", "full"];
 
 /* -------------------------------- PRIMITIVES ------------------------------- */
 
-const TONE = {
-    slate: "bg-slate-800 text-slate-300 border-slate-600",
-    amber: "bg-amber-950 text-amber-300 border-amber-700",
-    red: "bg-red-950 text-red-300 border-red-800",
-    emerald: "bg-emerald-950 text-emerald-300 border-emerald-700",
-    sky: "bg-sky-950 text-sky-300 border-sky-800",
+type Tone = "slate" | "amber" | "red" | "emerald" | "sky";
+
+const toneMap: Record<Tone, OperatorSlateTone> = {
+    slate: "neutral",
+    amber: "advisory",
+    red: "danger",
+    emerald: "canonical",
+    sky: "pending",
 };
 
-type Tone = keyof typeof TONE;
-
 function B({ label, tone = "slate" }: { label: string; tone?: Tone }) {
-    return (
-        <span className={`inline-block whitespace-nowrap rounded border px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide ${TONE[tone]}`}>
-            {label}
-        </span>
-    );
+    return <OperatorBadge label={label} tone={toneMap[tone]} />;
 }
 
 function Id({ children }: { children: ReactNode }) {
-    return (
-        <span className="rounded border border-slate-700 bg-slate-950 px-1.5 py-0.5 font-mono text-xs text-slate-300">
-            {children}
-        </span>
-    );
+    return <OperatorIdChip>{children}</OperatorIdChip>;
 }
 
 function H({
@@ -187,35 +180,7 @@ function H({
     title: string;
     right?: ReactNode;
 }) {
-    return (
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
-            <h2 className="font-mono text-xs uppercase tracking-widest text-slate-300">
-                <span className="text-slate-600">{n} / </span>
-                {title}
-            </h2>
-            <div className="flex flex-wrap items-center gap-1.5">{right}</div>
-        </div>
-    );
-}
-
-function copyText(t: string) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        return navigator.clipboard.writeText(t).then(() => true, () => fb(t));
-    }
-    return Promise.resolve(fb(t));
-}
-function fb(t: string) {
-    try {
-        const ta = document.createElement("textarea");
-        ta.value = t;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        return true;
-    } catch {
-        return false;
-    }
+    return <OperatorSectionHeader index={n} title={title} right={right} />;
 }
 
 function ComposeBtn({
@@ -227,33 +192,15 @@ function ComposeBtn({
     children: ReactNode;
     small?: boolean;
 }) {
-    const [ok, setOk] = useState(false);
     return (
-        <button
-            type="button"
-            onClick={() =>
-                copyText(typeof text === "function" ? text() : text).then((r) => {
-                    if (r) {
-                        setOk(true);
-                        setTimeout(() => setOk(false), 1400);
-                    }
-                })
-            }
-            className={`inline-flex items-center gap-1.5 rounded border border-emerald-700 font-mono uppercase tracking-wide text-emerald-300 hover:bg-emerald-950 ${small ? "px-1.5 py-0.5 text-xs" : "px-2 py-1 text-xs"
-                }`}
-        >
-            {ok ? <Check size={11} /> : <Copy size={11} />}
-            {ok ? "Copied" : children}
-        </button>
+        <OperatorComposeButton text={text} compact={small}>
+            {children}
+        </OperatorComposeButton>
     );
 }
 
 function ReadOnlyLink({ children }: { children: ReactNode }) {
-    return (
-        <span className="inline-flex items-center gap-1 rounded border border-sky-800 px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide text-sky-300">
-            <ExternalLink size={11} /> {children}
-        </span>
-    );
+    return <OperatorReadOnlyAction>{children}</OperatorReadOnlyAction>;
 }
 
 function GatedChip({
@@ -263,21 +210,16 @@ function GatedChip({
     children: ReactNode;
     blocked?: boolean;
 }) {
-    return (
-        <span
-            className={`inline-flex cursor-not-allowed items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-xs uppercase tracking-wide ${blocked ? "border-red-900 text-red-700" : "border-amber-800 text-amber-600"
-                }`}
-        >
-            {blocked ? <Ban size={10} /> : <Lock size={10} />} {children}
-        </span>
+    return blocked ? (
+        <OperatorBlockedAction>{children}</OperatorBlockedAction>
+    ) : (
+        <OperatorGatedAction>{children}</OperatorGatedAction>
     );
 }
 
 /* ------------------------------ MAIN COMPONENT ----------------------------- */
 
 export default function LiveDashboardPrototype() {
-    const [decision, setDecision] = useState("");
-    const [depth, setDepth] = useState("");
     const [pFilter, setPFilter] = useState("ALL");
 
     const queue = QUEUE.filter((q) => pFilter === "ALL" || q.priority === pFilter);
@@ -569,7 +511,7 @@ export default function LiveDashboardPrototype() {
                             <div className="mt-2 flex flex-wrap gap-2 border-t border-slate-800 pt-2">
                                 {GATED_COMMANDS.map((c) => (
                                     <GatedChip key={c} blocked={c === "Change gate"}>
-                                        {c} — GATED / DISABLED
+                                        {c}
                                     </GatedChip>
                                 ))}
                             </div>
@@ -583,64 +525,30 @@ export default function LiveDashboardPrototype() {
                     {/* 10 · DECISION / RECEIPT COMPOSER */}
                     <section>
                         <H n="10" title="Decision / receipt composer" right={<><B label="REAL-COMPOSE" tone="emerald" /><B label="DOES NOT CREATE RECEIPT" tone="amber" /></>} />
-                        <div className="rounded border border-slate-800 bg-slate-900 p-3">
-                            <div className="grid gap-3 md:grid-cols-3">
-                                <label className="block text-xs">
-                                    <span className="font-mono uppercase tracking-wider text-slate-500">Decision</span>
-                                    <select
-                                        value={decision}
-                                        onChange={(e) => setDecision(e.target.value)}
-                                        className="mt-1 w-full rounded border border-slate-700 bg-slate-950 p-1.5 font-mono text-xs text-slate-200"
-                                    >
-                                        <option value="">— select —</option>
-                                        {DECISIONS.map((d) => (
-                                            <option key={d}>{d}</option>
-                                        ))}
-                                    </select>
-                                </label>
-                                <div className="text-xs">
-                                    <span className="font-mono uppercase tracking-wider text-slate-500">Review depth</span>
-                                    <div className="mt-2 flex gap-3">
-                                        {DEPTHS.map((d) => (
-                                            <label key={d} className="flex items-center gap-1">
-                                                <input type="radio" name="ddepth" checked={depth === d} onChange={() => setDepth(d)} className="accent-amber-500" />
-                                                <span className="font-mono text-xs uppercase">{d}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
+                        <OperatorDecisionComposer
+                            decisions={DECISIONS}
+                            depths={DEPTHS}
+                            metadata={
                                 <div className="text-xs text-slate-400">
                                     <div><span className="font-mono uppercase text-slate-500">validation · </span>shape-only · validator must be named</div>
                                     <div><span className="font-mono uppercase text-slate-500">receipt · </span>expected on commit · schema pending</div>
                                     <div><span className="font-mono uppercase text-slate-500">next route · </span>RECEIPT_SCHEMA_V0</div>
                                 </div>
-                            </div>
-                            <pre className="mt-3 overflow-x-auto rounded border border-slate-800 bg-slate-950 p-2 font-mono text-xs text-slate-400">
-                                {`CONTROL_THREAD DECISION DRAFT — MANUAL REVIEW REQUIRED
+                            }
+                            buildDraft={({ decision, depth }) => `CONTROL_THREAD DECISION DRAFT — MANUAL REVIEW REQUIRED
 target: SYN-CI-0012   decision: ${decision || "[SELECT]"}   depth: ${depth || "[SELECT]"}
 conditions: [OPERATOR]   risks: receipts precede schema (open)
 DOES NOT CREATE RECEIPT. NON-AUTHORIZING UNTIL COMMITTED. GATES GRANTED: 0.`}
-                            </pre>
-                            <div className="mt-2">
-                                <ComposeBtn
-                                    text={() =>
-                                        `CONTROL_THREAD DECISION DRAFT — MANUAL REVIEW REQUIRED\ntarget: SYN-CI-0012\ndecision: ${decision || "[SELECT]"}\ndepth: ${depth || "[SELECT]"}\nDOES NOT CREATE RECEIPT. NON-AUTHORIZING UNTIL COMMITTED. GATES GRANTED: 0.`
-                                    }
-                                >
-                                    Copy decision draft
-                                </ComposeBtn>
-                            </div>
-                        </div>
+                        />
                     </section>
                 </div>
 
                 {/* 11 · RIGHT SAFETY RAIL */}
                 <aside className="w-full shrink-0 xl:w-72">
-                    <div className="space-y-3 rounded border border-slate-800 bg-slate-900 p-3 xl:sticky xl:top-4">
-                        <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
-                            <ShieldAlert size={15} className="text-amber-400" />
-                            <span className="font-mono text-xs uppercase tracking-widest text-slate-300">Right Safety Rail</span>
-                        </div>
+                    <OperatorSafetyRail
+                        invariants={RAIL_STRINGS}
+                        className="xl:sticky xl:top-4"
+                    >
                         <div className="space-y-1 text-xs">
                             <div><span className="font-mono uppercase text-slate-500">posture · </span>NON-AUTHORIZING</div>
                             <div><span className="font-mono uppercase text-slate-500">gates granted · </span><span className="font-mono text-red-300">0</span></div>
@@ -662,17 +570,7 @@ DOES NOT CREATE RECEIPT. NON-AUTHORIZING UNTIL COMMITTED. GATES GRANTED: 0.`}
                             <div className="font-mono uppercase tracking-wider text-red-400">Blocked capabilities</div>
                             <div className="mt-1 text-slate-400">dispatch · repo mutation · branch/PR automation · live settings · telemetry · customer data · parser/runtime · production behavior</div>
                         </div>
-                        <div className="border-t border-slate-800 pt-2">
-                            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">Invariants</div>
-                            <ul className="mt-1.5 space-y-1">
-                                {RAIL_STRINGS.map((s) => (
-                                    <li key={s} className="rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-amber-300">
-                                        {s}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
+                    </OperatorSafetyRail>
                 </aside>
             </div>
 

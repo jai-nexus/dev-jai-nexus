@@ -1,6 +1,20 @@
 import { operatorSecurityGateModelFixture as model } from "@/lib/controlPlane/operatorSecurityGateModelFixture";
 
-import { ControlPlaneBadge } from "./ControlPlaneBadges";
+import {
+  OperatorBadge,
+  OperatorGateCard,
+} from "@/components/operator/slate/OperatorSlatePrimitives";
+import type { OperatorSlateTone } from "@/components/operator/slate/tokens";
+
+function SecurityBadge({
+  children,
+  tone = "neutral",
+}: {
+  children: React.ReactNode;
+  tone?: OperatorSlateTone;
+}) {
+  return <OperatorBadge tone={tone}>{children}</OperatorBadge>;
+}
 
 export function OperatorSecurityGateModelPanel() {
   return (
@@ -15,31 +29,31 @@ export function OperatorSecurityGateModelPanel() {
           <p className="mt-1 max-w-4xl text-xs text-gray-400">{model.summary}</p>
         </div>
         <div className="ml-auto flex flex-wrap gap-2">
-          <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
-          <ControlPlaneBadge tone="rose">ZERO GATES GRANTED</ControlPlaneBadge>
+          <SecurityBadge tone="fixture">FIXTURE</SecurityBadge>
+          <SecurityBadge tone="danger">ZERO GATES GRANTED</SecurityBadge>
         </div>
       </header>
 
       <div className="space-y-5 p-4">
         <div className="flex flex-wrap gap-2">
           {model.posture_labels.map((label) => (
-            <ControlPlaneBadge
+            <OperatorBadge
               key={label}
               tone={
                 label.includes("NO ") ||
                 label.includes("CLOSED") ||
                 label.includes("ZERO")
-                  ? "rose"
+                  ? "danger"
                   : label === "READ-ONLY"
-                    ? "sky"
-                    : "amber"
+                    ? "readOnly"
+                    : "advisory"
               }
             >
               {label}
-            </ControlPlaneBadge>
+            </OperatorBadge>
           ))}
-          <ControlPlaneBadge>{model.model_id}</ControlPlaneBadge>
-          <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+          <SecurityBadge>{model.model_id}</SecurityBadge>
+          <SecurityBadge tone="fixture">FIXTURE</SecurityBadge>
         </div>
 
         <div className="rounded-lg border border-rose-900 bg-rose-950/20 p-3">
@@ -58,9 +72,9 @@ export function OperatorSecurityGateModelPanel() {
           </h3>
           <div className="grid gap-3 lg:grid-cols-2">
             {model.gate_classes.map((gate) => (
-              <article
+              <OperatorGateCard
                 key={gate.gate_id}
-                className="rounded-lg border border-gray-800 bg-black/30 p-3"
+                className="border-gray-800 bg-black/30"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
@@ -68,13 +82,13 @@ export function OperatorSecurityGateModelPanel() {
                       <span className="font-mono text-xs text-gray-300">
                         {gate.gate_id}
                       </span>
-                      <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                      <SecurityBadge tone="fixture">FIXTURE</SecurityBadge>
                     </div>
                     <h4 className="mt-1 text-sm font-semibold text-gray-100">
                       {gate.name}
                     </h4>
                   </div>
-                  <ControlPlaneBadge tone="rose">{gate.v0_status}</ControlPlaneBadge>
+                  <SecurityBadge tone="danger">{gate.v0_status}</SecurityBadge>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-gray-400">
                   {gate.purpose}
@@ -103,15 +117,15 @@ export function OperatorSecurityGateModelPanel() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">
                   {gate.blocked_capabilities.map((capability) => (
-                    <ControlPlaneBadge key={capability} tone="rose">
+                    <SecurityBadge key={capability} tone="danger">
                       {capability}
-                    </ControlPlaneBadge>
+                    </SecurityBadge>
                   ))}
                 </div>
                 <p className="mt-3 border-t border-gray-800 pt-2 text-[10px] uppercase tracking-wide text-amber-200">
                   {gate.non_authorizing_note}
                 </p>
-              </article>
+              </OperatorGateCard>
             ))}
           </div>
         </div>
@@ -143,12 +157,12 @@ export function OperatorSecurityGateModelPanel() {
                       <span className="font-mono text-gray-400">
                         {entry.capability_id}
                       </span>{" "}
-                      <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+                      <SecurityBadge tone="fixture">FIXTURE</SecurityBadge>
                     </td>
                     <td className="p-3">
-                      <ControlPlaneBadge tone="rose">
+                      <SecurityBadge tone="danger">
                         {entry.v0_status}
-                      </ControlPlaneBadge>
+                      </SecurityBadge>
                     </td>
                     <td className="p-3 font-mono text-[10px] text-gray-400">
                       {entry.future_gate_requirements.join(" / ")}
