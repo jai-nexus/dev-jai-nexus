@@ -2,6 +2,18 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorReadOnlyAction,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 
 type SearchParamValue = string | string[] | undefined;
@@ -31,7 +43,9 @@ function formatStableTs(value: Date): string {
   return value.toISOString();
 }
 
-export default async function OperatorEventsPage({ searchParams }: OperatorEventsPageProps) {
+export default async function OperatorEventsPage({
+  searchParams,
+}: OperatorEventsPageProps) {
   const sp = await Promise.resolve(searchParams ?? {});
 
   const nhFilter = firstParam(sp.nh);
@@ -80,164 +94,217 @@ export default async function OperatorEventsPage({ searchParams }: OperatorEvent
 
   type SotEventRow = (typeof events)[number];
 
-  const hasFilters = !!(nhFilter || sourceFilter || kindFilter);
+  const hasFilters = Boolean(nhFilter || sourceFilter || kindFilter);
   const lastIngest = latestEvent?.ts ? formatStableTs(latestEvent.ts) : "Never";
-
   const topKinds = kindsBreakdown.slice(0, 5);
   const hasMoreKinds = kindsBreakdown.length > 5;
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold">JAI NEXUS · Events</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Stream of record (SoT events) from chats, syncs, and other sources.
-        </p>
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="mr-2 text-3xl font-semibold">JAI NEXUS - Events</h1>
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="warning">PARTIAL EVENT STREAM</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT A RECEIPT</OperatorBadge>
+              <OperatorBadge tone="blocked">NO MUTATION</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+            <p className="mt-4 max-w-4xl text-sm text-slate-400">
+              Read-only stream-of-record events from chats, syncs, and other
+              configured sources. Event presence is evidence display only; it is
+              not acceptance, canon update, receipt creation, or execution authority.
+            </p>
+            <OperatorGateCard className="mt-4 text-sm text-amber-200">
+              This is a partial event stream. Current motion and governance
+              ratification artifacts are not automatically emitted into Events in v0.
+            </OperatorGateCard>
+          </OperatorPanel>
 
-        <p className="text-xs text-amber-400/90 mt-2">
-          Partial telemetry stream only. Current motion and governance ratification
-          artifacts are not auto-emitted into Events in v0.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
-          <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
-            <div className="text-xs text-gray-400 uppercase tracking-tighter">Events (24h)</div>
-            <div className="text-2xl font-mono text-zinc-200">{total24h}</div>
-          </div>
+          <OperatorSafetyRail invariants={OPERATOR_SAFETY_INVARIANTS}>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Emit event</OperatorBlockedAction>
+              <OperatorBlockedAction>Create receipt</OperatorBlockedAction>
+              <OperatorBlockedAction>Accept evidence</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Filters and links only read existing event records. Dashboard display
+              does not authorize action.
+            </p>
+          </OperatorSafetyRail>
+        </div>
 
-          <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
-            <div className="text-xs text-gray-400 uppercase tracking-tighter">Last Event</div>
-            <div className="text-lg font-mono text-zinc-200 truncate" title={lastIngest}>
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <OperatorPanel>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Events (24h)
+            </div>
+            <div className="mt-2 font-mono text-2xl text-slate-200">{total24h}</div>
+            <OperatorBadge tone="readOnly">DERIVED / READ-ONLY</OperatorBadge>
+          </OperatorPanel>
+
+          <OperatorPanel>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Last Event
+            </div>
+            <div
+              className="mt-2 truncate font-mono text-lg text-slate-200"
+              title={lastIngest}
+            >
               {lastIngest}
             </div>
-          </div>
+            <OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>
+          </OperatorPanel>
 
-          <div className="col-span-1 md:col-span-2 bg-zinc-900/50 border border-zinc-800 p-3 rounded overflow-hidden">
-            <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">
+          <OperatorPanel className="col-span-1 overflow-hidden md:col-span-2">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
               Top Kinds {hasFilters ? "(Filtered)" : "(Global)"}
             </div>
-
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
               {topKinds.length === 0 ? (
-                <span className="text-xs text-zinc-500 italic">No events found</span>
+                <span className="text-xs italic text-slate-500">No events found</span>
               ) : (
-                topKinds.map((k) => (
-                  <div key={k.kind} className="text-xs flex items-center gap-2">
+                topKinds.map((entry) => (
+                  <div key={entry.kind} className="flex items-center gap-2 text-xs">
                     <Link
-                      href={`/operator/events?kind=${encodeURIComponent(k.kind)}`}
-                      className="font-mono text-sky-400 hover:text-sky-300 truncate max-w-[200px]"
-                      title={k.kind}
+                      href={`/operator/events?kind=${encodeURIComponent(entry.kind)}`}
+                      className="max-w-[200px] truncate font-mono text-sky-400 hover:text-sky-300"
+                      title={entry.kind}
                     >
-                      {k.kind}
+                      {entry.kind}
                     </Link>
-                    <span className="text-zinc-500">×{k._count.kind}</span>
+                    <OperatorBadge tone="readOnly">{entry._count.kind}</OperatorBadge>
                   </div>
                 ))
               )}
-
-              {hasMoreKinds ? <span className="text-xs text-zinc-500 italic">+ others</span> : null}
+              {hasMoreKinds ? (
+                <span className="text-xs italic text-slate-500">+ others</span>
+              ) : null}
             </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="text-xs text-gray-400">Showing latest {limit} events · UTC</span>
-
-          {hasFilters ? (
-            <div className="flex flex-wrap gap-2 items-center">
-              {nhFilter ? (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  NH: <span className="ml-1 font-mono">{nhFilter}</span>
-                </span>
-              ) : null}
-              {sourceFilter ? (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  Source: <span className="ml-1 font-mono">{sourceFilter}</span>
-                </span>
-              ) : null}
-              {kindFilter ? (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px] text-gray-200">
-                  Kind: <span className="ml-1 font-mono">{kindFilter}</span>
-                </span>
-              ) : null}
-
-              <Link
-                href="/operator/events"
-                className="text-[11px] text-sky-400 hover:text-sky-300 underline ml-1"
-              >
-                Clear filters
-              </Link>
-            </div>
-          ) : null}
-        </div>
-      </header>
-
-      {events.length === 0 ? (
-        <p className="text-sm text-gray-400">No events found for the current filter.</p>
-      ) : (
-        <section>
-          <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-zinc-950 border-b border-gray-800 text-left">
-                <tr>
-                  <th className="py-2 px-3 text-xs text-gray-400">Event time</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Source</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Kind</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">NH_ID</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Event ID</th>
-                  <th className="py-2 px-3 text-xs text-gray-400">Summary</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {events.map((evt: SotEventRow) => (
-                  <tr key={evt.id} className="border-b border-gray-900 hover:bg-zinc-900/60">
-                    <td className="py-2 px-3 whitespace-nowrap text-xs" title={evt.ts.toISOString()}>
-                      {formatStableTs(evt.ts)}
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <Link
-                        href={`/operator/events?source=${encodeURIComponent(evt.source)}`}
-                        className="text-[11px] text-sky-300 hover:text-sky-200 underline"
-                      >
-                        {evt.source}
-                      </Link>
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      <Link
-                        href={`/operator/events?kind=${encodeURIComponent(evt.kind)}`}
-                        className="text-[11px] text-sky-300 hover:text-sky-200 underline"
-                      >
-                        {evt.kind}
-                      </Link>
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs">
-                      {evt.nhId ? (
-                        <Link
-                          href={`/operator/events?nh=${encodeURIComponent(evt.nhId)}`}
-                          className="text-[11px] text-sky-300 hover:text-sky-200 underline"
-                        >
-                          {evt.nhId}
-                        </Link>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-
-                    <td className="py-2 px-3 whitespace-nowrap text-xs text-gray-600 font-mono">
-                      {evt.eventId?.slice(0, 8)}...
-                    </td>
-
-                    <td className="py-2 px-3 text-xs max-w-xl truncate">{evt.summary ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          </OperatorPanel>
         </section>
-      )}
+
+        <OperatorPanel>
+          <OperatorSectionHeader
+            index="01"
+            title="Event Filters"
+            right={<OperatorReadOnlyAction>QUERY FILTERS</OperatorReadOnlyAction>}
+          />
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-slate-400">
+              Showing latest {limit} events - UTC
+            </span>
+            {hasFilters ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {nhFilter ? (
+                  <OperatorBadge tone="readOnly">NH: {nhFilter}</OperatorBadge>
+                ) : null}
+                {sourceFilter ? (
+                  <OperatorBadge tone="readOnly">
+                    Source: {sourceFilter}
+                  </OperatorBadge>
+                ) : null}
+                {kindFilter ? (
+                  <OperatorBadge tone="readOnly">Kind: {kindFilter}</OperatorBadge>
+                ) : null}
+                <Link
+                  href="/operator/events"
+                  className="ml-1 text-xs text-sky-400 underline hover:text-sky-300"
+                >
+                  Clear filters
+                </Link>
+              </div>
+            ) : null}
+          </div>
+        </OperatorPanel>
+
+        {events.length === 0 ? (
+          <OperatorGateCard className="text-sm text-slate-400">
+            No events found for the current filter.
+          </OperatorGateCard>
+        ) : (
+          <OperatorPanel>
+            <OperatorSectionHeader
+              index="02"
+              title="Read-Only Event Records"
+              right={<OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>}
+            />
+            <div className="overflow-x-auto rounded border border-slate-800">
+              <table className="w-full border-collapse text-sm">
+                <thead className="border-b border-slate-800 bg-slate-950 text-left">
+                  <tr>
+                    <th className="px-3 py-2 text-xs text-slate-400">Event time</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">Source</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">Kind</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">NH_ID</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">Event ID</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">Summary</th>
+                    <th className="px-3 py-2 text-xs text-slate-400">Posture</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {events.map((event: SotEventRow) => (
+                    <tr
+                      key={event.id}
+                      className="border-b border-slate-900 align-top hover:bg-slate-800/60"
+                    >
+                      <td
+                        className="whitespace-nowrap px-3 py-2 text-xs"
+                        title={event.ts.toISOString()}
+                      >
+                        {formatStableTs(event.ts)}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs">
+                        <Link
+                          href={`/operator/events?source=${encodeURIComponent(event.source)}`}
+                          className="text-sky-300 underline hover:text-sky-200"
+                        >
+                          {event.source}
+                        </Link>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs">
+                        <Link
+                          href={`/operator/events?kind=${encodeURIComponent(event.kind)}`}
+                          className="text-sky-300 underline hover:text-sky-200"
+                        >
+                          {event.kind}
+                        </Link>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs">
+                        {event.nhId ? (
+                          <Link
+                            href={`/operator/events?nh=${encodeURIComponent(event.nhId)}`}
+                            className="text-sky-300 underline hover:text-sky-200"
+                          >
+                            {event.nhId}
+                          </Link>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs">
+                        <OperatorIdChip>
+                          {event.eventId?.slice(0, 8)}...
+                        </OperatorIdChip>
+                      </td>
+                      <td className="max-w-xl truncate px-3 py-2 text-xs">
+                        {event.summary ?? "-"}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-xs">
+                        <OperatorBadge tone="readOnly">EVENT / READ-ONLY</OperatorBadge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </OperatorPanel>
+        )}
+      </div>
     </main>
   );
 }
