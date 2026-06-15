@@ -3,54 +3,44 @@ export const revalidate = 0;
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorGatedAction,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+} from "@/components/operator/slate";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getJaiChatSurfaceModel } from "@/lib/controlPlane/jaiChatSurface";
 import { getConfiguredAgentScopeSubset, getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
 
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="fixture">STATIC SURFACE MODEL</OperatorBadge>}
+      />
+      <p className="text-sm text-slate-400">{description}</p>
       {children}
     </section>
-  );
-}
-
-function ToneBadge({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
-}) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
   );
 }
 
@@ -64,11 +54,16 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+      </div>
+      <div className="mt-2 text-2xl font-semibold text-slate-100">{value}</div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
@@ -85,39 +80,56 @@ export default function OperatorJaiPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+    <main className="min-h-screen bg-slate-950 px-8 py-10 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">dev.jai.nexus - JAI Chat</h1>
-            {surface.badges.map((badge, index) => (
-              <ToneBadge
-                key={badge}
-                tone={index === 0 ? "sky" : index === 1 ? "amber" : "rose"}
-              >
-                {badge}
-              </ToneBadge>
-            ))}
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Operator-facing JAI shell for draft prompts and read-only control-plane
-            context. This v0 surface is intentionally static: it does not call a live
-            provider, persist messages, execute repo actions, or grant any new
-            authority.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              Domain scope: <span className="font-mono text-sky-200">{surface.domain}</span>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="mr-2 text-3xl font-semibold">
+                dev.jai.nexus - JAI Chat
+              </h1>
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="fixture">LOCAL STATIC SHELL</OperatorBadge>
+              <OperatorBadge tone="advisory">DRAFT-ONLY</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY CONTEXT</OperatorBadge>
+              <OperatorBadge tone="blocked">NO LIVE MODEL</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+              {surface.badges.map((badge) => (
+                <OperatorStatusChip key={badge} status={badge} tone="fixture" />
+              ))}
+            </div>
+            <p className="mt-4 max-w-4xl text-sm text-slate-400">
+              Operator-facing shell for draft prompt reference and read-only
+              control-plane context. Prompt text is not dispatch, draft selection
+              is not submission, and display does not grant authority.
             </p>
-            <p className="mt-1">
-              Repo scope: <span className="font-mono text-sky-200">{surface.repo_full_name}</span>
+            <OperatorGateCard className="mt-4">
+              <div className="flex flex-wrap gap-2">
+                <OperatorIdChip>{surface.domain}</OperatorIdChip>
+                <OperatorIdChip>{surface.repo_full_name}</OperatorIdChip>
+                <OperatorIdChip>{surface.baseline_motion_id}</OperatorIdChip>
+              </div>
+              <p className="mt-3 text-xs text-slate-400">
+                Baseline display is read-only. It does not update canon or create
+                acceptance.
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail invariants={OPERATOR_SAFETY_INVARIANTS}>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Send prompt</OperatorBlockedAction>
+              <OperatorBlockedAction>Dispatch model</OperatorBlockedAction>
+              <OperatorBlockedAction>Run Agent</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              The shell has no provider, memory service, execution console, or
+              persistence path.
             </p>
-            <p className="mt-1">
-              Baseline canon for this v0 shell:{" "}
-              <span className="font-mono text-amber-200">{surface.baseline_motion_id}</span>
-            </p>
-          </div>
-        </header>
+          </OperatorSafetyRail>
+        </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
@@ -148,154 +160,162 @@ export default function OperatorJaiPage() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+          <OperatorPanel className="p-5">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-lg font-medium text-gray-100">Context panel</h2>
-              <ToneBadge tone="sky">control-plane scoped</ToneBadge>
-              <ToneBadge tone="rose">read-only context</ToneBadge>
+              <h2 className="text-lg font-medium text-slate-100">Context panel</h2>
+              <OperatorBadge tone="readOnly">CONTROL-PLANE SCOPED</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY CONTEXT</OperatorBadge>
             </div>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Domain</div>
-                <div className="mt-2 font-mono text-sm text-sky-200">{surface.domain}</div>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Repo</div>
-                <div className="mt-2 font-mono text-sm text-sky-200">
-                  {surface.repo_full_name}
+              <OperatorGateCard>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  Domain
                 </div>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">
+                <div className="mt-2"><OperatorIdChip>{surface.domain}</OperatorIdChip></div>
+              </OperatorGateCard>
+              <OperatorGateCard>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  Repo
+                </div>
+                <div className="mt-2">
+                  <OperatorIdChip>{surface.repo_full_name}</OperatorIdChip>
+                </div>
+              </OperatorGateCard>
+              <OperatorGateCard>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                   Latest visible baseline canon
                 </div>
-                <div className="mt-2 font-mono text-sm text-amber-200">
-                  {surface.baseline_motion_id}
+                <div className="mt-2">
+                  <OperatorIdChip>{surface.baseline_motion_id}</OperatorIdChip>
                 </div>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">
+              </OperatorGateCard>
+              <OperatorGateCard>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                   Agent Assets Library
                 </div>
-                <div className="mt-2 font-mono text-sm text-sky-200">
-                  {authorityPosture.agent_assets.location}
+                <div className="mt-2">
+                  <OperatorIdChip>{authorityPosture.agent_assets.location}</OperatorIdChip>
                 </div>
-                <div className="mt-2 text-xs text-gray-400">
+                <div className="mt-2 text-xs text-slate-400">
                   static operating material only
                 </div>
-              </div>
+              </OperatorGateCard>
             </div>
-            <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-4">
-              <div className="text-xs uppercase tracking-wide text-gray-500">Authority status</div>
+            <OperatorGateCard className="mt-4">
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                Authority status
+              </div>
               <div className="mt-3 grid gap-3 md:grid-cols-2">
-                <div className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 p-3">
-                  <div className="font-mono text-xs text-emerald-200">
+                <OperatorGateCard>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="font-mono text-xs text-sky-300">
                     Levels exercised
+                    </div>
+                    <OperatorBadge tone="readOnly">PLANNING-SAFE ONLY</OperatorBadge>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">
+                  <p className="mt-2 text-sm text-slate-300">
                     {docsOpsExercised.map((entry) => `Level ${entry.level}`).join(", ")} are
                     planning-safe only.
                   </p>
-                </div>
-                <div className="rounded-lg border border-rose-900/50 bg-rose-950/20 p-3">
-                  <div className="font-mono text-xs text-rose-200">Levels disabled</div>
-                  <p className="mt-2 text-sm text-gray-300">
+                </OperatorGateCard>
+                <OperatorContradictionCard>
+                  <div className="font-mono text-xs text-red-200">Levels disabled</div>
+                  <p className="mt-2 text-sm text-slate-300">
                     {docsOpsDisabled.map((entry) => `Level ${entry.level}`).join(", ")} remain
                     modeled but disabled.
                   </p>
-                </div>
+                </OperatorContradictionCard>
               </div>
-            </div>
-          </div>
+            </OperatorGateCard>
+          </OperatorPanel>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorContradictionCard className="p-5">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-medium text-gray-100">Guardrails</h2>
-                <ToneBadge tone="rose">authority preserved</ToneBadge>
+                <h2 className="text-lg font-medium text-red-100">Guardrails</h2>
+                <OperatorBadge tone="blocked">AUTHORITY PRESERVED</OperatorBadge>
               </div>
-              <ul className="mt-4 space-y-2 text-sm text-gray-300">
+              <ul className="mt-4 space-y-2 text-sm text-slate-300">
                 {surface.guardrails.map((guardrail) => (
                   <li key={guardrail}>- {guardrail}</li>
                 ))}
               </ul>
-            </div>
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
-              <div className="text-xs uppercase tracking-wide text-gray-500">
+            </OperatorContradictionCard>
+            <OperatorPanel className="p-5">
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                 Read-only notes
               </div>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
+              <ul className="mt-3 space-y-2 text-sm text-slate-300">
                 {surface.status_notes.map((note) => (
                   <li key={note}>- {note}</li>
                 ))}
               </ul>
-            </div>
+            </OperatorPanel>
           </div>
         </section>
 
         <Section
+          index="01"
           title="Draft chat shell"
           description="Prompt affordances and placeholder output are visible for operator drafting only. No live provider, runtime response, or saved conversation is added here."
         >
           <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-5">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-100">Operator draft input</h3>
-                <ToneBadge tone="amber">mock input only</ToneBadge>
-                <ToneBadge tone="rose">no live submit</ToneBadge>
+                <h3 className="text-sm font-semibold text-slate-100">
+                  Operator draft input
+                </h3>
+                <OperatorBadge tone="fixture">MOCK INPUT ONLY</OperatorBadge>
+                <OperatorBadge tone="blocked">NO LIVE SUBMIT</OperatorBadge>
               </div>
               <textarea
                 readOnly
                 value="Draft-only prompt area. Copy a suggested operator action below or write a bounded prompt for manual use. This field does not submit to a model in v0."
                 rows={8}
-                className="mt-4 w-full rounded-lg border border-gray-800 bg-black px-4 py-3 text-sm text-gray-200"
+                className="mt-4 w-full rounded border border-slate-800 bg-slate-950 px-4 py-3 text-sm text-slate-200"
               />
               <div className="mt-4 flex flex-wrap gap-2">
                 {surface.draft_actions.map((action) => (
-                  <button
-                    key={action.label}
-                    type="button"
-                    className="rounded-full border border-sky-900/60 bg-sky-950/30 px-3 py-2 text-xs text-sky-100"
-                    title={action.prompt}
-                  >
+                  <OperatorGatedAction key={action.label}>
                     {action.label}
-                  </button>
+                  </OperatorGatedAction>
                 ))}
               </div>
-              <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-4">
-                <div className="text-xs uppercase tracking-wide text-gray-500">
+              <OperatorGateCard className="mt-4">
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                   Suggested draft actions
                 </div>
-                <ul className="mt-3 space-y-2 text-sm text-gray-300">
+                <ul className="mt-3 space-y-2 text-sm text-slate-300">
                   {surface.draft_actions.map((action) => (
                     <li key={`${action.label}-detail`}>
-                      <div className="font-medium text-gray-100">{action.label}</div>
-                      <div className="mt-1 text-gray-400">{action.prompt}</div>
+                      <div className="font-medium text-slate-100">{action.label}</div>
+                      <div className="mt-1 text-slate-400">{action.prompt}</div>
                     </li>
                   ))}
                 </ul>
-              </div>
-            </div>
+              </OperatorGateCard>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-5">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-sm font-semibold text-gray-100">
+                <h3 className="text-sm font-semibold text-slate-100">
                   Example assistant placeholder
                 </h3>
-                <ToneBadge tone="slate">static copy</ToneBadge>
+                <OperatorBadge tone="fixture">STATIC COPY</OperatorBadge>
               </div>
-              <div className="mt-4 rounded-lg border border-gray-800 bg-black/40 p-4 text-sm text-gray-300">
+              <OperatorGateCard className="mt-4 text-sm text-slate-300">
                 {surface.placeholder_response}
-              </div>
-              <div className="mt-4 rounded-lg border border-rose-900/50 bg-rose-950/20 p-4 text-sm text-rose-200">
+              </OperatorGateCard>
+              <OperatorContradictionCard className="mt-4 text-sm text-red-200">
                 v0 limitation: no live provider/model integration, no execution dispatch, no
                 branch write, no PR creation, no scheduler, and no persistence.
-              </div>
-            </div>
+              </OperatorContradictionCard>
+            </OperatorPanel>
           </div>
         </Section>
 
         <Section
+          index="02"
           title="Related operator surfaces"
           description="This shell is intentionally adjacent to existing control-plane views rather than replacing them."
         >
@@ -304,16 +324,18 @@ export default function OperatorJaiPage() {
               <Link
                 key={linkedSurface.href}
                 href={linkedSurface.href}
-                className="rounded-xl border border-gray-800 bg-zinc-950 p-4 transition-colors hover:bg-zinc-900/60"
+                className="rounded border border-slate-800 bg-slate-900 p-4 transition-colors hover:bg-slate-800"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-semibold text-gray-100">
+                  <h3 className="text-sm font-semibold text-slate-100">
                     {linkedSurface.label}
                   </h3>
-                  <ToneBadge tone="sky">existing</ToneBadge>
+                  <OperatorBadge tone="readOnly">EXISTING ROUTE</OperatorBadge>
                 </div>
-                <div className="mt-2 font-mono text-xs text-sky-200">{linkedSurface.href}</div>
-                <p className="mt-3 text-sm text-gray-400">{linkedSurface.summary}</p>
+                <div className="mt-2">
+                  <OperatorIdChip>{linkedSurface.href}</OperatorIdChip>
+                </div>
+                <p className="mt-3 text-sm text-slate-400">{linkedSurface.summary}</p>
               </Link>
             ))}
           </div>
