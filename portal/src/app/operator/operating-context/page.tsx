@@ -3,6 +3,18 @@ export const revalidate = 0;
 
 import type { ReactNode } from "react";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+} from "@/components/operator/slate";
 import { getVersionedOperatingContextFixture } from "@/lib/operatingContext/versionedOperatingContextFixture";
 import type {
   OperatingContextAgentLaneDefault,
@@ -25,48 +37,25 @@ function safeArray<T>(items: T[] | undefined) {
   return Array.isArray(items) ? items : [];
 }
 
-function ToneBadge({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
-}) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
-}
-
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="fixture">CHECKED-IN FIXTURE</OperatorBadge>}
+      />
+      <p className="text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -74,9 +63,9 @@ function Section({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-500">
+    <OperatorGateCard className="text-sm text-slate-500">
       No {label} recorded in the checked-in fixture.
-    </div>
+    </OperatorGateCard>
   );
 }
 
@@ -88,7 +77,7 @@ function TextList({ items, label }: { items?: string[]; label: string }) {
   }
 
   return (
-    <ul className="space-y-1 text-sm text-gray-300">
+    <ul className="space-y-1 text-sm text-slate-300">
       {safeItems.map((item, index) => (
         <li key={`${label}-${index}`}>- {item}</li>
       ))}
@@ -106,97 +95,121 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 break-words text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
+      </div>
+      <div className="mt-2 break-words text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
 function KeyValueCard({ item }: { item: OperatingContextKeyValue }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+    <OperatorGateCard>
+      <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
         {safeText(item.label, "item")}
       </div>
-      <div className="mt-2 break-words text-lg font-semibold text-gray-100">
+      <div className="mt-2 break-words text-lg font-semibold text-slate-100">
         {safeText(item.value, "none")}
       </div>
-      <p className="mt-2 text-xs text-gray-400">{safeText(item.detail)}</p>
-    </div>
+      <p className="mt-2 text-xs text-slate-400">{safeText(item.detail)}</p>
+    </OperatorGateCard>
   );
 }
 
 function DashboardModuleCard({ module }: { module: OperatingContextDashboardModule }) {
   return (
-    <article className="rounded-lg border border-gray-800 bg-black/30 p-4">
+    <OperatorGateCard>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-gray-100">{safeText(module.label)}</h3>
-        <ToneBadge tone="slate">{safeText(module.status, "unknown")}</ToneBadge>
+        <h3 className="text-sm font-semibold text-slate-100">{safeText(module.label)}</h3>
+        <OperatorStatusChip status={safeText(module.status, "unknown")} tone="fixture" />
+        <OperatorBadge tone="fixture">CONFIGURATION ONLY</OperatorBadge>
       </div>
-      <div className="mt-2 font-mono text-xs text-gray-500">{safeText(module.module_id)}</div>
-      <p className="mt-3 text-sm text-gray-300">{safeText(module.summary)}</p>
-    </article>
+      <div className="mt-2">
+        <OperatorIdChip>{safeText(module.module_id)}</OperatorIdChip>
+      </div>
+      <p className="mt-3 text-sm text-slate-300">{safeText(module.summary)}</p>
+    </OperatorGateCard>
   );
 }
 
 function CouncilDefaultCard({ councilDefault }: { councilDefault: OperatingContextCouncilDefault }) {
   return (
-    <article className="rounded-lg border border-amber-900 bg-amber-950/30 p-4">
+    <OperatorGateCard>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-amber-100">{safeText(councilDefault.label)}</h3>
-        <ToneBadge tone="amber">{safeText(councilDefault.posture, "advisory")}</ToneBadge>
-        <ToneBadge tone="amber">representational only</ToneBadge>
+        <h3 className="text-sm font-semibold text-slate-100">
+          {safeText(councilDefault.label)}
+        </h3>
+        <OperatorStatusChip
+          status={safeText(councilDefault.posture, "advisory")}
+          tone="advisory"
+        />
+        <OperatorBadge tone="advisory">REPRESENTATIONAL ONLY</OperatorBadge>
       </div>
-      <div className="mt-2 font-mono text-xs text-amber-200/70">
-        {safeText(councilDefault.council_id)}
+      <div className="mt-2">
+        <OperatorIdChip>{safeText(councilDefault.council_id)}</OperatorIdChip>
       </div>
-      <p className="mt-3 text-sm text-amber-100">{safeText(councilDefault.advisory_note)}</p>
-    </article>
+      <p className="mt-3 text-sm text-slate-300">
+        {safeText(councilDefault.advisory_note)}
+      </p>
+    </OperatorGateCard>
   );
 }
 
 function AgentLaneDefaultCard({ lane }: { lane: OperatingContextAgentLaneDefault }) {
   return (
-    <article className="rounded-lg border border-sky-900 bg-sky-950/30 p-4">
+    <OperatorGateCard>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-sky-100">{safeText(lane.label)}</h3>
-        <ToneBadge tone="sky">{safeText(lane.default_status, "representational")}</ToneBadge>
-        <ToneBadge tone="rose">non-executable</ToneBadge>
+        <h3 className="text-sm font-semibold text-slate-100">{safeText(lane.label)}</h3>
+        <OperatorStatusChip
+          status={safeText(lane.default_status, "representational")}
+          tone="readOnly"
+        />
+        <OperatorBadge tone="blocked">NON-EXECUTABLE</OperatorBadge>
       </div>
-      <div className="mt-2 font-mono text-xs text-sky-200/70">{safeText(lane.lane_id)}</div>
-      <p className="mt-3 text-sm text-sky-100">{safeText(lane.summary)}</p>
-      <p className="mt-2 text-xs text-gray-400">{safeText(lane.non_executable_note)}</p>
-    </article>
+      <div className="mt-2">
+        <OperatorIdChip>{safeText(lane.lane_id)}</OperatorIdChip>
+      </div>
+      <p className="mt-3 text-sm text-slate-300">{safeText(lane.summary)}</p>
+      <p className="mt-2 text-xs text-slate-400">{safeText(lane.non_executable_note)}</p>
+    </OperatorGateCard>
   );
 }
 
 function EvidenceStandardCard({ standard }: { standard: OperatingContextEvidenceStandard }) {
   return (
-    <article className="rounded-lg border border-gray-800 bg-black/30 p-4">
-      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+    <OperatorGateCard>
+      <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
         {safeText(standard.label, "evidence standard")}
       </div>
-      <div className="mt-2 font-mono text-xs text-gray-500">{safeText(standard.standard_id)}</div>
-      <p className="mt-3 text-sm text-gray-300">{safeText(standard.requirement)}</p>
-    </article>
+      <div className="mt-2">
+        <OperatorIdChip>{safeText(standard.standard_id)}</OperatorIdChip>
+      </div>
+      <p className="mt-3 text-sm text-slate-300">{safeText(standard.requirement)}</p>
+    </OperatorGateCard>
   );
 }
 
 function ProtectedSettingCard({ setting }: { setting: OperatingContextProtectedSetting }) {
   return (
-    <article className="rounded-lg border border-rose-900 bg-rose-950/30 p-4">
+    <OperatorContradictionCard>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-rose-100">{safeText(setting.label)}</h3>
-        <ToneBadge tone="rose">protected governance constraint</ToneBadge>
+        <h3 className="text-sm font-semibold text-red-100">{safeText(setting.label)}</h3>
+        <OperatorBadge tone="blocked">PROTECTED GOVERNANCE CONSTRAINT</OperatorBadge>
       </div>
       <div className="mt-2 flex flex-wrap gap-2">
-        <ToneBadge tone="slate">{safeText(setting.setting_id)}</ToneBadge>
-        <ToneBadge tone="rose">{safeText(setting.value, "blocked")}</ToneBadge>
+        <OperatorIdChip>{safeText(setting.setting_id)}</OperatorIdChip>
+        <OperatorStatusChip status={safeText(setting.value, "blocked")} tone="blocked" />
       </div>
-      <p className="mt-3 text-sm text-rose-100">{safeText(setting.reason)}</p>
-    </article>
+      <p className="mt-3 text-sm text-red-100">{safeText(setting.reason)}</p>
+    </OperatorContradictionCard>
   );
 }
 
@@ -208,15 +221,19 @@ function SnapshotCard({
   snapshot: OperatingContextSnapshotRef;
 }) {
   return (
-    <article className="rounded-lg border border-gray-800 bg-black/30 p-4">
+    <OperatorGateCard>
       <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-sm font-semibold text-gray-100">{title}</h3>
-        <ToneBadge tone="slate">representational only</ToneBadge>
+        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
+        <OperatorBadge tone="fixture">REPRESENTATIONAL ONLY</OperatorBadge>
       </div>
-      <div className="mt-2 font-mono text-xs text-gray-500">{safeText(snapshot.ref_id)}</div>
-      <div className="mt-2 text-sm font-medium text-gray-200">{safeText(snapshot.label)}</div>
-      <p className="mt-2 text-sm text-gray-400">{safeText(snapshot.summary)}</p>
-    </article>
+      <div className="mt-2">
+        <OperatorIdChip>{safeText(snapshot.ref_id)}</OperatorIdChip>
+      </div>
+      <div className="mt-2 text-sm font-medium text-slate-200">
+        {safeText(snapshot.label)}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{safeText(snapshot.summary)}</p>
+    </OperatorGateCard>
   );
 }
 
@@ -225,30 +242,51 @@ export default function OperatingContextPage() {
   const context = fixture.context;
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+    <main className="min-h-screen bg-slate-950 px-8 py-10 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">{safeText(context.display_name)}</h1>
-            <ToneBadge tone="amber">static</ToneBadge>
-            <ToneBadge tone="sky">local</ToneBadge>
-            <ToneBadge tone="slate">fixture-backed</ToneBadge>
-            <ToneBadge tone="rose">non-live</ToneBadge>
-            <ToneBadge tone="rose">non-mutating</ToneBadge>
-            <ToneBadge tone="amber">non-canonical unless accepted</ToneBadge>
-          </div>
-          <p className="max-w-5xl text-sm text-gray-400">
-            Static Operator Control Plane viewer for Versioned Operating Context.
-            The context is displayed from checked-in fixture data and cannot
-            edit settings, execute routes, or persist changes.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-200">
-            {safeText(fixture.authority_boundary_label)}
-          </div>
-          <div className="rounded-xl border border-amber-800 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {safeText(fixture.status_note)}
-          </div>
-        </header>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="mr-2 text-3xl font-semibold">
+                {safeText(context.display_name)}
+              </h1>
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="fixture">LOCAL STATIC FIXTURE</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NON-LIVE</OperatorBadge>
+              <OperatorBadge tone="blocked">NON-MUTATING</OperatorBadge>
+              <OperatorBadge tone="advisory">
+                NON-CANONICAL UNLESS ACCEPTED
+              </OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+            <p className="mt-4 max-w-5xl text-sm text-slate-400">
+              Static Operator Control Plane viewer for Versioned Operating Context.
+              The context is displayed from checked-in fixture data and cannot
+              edit settings, execute routes, or persist changes.
+            </p>
+            <OperatorGateCard className="mt-4 text-sm text-slate-200">
+              {safeText(fixture.authority_boundary_label)}
+            </OperatorGateCard>
+            <OperatorGateCard className="mt-3 border-amber-800 text-sm text-amber-100">
+              {safeText(fixture.status_note)}
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail invariants={OPERATOR_SAFETY_INVARIANTS}>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Edit context</OperatorBlockedAction>
+              <OperatorBlockedAction>Run route</OperatorBlockedAction>
+              <OperatorBlockedAction>Execute rollback</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Context display is not live settings state. Protected constraints
+              cannot be removed from this viewer.
+            </p>
+          </OperatorSafetyRail>
+        </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
@@ -279,21 +317,26 @@ export default function OperatingContextPage() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">Objective</div>
-            <p className="mt-3 text-sm text-gray-300">{safeText(context.objective)}</p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">Identity</div>
-            <div className="mt-3 space-y-2 font-mono text-xs text-gray-300">
-              <div>nhID: {safeText(context.nhid)}</div>
-              <div>context: {safeText(context.current_context_id)}</div>
-              <div>object: {safeText(context.object_id)}</div>
+          <OperatorPanel>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Objective
             </div>
-          </div>
+            <p className="mt-3 text-sm text-slate-300">{safeText(context.objective)}</p>
+          </OperatorPanel>
+          <OperatorPanel>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Identity
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <OperatorIdChip>{safeText(context.nhid)}</OperatorIdChip>
+              <OperatorIdChip>{safeText(context.current_context_id)}</OperatorIdChip>
+              <OperatorIdChip>{safeText(context.object_id)}</OperatorIdChip>
+            </div>
+          </OperatorPanel>
         </section>
 
         <Section
+          index="01"
           title="Active Configuration"
           description="Configuration fields are displayed as checked-in fixture data only; no live settings storage exists."
         >
@@ -309,6 +352,7 @@ export default function OperatingContextPage() {
         </Section>
 
         <Section
+          index="02"
           title="Dashboard Modules"
           description="Modules are fixture-backed configuration only, not custom dashboard generation, route execution, or live module activation."
         >
@@ -324,6 +368,7 @@ export default function OperatingContextPage() {
         </Section>
 
         <Section
+          index="03"
           title="Custom Metrics"
           description="Metrics are static display fields and do not read telemetry, billing, customer, or production data."
         >
@@ -340,6 +385,7 @@ export default function OperatingContextPage() {
 
         <section className="grid gap-4 xl:grid-cols-2">
           <Section
+            index="04A"
             title="Council Defaults"
             description="Council defaults are advisory and representational only; they cannot approve or route work."
           >
@@ -358,6 +404,7 @@ export default function OperatingContextPage() {
           </Section>
 
           <Section
+            index="04B"
             title="Agent Lane Defaults"
             description="Agent lane defaults are representational and non-executable; no Agent runtime is available here."
           >
@@ -374,6 +421,7 @@ export default function OperatingContextPage() {
         </section>
 
         <Section
+          index="05"
           title="Evidence Standards"
           description="Evidence standards describe review expectations only; this viewer does not execute validation."
         >
@@ -389,6 +437,7 @@ export default function OperatingContextPage() {
         </Section>
 
         <Section
+          index="06"
           title="Blocked Settings"
           description="Blocked settings are protected governance constraints, not editable user preferences."
         >
@@ -404,6 +453,7 @@ export default function OperatingContextPage() {
         </Section>
 
         <Section
+          index="07"
           title="Confirmation Requirements"
           description="Confirmation requirements are manual gates for future expansion; no controls are provided."
         >
@@ -416,43 +466,48 @@ export default function OperatingContextPage() {
           <SnapshotCard title="Last Receipt" snapshot={context.last_receipt} />
         </section>
 
-        <section className="rounded-xl border border-rose-900 bg-rose-950/30 p-4">
+        <OperatorContradictionCard>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-medium text-rose-100">Authority Boundary</h2>
-            <ToneBadge tone="rose">display only</ToneBadge>
-            <ToneBadge tone="rose">non-mutating</ToneBadge>
+            <h2 className="text-lg font-medium text-red-100">Authority Boundary</h2>
+            <OperatorBadge tone="blocked">DISPLAY ONLY</OperatorBadge>
+            <OperatorBadge tone="blocked">NON-MUTATING</OperatorBadge>
           </div>
-          <p className="mt-3 text-sm text-rose-100">{safeText(context.authority_boundary)}</p>
-        </section>
+          <p className="mt-3 text-sm text-red-100">
+            {safeText(context.authority_boundary)}
+          </p>
+        </OperatorContradictionCard>
 
-        <section className="rounded-xl border border-amber-900 bg-amber-950/30 p-4">
+        <OperatorGateCard className="border-amber-900">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-medium text-amber-100">Rollback Posture</h2>
-            <ToneBadge tone="amber">representational only</ToneBadge>
+            <OperatorBadge tone="advisory">REPRESENTATIONAL ONLY</OperatorBadge>
+            <OperatorBadge tone="blocked">NO ROLLBACK EXECUTION</OperatorBadge>
           </div>
           <p className="mt-3 text-sm text-amber-100">{safeText(context.rollback_posture)}</p>
-        </section>
+        </OperatorGateCard>
 
-        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+        <OperatorPanel>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-medium text-gray-100">Explicit Non-Authorizations</h2>
-            <ToneBadge tone="rose">no live behavior</ToneBadge>
+            <h2 className="text-lg font-medium text-slate-100">
+              Explicit Non-Authorizations
+            </h2>
+            <OperatorBadge tone="blocked">NO LIVE BEHAVIOR</OperatorBadge>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
             {safeArray(fixture.non_authorizations).length === 0 ? (
               <EmptyState label="non-authorizations" />
             ) : (
               safeArray(fixture.non_authorizations).map((item, index) => (
-                <div
+                <OperatorGateCard
                   key={`non-authorization-${index}`}
-                  className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-300"
+                  className="text-sm text-slate-300"
                 >
                   {item}
-                </div>
+                </OperatorGateCard>
               ))
             )}
           </div>
-        </section>
+        </OperatorPanel>
       </div>
     </main>
   );
