@@ -349,7 +349,7 @@ export default async function MotionsPage(props: {
 
           <form
             method="GET"
-            className="flex flex-wrap items-end gap-3 rounded border border-zinc-800 bg-zinc-950/50 p-4"
+            className="flex flex-wrap items-end gap-3 rounded border border-slate-800 bg-slate-900 p-4"
           >
             <div>
               <div className="mb-1 text-[11px] text-gray-500">search</div>
@@ -357,7 +357,7 @@ export default async function MotionsPage(props: {
                 name="q"
                 defaultValue={query ?? ""}
                 placeholder="motion id, title, program, basis"
-                className="w-[280px] rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100 placeholder:text-gray-600"
+                className="w-[280px] rounded border border-slate-700 bg-slate-950/60 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600"
               />
             </div>
 
@@ -366,7 +366,7 @@ export default async function MotionsPage(props: {
               <select
                 name="state"
                 defaultValue={queueState ?? ""}
-                className="rounded border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs text-gray-100"
+                className="rounded border border-slate-700 bg-slate-950/60 px-3 py-2 text-xs text-slate-100"
               >
                 <option value="">ANY</option>
                 <option value="attention">attention</option>
@@ -378,7 +378,7 @@ export default async function MotionsPage(props: {
               </select>
             </div>
 
-            <label className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-xs text-gray-300">
+            <label className="flex items-center gap-2 rounded border border-slate-700 bg-slate-950/40 px-3 py-2 text-xs text-slate-300">
               <input
                 type="checkbox"
                 name="attention"
@@ -411,8 +411,8 @@ export default async function MotionsPage(props: {
           </form>
 
           <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="rounded border border-zinc-800 bg-zinc-950/40">
-            <div className="border-b border-zinc-800 px-4 py-3">
+          <div className="rounded border border-slate-800 bg-slate-900">
+            <div className="border-b border-slate-800 px-4 py-3">
               <div className="text-sm font-semibold text-gray-200">
                 Canonical motion browser
               </div>
@@ -444,7 +444,7 @@ export default async function MotionsPage(props: {
                       className={`block rounded border p-3 transition-colors ${
                         active
                           ? "border-sky-700 bg-sky-950/20"
-                          : "border-zinc-800 bg-zinc-950/50 hover:border-zinc-700 hover:bg-zinc-900/60"
+                          : "border-slate-800 bg-slate-950/50 hover:border-slate-700 hover:bg-slate-800/60"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -495,7 +495,7 @@ export default async function MotionsPage(props: {
             )}
           </div>
 
-          <div className="rounded border border-zinc-800 bg-zinc-950/40">
+          <div className="rounded border border-slate-800 bg-slate-900">
             {!detail ? (
               <div className="px-6 py-8 text-sm text-gray-400">
                 Select a canonical motion to inspect its current read-only package state.

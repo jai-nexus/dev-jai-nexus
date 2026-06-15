@@ -189,7 +189,7 @@ export default async function HomePage() {
           description="Read-only status cards summarizing current motion, agenda, registry, agent, and authority posture."
         >
           <div className="grid gap-4 xl:grid-cols-3">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Corpus transition</h3>
                 <ToneBadge tone="amber">
@@ -281,9 +281,9 @@ export default async function HomePage() {
                 Customer/project corpuses = future configurable project-history
                 compartments.
               </p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Motion snapshot posture</h3>
                 <ToneBadge
@@ -301,9 +301,9 @@ export default async function HomePage() {
                 <li>- snapshot generated: {overview.bundled_motion_snapshot.generated_at}</li>
                 <li>- live source mode: {overview.bundled_motion_snapshot.live_source_mode}</li>
               </ul>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Deterministic agenda posture</h3>
                 <ToneBadge tone="amber">planning/review only</ToneBadge>
@@ -316,9 +316,9 @@ export default async function HomePage() {
                 <li>- settled items: {overview.deterministic_agenda.settled}</li>
               </ul>
               <p className="mt-3 text-xs text-gray-400">{overview.deterministic_agenda.note}</p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Operator JAI entry point</h3>
                 <ToneBadge tone="sky">{overview.operator_jai.posture}</ToneBadge>
@@ -330,9 +330,9 @@ export default async function HomePage() {
               >
                 Open /operator/jai
               </Link>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">First official loop-through candidate</h3>
                 <ToneBadge tone="amber">deterministic</ToneBadge>
@@ -382,9 +382,9 @@ export default async function HomePage() {
                   Open /operator/deliberation
                 </Link>
               </div>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Registry posture</h3>
                 <ToneBadge tone="sky">{overview.repo_registry.repo_count} repos</ToneBadge>
@@ -399,9 +399,9 @@ export default async function HomePage() {
                   </ToneBadge>
                 ))}
               </div>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Agent posture</h3>
                 <ToneBadge tone="emerald">
@@ -417,9 +417,9 @@ export default async function HomePage() {
                 <li>- registry/model unchanged in this seam</li>
               </ul>
               <p className="mt-3 text-xs text-gray-400">{overview.agents.note}</p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Authority posture</h3>
                 <ToneBadge tone="rose">
@@ -433,9 +433,9 @@ export default async function HomePage() {
                 <ToneBadge tone="rose">propose_pr disabled</ToneBadge>
                 <ToneBadge tone="rose">execute_runtime disabled</ToneBadge>
               </div>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Paid beta readiness</h3>
                 <ToneBadge tone="rose">not open</ToneBadge>
@@ -464,9 +464,9 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Infrastructure split</h3>
                 <ToneBadge tone="amber">local fleet private</ToneBadge>
@@ -482,9 +482,9 @@ export default async function HomePage() {
                 operator infrastructure only. Future hosted app, API, database,
                 auth, billing, and deployment paths remain separately gated.
               </p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Toolchain readiness</h3>
                 <ToneBadge tone="amber">lanes bounded</ToneBadge>
@@ -500,9 +500,9 @@ export default async function HomePage() {
                 bounded separately. Toolchain events are not global SoT by
                 default, and raw JSONL remains repo-local ingress evidence only.
               </p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Toolchain gate tracker</h3>
                 <ToneBadge tone="emerald">boundaries settled</ToneBadge>
@@ -518,9 +518,9 @@ export default async function HomePage() {
                 privacy/context review is settled, but raw JSONL stays repo-local
                 ingress evidence only and is not promoted here.
               </p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner substrate</h3>
                 <ToneBadge tone="amber">dry-run only</ToneBadge>
@@ -604,9 +604,9 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Edge Runner health status</h3>
                 <ToneBadge tone="sky">static example</ToneBadge>
@@ -668,7 +668,7 @@ export default async function HomePage() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
@@ -681,7 +681,7 @@ export default async function HomePage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="group rounded-xl border border-gray-800 bg-zinc-950 p-4 transition-colors hover:border-sky-500/70 hover:bg-zinc-900/60"
+                className="group rounded border border-slate-800 bg-slate-900 p-4 transition-colors hover:border-sky-700 hover:bg-slate-800"
               >
                 <div className="text-sm font-semibold text-gray-100">{link.label}</div>
                 <p className="mt-2 text-sm text-gray-400">{link.summary}</p>
@@ -698,7 +698,7 @@ export default async function HomePage() {
           description="Current read-only posture for Events, Sync Runs, and Decisions without implying live comprehensive telemetry."
         >
           <div className="grid gap-4 xl:grid-cols-3">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Events</h3>
                 <ToneBadge tone="amber">partial stream</ToneBadge>
@@ -710,9 +710,9 @@ export default async function HomePage() {
                 <li>- latest source: {overview.telemetry.events.latest_source ?? "none"}</li>
               </ul>
               <p className="mt-3 text-xs text-gray-400">{overview.telemetry.events.note}</p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Sync Runs</h3>
                 <ToneBadge tone="amber">legacy review feed</ToneBadge>
@@ -723,9 +723,9 @@ export default async function HomePage() {
                 <li>- long-term root role: no longer SyncRun-first</li>
               </ul>
               <p className="mt-3 text-xs text-gray-400">{overview.telemetry.sync_runs.note}</p>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Decisions</h3>
                 <ToneBadge tone="slate">manual extraction</ToneBadge>
@@ -735,7 +735,7 @@ export default async function HomePage() {
                 <li>- latest extracted decision: {formatTimestamp(overview.telemetry.decisions.latest_at)}</li>
               </ul>
               <p className="mt-3 text-xs text-gray-400">{overview.telemetry.decisions.note}</p>
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
@@ -744,14 +744,14 @@ export default async function HomePage() {
           description="Read-only boundary reminders pulled from the current control-plane authority model."
         >
           <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorPanel className="p-4">
               <ul className="space-y-2 text-sm text-gray-300">
                 {authority.notes.map((note) => (
                   <li key={note}>- {note}</li>
                 ))}
               </ul>
-            </div>
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            </OperatorPanel>
+            <OperatorPanel className="p-4">
               <div className="text-xs uppercase tracking-wide text-gray-500">
                 Blocked capabilities
               </div>
@@ -762,7 +762,7 @@ export default async function HomePage() {
                   </ToneBadge>
                 ))}
               </div>
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
@@ -771,13 +771,13 @@ export default async function HomePage() {
           description="Compact legacy/review surface only. Sync Runs remain sparse agent-edit and sync artifacts, not a full repo heartbeat."
         >
           {overview.telemetry.sync_runs.recent_runs.length === 0 ? (
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-400">
+            <OperatorPanel className="p-4 text-sm text-slate-400">
               No SyncRun rows are currently recorded.
-            </div>
+            </OperatorPanel>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-gray-800 bg-zinc-950">
+            <div className="overflow-x-auto rounded border border-slate-800 bg-slate-900">
               <table className="w-full border-collapse text-sm">
-                <thead className="border-b border-gray-800 bg-black/20 text-left">
+                <thead className="border-b border-slate-800 bg-slate-950/60 text-left">
                   <tr>
                     <th className="px-3 py-2 text-xs text-gray-400">When</th>
                     <th className="px-3 py-2 text-xs text-gray-400">Repo</th>

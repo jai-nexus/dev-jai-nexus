@@ -307,7 +307,7 @@ export function GridView({ config }: { config: GridConfig }) {
   );
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8 pb-28">
+    <main className="min-h-screen bg-slate-950 p-8 pb-28 text-slate-100">
 
       {/* ── Header ── */}
       <header className="mb-4">
@@ -452,10 +452,10 @@ export function GridView({ config }: { config: GridConfig }) {
                 Governance only
               </p>
               <div
-                className={`rounded-lg border bg-zinc-950 p-3 transition-colors ${
+                className={`rounded border bg-slate-900 p-3 transition-colors ${
                   dragTargetZone === "governance"
                     ? GOV_DRAG_OVER
-                    : "border-gray-800"
+                    : "border-slate-800"
                 }`}
                 onDragOver={(e) => handleDragOverZone(e, "governance")}
                 onDragLeave={handleDragLeaveZone}
@@ -657,7 +657,7 @@ function ConnectHint({
   const step = !connType ? 1 : !connSource ? 2 : 3;
 
   return (
-    <div className="rounded-lg border border-teal-800/40 bg-zinc-950 p-4">
+    <div className="rounded border border-teal-800/40 bg-slate-900 p-4">
       <div className="mb-3 text-xs font-medium text-teal-300">
         Connect Mode
       </div>
@@ -701,7 +701,7 @@ function StagedConnectionsList({
       <p className="text-[10px] uppercase tracking-widest text-gray-600 mb-2">
         Staged connections ({connections.length})
       </p>
-      <div className="rounded-lg border border-gray-800 bg-zinc-950 overflow-hidden">
+      <div className="overflow-hidden rounded border border-slate-800 bg-slate-900">
         {connections.map((conn, idx) => (
           <div
             key={conn.id}
@@ -778,7 +778,7 @@ function ZoneCard({
 
   return (
     <div
-      className={`rounded-lg border bg-zinc-950 transition-colors ${
+      className={`rounded border bg-slate-900 transition-colors ${
         isDragTarget ? colors.dragOver : colors.border
       }`}
       onDragOver={connMode ? undefined : onDragOver}
@@ -986,8 +986,8 @@ function PropertyPanel({
 
   return (
     <div
-      className={`rounded-lg border bg-zinc-950 ${
-        isDraft ? "border-amber-800/60" : "border-gray-800"
+      className={`rounded border bg-slate-900 ${
+        isDraft ? "border-amber-800/60" : "border-slate-800"
       }`}
     >
       <div className="flex items-start justify-between gap-2 px-4 py-3 border-b border-gray-800">
@@ -1023,7 +1023,7 @@ function PropertyPanel({
           <span
             className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] ${
               agent.tier === 0
-                ? "bg-emerald-900/60 text-emerald-200"
+                ? "bg-sky-900/60 text-sky-200"
                 : agent.tier === 1
                   ? "bg-sky-900/60 text-sky-200"
                   : "bg-purple-900/60 text-purple-200"
@@ -1130,7 +1130,7 @@ function PropertyPanel({
 
 function EmptyPanel({ isDragging }: { isDragging: boolean }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-zinc-950 p-6 text-center">
+    <div className="rounded border border-slate-800 bg-slate-900 p-6 text-center">
       <p className="text-xs text-gray-600 mb-1">
         {isDragging ? "Drop to reassign zone" : "No agent selected"}
       </p>
@@ -1200,7 +1200,7 @@ function DraftBanner({
 // No file writes — all output is copy-only. Closing does not clear draft state.
 //
 // Sections: motion.yaml · proposal.md · execution.md · challenge.md · bundle.txt
-// Motion ID input applies substituteMotionId() live; banner goes amber→green on valid ID.
+// Motion ID input applies substituteMotionId() live; banner goes amber to sky on valid ID.
 
 const SCAFFOLD_TABS = [
   { key: "motionYaml",  label: "motion.yaml"  },
@@ -1262,7 +1262,7 @@ function MotionDraftModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-3xl rounded-xl border border-amber-800/50 bg-zinc-950 flex flex-col max-h-[85vh]">
+      <div className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded border border-amber-800/50 bg-slate-900">
 
         {/* Header */}
         <div className="px-5 py-3 border-b border-gray-800">
@@ -1301,7 +1301,7 @@ function MotionDraftModal({
             <div
               className={`flex-1 rounded border px-3 py-1.5 text-[11px] ${
                 idValid
-                  ? "border-emerald-700/50 bg-emerald-950/40 text-emerald-300"
+                  ? "border-sky-700/50 bg-sky-950/40 text-sky-300"
                   : "border-amber-700/50 bg-amber-950/40 text-amber-300"
               }`}
             >
@@ -1348,7 +1348,7 @@ function MotionDraftModal({
             onClick={handleCopy}
             className={`rounded-md border px-3 py-1.5 text-xs transition-colors ${
               copiedTab === activeTab
-                ? "border-emerald-700 bg-emerald-900/40 text-emerald-200"
+                ? "border-sky-700 bg-sky-900/40 text-sky-200"
                 : "border-gray-700 bg-zinc-800 text-gray-300 hover:border-gray-600 hover:bg-zinc-700"
             }`}
           >
