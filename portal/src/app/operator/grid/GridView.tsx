@@ -17,6 +17,7 @@
 //   6. "Exit" or ESC to leave connection mode
 
 import { useReducer, useState, useCallback, useEffect } from "react";
+import { OperatorBadge } from "@/components/operator/slate";
 import type { GridConfig, AgencyAgent, ExecutionRole } from "@/lib/grid/gridConfig";
 import {
   draftReducer,
@@ -311,20 +312,29 @@ export function GridView({ config }: { config: GridConfig }) {
       {/* ── Header ── */}
       <header className="mb-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS · Grid</h1>
-            <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[11px] uppercase tracking-wide text-gray-400">
-              Configuration Mode
-            </span>
-            {hasDraft ? (
-              <span className="inline-flex items-center rounded-full border border-amber-700/60 bg-amber-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-400">
-                Draft · {totalChanges} pending
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-semibold">JAI NEXUS · Grid</h1>
+              <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-[11px] uppercase tracking-wide text-gray-400">
+                Configuration Mode
               </span>
-            ) : (
-              <span className="inline-flex items-center rounded-full border border-emerald-800/50 bg-emerald-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">
-                Canonical · v0
-              </span>
-            )}
+              {hasDraft ? (
+                <span className="inline-flex items-center rounded-full border border-amber-700/60 bg-amber-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-amber-400">
+                  Draft · {totalChanges} pending
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full border border-emerald-800/50 bg-emerald-900/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">
+                  Canonical · v0
+                </span>
+              )}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY CANONICAL</OperatorBadge>
+              <OperatorBadge tone="fixture">CLIENT-ONLY DRAFT</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
           </div>
 
           {/* Connect mode toggle */}
@@ -1258,8 +1268,12 @@ function MotionDraftModal({
         <div className="px-5 py-3 border-b border-gray-800">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-sm font-medium text-amber-200">
-                Motion Draft Package
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-medium text-amber-200">
+                  Motion Draft Package
+                </div>
+                <OperatorBadge tone="composeOnly">REAL-COMPOSE</OperatorBadge>
+                <OperatorBadge tone="blocked">NO FILE WRITE</OperatorBadge>
               </div>
               <div className="text-[11px] text-gray-500 mt-0.5 truncate">
                 {scaffold.changesSummary.derivedTitle}
@@ -1340,7 +1354,7 @@ function MotionDraftModal({
           >
             {copiedTab === activeTab
               ? "Copied ✓"
-              : `Copy ${activeLabel}`}
+              : `Copy ${activeLabel} · REAL-COMPOSE`}
           </button>
         </div>
       </div>

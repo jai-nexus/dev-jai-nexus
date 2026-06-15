@@ -83,6 +83,15 @@ function ToneBadge({
   return <OperatorBadge tone={rootToneMap[tone]}>{children}</OperatorBadge>;
 }
 
+function motionQueueTone(
+  state: string | null,
+): "sky" | "amber" | "emerald" | "rose" | "slate" {
+  if (state === "ratified" || state === "settled") return "emerald";
+  if (state === "ready_for_vote") return "amber";
+  if (state === "attention") return "rose";
+  return "slate";
+}
+
 function formatTimestamp(value: Date | null): string {
   if (!value) return "none recorded";
   return formatCentralTooltip(value);
@@ -277,7 +286,11 @@ export default async function HomePage() {
             <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-sm font-semibold text-gray-100">Motion snapshot posture</h3>
-                <ToneBadge tone="emerald">
+                <ToneBadge
+                  tone={motionQueueTone(
+                    overview.bundled_motion_snapshot.latest_motion_queue_state,
+                  )}
+                >
                   {overview.bundled_motion_snapshot.latest_motion_queue_state ?? "unknown"}
                 </ToneBadge>
               </div>
