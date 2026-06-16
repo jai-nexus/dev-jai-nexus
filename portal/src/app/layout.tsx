@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { GlobalNav } from '@/components/GlobalNav';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,29 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-gray-100 min-h-screen">
-        <header className="border-b border-zinc-800 px-6 py-3 flex items-center gap-6">
-          <div className="font-semibold tracking-wide">
-            JAI NEXUS
-          </div>
-          <nav className="text-sm flex gap-4 text-gray-400">
-            <Link href="/" className="hover:text-gray-100">
-              Sync Runs
-            </Link>
-            <Link href="/repos" className="hover:text-gray-100">
-              Repos
-            </Link>
-            <Link href="/domains" className="hover:text-gray-100">
-              Domains
-            </Link>
-            <Link href="/events" className="hover:text-gray-100">
-              Events
-            </Link>
-            <Link href="/operator/events" className="hover:text-gray-100">
-              Operator
-            </Link>
-          </nav>
-        </header>
+      <body className="min-h-screen bg-slate-950 text-gray-100">
+        <GlobalNav />
         {children}
       </body>
     </html>
