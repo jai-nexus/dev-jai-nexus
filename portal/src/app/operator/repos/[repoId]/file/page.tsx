@@ -2,6 +2,17 @@
 import Link from "next/link";
 import { cookies, headers } from "next/headers";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
+
 type RouteParams = {
   repoId: string;
 };
@@ -20,12 +31,43 @@ export const revalidate = 0;
 
 function getBaseUrl(h: Headers) {
   const proto = h.get("x-forwarded-proto") ?? "http";
-  const host =
-    h.get("x-forwarded-host") ??
-    h.get("host") ??
-    "localhost:3000";
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
 
   return `${proto}://${host}`;
+}
+
+function ErrorView({
+  repoId,
+  title,
+  detail,
+}: {
+  repoId: number | string;
+  title: string;
+  detail: React.ReactNode;
+}) {
+  return (
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <OperatorPanel className="p-5">
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+            dev.jai.nexus / operator / repos / file
+          </div>
+          <h1 className="mt-2 text-2xl font-semibold">{title}</h1>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+            <OperatorBadge tone="readOnly">READ-ONLY FILE PREVIEW</OperatorBadge>
+            <OperatorBadge tone="blocked">NO REPO MUTATION</OperatorBadge>
+            <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+          </div>
+        </OperatorPanel>
+        <OperatorGateCard>
+          <OperatorBadge tone="blocked">READ ERROR</OperatorBadge>
+          <p className="mt-2 text-sm text-red-200">{detail}</p>
+          <BackLink repoId={repoId} />
+        </OperatorGateCard>
+      </div>
+    </main>
+  );
 }
 
 export default async function RepoFileViewPage({
@@ -38,40 +80,43 @@ export default async function RepoFileViewPage({
 
   if (!repoId || Number.isNaN(repoIdNum)) {
     return (
-      <main className="min-h-screen bg-black text-gray-100 p-8">
-        <h1 className="text-2xl font-semibold">Repo File · Error</h1>
-        <p className="mt-2 text-sm text-red-400">
-          Invalid repoId: <code className="font-mono">{String(repoId)}</code>
-        </p>
-        <BackLink repoId={repoId ?? "?"} />
-      </main>
+      <ErrorView
+        repoId={repoId ?? "?"}
+        title="Repo File / Error"
+        detail={
+          <>
+            Invalid repoId: <code className="font-mono">{String(repoId)}</code>
+          </>
+        }
+      />
     );
   }
 
   if (!path) {
     return (
-      <main className="min-h-screen bg-black text-gray-100 p-8">
-        <h1 className="text-2xl font-semibold">Repo File · Error</h1>
-        <p className="mt-2 text-sm text-red-400">
-          Missing <code className="font-mono">path</code> query param.
-        </p>
-        <BackLink repoId={repoIdNum} />
-      </main>
+      <ErrorView
+        repoId={repoIdNum}
+        title="Repo File / Error"
+        detail={
+          <>
+            Missing <code className="font-mono">path</code> query param.
+          </>
+        }
+      />
     );
   }
 
   const cookieHeader = (await cookies())
     .getAll()
-    .map((c) => `${c.name}=${c.value}`)
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
 
   const h = await headers();
   const baseUrl = getBaseUrl(h);
 
-  // Absolute URL (required for server-side fetch in Node)
   const apiUrl = new URL(
     `/api/repos/${repoIdNum}/file?path=${encodeURIComponent(path)}`,
-    baseUrl
+    baseUrl,
   );
 
   let data:
@@ -116,34 +161,73 @@ export default async function RepoFileViewPage({
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-black text-gray-100 p-8">
-        <h1 className="text-2xl font-semibold">Repo File · Error</h1>
-        <p className="mt-2 text-sm text-red-400">
-          Failed to load file <code className="font-mono">{path}</code>
-          {errorMessage ? `: ${errorMessage}` : null}
-        </p>
-        <BackLink repoId={repoIdNum} />
-      </main>
+      <ErrorView
+        repoId={repoIdNum}
+        title="Repo File / Error"
+        detail={
+          <>
+            Failed to load file <code className="font-mono">{path}</code>
+            {errorMessage ? `: ${errorMessage}` : null}
+          </>
+        }
+      />
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-4">
-        <h1 className="text-2xl font-semibold">Repo File</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          repoId: {data.repoId} · path:{" "}
-          <code className="font-mono">{data.path}</code>
-        </p>
-        <div className="mt-2">
-          <BackLink repoId={repoIdNum} />
-        </div>
-      </header>
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / operator / repos / file
+            </div>
+            <h1 className="mt-2 text-2xl font-semibold">Repo File Preview</h1>
+            <p className="mt-2 text-sm text-slate-400">
+              repoId: {data.repoId} / path:{" "}
+              <code className="font-mono">{data.path}</code>
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY FILE PREVIEW</OperatorBadge>
+              <OperatorBadge tone="readOnly">INTERNAL API READ</OperatorBadge>
+              <OperatorBadge tone="blocked">NO REPO MUTATION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+            <BackLink repoId={repoIdNum} />
+          </OperatorPanel>
 
-      <div className="rounded-lg border border-gray-800 bg-zinc-950 p-4">
-        <pre className="whitespace-pre-wrap break-words text-[11px] font-mono text-gray-100">
-          {data.content}
-        </pre>
+          <OperatorSafetyRail
+            title="Repo File Preview Safety"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Edit file</OperatorBlockedAction>
+              <OperatorBlockedAction>Commit change</OperatorBlockedAction>
+              <OperatorBlockedAction>Open PR</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              DB-backed display is read-only unless explicitly routed
+              otherwise. Prompt text is not dispatch.
+            </p>
+          </OperatorSafetyRail>
+        </header>
+
+        <OperatorPanel className="p-4">
+          <OperatorSectionHeader
+            index="01"
+            title="File Content"
+            right={
+              <>
+                <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+                <OperatorIdChip>{data.path}</OperatorIdChip>
+              </>
+            }
+          />
+          <pre className="max-h-[75vh] overflow-auto whitespace-pre-wrap break-words rounded border border-slate-800 bg-slate-950/60 p-4 font-mono text-[11px] text-slate-100">
+            {data.content}
+          </pre>
+        </OperatorPanel>
       </div>
     </main>
   );
@@ -153,9 +237,9 @@ function BackLink({ repoId }: { repoId: number | string }) {
   return (
     <Link
       href={`/operator/repos/${repoId}`}
-      className="text-xs text-sky-400 hover:underline"
+      className="mt-4 inline-flex text-xs text-sky-300 underline hover:text-sky-200"
     >
-      ← Back to file list
+      Back to file list
     </Link>
   );
 }
