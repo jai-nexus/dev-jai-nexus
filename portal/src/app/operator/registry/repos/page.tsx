@@ -8,6 +8,15 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 import { getServerAuthSession } from "@/auth";
 import { normalizeRepoStatus, REPO_STATUS_VALUES } from "@/lib/registryEnums";
@@ -229,18 +238,36 @@ export default async function OperatorRegistryReposPage() {
   });
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6 flex items-end justify-between gap-4">
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <header className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <OperatorPanel className="space-y-4 p-5">
         <div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            <OperatorBadge tone="blocked" label="NON-AUTHORIZING" />
+            <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+            <OperatorBadge tone="gated" label="ADMIN-GATED" />
+            <OperatorBadge tone="readOnly" label="READ-ONLY LIST" />
+            <OperatorBadge tone="blocked" label="ZERO GATES GRANTED" />
+          </div>
           <h1 className="text-3xl font-semibold">Operator · Registry · Repos</h1>
           <p className="text-sm text-gray-400 mt-1">DB-backed repo registry.</p>
         </div>
 
+        <OperatorGateCard className="border-amber-900/70 bg-amber-950/20">
+          <div className="mb-2 flex flex-wrap items-center gap-1.5">
+            <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+            <OperatorBadge tone="blocked" label="DB UPSERT" />
+            <OperatorBadge tone="blocked" label="NO NEW AUTHORITY" />
+          </div>
+          <p className="mb-3 text-sm text-amber-100/80">
+            Import preserves the existing repos.yaml read and DB upsert
+            behavior. Existing mutation controls are not new Slate authority.
+          </p>
         <div className="flex gap-2">
           <form action={importFromReposYaml}>
             <button
               type="submit"
-              className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+              className="rounded-md border border-amber-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-300 hover:bg-amber-950/40"
             >
               Import from repos.yaml
             </button>
@@ -248,16 +275,47 @@ export default async function OperatorRegistryReposPage() {
 
           <Link
             href="/operator/registry/repos/new"
-            className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+            className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-slate-200 hover:bg-slate-900"
           >
             + New Repo
           </Link>
         </div>
+        </OperatorGateCard>
+        </OperatorPanel>
+
+        <OperatorSafetyRail
+          title="Registry Import Safety"
+          invariants={OPERATOR_SAFETY_INVARIANTS}
+        >
+          <div className="space-y-2 text-xs text-slate-400">
+            <p>
+              Existing mutation controls are not new Slate authority. Dashboard
+              display does not authorize action. Read-only is not authority.
+            </p>
+            <div className="space-y-1.5">
+              <OperatorBlockedAction>GitHub write</OperatorBlockedAction>
+              <OperatorBlockedAction>Repo mutation</OperatorBlockedAction>
+              <OperatorBlockedAction>Branch / PR automation</OperatorBlockedAction>
+            </div>
+          </div>
+        </OperatorSafetyRail>
       </header>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-800">
+      <OperatorPanel className="overflow-hidden p-0">
+        <OperatorSectionHeader
+          index="01"
+          title="Read-Only Repo Rows"
+          right={
+            <>
+              <OperatorBadge tone="readOnly" label="READ-ONLY" />
+              <OperatorBadge tone="blocked" label="NO EXECUTION" />
+            </>
+          }
+          className="m-3"
+        />
+      <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
-          <thead className="bg-zinc-950 border-b border-gray-800 text-left">
+          <thead className="bg-slate-950 border-b border-slate-800 text-left">
             <tr>
               <th className="py-2 px-3">Repo</th>
               <th className="py-2 px-3">NH_ID</th>
@@ -276,7 +334,7 @@ export default async function OperatorRegistryReposPage() {
               return (
                 <tr
                   key={r.id}
-                  className="border-b border-gray-900 hover:bg-zinc-900/60"
+                  className="border-b border-slate-900 hover:bg-slate-900/60"
                 >
                   <td className="py-2 px-3 whitespace-nowrap">{r.name}</td>
                   <td className="py-2 px-3 whitespace-nowrap">
@@ -308,6 +366,7 @@ export default async function OperatorRegistryReposPage() {
           </tbody>
         </table>
       </div>
+      </OperatorPanel>
 
       <p className="mt-4 text-xs text-gray-500">
         Allowed repo statuses: {REPO_STATUS_VALUES.join(", ")}
