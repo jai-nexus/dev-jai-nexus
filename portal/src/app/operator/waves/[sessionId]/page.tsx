@@ -1,16 +1,26 @@
 // portal/src/app/operator/waves/[sessionId]/page.tsx
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { prisma } from "@/lib/prisma";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+} from "@/components/operator/slate";
 import { getServerAuthSession } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import type { WavePlan, WaveTask } from "@/lib/waves/types";
 
 interface PageProps {
   params: { sessionId: string };
 }
 
-// Prisma result helpers
 type PilotSession = NonNullable<
   Awaited<ReturnType<typeof prisma.pilotSession.findUnique>>
 >;
@@ -79,34 +89,58 @@ export default async function WaveDetailPage({ params }: PageProps) {
 
   const data = await loadWavePlan(params.sessionId);
 
-  // If the session truly isn't in the DB, show an explicit debug view
   if (!data) {
     return (
-      <main className="min-h-screen bg-black text-gray-100 p-8">
-        <header className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Wave not found</h1>
-            <p className="mt-1 text-sm text-gray-400">
+      <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+        <header className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / operator / waves / detail
+            </div>
+            <h1 className="mt-2 text-2xl font-semibold">Wave not found</h1>
+            <p className="mt-2 text-sm text-slate-400">
               No Pilot session found for id{" "}
               <span className="font-mono">{params.sessionId}</span>.
             </p>
-          </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+          </OperatorPanel>
 
-          <Link
-            href="/operator/waves"
-            className="text-sm text-gray-400 hover:text-gray-200 underline underline-offset-4"
+          <OperatorSafetyRail
+            title="Wave Detail Safety"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
           >
-            ← Back to Waves
-          </Link>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Create tasks</OperatorBlockedAction>
+              <OperatorBlockedAction>Mutate session</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Dashboard display does not authorize. Read-only is not authority.
+            </p>
+          </OperatorSafetyRail>
         </header>
 
-        <section className="rounded-lg border border-gray-800 bg-zinc-950 p-4">
-          <h2 className="text-sm font-semibold text-gray-300">Debug</h2>
-          <p className="mt-2 text-xs text-gray-400">
+        <OperatorPanel className="p-4">
+          <OperatorSectionHeader
+            index="01"
+            title="Debug"
+            right={<OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>}
+          />
+          <p className="text-xs text-slate-400">
             This usually means the session id does not exist in the connected
             database, or it was created in a different environment / DB.
           </p>
-        </section>
+          <Link
+            href="/operator/waves"
+            className="mt-4 inline-flex text-sm text-sky-300 underline hover:text-sky-200"
+          >
+            Back to Waves
+          </Link>
+        </OperatorPanel>
       </main>
     );
   }
@@ -116,130 +150,175 @@ export default async function WaveDetailPage({ params }: PageProps) {
   const waveLabel = session.waveLabel ?? "unknown";
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">
-            Wave {waveLabel} · {projectKey}
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <header className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <OperatorPanel className="p-5">
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+            dev.jai.nexus / operator / waves / detail
+          </div>
+          <h1 className="mt-2 text-2xl font-semibold">
+            Wave {waveLabel} / {projectKey}
           </h1>
-          <p className="mt-1 text-sm text-gray-400">
+          <p className="mt-2 text-sm text-slate-400">
             Pilot session #{session.id}
             {planAction
-              ? ` · plan action #${planAction.id}`
-              : " · no plan action yet"}
+              ? ` / plan action #${planAction.id}`
+              : " / no plan action yet"}
           </p>
-        </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+            <OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>
+            <OperatorBadge tone="advisory">PLANNING SPINE</OperatorBadge>
+            <OperatorBadge tone="blocked">NO SESSION MUTATION</OperatorBadge>
+            <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+            <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+          </div>
+          <Link
+            href="/operator/waves"
+            className="mt-4 inline-flex text-sm text-sky-300 underline hover:text-sky-200"
+          >
+            Back to Waves
+          </Link>
+        </OperatorPanel>
 
-        <Link
-          href="/operator/waves"
-          className="text-sm text-gray-400 hover:text-gray-200 underline underline-offset-4"
+        <OperatorSafetyRail
+          title="Wave Detail Safety"
+          invariants={OPERATOR_SAFETY_INVARIANTS}
         >
-          ← Back to Waves
-        </Link>
+          <div className="flex flex-wrap gap-2">
+            <OperatorBlockedAction>Dispatch wave</OperatorBlockedAction>
+            <OperatorBlockedAction>Create receipt</OperatorBlockedAction>
+            <OperatorBlockedAction>Update canon</OperatorBlockedAction>
+          </div>
+          <p className="text-xs text-slate-400">
+            Routes recommend; they do not execute. Validation is not acceptance.
+          </p>
+        </OperatorSafetyRail>
       </header>
 
       <section className="mb-6 grid gap-4 md:grid-cols-3">
-        <div className="rounded-lg border border-gray-800 bg-zinc-950 p-4">
-          <h2 className="text-sm font-semibold text-gray-300">Wave</h2>
-          <dl className="mt-2 space-y-1 text-sm text-gray-400">
+        <OperatorPanel className="p-4">
+          <OperatorSectionHeader
+            index="01"
+            title="Wave"
+            right={<OperatorBadge tone="readOnly">READ-ONLY DB</OperatorBadge>}
+          />
+          <dl className="space-y-1 text-sm text-slate-400">
             <div className="flex justify-between">
               <dt>Project</dt>
-              <dd className="font-mono text-gray-200">{projectKey}</dd>
+              <dd className="font-mono text-slate-200">{projectKey}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Wave label</dt>
-              <dd className="font-mono text-gray-200">{waveLabel}</dd>
+              <dd className="font-mono text-slate-200">{waveLabel}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Created</dt>
               <dd>{session.createdAt.toISOString()}</dd>
             </div>
           </dl>
-        </div>
+        </OperatorPanel>
 
-        <div className="rounded-lg border border-gray-800 bg-zinc-950 p-4 md:col-span-2">
-          <h2 className="text-sm font-semibold text-gray-300">Summary</h2>
-          <p className="mt-2 text-sm text-gray-200">
+        <OperatorPanel className="p-4 md:col-span-2">
+          <OperatorSectionHeader
+            index="02"
+            title="Summary"
+            right={<OperatorBadge tone="advisory">PLAN DISPLAY</OperatorBadge>}
+          />
+          <p className="text-sm text-slate-200">
             {plan?.summary ??
               "No parsed plan payload found for this wave. Check the associated PilotAction payload."}
           </p>
           {plan?.notes ? (
-            <p className="mt-3 whitespace-pre-line text-xs text-gray-400">
+            <p className="mt-3 whitespace-pre-line text-xs text-slate-400">
               {plan.notes}
             </p>
           ) : null}
-        </div>
+        </OperatorPanel>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-300">Tasks</h2>
-          {planAction && (
-            <span className="text-xs text-gray-500">
-              action #{planAction.id} ·{" "}
-              {planAction.createdAt.toISOString()}
-            </span>
-          )}
-        </div>
+      <OperatorPanel>
+        <OperatorSectionHeader
+          index="03"
+          title="Tasks"
+          right={
+            <>
+              <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT EXECUTION</OperatorBadge>
+              {planAction ? (
+                <OperatorIdChip>action #{planAction.id}</OperatorIdChip>
+              ) : null}
+            </>
+          }
+        />
+        {planAction ? (
+          <p className="mb-4 text-xs text-slate-500">
+            Latest plan action created {planAction.createdAt.toISOString()}.
+            Displaying this plan does not create acceptance, a receipt, or
+            canon.
+          </p>
+        ) : null}
 
         {!plan || !plan.tasks || plan.tasks.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No tasks found in this wave plan.
-          </p>
+          <OperatorGateCard>
+            <OperatorBadge tone="readOnly">READ-ONLY / EMPTY</OperatorBadge>
+            <p className="mt-2 text-sm text-slate-500">
+              No tasks found in this wave plan.
+            </p>
+          </OperatorGateCard>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-gray-800 bg-zinc-950">
-            <table className="min-w-full divide-y divide-gray-800 text-sm">
-              <thead className="bg-zinc-900">
+          <div className="overflow-hidden rounded border border-slate-800 bg-slate-900">
+            <table className="min-w-full divide-y divide-slate-800 text-sm">
+              <thead className="bg-slate-950/60">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium text-gray-300">
+                  <th className="px-3 py-2 text-left font-medium text-slate-300">
                     NH / ID
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-300">
+                  <th className="px-3 py-2 text-left font-medium text-slate-300">
                     Kind
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-300">
+                  <th className="px-3 py-2 text-left font-medium text-slate-300">
                     Status
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-300">
+                  <th className="px-3 py-2 text-left font-medium text-slate-300">
                     Title
                   </th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-300">
+                  <th className="px-3 py-2 text-left font-medium text-slate-300">
                     Target
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-slate-800">
                 {plan.tasks.map((task: WaveTask) => (
                   <tr key={task.id}>
-                    <td className="px-3 py-2 font-mono text-xs text-gray-300">
-                      {task.nhId ?? task.id}
+                    <td className="px-3 py-2">
+                      <OperatorIdChip>{task.nhId ?? task.id}</OperatorIdChip>
                     </td>
                     <td className="px-3 py-2">
-                      <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs uppercase tracking-wide text-gray-200">
-                        {task.kind}
-                      </span>
+                      <OperatorBadge tone="neutral">{task.kind}</OperatorBadge>
                     </td>
                     <td className="px-3 py-2">
-                      <span className="rounded-full border border-gray-700 px-2 py-0.5 text-xs uppercase tracking-wide text-gray-300">
-                        {task.status}
-                      </span>
+                      <OperatorStatusChip
+                        status={task.status}
+                        tone="advisory"
+                      />
                     </td>
-                    <td className="px-3 py-2 text-gray-100">
+                    <td className="px-3 py-2 text-slate-100">
                       {task.title}
                     </td>
-                    <td className="px-3 py-2 text-xs text-gray-400">
+                    <td className="px-3 py-2 text-xs text-slate-400">
                       {task.target ? (
                         <>
-                          <span className="font-mono text-gray-300">
+                          <span className="font-mono text-slate-300">
                             {task.target.kind}
                           </span>
-                          {" · "}
+                          {" / "}
                           <span className="font-mono">
                             {task.target.path}
                           </span>
                         </>
                       ) : (
-                        <span className="text-gray-500">—</span>
+                        <span className="text-slate-500">-</span>
                       )}
                     </td>
                   </tr>
@@ -248,7 +327,7 @@ export default async function WaveDetailPage({ params }: PageProps) {
             </table>
           </div>
         )}
-      </section>
+      </OperatorPanel>
     </main>
   );
 }
