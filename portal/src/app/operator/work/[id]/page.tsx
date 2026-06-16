@@ -7,6 +7,14 @@ import path from "node:path";
 import { redirect } from "next/navigation";
 
 import { getServerAuthSession } from "@/auth";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorPanel,
+  OperatorSafetyRail,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 import { diffWorkPacket, emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import { WorkPacketStatus, type Prisma } from "@prisma/client";
@@ -833,8 +841,15 @@ export default async function WorkPacketDetailPage({ params }: Props) {
   });
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
       <header className="mb-6">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <OperatorBadge tone="blocked" label="NON-AUTHORIZING" />
+          <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+          <OperatorBadge tone="blocked" label="PRE-EXISTING FILE WRITE" />
+          <OperatorBadge tone="readOnly" label="NO NEW AUTHORITY" />
+          <OperatorBadge tone="blocked" label="ZERO GATES GRANTED" />
+        </div>
         <h1 className="text-2xl font-semibold">
           {p.nhId} · {p.title}
         </h1>
@@ -842,6 +857,31 @@ export default async function WorkPacketDetailPage({ params }: Props) {
           Contract summary, execution loop, run ledger, handoff history, and packet mutation stream.
         </p>
       </header>
+
+      <div className="mb-6 max-w-6xl">
+        <OperatorSafetyRail
+          title="High-Risk Work Packet Safety"
+          invariants={OPERATOR_SAFETY_INVARIANTS}
+        >
+          <div className="space-y-2 text-xs text-slate-400">
+            <p>
+              Existing mutation controls are not new Slate authority. Existing
+              file-write controls are not new Slate authority. Slate containment
+              does not grant new authority.
+            </p>
+            <p>
+              Authentication is not authorization. Verified session does not
+              open execution gates. Generated content is not acceptance. Derived
+              output is not canon.
+            </p>
+            <div className="space-y-1.5">
+              <OperatorBlockedAction>Agent execution</OperatorBlockedAction>
+              <OperatorBlockedAction>Repo mutation</OperatorBlockedAction>
+              <OperatorBlockedAction>New receipt authority</OperatorBlockedAction>
+            </div>
+          </div>
+        </OperatorSafetyRail>
+      </div>
 
       {governingMotion ? (
         <section className="mb-6 max-w-6xl rounded-md border border-gray-700 bg-zinc-950/50 p-4">
@@ -1141,10 +1181,31 @@ export default async function WorkPacketDetailPage({ params }: Props) {
       </section>
 
       <section className="mb-8 max-w-6xl rounded-md border border-gray-800 bg-zinc-950 p-4">
-        <h2 className="text-sm font-semibold text-gray-200">Execution Loop Actions</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-gray-200">Execution Loop Actions</h2>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+            <OperatorBadge tone="blocked" label="PRE-EXISTING FILE WRITE" />
+            <OperatorBadge tone="blocked" label="SOT EVENT" />
+            <OperatorBadge tone="gated" label="OPERATOR DECISION" />
+          </div>
+        </div>
         <p className="mt-2 text-sm text-gray-400">
           These actions include both governed routing actions and final operator decision actions. They emit packet-linked SoT events and update packet/inbox state.
         </p>
+        <OperatorGateCard className="mt-3 border-amber-900/70 bg-amber-950/20">
+          <div className="flex flex-wrap items-center gap-2">
+            <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+            <OperatorBadge tone="blocked" label="RECEIPT ARTIFACT" />
+            <OperatorBadge tone="blocked" label="NO NEW AUTHORITY" />
+          </div>
+          <p className="mt-2 text-sm text-amber-100/80">
+            Route and operator decision forms preserve existing server actions.
+            Approval can trigger the existing receipt artifact file write when a
+            governing motion is present. Slate containment labels that path; it
+            does not create new receipt authority or open execution gates.
+          </p>
+        </OperatorGateCard>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <form action={runRouteAction.bind(null, p.id, "ROUTE_ARCHITECT")}>
@@ -1197,7 +1258,7 @@ export default async function WorkPacketDetailPage({ params }: Props) {
             <button
               type="submit"
               disabled={!canResolveOperatorDecision}
-              className="rounded-md border border-emerald-800 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-200 hover:bg-emerald-900/40 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md border border-amber-800 bg-amber-950/30 px-3 py-2 text-sm text-amber-200 hover:bg-amber-950/40 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Approve
             </button>
@@ -1205,7 +1266,21 @@ export default async function WorkPacketDetailPage({ params }: Props) {
         </div>
       </section>
 
-      <form action={updatePacket.bind(null, p.id)} className="max-w-4xl space-y-4">
+      <OperatorPanel className="mb-8 max-w-4xl p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-sm font-semibold text-gray-200">Packet Edit Form</h2>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+            <OperatorBadge tone="blocked" label="SOT EVENT" />
+            <OperatorBadge tone="blocked" label="NO NEW AUTHORITY" />
+          </div>
+        </div>
+        <p className="mb-4 text-sm text-slate-400">
+          This form preserves the existing packet update server action, Prisma
+          transaction, and SoT event emission. Read-only is not authority;
+          dashboard display does not authorize action.
+        </p>
+      <form action={updatePacket.bind(null, p.id)} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-1">
             <label className="block text-xs text-gray-300">NH</label>
@@ -1292,11 +1367,12 @@ export default async function WorkPacketDetailPage({ params }: Props) {
 
         <button
           type="submit"
-          className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
+          className="rounded-md border border-amber-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-300 hover:bg-amber-950/40"
         >
-          Save
+          Save packet row
         </button>
       </form>
+      </OperatorPanel>
 
       <section className="mt-10 max-w-6xl">
         <h2 className="text-lg font-semibold">Run Ledger</h2>

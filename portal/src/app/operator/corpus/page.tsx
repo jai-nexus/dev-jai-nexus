@@ -1,5 +1,18 @@
 import Link from "next/link";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { getAgentGovernanceSandboxModel } from "@/lib/controlPlane/agentGovernanceSandbox";
 import {
   corpusReadinessGates,
@@ -7,19 +20,69 @@ import {
 } from "@/lib/controlPlane/corpusReadinessGates";
 import { getDraftReviewPrototypeModel } from "@/lib/controlPlane/draftReviewPrototype";
 
-function toneForStatus(status: string): string {
-  if (status === "satisfied_by_canon") return "border-emerald-800 bg-emerald-950 text-emerald-200";
-  if (status === "partially_satisfied") return "border-amber-800 bg-amber-950 text-amber-200";
-  if (status === "unmet_future") return "border-rose-800 bg-rose-950 text-rose-200";
-  if (status === "blocked_by_authority") return "border-rose-800 bg-rose-950 text-rose-200";
-  return "border-gray-800 bg-zinc-900 text-gray-200";
+function toneForStatus(status: string): OperatorSlateTone {
+  if (status === "satisfied_by_canon") return "canonical";
+  if (status === "partially_satisfied") return "advisory";
+  if (status === "unmet_future") return "blocked";
+  if (status === "blocked_by_authority") return "blocked";
+  return "gated";
 }
 
-function Badge({ children, tone }: { children: React.ReactNode; tone: string }) {
+function fixtureTone(label: string): OperatorSlateTone {
+  const normalized = label.toLowerCase();
+  if (
+    normalized.includes("no authority") ||
+    normalized.includes("not open") ||
+    normalized.includes("no runtime")
+  ) {
+    return "blocked";
+  }
+  if (normalized.includes("review") || normalized.includes("human")) {
+    return "advisory";
+  }
+  return "fixture";
+}
+
+function Badge({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone: string;
+}) {
+  const slateTone: OperatorSlateTone =
+    tone === "canonical" || tone.includes("emerald")
+      ? "canonical"
+      : tone === "advisory" || tone.includes("amber")
+        ? "advisory"
+        : tone === "blocked" || tone.includes("rose")
+          ? "blocked"
+          : tone === "gated"
+            ? "gated"
+            : "fixture";
+
+  return <OperatorBadge tone={slateTone}>{children}</OperatorBadge>;
+}
+
+function MetricCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: OperatorSlateTone;
+}) {
   return (
-    <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium ${tone}`}>
-      {children}
-    </span>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorStatusChip status="READ-ONLY" tone={tone} />
+      </div>
+      <div className="mt-2 text-2xl font-semibold text-slate-100">{value}</div>
+    </OperatorPanel>
   );
 }
 
@@ -29,57 +92,69 @@ export default function OperatorCorpusPage() {
   const draftReview = getDraftReviewPrototypeModel();
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+    <main className="min-h-screen bg-slate-950 px-8 py-10 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">Corpus V2 Readiness Drilldown</h1>
-            <Badge tone="border-amber-800 bg-amber-950 text-amber-200">read-only</Badge>
-            <Badge tone="border-rose-800 bg-rose-950 text-rose-200">not open</Badge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Static inspection surface for Corpus V2 readiness gates. This page is
-            visibility-only and does not open Corpus V2, reset numbering, or
-            add live drafting, voting, ratification, or runtime authority.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            Source of truth remains
-            {" "}
-            <span className="font-mono">.nexus/canon/corpus/corpus-v2-readiness-checklist.md</span>.
-          </div>
-        </header>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="mr-2 text-3xl font-semibold">
+                Corpus V2 Readiness Drilldown
+              </h1>
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY CANON EVIDENCE</OperatorBadge>
+              <OperatorBadge tone="fixture">SIMULATED FIXTURES</OperatorBadge>
+              <OperatorBadge tone="blocked">CORPUS V2 NOT OPEN</OperatorBadge>
+              <OperatorBadge tone="blocked">NO PROVIDER CALLS</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+            <p className="mt-4 max-w-4xl text-sm text-slate-400">
+              Static inspection surface for Corpus V2 readiness gates. Canon
+              evidence, simulated fixtures, and human review boundaries remain
+              visibly distinct. Readiness display does not open Corpus V2.
+            </p>
+            <OperatorGateCard className="mt-4 text-sm text-slate-300">
+              Source of truth remains{" "}
+              <OperatorIdChip>
+                .nexus/canon/corpus/corpus-v2-readiness-checklist.md
+              </OperatorIdChip>
+              . Validation is not acceptance, and a satisfied gate does not grant
+              runtime authority.
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail invariants={OPERATOR_SAFETY_INVARIANTS}>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Open Corpus V2</OperatorBlockedAction>
+              <OperatorBlockedAction>Generate motion</OperatorBlockedAction>
+              <OperatorBlockedAction>Ratify draft</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Gate status is review evidence only. No automatic gate evaluation,
+              voting, ratification, or canon update occurs here.
+            </p>
+          </OperatorSafetyRail>
+        </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Canon satisfied</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-100">{counts.satisfied_by_canon}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Partial</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-100">{counts.partially_satisfied}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Unmet</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-100">{counts.unmet_future}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Authority blocked</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-100">{counts.blocked_by_authority}</div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">Deferred</div>
-            <div className="mt-2 text-2xl font-semibold text-gray-100">{counts.deferred_until_v2_opening}</div>
-          </div>
+          <MetricCard label="Canon satisfied" value={counts.satisfied_by_canon} tone="canonical" />
+          <MetricCard label="Partial" value={counts.partially_satisfied} tone="advisory" />
+          <MetricCard label="Unmet" value={counts.unmet_future} tone="blocked" />
+          <MetricCard label="Authority blocked" value={counts.blocked_by_authority} tone="blocked" />
+          <MetricCard label="Deferred" value={counts.deferred_until_v2_opening} tone="gated" />
         </section>
 
-        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+        <OperatorPanel>
+          <OperatorSectionHeader
+            index="01"
+            title="Gate Drilldown"
+            right={<OperatorBadge tone="readOnly">CANON-REFERENCED</OperatorBadge>}
+          />
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-medium text-gray-100">Gate Drilldown</h2>
-              <p className="mt-1 text-sm text-gray-400">
-                Static local data model mirrored from readiness canon and machine-checkable gate modeling.
-              </p>
-            </div>
+            <p className="text-sm text-slate-400">
+              Static local data model mirrored from readiness canon and
+              machine-checkable gate modeling.
+            </p>
             <Link href="/" className="text-sm text-sky-300 underline">
               Back to root overview
             </Link>
@@ -101,7 +176,12 @@ export default function OperatorCorpusPage() {
               <tbody>
                 {corpusReadinessGates.map((gate) => (
                   <tr key={gate.gate_id} className="border-b border-gray-900 align-top hover:bg-zinc-900/60">
-                    <td className="px-3 py-3 text-xs text-gray-200">{gate.gate_label}</td>
+                    <td className="px-3 py-3 text-xs text-slate-200">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <OperatorIdChip>{gate.gate_id}</OperatorIdChip>
+                        <span>{gate.gate_label}</span>
+                      </div>
+                    </td>
                     <td className="px-3 py-3 text-xs">
                       <Badge tone={toneForStatus(gate.status)}>{gate.status}</Badge>
                     </td>
@@ -115,18 +195,24 @@ export default function OperatorCorpusPage() {
               </tbody>
             </table>
           </div>
-        </section>
+        </OperatorPanel>
 
-        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+        <OperatorPanel>
+          <OperatorSectionHeader
+            index="02"
+            title="Sandbox Trace Review"
+            right={<OperatorBadge tone="fixture">FIXTURE / SIMULATED</OperatorBadge>}
+          />
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-medium text-gray-100">Sandbox Trace Review</h2>
             <Badge tone="border-amber-800 bg-amber-950 text-amber-200">Fixture-only</Badge>
             <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Simulated</Badge>
             <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not canon</Badge>
             <Badge tone="border-rose-800 bg-rose-950 text-rose-200">No authority</Badge>
           </div>
-          <p className="mt-3 text-sm text-gray-400">{sandbox.note}</p>
-          <div className="mt-3 font-mono text-xs text-gray-400">{sandbox.canon_ref}</div>
+          <p className="mt-3 text-sm text-slate-400">{sandbox.note}</p>
+          <div className="mt-3">
+            <OperatorIdChip>{sandbox.canon_ref}</OperatorIdChip>
+          </div>
 
           <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -201,11 +287,14 @@ export default function OperatorCorpusPage() {
 
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-gray-100">Sample draft trace</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-gray-100">Sample draft trace</div>
+                <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
+              </div>
               <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.motion_draft.fixture_id}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sandbox.fixtures.motion_draft.labels.map((label) => (
-                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                  <Badge key={label} tone={fixtureTone(label)}>
                     {label}
                   </Badge>
                 ))}
@@ -217,11 +306,16 @@ export default function OperatorCorpusPage() {
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-gray-100">Sample vote/ratification trace</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-gray-100">
+                  Sample vote/ratification trace
+                </div>
+                <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
+              </div>
               <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.vote_ratification.fixture_id}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sandbox.fixtures.vote_ratification.labels.map((label) => (
-                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                  <Badge key={label} tone={fixtureTone(label)}>
                     {label}
                   </Badge>
                 ))}
@@ -235,11 +329,16 @@ export default function OperatorCorpusPage() {
 
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-gray-100">Failure trace examples</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-gray-100">
+                  Failure trace examples
+                </div>
+                <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
+              </div>
               <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.failure_traces.fixture_id}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sandbox.fixtures.failure_traces.labels.map((label) => (
-                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                  <Badge key={label} tone={fixtureTone(label)}>
                     {label}
                   </Badge>
                 ))}
@@ -256,11 +355,16 @@ export default function OperatorCorpusPage() {
             </div>
 
             <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
-              <div className="text-sm font-semibold text-gray-100">Gate evidence fixture</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-gray-100">
+                  Gate evidence fixture
+                </div>
+                <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
+              </div>
               <div className="mt-2 text-xs text-gray-400">{sandbox.fixtures.gate_evidence.fixture_id}</div>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sandbox.fixtures.gate_evidence.labels.map((label) => (
-                  <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                  <Badge key={label} tone={fixtureTone(label)}>
                     {label}
                   </Badge>
                 ))}
@@ -286,17 +390,18 @@ export default function OperatorCorpusPage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <OperatorContradictionCard>
               <div className="text-sm font-semibold text-gray-100">Human boundary</div>
               <p className="mt-3 text-sm text-gray-300">{sandbox.human_boundary_note}</p>
-            </div>
+            </OperatorContradictionCard>
           </div>
 
           <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="text-sm font-semibold text-gray-100">Draft review prototype</div>
+              <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
               {draftReview.authority_boundary_labels.map((label) => (
-                <Badge key={label} tone="border-gray-800 bg-zinc-900 text-gray-200">
+                <Badge key={label} tone={fixtureTone(label)}>
                   {label}
                 </Badge>
               ))}
@@ -388,7 +493,7 @@ export default function OperatorCorpusPage() {
               </div>
             </div>
           </div>
-        </section>
+        </OperatorPanel>
       </div>
     </main>
   );

@@ -2,6 +2,18 @@ export const runtime = "nodejs";
 export const revalidate = 0;
 
 import type { ReactNode } from "react";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorDissentCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { getAgentDeliberationPanel } from "@/lib/agents/deliberationPanel";
 import { buildDeliberationPassalongSummary } from "@/lib/controlPlane/deliberationPassalong";
 import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
@@ -15,20 +27,24 @@ import type {
 } from "@/lib/agents/deliberationTypes";
 
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="advisory" label="ADVISORY / READ-ONLY" />}
+      />
+      <p className="max-w-5xl text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -44,11 +60,18 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="readOnly" label="DERIVED" />
+      </div>
+      <div className="mt-2 font-mono text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
@@ -59,24 +82,18 @@ function ToneBadge({
   children: ReactNode;
   tone: "sky" | "amber" | "emerald" | "rose" | "slate";
 }) {
-  const toneClass =
+  const slateTone: OperatorSlateTone =
     tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
+      ? "readOnly"
       : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
+        ? "advisory"
         : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
+          ? "readOnly"
           : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
+            ? "blocked"
+            : "neutral";
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
+  return <OperatorBadge tone={slateTone}>{children}</OperatorBadge>;
 }
 
 function sourceKindLabel(sourceKind: DeliberationCandidateSourceKind) {
@@ -115,57 +132,64 @@ function consensusTone(label: string) {
 
 function CandidateDocketCard({ candidate }: { candidate: DeliberationCandidate }) {
   return (
-    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+    <OperatorPanel className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">
+            <h3 className="text-base font-semibold text-slate-100">
               {candidate.title}
             </h3>
             <ToneBadge tone="amber">{sourceKindLabel(candidate.source_kind)}</ToneBadge>
             <ToneBadge tone={consensusTone(candidate.consensus.consensus_label)}>
               {candidate.consensus.consensus_label}
             </ToneBadge>
-            <ToneBadge tone="rose">non-binding</ToneBadge>
+            <OperatorBadge tone="blocked" label="NON-BINDING" />
           </div>
-          <p className="text-sm text-gray-300">{candidate.summary}</p>
+          <p className="text-sm text-slate-300">{candidate.summary}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ToneBadge tone="sky">{candidate.target.repo_full_name}</ToneBadge>
-          <ToneBadge tone="slate">{candidate.target.surface.label}</ToneBadge>
+          <OperatorIdChip>{candidate.candidate_id}</OperatorIdChip>
+          <OperatorIdChip>{candidate.target.repo_full_name}</OperatorIdChip>
+          <OperatorIdChip>{candidate.target.surface.label}</OperatorIdChip>
           {candidate.target.project ? (
-            <ToneBadge tone="emerald">{candidate.target.project.project_id}</ToneBadge>
+            <OperatorBadge
+              tone="readOnly"
+              label={`PROJECT: ${candidate.target.project.project_id}`}
+            />
           ) : (
-            <ToneBadge tone="amber">project:none</ToneBadge>
+            <OperatorBadge tone="advisory" label="PROJECT: NONE" />
           )}
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-gray-500">
+        <OperatorGateCard>
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
             Requested actions
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {candidate.requested_actions.map((action) => (
-              <ToneBadge key={`${candidate.candidate_id}-${action}`} tone="slate">
-                {action}
-              </ToneBadge>
+              <OperatorBadge
+                key={`${candidate.candidate_id}-${action}`}
+                tone="neutral"
+                label={action}
+              />
             ))}
           </div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-gray-500">
+        </OperatorGateCard>
+        <OperatorGateCard>
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
             Planned toolchain target
           </div>
           <div className="mt-2">
-            <ToneBadge tone={candidate.planned_toolchain_target ? "amber" : "slate"}>
-              {candidate.planned_toolchain_target ?? "none"}
-            </ToneBadge>
+            <OperatorBadge
+              tone={candidate.planned_toolchain_target ? "advisory" : "neutral"}
+              label={candidate.planned_toolchain_target ?? "NONE"}
+            />
           </div>
-        </div>
+        </OperatorGateCard>
       </div>
-    </article>
+    </OperatorPanel>
   );
 }
 
@@ -176,15 +200,17 @@ function TranscriptTurnCard({
   turn: DeliberationTranscriptTurn;
   candidatesById: Map<string, DeliberationCandidate>;
 }) {
+  const dissent = turn.dissent_or_caution ?? "No additional dissent recorded.";
+
   return (
-    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+    <OperatorPanel className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <ToneBadge tone={turn.speaker_kind === "moderator" ? "sky" : "emerald"}>
               {turn.speaker_kind}
             </ToneBadge>
-            <h3 className="text-base font-semibold text-gray-100">
+            <h3 className="text-base font-semibold text-slate-100">
               Turn {turn.order}: {turn.speaker_label}
             </h3>
             <ToneBadge tone={voteTone(turn.advisory_vote)}>
@@ -198,24 +224,22 @@ function TranscriptTurnCard({
             </ToneBadge>
           </div>
           {turn.speaker_handle ? (
-            <div className="font-mono text-[11px] text-gray-500">
-              {turn.speaker_handle}
-            </div>
+            <OperatorIdChip>{turn.speaker_handle}</OperatorIdChip>
           ) : null}
         </div>
-        <ToneBadge tone="rose">advisory only</ToneBadge>
+        <OperatorBadge tone="advisory" label="ADVISORY ONLY" />
       </div>
 
-      <div className="mt-4">
-        <div className="text-xs uppercase tracking-wide text-gray-500">
+      <OperatorGateCard className="mt-4">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
           Role lens
         </div>
-        <div className="mt-2 text-sm text-gray-200">{turn.role_lens}</div>
-      </div>
+        <div className="mt-2 text-sm text-slate-200">{turn.role_lens}</div>
+      </OperatorGateCard>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-gray-500">
+        <OperatorGateCard>
+          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
             Evidence basis
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -225,19 +249,17 @@ function TranscriptTurnCard({
               </ToneBadge>
             ))}
           </div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-gray-500">
+        </OperatorGateCard>
+        <OperatorDissentCard>
+          <div className="font-mono text-xs uppercase tracking-widest text-red-200">
             Dissent / caution
           </div>
-          <div className="mt-2 text-sm text-gray-300">
-            {turn.dissent_or_caution ?? "none"}
-          </div>
-        </div>
+          <div className="mt-2 text-sm text-red-100">{dissent}</div>
+        </OperatorDissentCard>
       </div>
 
-      <div className="mt-4">
-        <div className="text-xs uppercase tracking-wide text-gray-500">
+      <OperatorGateCard className="mt-4">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
           Focus candidates
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -250,14 +272,14 @@ function TranscriptTurnCard({
             );
           })}
         </div>
-      </div>
+      </OperatorGateCard>
 
-      <ul className="mt-4 space-y-2 text-sm text-gray-300">
+      <ul className="mt-4 space-y-2 text-sm text-slate-300">
         {turn.statement.map((line) => (
           <li key={`${turn.turn_id}-${line}`}>- {line}</li>
         ))}
       </ul>
-    </article>
+    </OperatorPanel>
   );
 }
 
@@ -281,59 +303,74 @@ export default function DeliberationPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">
-              JAI NEXUS - Agent Deliberation Transcript
-            </h1>
-            <ToneBadge tone="amber">advisory only</ToneBadge>
-            <ToneBadge tone="rose">non-binding</ToneBadge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Deterministic transcript session for comparing candidate motions and
-            actions across work packets, projects, motions, manual candidates, and
-            planned toolchain targets. This surface recommends a next motion,
-            branch, and prompt as copy-only output. Operator authorization is
-            required before any execution or repo action.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              First official agenda deliberation passalong candidate:{" "}
-              <span className="font-mono">{loopCandidate.selected_work_packet_id}</span>. This
-              session keeps the loop deterministic, read-only, and human-gated
-              across <span className="font-mono">/</span>,{" "}
-              <span className="font-mono">/operator/work</span>, and{" "}
-              <span className="font-mono">/operator/deliberation</span>.
+    <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <OperatorPanel className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="gated" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="readOnly" label="DETERMINISTIC / READ-ONLY" />
+              <OperatorBadge tone="advisory" label="ADVISORY ONLY" />
+              <OperatorBadge tone="composeOnly" label="COPY-ONLY OUTPUT" />
+              <OperatorBadge tone="blocked" label="NON-BINDING" />
+              <OperatorBadge tone="blocked" label="NO EXECUTION" />
+              <OperatorBadge tone="blocked" label="NO DISPATCH" />
+              <OperatorBadge tone="gated" label="ZERO GATES GRANTED" />
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.22em] text-slate-500">
+                Operator Slate / Deliberation transcript
+              </div>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+                JAI NEXUS Agent Deliberation Transcript
+              </h1>
+            </div>
+            <p className="max-w-4xl text-sm text-slate-400">
+              Deterministic transcript session for comparing candidate motions and
+              actions across work packets, projects, motions, manual candidates,
+              and planned toolchain targets. Recommendations and prompt text remain
+              advisory, copy-only, and subject to operator review.
             </p>
-            <p className="mt-3 text-xs text-gray-400">{loopCandidate.selection_reason}</p>
-            <p className="mt-2 text-xs text-gray-400">{loopCandidate.criteria_summary}</p>
-            <p className="mt-2 text-xs text-gray-400">
-              Static switching policy:{" "}
-              {loopCandidate.static_switching.switching_policy.summary}
+            <OperatorGateCard>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorIdChip>
+                  {loopCandidate.selected_work_packet_id}
+                </OperatorIdChip>
+                <OperatorBadge tone="readOnly" label="ACTIVE BY STATIC GOVERNANCE" />
+                <OperatorBadge tone="gated" label="NO RUNTIME SELECTION" />
+              </div>
+              <p className="mt-2 text-sm text-slate-300">
+                This session keeps the loop deterministic, read-only, and
+                human-gated across /, /operator/work, and /operator/deliberation.
+              </p>
+              <p className="mt-3 text-xs text-slate-400">
+                {loopCandidate.selection_reason}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                {loopCandidate.criteria_summary}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Static switching policy:{" "}
+                {loopCandidate.static_switching.switching_policy.summary}
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail
+            title="Deliberation Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Ratify vote</OperatorBlockedAction>
+              <OperatorBlockedAction>Dispatch recommendation</OperatorBlockedAction>
+              <OperatorBlockedAction>Create motion</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Advisory votes do not decide. Prompt text is not dispatch. Copy-only
+              passalong text does not submit, persist, create receipts, or update
+              canon.
             </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Eligible review candidates:{" "}
-              {loopCandidate.review_panel.eligible_candidate_ids.length > 0
-                ? loopCandidate.review_panel.eligible_candidate_ids.join(", ")
-                : "none"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              Votes shown here are non-binding. This transcript cannot run agents,
-              create motions automatically, ratify anything, write branches, open
-              PRs, dispatch work, schedule work, or integrate jai-pilot or
-              vscode-nexus.
-            </p>
-            <p className="mt-3 text-xs text-gray-400">
-              Agenda-to-deliberation movement is navigation/context only.
-              Reviewing other agenda items here does not switch the active
-              candidate, add route state, add query state, or persist any
-              selection.
-            </p>
-          </div>
+          </OperatorSafetyRail>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -365,10 +402,11 @@ export default function DeliberationPage() {
         </section>
 
         <Section
+          index="01"
           title="Reviewable agenda context"
           description="Reviewable agenda packets may be inspected in deliberation context, but active-candidate switching remains static and governance-controlled only."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+          <OperatorPanel className="p-4">
             <div className="flex flex-wrap gap-2">
               <ToneBadge tone="slate">
                 switching: {loopCandidate.static_switching.switching_policy.mode}
@@ -381,52 +419,49 @@ export default function DeliberationPage() {
             </p>
             <div className="mt-4 space-y-3">
               {reviewableCandidates.map((candidate) => (
-                <div
-                  key={candidate.work_packet_id}
-                  className="rounded-lg border border-gray-800 bg-black/30 p-3"
-                >
+                <OperatorGateCard key={candidate.work_packet_id}>
                   <div className="flex flex-wrap items-center gap-2">
                     <ToneBadge tone="slate">
                       {candidate.selection_status}
                     </ToneBadge>
-                    <span className="font-mono text-sm text-gray-200">
-                      {candidate.work_packet_id}
-                    </span>
+                    <OperatorIdChip>{candidate.work_packet_id}</OperatorIdChip>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">
+                  <p className="mt-2 text-sm text-slate-300">
                     {candidate.selection_rationale}
                   </p>
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-slate-400">
                     {candidate.metadata_criteria_result}
                   </p>
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-slate-400">
                     {candidate.switching_note}
                   </p>
-                </div>
+                </OperatorGateCard>
               ))}
             </div>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="02"
           title="Moderator framing"
           description="Session framing for selecting the next best motion or action without enabling execution."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+          <OperatorPanel className="p-4">
             <div className="flex flex-wrap items-center gap-2">
               <ToneBadge tone="sky">moderator</ToneBadge>
               <ToneBadge tone="rose">operator authorization required</ToneBadge>
               <ToneBadge tone="slate">{sourceKinds.size} source kinds</ToneBadge>
             </div>
-            <ul className="mt-4 space-y-2 text-sm text-gray-300">
+            <ul className="mt-4 space-y-2 text-sm text-slate-300">
               {transcript.moderator_framing.map((line) => (
                 <li key={line}>- {line}</li>
               ))}
             </ul>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="03"
           title="Candidate docket"
           description="Transcript inputs are tied to the shared repo-plus-surface-plus-optional-project model."
         >
@@ -438,6 +473,7 @@ export default function DeliberationPage() {
         </Section>
 
         <Section
+          index="04"
           title="Deliberation transcript"
           description="Ordered turns show per-agent reasoning, visible votes, and non-binding focus across multiple candidate actions."
         >
@@ -453,21 +489,25 @@ export default function DeliberationPage() {
         </Section>
 
         <Section
+          index="05"
           title="Passalong-ready summary"
           description="Deterministic CONTROL_THREAD handoff block computed from the current deliberation transcript. Read-only and copy-only only."
         >
           <div className="grid gap-4 xl:grid-cols-[1fr_1.2fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-100">
+                <h3 className="text-base font-semibold text-slate-100">
                   Passalong posture
                 </h3>
-                <ToneBadge tone="amber">copy only</ToneBadge>
-                <ToneBadge tone="rose">no persistence</ToneBadge>
-                <ToneBadge tone="sky">{passalong.recommended_next_target}</ToneBadge>
+                <OperatorBadge tone="composeOnly" label="COPY-ONLY" />
+                <OperatorBadge tone="blocked" label="NO PERSISTENCE" />
+                <OperatorBadge
+                  tone="advisory"
+                  label={passalong.recommended_next_target}
+                />
               </div>
 
-              <div className="mt-4 space-y-4 text-sm text-gray-300">
+              <div className="mt-4 space-y-4 text-sm text-slate-300">
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500">
                     Reviewed motion / seam
@@ -489,7 +529,7 @@ export default function DeliberationPage() {
                     <li>- source seam: {passalong.selected_source_label ?? "none"}</li>
                   </ul>
                   <p className="mt-2">{passalong.selection_reason ?? "none"}</p>
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-slate-400">
                     Switching policy:{" "}
                     {loopCandidate.static_switching.switching_policy.summary}
                   </p>
@@ -521,7 +561,7 @@ export default function DeliberationPage() {
                       defer/hold {passalong.posture_summary.defer_or_hold}
                     </ToneBadge>
                   </div>
-                  <p className="mt-2 text-sm text-gray-300">
+                  <p className="mt-2 text-sm text-slate-300">
                     Recommendation: {passalong.posture_summary.recommendation}
                   </p>
                 </div>
@@ -539,12 +579,14 @@ export default function DeliberationPage() {
                   </div>
                 </div>
 
-                <div>
-                  <div className="text-xs uppercase tracking-wide text-gray-500">
+                <OperatorDissentCard>
+                  <div className="font-mono text-xs uppercase tracking-widest text-red-200">
                     Strongest dissent / caution
                   </div>
-                  <p className="mt-2">{passalong.strongest_dissent_or_caution}</p>
-                </div>
+                  <p className="mt-2 text-red-100">
+                    {passalong.strongest_dissent_or_caution}
+                  </p>
+                </OperatorDissentCard>
 
                 <div>
                   <div className="text-xs uppercase tracking-wide text-gray-500">
@@ -578,17 +620,17 @@ export default function DeliberationPage() {
                   </ul>
                 </div>
               </div>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-100">
+                <h3 className="text-base font-semibold text-slate-100">
                   Copy-only passalong text
                 </h3>
-                <ToneBadge tone="amber">textarea only</ToneBadge>
-                <ToneBadge tone="rose">no submit / no save</ToneBadge>
+                <OperatorBadge tone="composeOnly" label="COPY-ONLY TEXTAREA" />
+                <OperatorBadge tone="blocked" label="NO SUBMIT / NO SAVE" />
               </div>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-slate-400">
                 This block is deterministic handoff material only. There is no
                 submit path, no save path, no API call, and no hidden persistence.
               </p>
@@ -596,28 +638,29 @@ export default function DeliberationPage() {
                 readOnly
                 value={passalong.copy_text}
                 rows={28}
-                className="mt-4 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+                className="mt-4 w-full rounded border border-slate-800 bg-slate-950 px-3 py-3 font-mono text-xs text-slate-200"
               />
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
         <Section
+          index="06"
           title="Consensus and next motion"
           description="The recommendation below is copy-only and requires separate operator authorization before any execution or repo action."
         >
           <div className="grid gap-4 xl:grid-cols-[1fr_1.2fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-100">
+                <h3 className="text-base font-semibold text-slate-100">
                   Consensus summary
                 </h3>
                 <ToneBadge tone={consensusTone(transcript.consensus_summary.consensus_label)}>
                   {transcript.consensus_summary.consensus_label}
                 </ToneBadge>
-                <ToneBadge tone="rose">non-binding</ToneBadge>
+                <OperatorBadge tone="blocked" label="NON-BINDING" />
               </div>
-              <p className="mt-3 text-sm text-gray-300">
+              <p className="mt-3 text-sm text-slate-300">
                 {transcript.consensus_summary.summary}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
@@ -634,31 +677,31 @@ export default function DeliberationPage() {
                   out {transcript.consensus_summary.out_of_scope}
                 </ToneBadge>
               </div>
-              <div className="mt-5 space-y-2 text-sm text-gray-300">
+              <div className="mt-5 space-y-2 text-sm text-slate-300">
                 <div>
-                  <span className="text-gray-500">Suggested motion:</span>{" "}
+                  <span className="text-slate-500">Suggested motion:</span>{" "}
                   {transcript.recommendation.suggested_motion_title}
                 </div>
                 <div>
-                  <span className="text-gray-500">Motion id:</span>{" "}
+                  <span className="text-slate-500">Motion id:</span>{" "}
                   {transcript.recommendation.suggested_motion_id_note}
                 </div>
                 <div>
-                  <span className="text-gray-500">Branch suggestion:</span>{" "}
+                  <span className="text-slate-500">Branch suggestion:</span>{" "}
                   {transcript.recommendation.suggested_branch_name}
                 </div>
               </div>
-            </div>
+            </OperatorPanel>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+            <OperatorPanel className="p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-semibold text-gray-100">
+                <h3 className="text-base font-semibold text-slate-100">
                   Copy-only next repo/chat prompt
                 </h3>
-                <ToneBadge tone="amber">copy only</ToneBadge>
-                <ToneBadge tone="rose">do not execute</ToneBadge>
+                <OperatorBadge tone="composeOnly" label="COPY-ONLY" />
+                <OperatorBadge tone="blocked" label="DO NOT EXECUTE" />
               </div>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-slate-400">
                 Operator authorization is required before any execution, motion
                 opening, branch write, PR creation, dispatch, scheduler behavior,
                 DB mutation, API mutation, or runtime action.
@@ -667,9 +710,9 @@ export default function DeliberationPage() {
                 readOnly
                 value={transcript.recommendation.prompt_text}
                 rows={28}
-                className="mt-4 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+                className="mt-4 w-full rounded border border-slate-800 bg-slate-950 px-3 py-3 font-mono text-xs text-slate-200"
               />
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
       </div>

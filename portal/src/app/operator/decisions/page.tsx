@@ -1,294 +1,381 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import type { Prisma } from "@prisma/client";
 import Link from "next/link";
+
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorReadOnlyAction,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
-import type { Prisma } from "@prisma/client";
 
 type SearchParams = {
-    category?: string | string[];
-    status?: string | string[];
-    q?: string | string[];
-    chatId?: string | string[];
+  category?: string | string[];
+  status?: string | string[];
+  q?: string | string[];
+  chatId?: string | string[];
 };
 
 interface DecisionsPageProps {
-    searchParams?: SearchParams | Promise<SearchParams>;
-}
-
-function firstParam(value: string | string[] | undefined): string | undefined {
-    if (!value) return undefined;
-    return Array.isArray(value) ? value[0] : value;
+  searchParams?: SearchParams | Promise<SearchParams>;
 }
 
 type CategoryGroupRow = {
-    category: string | null;
-    _count: { category: number };
+  category: string | null;
+  _count: { category: number };
 };
 
 type StatusGroupRow = {
-    status: string;
-    _count: { status: number };
+  status: string;
+  _count: { status: number };
 };
 
-export default async function DecisionsPage({ searchParams }: DecisionsPageProps) {
-    const sp = await Promise.resolve(searchParams ?? {});
+function firstParam(value: string | string[] | undefined): string | undefined {
+  if (!value) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
 
-    const categoryFilter = firstParam(sp.category);
-    const statusFilter = firstParam(sp.status);
-    const searchQuery = firstParam(sp.q);
-    const chatIdFilter = firstParam(sp.chatId);
+function statusTone(status: string): OperatorSlateTone {
+  const normalized = status.toLowerCase();
+  if (normalized === "deprecated") return "blocked";
+  if (normalized === "superseded") return "advisory";
+  return "readOnly";
+}
 
-    const where: Prisma.DecisionWhereInput = {};
+function categoryTone(category: string | null): OperatorSlateTone {
+  const normalized = category?.toLowerCase();
+  if (normalized === "deprecated") return "blocked";
+  if (normalized === "milestone" || normalized === "timeline") return "advisory";
+  return "neutral";
+}
 
-    if (categoryFilter) {
-        // Note: category is nullable in schema; this filters only explicit string categories.
-        // If you ever want "uncategorized" filter behavior, add a special-case here.
-        where.category = categoryFilter;
-    }
+export default async function DecisionsPage({
+  searchParams,
+}: DecisionsPageProps) {
+  const sp = await Promise.resolve(searchParams ?? {});
+  const categoryFilter = firstParam(sp.category);
+  const statusFilter = firstParam(sp.status);
+  const searchQuery = firstParam(sp.q);
+  const chatIdFilter = firstParam(sp.chatId);
 
-    if (statusFilter) {
-        where.status = statusFilter;
-    }
+  const where: Prisma.DecisionWhereInput = {};
 
-    if (chatIdFilter) {
-        const n = parseInt(chatIdFilter, 10);
-        if (Number.isFinite(n)) {
-            where.chatId = n; // Decision.chatId is Int in schema
-        }
-    }
+  if (categoryFilter) where.category = categoryFilter;
+  if (statusFilter) where.status = statusFilter;
 
-    if (searchQuery) {
-        where.OR = [
-            { text: { contains: searchQuery, mode: "insensitive" } },
-            { context: { contains: searchQuery, mode: "insensitive" } },
-            { chat: { title: { contains: searchQuery, mode: "insensitive" } } },
-        ];
-    }
+  if (chatIdFilter) {
+    const parsedChatId = Number.parseInt(chatIdFilter, 10);
+    if (Number.isFinite(parsedChatId)) where.chatId = parsedChatId;
+  }
 
-    const [decisions, totalCount, categories, statuses] = await Promise.all([
-        prisma.decision.findMany({
-            where,
-            orderBy: { createdAt: "desc" },
-            take: 200,
-            include: {
-                chat: {
-                    select: { id: true, title: true, chatDate: true, source: true },
-                },
-            },
-        }),
-        prisma.decision.count({ where }),
-        prisma.decision
-            .groupBy({
-                by: ["category"],
-                _count: { category: true },
-            })
-            .catch((): CategoryGroupRow[] => []),
-        prisma.decision
-            .groupBy({
-                by: ["status"],
-                _count: { status: true },
-            })
-            .catch((): StatusGroupRow[] => []),
-    ]);
+  if (searchQuery) {
+    where.OR = [
+      { text: { contains: searchQuery, mode: "insensitive" } },
+      { context: { contains: searchQuery, mode: "insensitive" } },
+      { chat: { title: { contains: searchQuery, mode: "insensitive" } } },
+    ];
+  }
 
-    const hasFilters = Boolean(categoryFilter || statusFilter || searchQuery || chatIdFilter);
+  const [decisions, totalCount, categories, statuses] = await Promise.all([
+    prisma.decision.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      include: {
+        chat: {
+          select: { id: true, title: true, chatDate: true, source: true },
+        },
+      },
+    }),
+    prisma.decision.count({ where }),
+    prisma.decision
+      .groupBy({
+        by: ["category"],
+        _count: { category: true },
+      })
+      .catch((): CategoryGroupRow[] => []),
+    prisma.decision
+      .groupBy({
+        by: ["status"],
+        _count: { status: true },
+      })
+      .catch((): StatusGroupRow[] => []),
+  ]);
 
-    const categoryColors: Record<string, string> = {
-        deprecated: "border-red-800 bg-red-950/30 text-red-300",
-        milestone: "border-amber-800 bg-amber-950/30 text-amber-300",
-        timeline: "border-purple-800 bg-purple-950/30 text-purple-300",
-        architecture: "border-blue-800 bg-blue-950/30 text-blue-300",
-        decision: "border-emerald-800 bg-emerald-950/30 text-emerald-300",
-    };
+  const hasFilters = Boolean(
+    categoryFilter || statusFilter || searchQuery || chatIdFilter,
+  );
 
-    const statusColors: Record<string, string> = {
-        active: "bg-emerald-900/40 text-emerald-300",
-        superseded: "bg-amber-900/40 text-amber-300",
-        deprecated: "bg-red-900/40 text-red-300",
-    };
+  return (
+    <main className="min-h-screen bg-slate-950 p-6 text-slate-300 lg:p-8">
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / operator / decisions
+            </div>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+              JAI NEXUS - Decisions
+            </h1>
+            <p className="mt-2 max-w-4xl text-sm text-slate-400">
+              Read-only DB records extracted from archived AI conversations.
+              These rows preserve source-chat lineage, but extraction is not
+              acceptance, canon, a receipt, or execution authority.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">DB READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="advisory">EXTRACTED CLAIMS</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT RECEIPTS</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+          </OperatorPanel>
 
-    return (
-        <main className="min-h-screen bg-black text-gray-100 p-8">
-            <header className="mb-6">
-                <h1 className="text-3xl font-semibold">JAI NEXUS · Decisions</h1>
-                <p className="text-sm text-gray-400 mt-1">
-                    Extracted decisions from archived AI conversations.
-                </p>
+          <OperatorSafetyRail
+            title="Decision Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <p className="text-xs text-slate-400">
+              Status describes an extracted row. It does not establish canonical
+              doctrine or replace a CONTROL_THREAD decision.
+            </p>
+          </OperatorSafetyRail>
+        </header>
 
-                {/* Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 mb-8">
-                    <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
-                        <div className="text-xs text-gray-400 uppercase tracking-tighter">
-                            Total Decisions
-                        </div>
-                        <div className="text-2xl font-mono text-zinc-200">{totalCount}</div>
+        <section>
+          <OperatorSectionHeader
+            index="01"
+            title="Extracted Decision Posture"
+            right={
+              <>
+                <OperatorBadge tone="readOnly">SOURCE: DECISION TABLE</OperatorBadge>
+                <OperatorBadge tone="advisory">MANUAL EXTRACTION FRESHNESS</OperatorBadge>
+              </>
+            }
+          />
+          <div className="grid gap-3 md:grid-cols-3">
+            <OperatorPanel>
+              <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                Matching decisions
+              </div>
+              <div className="mt-2 font-mono text-2xl text-slate-100">
+                {totalCount}
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                DB rows matching the active filters.
+              </p>
+            </OperatorPanel>
+
+            <OperatorPanel>
+              <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                By category
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {categories.map((category) => {
+                  const label = category.category ?? "uncategorized";
+                  const href = category.category
+                    ? `/operator/decisions?category=${encodeURIComponent(
+                        category.category,
+                      )}`
+                    : "/operator/decisions";
+                  return (
+                    <Link key={label} href={href}>
+                      <OperatorBadge tone={categoryTone(category.category)}>
+                        {label} x{category._count.category}
+                      </OperatorBadge>
+                    </Link>
+                  );
+                })}
+              </div>
+            </OperatorPanel>
+
+            <OperatorPanel>
+              <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                By status
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {statuses.map((status) => (
+                  <Link
+                    key={status.status}
+                    href={`/operator/decisions?status=${encodeURIComponent(
+                      status.status,
+                    )}`}
+                  >
+                    <OperatorBadge tone={statusTone(status.status)}>
+                      {status.status} x{status._count.status}
+                    </OperatorBadge>
+                  </Link>
+                ))}
+              </div>
+            </OperatorPanel>
+          </div>
+        </section>
+
+        <OperatorPanel>
+          <OperatorSectionHeader
+            index="02"
+            title="Read-Only Filters"
+            right={<OperatorBadge tone="readOnly">QUERY ONLY</OperatorBadge>}
+          />
+
+          {hasFilters ? (
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {categoryFilter ? (
+                <OperatorBadge tone="neutral">
+                  CATEGORY: {categoryFilter}
+                </OperatorBadge>
+              ) : null}
+              {statusFilter ? (
+                <OperatorBadge tone="neutral">STATUS: {statusFilter}</OperatorBadge>
+              ) : null}
+              {chatIdFilter ? (
+                <OperatorBadge tone="neutral">CHAT ID: {chatIdFilter}</OperatorBadge>
+              ) : null}
+              {searchQuery ? (
+                <OperatorBadge tone="neutral">SEARCH: {searchQuery}</OperatorBadge>
+              ) : null}
+              <Link
+                href="/operator/decisions"
+                className="font-mono text-xs uppercase tracking-wide text-sky-300 underline"
+              >
+                Clear filters
+              </Link>
+            </div>
+          ) : null}
+
+          <form method="get" className="flex gap-2">
+            <input
+              name="q"
+              defaultValue={searchQuery ?? ""}
+              placeholder="Search extracted decisions..."
+              className="flex-1 rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-sky-700 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="rounded border border-sky-800 bg-sky-950 px-4 py-2 font-mono text-xs uppercase tracking-wide text-sky-300"
+            >
+              Filter records
+            </button>
+          </form>
+        </OperatorPanel>
+
+        <section>
+          <OperatorSectionHeader
+            index="03"
+            title="Decision Records And Source Lineage"
+            right={
+              <>
+                <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+                <OperatorBadge tone="blocked">RECEIPT: NONE CREATED</OperatorBadge>
+              </>
+            }
+          />
+
+          {decisions.length === 0 ? (
+            <OperatorPanel className="text-sm text-slate-400">
+              No decision records found.{" "}
+              {hasFilters
+                ? "Try clearing filters."
+                : "The extraction process has not populated matching rows."}
+            </OperatorPanel>
+          ) : (
+            <div className="space-y-3">
+              {decisions.map((decision) => (
+                <OperatorPanel key={decision.id} className="p-4">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <OperatorIdChip>DECISION-{decision.id}</OperatorIdChip>
+                        <OperatorStatusChip
+                          status={decision.status}
+                          tone={statusTone(decision.status)}
+                        />
+                        <OperatorBadge tone={categoryTone(decision.category)}>
+                          {decision.category ?? "uncategorized"}
+                        </OperatorBadge>
+                        <OperatorBadge tone="advisory">EXTRACTED RECORD</OperatorBadge>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-100">
+                        {decision.text}
+                      </p>
+                      {decision.context ? (
+                        <OperatorGateCard className="mt-3">
+                          <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                            Extracted context
+                          </div>
+                          <p className="mt-2 text-xs italic text-slate-400">
+                            {decision.context}
+                          </p>
+                        </OperatorGateCard>
+                      ) : null}
                     </div>
 
-                    <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
-                        <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">
-                            By Category
+                    <OperatorGateCard className="w-full shrink-0 lg:w-80">
+                      <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                        Source lineage
+                      </div>
+                      <dl className="mt-2 space-y-2 text-xs">
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-slate-500">Chat record</dt>
+                          <dd className="font-mono text-slate-200">
+                            CHAT-{decision.chat.id}
+                          </dd>
                         </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {categories.map((c) => {
-                                const label = c.category ?? "uncategorized";
-                                // We don't actually support filtering for null category here; this is just a label.
-                                const href = c.category
-                                    ? `/operator/decisions?category=${encodeURIComponent(c.category)}`
-                                    : `/operator/decisions`;
-                                return (
-                                    <div key={label} className="text-xs flex items-center gap-1">
-                                        <Link
-                                            href={href}
-                                            className="font-mono text-sky-400 hover:text-sky-300"
-                                        >
-                                            {label}
-                                        </Link>
-                                        <span className="text-zinc-500">×{c._count.category}</span>
-                                    </div>
-                                );
-                            })}
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-slate-500">Source</dt>
+                          <dd className="text-right text-slate-200">
+                            {decision.chat.source}
+                          </dd>
                         </div>
-                    </div>
-
-                    <div className="bg-zinc-900/50 border border-zinc-800 p-3 rounded">
-                        <div className="text-xs text-gray-400 uppercase tracking-tighter mb-2">
-                            By Status
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-slate-500">Chat date</dt>
+                          <dd className="text-right text-slate-200">
+                            {formatCentral(decision.chat.chatDate)}
+                          </dd>
                         </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {statuses.map((s) => (
-                                <div key={s.status} className="text-xs flex items-center gap-1">
-                                    <Link
-                                        href={`/operator/decisions?status=${encodeURIComponent(s.status)}`}
-                                        className="font-mono text-sky-400 hover:text-sky-300"
-                                    >
-                                        {s.status}
-                                    </Link>
-                                    <span className="text-zinc-500">×{s._count.status}</span>
-                                </div>
-                            ))}
+                        <div className="flex justify-between gap-3">
+                          <dt className="text-slate-500">Line</dt>
+                          <dd className="font-mono text-slate-200">
+                            {decision.lineNumber ?? "not recorded"}
+                          </dd>
                         </div>
-                    </div>
-                </div>
-
-                {/* Active Filters */}
-                {hasFilters && (
-                    <div className="flex flex-wrap gap-2 items-center mb-4">
-                        {categoryFilter && (
-                            <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
-                                Category: <span className="ml-1 font-mono">{categoryFilter}</span>
-                            </span>
-                        )}
-                        {statusFilter && (
-                            <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
-                                Status: <span className="ml-1 font-mono">{statusFilter}</span>
-                            </span>
-                        )}
-                        {chatIdFilter && (
-                            <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
-                                Chat ID: <span className="ml-1 font-mono">{chatIdFilter}</span>
-                            </span>
-                        )}
-                        {searchQuery && (
-                            <span className="inline-flex items-center rounded-full bg-zinc-900 border border-zinc-700 px-2 py-1 text-[11px]">
-                                Search: <span className="ml-1 font-mono">{searchQuery}</span>
-                            </span>
-                        )}
-                        <Link
-                            href="/operator/decisions"
-                            className="text-[11px] text-sky-400 hover:text-sky-300 underline"
-                        >
-                            Clear filters
+                      </dl>
+                      <div className="mt-3">
+                        <Link href={`/operator/chats/${decision.chat.id}`}>
+                          <OperatorReadOnlyAction>
+                            Open source chat: {decision.chat.title}
+                          </OperatorReadOnlyAction>
                         </Link>
+                      </div>
+                    </OperatorGateCard>
+                  </div>
+
+                  <div className="mt-4 border-t border-slate-800 pt-3">
+                    <div className="flex flex-wrap gap-2">
+                      <OperatorBadge tone="blocked">NOT A RECEIPT</OperatorBadge>
+                      <OperatorBadge tone="blocked">NOT AUTOMATIC CANON</OperatorBadge>
+                      <OperatorBadge tone="advisory">
+                        CONTROL_THREAD REVIEW REQUIRED
+                      </OperatorBadge>
                     </div>
-                )}
-            </header>
-
-            {/* Search */}
-            <form method="get" className="mb-6 flex gap-2">
-                <input
-                    name="q"
-                    defaultValue={searchQuery ?? ""}
-                    placeholder="Search decisions..."
-                    className="flex-1 rounded-md border border-gray-700 bg-black px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-sky-600"
-                />
-                <button
-                    type="submit"
-                    className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
-                >
-                    Search
-                </button>
-            </form>
-
-            {/* Decisions List */}
-            {decisions.length === 0 ? (
-                <p className="text-sm text-gray-400">
-                    No decisions found.{" "}
-                    {hasFilters ? "Try clearing filters." : "Run extract:decisions to populate."}
-                </p>
-            ) : (
-                <div className="space-y-3">
-                    {decisions.map((d) => {
-                        const categoryKey = d.category ?? "decision";
-                        const categoryClass =
-                            categoryColors[categoryKey] ?? categoryColors.decision;
-
-                        const statusClass =
-                            statusColors[d.status] ?? statusColors.active;
-
-                        return (
-                            <div
-                                key={d.id}
-                                className={`rounded-lg border p-4 ${categoryClass}`}
-                            >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-100 leading-relaxed">
-                                            {d.text}
-                                        </p>
-
-                                        {d.context && (
-                                            <p className="text-xs text-gray-500 mt-2 italic">
-                                                Context: {d.context}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col items-end gap-1 shrink-0">
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-mono ${statusClass}`}
-                                        >
-                                            {d.status}
-                                        </span>
-                                        {d.category && (
-                                            <span className="text-[10px] text-gray-500 font-mono">
-                                                {d.category}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Source chat link */}
-                                <div className="mt-3 pt-2 border-t border-current/20 flex items-center justify-between">
-                                    <Link
-                                        href={`/operator/chats/${d.chat.id}`}
-                                        className="text-xs text-sky-400 hover:text-sky-300"
-                                    >
-                                        ← from: {d.chat.title}
-                                    </Link>
-                                    <span className="text-xs text-gray-600">
-                                        {formatCentral(d.chat.chatDate)}
-                                        {d.lineNumber && (
-                                            <span className="ml-2 font-mono">L{d.lineNumber}</span>
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </main>
-    );
+                  </div>
+                </OperatorPanel>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
 }

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { loadPanelView } from "@/lib/panels/panelStore";
 import { loadPanelCore, writePanelSelection } from "@/lib/panels/panelStore";
 import type { PanelMeta } from "@/lib/panels/panelStore";
+import {
+    OPERATOR_SAFETY_INVARIANTS,
+    OperatorBadge,
+    OperatorBlockedAction,
+    OperatorGateCard,
+    OperatorPanel,
+    OperatorSafetyRail,
+} from "@/components/operator/slate";
 import { computeSelection, computeSlotTotal, normalizeBreakdown } from "@/lib/panels/panelSelectCore.mjs";
 import { computePanelProgress, type PanelProgress } from "@/lib/panels/panelProgress";
 import { redirect } from "next/navigation";
@@ -254,9 +262,16 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
         });
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-gray-100 p-8">
+        <div className="min-h-screen bg-slate-950 text-gray-100 p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <OperatorBadge tone="blocked" label="NON-AUTHORIZING" />
+                        <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+                        <OperatorBadge tone="blocked" label="PRE-EXISTING SCORE WRITE" />
+                        <OperatorBadge tone="readOnly" label="NO NEW AUTHORITY" />
+                        <OperatorBadge tone="blocked" label="ZERO GATES GRANTED" />
+                    </div>
                     <h1 className="text-2xl font-bold text-sky-400">Panel Viewer</h1>
                     <p className="text-sm text-gray-400 mt-1">
                         Motion <span className="font-mono">{motion_id}</span> · Panel{" "}
@@ -268,8 +283,33 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                 </div>
             </div>
 
+            <div className="mb-6 max-w-6xl">
+                <OperatorSafetyRail
+                    title="Panel Scoring Safety"
+                    invariants={OPERATOR_SAFETY_INVARIANTS}
+                >
+                    <div className="space-y-2 text-xs text-slate-400">
+                        <p>
+                            Existing scoring controls are not new Slate authority.
+                            Slate containment does not grant new authority. Panel
+                            scoring is not canon acceptance.
+                        </p>
+                        <p>
+                            Authentication is not authorization. Verified session
+                            does not open execution gates. Generated content is not
+                            acceptance. Derived output is not canon.
+                        </p>
+                        <div className="space-y-1.5">
+                            <OperatorBlockedAction>Canon acceptance</OperatorBlockedAction>
+                            <OperatorBlockedAction>Receipt creation</OperatorBlockedAction>
+                            <OperatorBlockedAction>Model dispatch</OperatorBlockedAction>
+                        </div>
+                    </div>
+                </OperatorSafetyRail>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
+                <OperatorPanel className="p-4">
                     <h2 className="font-semibold text-gray-200 mb-2">Panel Meta</h2>
                     <div className="text-sm text-gray-300 space-y-1">
                         <div>
@@ -285,10 +325,16 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                             <span className="font-mono">{panelCandidates(panel).join(", ") || "—"}</span>
                         </div>
                     </div>
-                </div>
+                </OperatorPanel>
 
-                <div className="border border-zinc-800 rounded-lg bg-zinc-900/30 p-4">
+                <OperatorPanel className="p-4">
+                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <h2 className="font-semibold text-gray-200 mb-2">Selection</h2>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <OperatorBadge tone="advisory" label="PANEL REVIEW" />
+                            <OperatorBadge tone="blocked" label="PRE-EXISTING SCORE WRITE" />
+                        </div>
+                    </div>
                     <div className="text-sm text-gray-300 space-y-3">
                         <div className="flex items-center gap-2">
                             <span className="text-gray-500">progress:</span>
@@ -317,7 +363,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
                         <div>
                             <span className="text-gray-500">winner:</span>{" "}
-                            <span className="font-mono text-emerald-300">{winner}</span>
+                            <span className="font-mono text-amber-300">{winner}</span>
                         </div>
                         <div>
                             <span className="text-gray-500">task:</span>{" "}
@@ -327,15 +373,20 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                         <form action={computeWinnerAction} className="pt-1">
                             <input type="hidden" name="motionId" value={motion_id} />
                             <input type="hidden" name="panelId" value={panel_id} />
+                            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                                <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+                                <OperatorBadge tone="blocked" label="PRE-EXISTING SCORE WRITE" />
+                                <OperatorBadge tone="blocked" label="PANEL SCORE" />
+                            </div>
                             <button
                                 type="submit"
-                                className="text-xs px-3 py-2 rounded border border-emerald-800 bg-emerald-900/20 hover:bg-emerald-900/30 text-emerald-200"
+                                className="text-xs px-3 py-2 rounded border border-amber-800 bg-amber-950/30 hover:bg-amber-950/40 text-amber-200"
                             >
                                 Compute winner (recalc totals)
                             </button>
                         </form>
                     </div>
-                </div>
+                </OperatorPanel>
             </div>
 
             <div className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
@@ -383,10 +434,23 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
 
             <div id="score-entry" className="border border-zinc-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800">
+                    <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                        <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+                        <OperatorBadge tone="blocked" label="PRE-EXISTING SCORE WRITE" />
+                        <OperatorBadge tone="blocked" label="PANEL SCORE" />
+                        <OperatorBadge tone="advisory" label="ADVISORY" />
+                    </div>
                     <h2 className="font-semibold text-gray-200">Score Entry</h2>
                     <p className="text-xs text-gray-500 mt-1">
                         Enter 0–10 per criterion. Save updates totals for that slot. Winner updates when you compute.
                     </p>
+                    <OperatorGateCard className="mt-3 border-amber-900/70 bg-amber-950/20">
+                        <p className="text-sm text-amber-100/80">
+                            Score entry preserves existing selection.json write
+                            behavior. Panel scoring is not canon acceptance;
+                            dashboard display does not authorize action.
+                        </p>
+                    </OperatorGateCard>
                 </div>
 
                 <div className="divide-y divide-zinc-800">
@@ -395,7 +459,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                             <summary className="cursor-pointer text-sm text-gray-200 font-mono">
                                 {e.slot} <span className="text-gray-500">· total</span>{" "}
                                 <span className="text-gray-300">{e.total}</span>
-                                {e.slot === winner ? <span className="text-emerald-300"> ★</span> : null}
+                                {e.slot === winner ? <span className="text-amber-300"> ★</span> : null}
                             </summary>
 
                             <form action={saveSlotScores} className="mt-3">
@@ -433,7 +497,7 @@ export default async function PanelViewerPage(props: { params: Promise<Params> |
                                 <div className="mt-3">
                                     <button
                                         type="submit"
-                                        className="text-xs px-3 py-2 rounded border border-sky-800 bg-sky-900/20 hover:bg-sky-900/30 text-sky-200"
+                                        className="text-xs px-3 py-2 rounded border border-amber-800 bg-amber-950/30 hover:bg-amber-950/40 text-amber-200"
                                     >
                                         Save slot scores
                                     </button>

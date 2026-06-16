@@ -4,6 +4,19 @@ export const dynamic = "force-dynamic";
 import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorReadOnlyAction,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
 import {
@@ -36,20 +49,30 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 }
 
 function Section({
+  index,
   title,
   description,
   children,
+  provenance,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
+  provenance: "fixture" | "readOnly";
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={
+          <OperatorBadge tone={provenance}>
+            {provenance === "fixture" ? "SEEDED FIXTURE" : "DB READ-ONLY ARCHIVE"}
+          </OperatorBadge>
+        }
+      />
+      <p className="text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -65,11 +88,13 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+        {label}
+      </div>
+      <div className="mt-2 text-2xl font-semibold text-slate-100">{value}</div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
@@ -80,24 +105,18 @@ function ToneBadge({
   children: ReactNode;
   tone: "sky" | "amber" | "emerald" | "rose" | "slate";
 }) {
-  const toneClass =
+  const slateTone: OperatorSlateTone =
     tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
+      ? "readOnly"
       : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
+        ? "advisory"
         : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
+          ? "readOnly"
           : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
+            ? "blocked"
+            : "neutral";
 
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
+  return <OperatorBadge tone={slateTone}>{children}</OperatorBadge>;
 }
 
 function ContinuityCard({ record }: { record: ConversationRecord }) {
@@ -105,63 +124,63 @@ function ContinuityCard({ record }: { record: ConversationRecord }) {
   const artifactExists = fs.existsSync(artifactAbsolutePath);
 
   return (
-    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+    <OperatorPanel className="p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">{record.title}</h3>
+            <h3 className="text-base font-semibold text-slate-100">{record.title}</h3>
             <ToneBadge tone="amber">
               {getConversationSourceKindLabel(record.source_kind)}
             </ToneBadge>
-            <ToneBadge tone="rose">captured v0</ToneBadge>
+            <OperatorBadge tone="fixture">FIXTURE CAPTURE</OperatorBadge>
             <ToneBadge tone={artifactExists ? "emerald" : "amber"}>
               {artifactExists ? "committed artifact present" : "artifact preview only"}
             </ToneBadge>
           </div>
-          <p className="max-w-4xl text-sm text-gray-300">{record.summary}</p>
+          <p className="max-w-4xl text-sm text-slate-300">{record.summary}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ToneBadge tone="sky">{record.repo_full_name}</ToneBadge>
+          <OperatorIdChip>{record.repo_full_name}</OperatorIdChip>
           <ToneBadge tone="slate">{record.surface_label}</ToneBadge>
-          <ToneBadge tone="emerald">{record.chat_id}</ToneBadge>
+          <OperatorIdChip>{record.chat_id}</OperatorIdChip>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1.1fr]">
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
+          <OperatorGateCard>
+            <h4 className="text-sm font-semibold text-slate-100">
               Repo-native capture naming
             </h4>
-            <ul className="mt-3 space-y-1 text-sm text-gray-300">
+            <ul className="mt-3 space-y-1 text-sm text-slate-300">
               <li>- chat id: {record.chat_id}</li>
               <li>- source label: {record.source_label}</li>
               <li>- captured at: {record.captured_at}</li>
               <li>- artifact path preview: {record.artifact_path_preview}</li>
               <li>- committed artifact present: {artifactExists ? "yes" : "no"}</li>
             </ul>
-          </div>
+          </OperatorGateCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Linked operating memory</h4>
+          <OperatorGateCard>
+            <h4 className="text-sm font-semibold text-slate-100">
+              Linked operating memory
+            </h4>
             <div className="mt-3 flex flex-wrap gap-2">
               {record.related_motion_ids.map((motionId) => (
-                <ToneBadge key={`${record.chat_id}-${motionId}`} tone="amber">
+                <OperatorIdChip key={`${record.chat_id}-${motionId}`}>
                   {motionId}
-                </ToneBadge>
+                </OperatorIdChip>
               ))}
               {record.related_wave_ids.map((waveId) => (
-                <ToneBadge key={`${record.chat_id}-${waveId}`} tone="sky">
-                  {waveId}
-                </ToneBadge>
+                <OperatorIdChip key={`${record.chat_id}-${waveId}`}>{waveId}</OperatorIdChip>
               ))}
               {record.related_work_packet_ids.map((packetId) => (
-                <ToneBadge key={`${record.chat_id}-${packetId}`} tone="emerald">
+                <OperatorIdChip key={`${record.chat_id}-${packetId}`}>
                   {packetId}
-                </ToneBadge>
+                </OperatorIdChip>
               ))}
             </div>
-            <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-400">
+            <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-400">
               <Link href="/operator/deliberation" className="text-sky-300 underline">
                 /operator/deliberation
               </Link>
@@ -172,50 +191,56 @@ function ContinuityCard({ record }: { record: ConversationRecord }) {
                 /operator/work
               </Link>
             </div>
-          </div>
+          </OperatorGateCard>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Decisions</h4>
-            <ul className="mt-3 space-y-2 text-sm text-gray-300">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-slate-100">
+                Extracted decision notes
+              </h4>
+              <OperatorBadge tone="advisory">NOT A RECEIPT</OperatorBadge>
+            </div>
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
               {record.decisions.map((decision) => (
                 <li key={decision}>- {decision}</li>
               ))}
             </ul>
-          </div>
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Risks and tasks</h4>
+          </OperatorGateCard>
+          <OperatorContradictionCard>
+            <h4 className="text-sm font-semibold text-slate-100">Risks and tasks</h4>
             <div className="mt-3 grid gap-4 md:grid-cols-2">
-              <ul className="space-y-2 text-sm text-gray-300">
+              <ul className="space-y-2 text-sm text-slate-300">
                 {record.risks.map((risk) => (
                   <li key={risk}>- {risk}</li>
                 ))}
               </ul>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <ul className="space-y-2 text-sm text-slate-300">
                 {record.tasks.map((task) => (
                   <li key={task}>- {task}</li>
                 ))}
               </ul>
             </div>
-          </div>
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+          </OperatorContradictionCard>
+          <OperatorGateCard>
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm font-semibold text-gray-100">
+              <h4 className="text-sm font-semibold text-slate-100">
                 Copy-only next prompt
               </h4>
-              <ToneBadge tone="amber">capture only</ToneBadge>
+              <OperatorBadge tone="composeOnly">COPY-ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
             </div>
             <textarea
               readOnly
               value={record.next_prompts[0] ?? ""}
               rows={16}
-              className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+              className="mt-3 w-full rounded border border-slate-800 bg-slate-950 px-3 py-3 font-mono text-xs text-slate-200"
             />
-          </div>
+          </OperatorGateCard>
         </div>
       </div>
-    </article>
+    </OperatorPanel>
   );
 }
 
@@ -282,32 +307,55 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-black p-8 text-gray-100">
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">JAI NEXUS - Conversation Continuity</h1>
-            <ToneBadge tone="amber">capture/index only</ToneBadge>
-            <ToneBadge tone="rose">no automatic live capture</ToneBadge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Repo-native continuity layer for imported archive chats, captured
-            operator deliberations, and future JAI conversation captures. This
-            v0 seam makes reasoning durable and navigable without adding hidden
-            persistence, DB mutation, or execution authority.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              Naming convention: <span className="font-mono">{namingExample}</span>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="mr-2 text-3xl font-semibold">
+                JAI NEXUS - Conversation Continuity
+              </h1>
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">DB READ-ONLY ARCHIVE</OperatorBadge>
+              <OperatorBadge tone="fixture">SEEDED FIXTURE</OperatorBadge>
+              <OperatorBadge tone="advisory">CAPTURE / INDEX ONLY</OperatorBadge>
+              <OperatorBadge tone="composeOnly">COPY-ONLY OUTPUT</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+            <p className="mt-4 max-w-4xl text-sm text-slate-400">
+              Read-only archive browsing and seeded local continuity records make
+              prior reasoning navigable. Archive records and fixtures are shown
+              separately; neither source grants authority or establishes canon.
             </p>
-            <p className="mt-1">
-              Artifact path convention:{" "}
-              <span className="font-mono">
-                .nexus/chats/{namingExample}.md
-              </span>
+            <OperatorGateCard className="mt-4 text-sm text-slate-300">
+              <p>
+                Naming convention: <OperatorIdChip>{namingExample}</OperatorIdChip>
+              </p>
+              <p className="mt-2">
+                Artifact path convention:{" "}
+                <OperatorIdChip>.nexus/chats/{namingExample}.md</OperatorIdChip>
+              </p>
+              <p className="mt-3 text-xs text-slate-400">
+                Prompt text is not dispatch. Extracted decision notes are not
+                receipts, automatic acceptance, or canon updates.
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail invariants={OPERATOR_SAFETY_INVARIANTS}>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Capture automatically</OperatorBlockedAction>
+              <OperatorBlockedAction>Dispatch prompt</OperatorBlockedAction>
+              <OperatorBlockedAction>Create receipt</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Search and filters only read existing archive records. Dashboard
+              display does not authorize action.
             </p>
-          </div>
-        </header>
+          </OperatorSafetyRail>
+        </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
@@ -333,8 +381,10 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
         </section>
 
         <Section
+          index="01"
           title="Captured continuity records"
           description="Bundled/static continuity records now include both captured operator deliberations and repo-facing planning captures linked into motions, waves, work packets, and next prompts."
+          provenance="fixture"
         >
           <div className="space-y-4">
             {continuityRecords.map((record) => (
@@ -344,10 +394,12 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
         </Section>
 
         <Section
+          index="02"
           title="Future JAI conversation captures"
           description="This seam defines the naming and indexing model for future captures without enabling automatic live collection."
+          provenance="fixture"
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-5 text-sm text-gray-300">
+          <OperatorPanel className="p-5 text-sm text-slate-300">
             <p>
               Future capture categories are expected to include:
             </p>
@@ -356,27 +408,29 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
               <li>- repo execution/control threads captured manually after operator review</li>
               <li>- manual continuity captures that bridge motions, waves, and work packets</li>
             </ul>
-            <p className="mt-4 text-gray-400">
+            <p className="mt-4 text-slate-400">
               No automatic live capture, hidden persistence, DB writes, or API mutation are enabled in v0.
             </p>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="03"
           title="Imported archive chats"
           description="Existing archive browsing remains intact for older imported material."
+          provenance="readOnly"
         >
           {hasFilters && (
             <div className="flex flex-wrap items-center gap-2">
               {sourceFilter && (
-                <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px]">
-                  Source: <span className="ml-1 font-mono">{sourceFilter}</span>
-                </span>
+                <OperatorBadge tone="readOnly">
+                  Source: {sourceFilter}
+                </OperatorBadge>
               )}
               {searchQuery && (
-                <span className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-900 px-2 py-1 text-[11px]">
-                  Search: <span className="ml-1 font-mono">{searchQuery}</span>
-                </span>
+                <OperatorBadge tone="readOnly">
+                  Search: {searchQuery}
+                </OperatorBadge>
               )}
               <Link
                 href="/operator/chats"
@@ -387,23 +441,24 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
             </div>
           )}
 
-          <form method="get" className="flex gap-2">
+          <form method="get" className="flex flex-wrap gap-2">
             <input
               name="q"
               defaultValue={searchQuery ?? ""}
               placeholder="Search imported archive chats..."
-              className="flex-1 rounded-md border border-gray-700 bg-black px-3 py-2 text-sm text-gray-100 placeholder-gray-500 focus:border-sky-600 focus:outline-none"
+              className="min-w-64 flex-1 rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-sky-700 focus:outline-none"
             />
             <button
               type="submit"
-              className="rounded-md bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500"
+              className="rounded border border-sky-800 px-3 py-2 font-mono text-xs uppercase tracking-wide text-sky-300 hover:bg-sky-950"
             >
-              Search
+              Search archive
             </button>
+            <OperatorReadOnlyAction>GET FILTER ONLY</OperatorReadOnlyAction>
           </form>
 
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <div className="text-xs uppercase tracking-wide text-gray-500">
+          <OperatorPanel>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
               Imported archive sources
             </div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
@@ -419,19 +474,16 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
                 </div>
               ))}
             </div>
-          </div>
+          </OperatorPanel>
 
           {chats.length === 0 ? (
-            <p className="text-sm text-gray-400">
+            <OperatorGateCard className="text-sm text-slate-400">
               No imported archive chats found. {hasFilters ? "Try clearing filters." : ""}
-            </p>
+            </OperatorGateCard>
           ) : (
             <div className="space-y-3">
               {chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  className="rounded-lg border border-gray-800 bg-zinc-950 p-4 transition-colors hover:bg-zinc-900/60"
-                >
+                <OperatorGateCard key={chat.id}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2">
@@ -443,16 +495,18 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
                             {chat.title}
                           </Link>
                         </h3>
-                        <ToneBadge tone="slate">imported archive</ToneBadge>
+                        <OperatorBadge tone="readOnly">
+                          DB READ-ONLY ARCHIVE
+                        </OperatorBadge>
                       </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
                         <span>
-                          <span className="text-gray-500">Date:</span>{" "}
+                          <span className="text-slate-500">Date:</span>{" "}
                           {formatCentral(chat.chatDate)}
                         </span>
                         <span>
-                          <span className="text-gray-500">Source:</span>{" "}
+                          <span className="text-slate-500">Source:</span>{" "}
                           <Link
                             href={`/operator/chats?source=${encodeURIComponent(chat.source)}`}
                             className="text-sky-400 underline"
@@ -462,23 +516,22 @@ export default async function ChatsPage({ searchParams }: ChatsPageProps) {
                         </span>
                         {chat.model ? (
                           <span>
-                            <span className="text-gray-500">Model:</span> {chat.model}
+                            <span className="text-slate-500">Model:</span> {chat.model}
                           </span>
                         ) : null}
                         {chat._count.decisions > 0 ? (
-                          <span className="text-emerald-400">
+                          <span className="text-amber-300">
                             {chat._count.decisions} decision
-                            {chat._count.decisions !== 1 ? "s" : ""}
+                            {chat._count.decisions !== 1 ? "s" : ""} extracted -
+                            not receipts
                           </span>
                         ) : null}
                       </div>
                     </div>
 
-                    <div className="text-xs font-mono whitespace-nowrap text-gray-600">
-                      {chat.chatId}
-                    </div>
+                    <OperatorIdChip>{chat.chatId}</OperatorIdChip>
                   </div>
-                </div>
+                </OperatorGateCard>
               ))}
             </div>
           )}

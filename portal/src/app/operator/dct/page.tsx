@@ -3,6 +3,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import {
+    OPERATOR_SAFETY_INVARIANTS,
+    OperatorBadge,
+    OperatorBlockedAction,
+    OperatorPanel,
+    OperatorSafetyRail,
+} from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
 import { applyDct, type DctEventInput } from "@/lib/dctProjection";
 import { formatCentral, formatCentralTooltip } from "@/lib/time";
@@ -17,7 +24,7 @@ const kindLabels: Record<string, string> = {
 };
 
 const kindColors: Record<string, string> = {
-    [DCT_KINDS.IDEA_CREATE]: "bg-emerald-900/40 text-emerald-300",
+    [DCT_KINDS.IDEA_CREATE]: "bg-slate-800 text-slate-300",
     [DCT_KINDS.IDEA_REVISE]: "bg-amber-900/40 text-amber-300",
     [DCT_KINDS.IDEA_STATUS]: "bg-purple-900/40 text-purple-300",
     [DCT_KINDS.IDEA_EDGE]: "bg-blue-900/40 text-blue-300",
@@ -25,7 +32,7 @@ const kindColors: Record<string, string> = {
 };
 
 const ideaStatusColors: Record<string, string> = {
-    active: "bg-emerald-900/40 text-emerald-300",
+    active: "bg-sky-950/50 text-sky-300",
     promoted: "bg-sky-900/40 text-sky-300",
     deprecated: "bg-red-900/40 text-red-300",
     superseded: "bg-amber-900/40 text-amber-300",
@@ -33,7 +40,7 @@ const ideaStatusColors: Record<string, string> = {
 };
 
 const ideaTypeColors: Record<string, string> = {
-    decision: "bg-emerald-950/30 text-emerald-300 border-emerald-900/40",
+    decision: "bg-sky-950/30 text-sky-300 border-sky-900/40",
     definition: "bg-sky-950/30 text-sky-300 border-sky-900/40",
     goal: "bg-indigo-950/30 text-indigo-300 border-indigo-900/40",
     plan: "bg-amber-950/30 text-amber-300 border-amber-900/40",
@@ -313,15 +320,45 @@ export default async function DctPage() {
     const quality = computeDctQuality(projection, 3);
 
     return (
-        <main className="min-h-screen bg-black text-gray-100 p-8">
-            <header className="mb-6">
-                <h1 className="text-3xl font-semibold">JAI NEXUS · DCT Projection</h1>
-                <p className="text-sm text-gray-400 mt-1">
-                    Deterministic Concept Tracking — governance-grade projection from the SoT event stream.
-                </p>
+        <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+            <header className="mb-6 space-y-4">
+                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+                    <OperatorPanel className="p-5">
+                        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                            dev.jai.nexus / operator / dct
+                        </div>
+                        <h1 className="mt-2 text-3xl font-semibold">
+                            JAI NEXUS · DCT Projection
+                        </h1>
+                        <p className="mt-2 text-sm text-slate-400">
+                            Deterministic Concept Tracking — governance-grade,
+                            read-only projection from stored SoT event rows.
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+                            <OperatorBadge tone="readOnly">READ-ONLY PROJECTION</OperatorBadge>
+                            <OperatorBadge tone="neutral">DERIVED DISPLAY</OperatorBadge>
+                            <OperatorBadge tone="blocked">NO DCT MUTATION</OperatorBadge>
+                            <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+                            <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+                        </div>
+                    </OperatorPanel>
+                    <OperatorSafetyRail
+                        title="DCT Projection Safety"
+                        invariants={OPERATOR_SAFETY_INVARIANTS}
+                    >
+                        <div className="flex flex-wrap gap-2">
+                            <OperatorBlockedAction>Mutate projection</OperatorBlockedAction>
+                            <OperatorBlockedAction>Accept quality result</OperatorBlockedAction>
+                        </div>
+                        <p className="text-xs text-slate-400">
+                            Validation is not acceptance. Read-only is not authority.
+                        </p>
+                    </OperatorSafetyRail>
+                </div>
 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mt-6 mb-4">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-8">
                     <StatCard label="Total Ideas" value={m.totalIdeas} />
                     <StatCard label="Active" value={m.activeIdeasCount} />
                     <StatCard label="Operating" value={m.operatingIdeasCount} highlight />
@@ -338,7 +375,7 @@ export default async function DctPage() {
                         ? "border-red-900/50 bg-red-950/20"
                         : quality.severity === "warn"
                             ? "border-amber-900/50 bg-amber-950/20"
-                            : "border-emerald-900/50 bg-emerald-950/10"
+                            : "border-sky-900/50 bg-sky-950/10"
                         }`}
                 >
                     <div className="flex items-start justify-between gap-4">
@@ -349,7 +386,7 @@ export default async function DctPage() {
                                         ? "border-red-900/60 bg-red-950/30 text-red-300"
                                         : quality.severity === "warn"
                                             ? "border-amber-900/60 bg-amber-950/30 text-amber-300"
-                                            : "border-emerald-900/60 bg-emerald-950/20 text-emerald-300"
+                                            : "border-sky-900/60 bg-sky-950/20 text-sky-300"
                                         }`}
                                 >
                                     QUALITY:{quality.severity.toUpperCase()}
@@ -378,12 +415,17 @@ export default async function DctPage() {
 
                     {quality.topActions.length > 0 && (
                         <div className="mt-3">
-                            <div className="text-[10px] text-zinc-500 font-mono mb-2">Top actions</div>
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <div className="font-mono text-[10px] text-zinc-500">
+                                    Read-only remediation hints
+                                </div>
+                                <OperatorBadge tone="gated">DO NOT EXECUTE</OperatorBadge>
+                            </div>
                             <div className="space-y-2">
                                 {quality.topActions.map((a, idx) => {
                                     const ideaId = "ideaId" in a ? a.ideaId : "";
                                     return (
-                                        <div key={`${a.type}-${idx}`} className="border border-zinc-800 bg-zinc-950/40 rounded px-3 py-2">
+                                        <div key={`${a.type}-${idx}`} className="rounded border border-slate-800 bg-slate-900 px-3 py-2">
                                             <div className="flex items-center justify-between gap-2 text-xs font-mono">
                                                 <span className="text-zinc-300">{a.hint}</span>
                                                 {ideaId ? (
@@ -394,7 +436,7 @@ export default async function DctPage() {
                                                     <span className="text-zinc-600">—</span>
                                                 )}
                                             </div>
-                                            <pre className="mt-2 text-[11px] leading-relaxed font-mono text-zinc-400 whitespace-pre-wrap bg-black/30 border border-zinc-900 rounded p-2">
+                                            <pre className="mt-2 whitespace-pre-wrap rounded border border-slate-800 bg-slate-950/60 p-2 font-mono text-[11px] leading-relaxed text-slate-400">
                                                 {a.curl}
                                             </pre>
                                         </div>
@@ -417,7 +459,7 @@ export default async function DctPage() {
                 )}
 
                 {/* Filters (real GET form, works in server components) */}
-                <form method="GET" className="rounded-lg border border-zinc-800 bg-zinc-950 p-3">
+                <form method="GET" className="rounded border border-slate-800 bg-slate-900 p-3">
                     <div className="flex flex-col lg:flex-row gap-2 lg:items-center lg:justify-between">
                         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                             <div className="flex items-center gap-2">
@@ -524,13 +566,13 @@ export default async function DctPage() {
                         <p className="text-xs text-gray-500 mb-4">Selected idea + provenance + links.</p>
 
                         {!selectedIdea ? (
-                            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 text-sm text-zinc-500">
+                            <div className="rounded border border-slate-800 bg-slate-900 p-4 text-sm text-slate-500">
                                 Select an idea from the list to inspect it.
                             </div>
                         ) : (
                             // keep your inspector contents exactly as you have them below
                             // (unchanged to avoid introducing UI regressions)
-                            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 space-y-4">
+                            <div className="space-y-4 rounded border border-slate-800 bg-slate-900 p-4">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
                                         <div className="text-[10px] font-mono text-zinc-500">ID</div>
@@ -667,9 +709,9 @@ export default async function DctPage() {
                 {slotEntries.length === 0 ? (
                     <EmptyState message="No slot bindings yet." />
                 ) : (
-                    <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
+                    <div className="overflow-x-auto rounded border border-slate-800 bg-slate-900">
                         <table className="w-full text-sm border-collapse">
-                            <thead className="bg-zinc-950 border-b border-gray-800 text-left">
+                            <thead className="border-b border-slate-800 bg-slate-950/60 text-left">
                                 <tr>
                                     <th className="py-2 px-3 text-xs text-gray-400">Slot</th>
                                     <th className="py-2 px-3 text-xs text-gray-400">Bound Idea</th>
@@ -709,9 +751,9 @@ export default async function DctPage() {
                 {edges.length === 0 ? (
                     <EmptyState message="No edges yet." />
                 ) : (
-                    <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
+                    <div className="overflow-x-auto rounded border border-slate-800 bg-slate-900">
                         <table className="w-full text-sm border-collapse">
-                            <thead className="bg-zinc-950 border-b border-gray-800 text-left">
+                            <thead className="border-b border-slate-800 bg-slate-950/60 text-left">
                                 <tr>
                                     <th className="py-2 px-3 text-xs text-gray-400">From</th>
                                     <th className="py-2 px-3 text-xs text-gray-400">Relation</th>
@@ -756,9 +798,9 @@ export default async function DctPage() {
                 {eventsDesc.length === 0 ? (
                     <EmptyState message="No DCT events found. Run dct:extract to populate." />
                 ) : (
-                    <div className="overflow-x-auto rounded-lg border border-gray-800 bg-zinc-950">
+                    <div className="overflow-x-auto rounded border border-slate-800 bg-slate-900">
                         <table className="w-full text-sm border-collapse">
-                            <thead className="bg-zinc-950 border-b border-gray-800 text-left">
+                            <thead className="border-b border-slate-800 bg-slate-950/60 text-left">
                                 <tr>
                                     <th className="py-2 px-3 text-xs text-gray-400">Time</th>
                                     <th className="py-2 px-3 text-xs text-gray-400">Action</th>
@@ -851,10 +893,10 @@ function StatCard({
     highlight?: boolean;
     warn?: boolean;
 }) {
-    const border = warn ? "border-amber-800" : highlight ? "border-sky-800" : "border-zinc-800";
+    const border = warn ? "border-amber-800" : highlight ? "border-sky-800" : "border-slate-800";
     const text = warn ? "text-amber-300" : highlight ? "text-sky-300" : "text-zinc-200";
     return (
-        <div className={`bg-zinc-900/50 border ${border} p-3 rounded`}>
+        <div className={`rounded border bg-slate-900 p-3 ${border}`}>
             <div className="text-xs text-gray-400 uppercase tracking-tighter">{label}</div>
             <div className={`text-2xl font-mono ${text}`}>{value}</div>
         </div>
@@ -901,7 +943,7 @@ function IdeaCard({
     return (
         <Link
             href={href}
-            className={`block rounded-lg border p-4 transition ${selected ? "border-sky-800 bg-sky-950/15" : "border-zinc-800 bg-zinc-950 hover:bg-zinc-900/30"
+            className={`block rounded border p-4 transition ${selected ? "border-sky-800 bg-sky-950/15" : "border-slate-800 bg-slate-900 hover:bg-slate-800/60"
                 }`}
         >
             <div className="flex items-start justify-between gap-4">

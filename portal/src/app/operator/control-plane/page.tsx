@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
 import { controlPlanePrototypeFixture } from "@/lib/controlPlane/controlPlanePrototypeFixture";
 import { readControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
 
-import { ControlPlaneBadge } from "./_components/ControlPlaneBadges";
 import { ControlPlanePanels } from "./_components/ControlPlanePanels";
 
 export const metadata: Metadata = {
@@ -19,79 +25,105 @@ export default async function OperatorControlPlanePage() {
   const canonicalPosture = await readControlPlaneCanonicalPosture();
 
   return (
-    <main className="min-h-screen bg-black px-6 py-8 text-gray-100 lg:px-8">
+    <main className="min-h-screen bg-slate-950 px-6 py-8 text-slate-300 lg:px-8">
       <div className="mx-auto max-w-[1600px] space-y-6">
-        <header className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-gray-500">
-                dev-jai-nexus / operator / control-plane
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <OperatorPanel className="p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  dev-jai-nexus / operator / control-plane
+                </div>
+                <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+                  {fixture.title}
+                </h1>
+                <p className="mt-2 max-w-4xl text-sm text-slate-400">
+                  Read-only operator cockpit combining canonical motion posture
+                  with clearly labeled synthetic fixture panels. Nothing on this
+                  page executes, dispatches, persists, or mutates system state.
+                </p>
               </div>
-              <h1 className="mt-2 text-3xl font-semibold">{fixture.title}</h1>
-              <p className="mt-2 max-w-4xl text-sm text-gray-400">
-                Read-only operator cockpit combining canonical motion posture with clearly
-                labeled synthetic fixture panels. Nothing on this page executes, dispatches,
-                persists, or mutates system state.
-              </p>
+              <div className="flex max-w-2xl flex-wrap justify-end gap-2">
+                <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+                <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+                <OperatorBadge tone="fixture">LOCAL STATIC SNAPSHOT</OperatorBadge>
+                <OperatorBadge tone="blocked">
+                  ALL EXECUTION GATES CLOSED
+                </OperatorBadge>
+                <OperatorBadge tone="advisory">MANUAL HANDOFF</OperatorBadge>
+                <OperatorBadge tone="advisory">ADVISORY ONLY</OperatorBadge>
+                <OperatorBadge tone="fixture">REPRESENTATIONAL ONLY</OperatorBadge>
+              </div>
             </div>
-            <div className="flex max-w-2xl flex-wrap justify-end gap-2">
-              <ControlPlaneBadge tone="amber">NON-AUTHORIZING</ControlPlaneBadge>
-              <ControlPlaneBadge tone="rose">ZERO GATES GRANTED</ControlPlaneBadge>
-              <ControlPlaneBadge tone="sky">LOCAL STATIC SNAPSHOT</ControlPlaneBadge>
-              <ControlPlaneBadge tone="rose">ALL EXECUTION GATES CLOSED</ControlPlaneBadge>
-              <ControlPlaneBadge tone="sky">MANUAL HANDOFF</ControlPlaneBadge>
-              <ControlPlaneBadge tone="sky">ADVISORY ONLY</ControlPlaneBadge>
-              <ControlPlaneBadge tone="amber">REPRESENTATIONAL ONLY</ControlPlaneBadge>
+
+            <div className="mt-4 rounded border border-slate-700 bg-slate-950 p-3 font-mono text-xs uppercase tracking-wide text-slate-400">
+              <OperatorBadge tone="fixture">FIXTURE PROVENANCE</OperatorBadge>
+              <span className="ml-2">{fixture.provenance}</span>
             </div>
-          </div>
 
-          <div className="mt-4 rounded-lg border border-amber-900 bg-amber-950/30 p-3 font-mono text-xs uppercase tracking-wide text-amber-100">
-            {fixture.provenance}
-          </div>
+            <nav
+              className="mt-4 flex flex-wrap gap-2 text-xs"
+              aria-label="Control plane panels"
+            >
+              {[
+                ["Motions", "motion-queue"],
+                ["Routes", "route-queue"],
+                ["Council", "council-slots"],
+                ["Agent lanes", "agent-lanes"],
+                ["Execution gates", "execution-gates"],
+                ["Security gate model", "security-gate-model"],
+              ].map(([label, target]) => (
+                <a
+                  key={target}
+                  href={`#${target}`}
+                  className="rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono uppercase tracking-wide text-slate-300 hover:border-sky-700 hover:text-sky-300"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </OperatorPanel>
 
-          <nav className="mt-4 flex flex-wrap gap-2 text-xs" aria-label="Control plane panels">
-            {[
-              ["Motions", "motion-queue"],
-              ["Routes", "route-queue"],
-              ["Council", "council-slots"],
-              ["Agent lanes", "agent-lanes"],
-              ["Execution gates", "execution-gates"],
-              ["Security gate model", "security-gate-model"],
-            ].map(([label, target]) => (
-              <a
-                key={target}
-                href={`#${target}`}
-                className="rounded-md border border-gray-700 bg-black/30 px-3 py-1.5 text-gray-300 hover:border-gray-500 hover:text-white"
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
+          <OperatorSafetyRail
+            title="Control Plane Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly">READ-ONLY CANONICAL</OperatorBadge>
+              <OperatorBadge tone="fixture">SYN-* FIXTURE</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+            </div>
+          </OperatorSafetyRail>
         </header>
 
         <ControlPlanePanels fixture={fixture} canonicalPosture={canonicalPosture} />
 
-        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-semibold text-gray-100">Explicit Non-Authorizations</h2>
-            <ControlPlaneBadge tone="rose">Not authorized in v0</ControlPlaneBadge>
-          </div>
+        <OperatorPanel>
+          <OperatorSectionHeader
+            index="BOUNDARY"
+            title="Explicit Non-Authorizations"
+            right={
+              <OperatorBadge tone="blocked">Not authorized in v0</OperatorBadge>
+            }
+          />
           <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
             {fixture.non_authorizations.map((boundary) => (
               <div
                 key={boundary}
-                className="rounded-lg border border-gray-800 bg-black/30 p-3 text-xs text-gray-300"
+                className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-200"
               >
                 {boundary}
               </div>
             ))}
           </div>
-        </section>
+        </OperatorPanel>
 
-        <footer className="flex flex-wrap items-center justify-center gap-2 text-center font-mono text-[10px] uppercase tracking-widest text-gray-500">
-          <ControlPlaneBadge>FIXTURE</ControlPlaneBadge>
+        <footer className="flex flex-wrap items-center justify-center gap-2 text-center font-mono text-[10px] uppercase tracking-widest text-slate-500">
+          <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
           <span>
-            {fixture.fixture_id} / synthetic SYN-* data / local static snapshot / not production
+            {fixture.fixture_id} / synthetic SYN-* data / local static snapshot
+            / not production
           </span>
         </footer>
       </div>

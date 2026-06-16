@@ -4,6 +4,19 @@ export const revalidate = 0;
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacketAction,
@@ -16,23 +29,30 @@ import {
   getDeterministicAgendaModel,
   type DeterministicAgendaItem,
 } from "@/lib/controlPlane/agendaModel";
-import { getOperatorLoopCandidate } from "@/lib/controlPlane/operatorLoopCandidate";
+import {
+  getOperatorLoopCandidate,
+  type LoopCandidateSelectionStatus,
+} from "@/lib/controlPlane/operatorLoopCandidate";
 
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="readOnly" label="DERIVED / READ-ONLY" />}
+      />
+      <p className="max-w-5xl text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -48,46 +68,34 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="readOnly" label="DERIVED" />
+      </div>
+      <div className="mt-2 font-mono text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
-function ToneBadge({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
-}) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
+function statusTone(status: DraftWorkPacketStatus): OperatorSlateTone {
+  if (status === "blocked") return "blocked";
+  if (status === "deferred") return "warning";
+  if (status === "ready_for_review") return "pending";
+  if (status === "settled") return "readOnly";
+  return "advisory";
 }
 
-function statusTone(status: DraftWorkPacketStatus): "amber" | "emerald" | "rose" | "slate" {
-  if (status === "ready_for_review") return "emerald";
-  if (status === "blocked") return "rose";
-  if (status === "settled") return "slate";
-  return "amber";
+function selectionTone(status: LoopCandidateSelectionStatus): OperatorSlateTone {
+  if (status === "blocked") return "blocked";
+  if (status === "deferred") return "warning";
+  if (status === "eligible") return "pending";
+  return "readOnly";
 }
 
 function statusLabel(status: DraftWorkPacketStatus): string {
@@ -96,10 +104,10 @@ function statusLabel(status: DraftWorkPacketStatus): string {
 
 function compatibilityTone(
   state: DraftWorkPacketCompatibilityState,
-): "emerald" | "amber" | "rose" {
-  if (state === "compatible") return "emerald";
-  if (state === "preview_only") return "amber";
-  return "rose";
+): OperatorSlateTone {
+  if (state === "compatible") return "readOnly";
+  if (state === "preview_only") return "pending";
+  return "blocked";
 }
 
 function actionLabel(action: DraftWorkPacketAction): string {
@@ -115,24 +123,55 @@ function compatibilityLabel(
   return actionLabel(compatibility.requested_action);
 }
 
-function promptTone(status: "ready_preview" | "warning" | "blocked") {
-  if (status === "ready_preview") return "emerald";
-  if (status === "warning") return "amber";
-  return "rose";
+function promptTone(
+  status: "ready_preview" | "warning" | "blocked",
+): OperatorSlateTone {
+  if (status === "ready_preview") return "composeOnly";
+  if (status === "warning") return "warning";
+  return "blocked";
 }
 
-function ChainRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function ChainRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-sm text-gray-200">{value}</div>
-    </div>
+    <OperatorGateCard>
+      <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+        {label}
+      </div>
+      <div className="mt-2 text-sm text-slate-200">{value}</div>
+    </OperatorGateCard>
+  );
+}
+
+function TextList({
+  title,
+  items,
+  tone = "neutral",
+}: {
+  title: string;
+  items: string[];
+  tone?: "neutral" | "blocked";
+}) {
+  const content = (
+    <>
+      <div
+        className={`font-mono text-xs uppercase tracking-widest ${
+          tone === "blocked" ? "text-red-300" : "text-slate-500"
+        }`}
+      >
+        {title}
+      </div>
+      <ul className="mt-3 space-y-2 text-sm text-slate-300">
+        {items.map((item) => (
+          <li key={item}>- {item}</li>
+        ))}
+      </ul>
+    </>
+  );
+
+  return tone === "blocked" ? (
+    <OperatorContradictionCard>{content}</OperatorContradictionCard>
+  ) : (
+    <OperatorGateCard>{content}</OperatorGateCard>
   );
 }
 
@@ -141,47 +180,57 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
   const prompt = buildDraftWorkPacketTaskPrompt(packet);
 
   return (
-    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-5">
+    <OperatorPanel className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">{packet.title}</h3>
-            <ToneBadge tone={statusTone(packet.status)}>
-              agenda status: {statusLabel(packet.status)}
-            </ToneBadge>
-            <ToneBadge tone="slate">
-              selection status: {item.selection_status}
-            </ToneBadge>
+            <h3 className="text-base font-semibold text-slate-100">
+              {packet.title}
+            </h3>
+            <OperatorStatusChip
+              status={`AGENDA: ${statusLabel(packet.status)}`}
+              tone={statusTone(packet.status)}
+            />
+            <OperatorStatusChip
+              status={`SELECTION: ${item.selection_status}`}
+              tone={selectionTone(item.selection_status)}
+            />
             {item.is_first_official_loop_candidate ? (
-              <ToneBadge tone="sky">first official loop-through candidate</ToneBadge>
+              <OperatorBadge tone="readOnly" label="ACTIVE LOOP CANDIDATE" />
             ) : null}
-            <ToneBadge tone="amber">draft-only activation</ToneBadge>
-            <ToneBadge tone="rose">execution blocked</ToneBadge>
+            <OperatorBadge tone="advisory" label="DRAFT-ONLY" />
+            <OperatorBadge tone="blocked" label="EXECUTION BLOCKED" />
           </div>
-          <p className="max-w-4xl text-sm text-gray-300">{packet.summary}</p>
+          <p className="max-w-4xl text-sm text-slate-300">{packet.summary}</p>
         </div>
-
         <div className="flex flex-wrap gap-2">
-          <ToneBadge tone="sky">scope subset: {packet.configured_scope_key}</ToneBadge>
-          <ToneBadge tone="slate">{packet.packet_id}</ToneBadge>
+          <OperatorBadge
+            tone="readOnly"
+            label={`SCOPE: ${packet.configured_scope_key}`}
+          />
+          <OperatorIdChip>{packet.packet_id}</OperatorIdChip>
         </div>
       </div>
 
-      <div className="mt-4 rounded-lg border border-gray-800 bg-black/30 p-4">
+      <OperatorPanel className="mt-4 bg-slate-950/50">
         <div className="flex flex-wrap items-center gap-2">
-          <h4 className="text-sm font-semibold text-gray-100">
+          <h4 className="text-sm font-semibold text-slate-100">
             Deterministic chain coverage
           </h4>
-          <ToneBadge tone="emerald">traceable activation chain</ToneBadge>
+          <OperatorBadge tone="readOnly" label="TRACEABLE / DERIVED" />
+          <OperatorBadge tone="gated" label="NOT EXECUTION AUTHORITY" />
         </div>
-        <p className="mt-2 text-xs text-gray-400">
-          Every agenda item resolves agent, role, repo, surface, motion/seam,
+        <p className="mt-2 text-xs text-slate-400">
+          Every agenda item resolves agent, role, repo, surface, source seam,
           allowed output, validation gate, and human decision without enabling
           runtime execution.
         </p>
         <div className="mt-4 grid gap-3 lg:grid-cols-4">
           <ChainRow label="Assigned JAI Agent" value={item.chain.assigned_agent_label} />
-          <ChainRow label="Canonical role mapping" value={item.chain.canonical_role_label} />
+          <ChainRow
+            label="Canonical role mapping"
+            value={item.chain.canonical_role_label}
+          />
           <ChainRow label="Target repo" value={item.chain.target_repo_full_name} />
           <ChainRow label="Target surface" value={item.chain.target_surface_label} />
           <ChainRow label="Source motion/seam" value={item.chain.source_label} />
@@ -192,46 +241,53 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
           <ChainRow label="Allowed output" value={item.chain.allowed_output} />
           <ChainRow label="Human decision" value={item.chain.human_decision_summary} />
         </div>
-      </div>
+      </OperatorPanel>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Target model</h4>
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-slate-100">Target model</h4>
+              <OperatorBadge tone="readOnly" label="DERIVED TARGET" />
+            </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ToneBadge tone="sky">{packet.target.repo_full_name}</ToneBadge>
-              <ToneBadge tone="slate">surface: {packet.target.surface.label}</ToneBadge>
+              <OperatorIdChip>{packet.target.repo_full_name}</OperatorIdChip>
+              <OperatorIdChip>{packet.target.surface.label}</OperatorIdChip>
               {packet.target.project ? (
-                <ToneBadge tone="emerald">project: {packet.target.project.name}</ToneBadge>
+                <OperatorBadge
+                  tone="readOnly"
+                  label={`PROJECT: ${packet.target.project.name}`}
+                />
               ) : (
-                <ToneBadge tone="amber">project: none</ToneBadge>
+                <OperatorBadge tone="advisory" label="PROJECT: NONE" />
               )}
             </div>
-            <ul className="mt-3 space-y-1 text-xs text-gray-400">
+            <ul className="mt-3 space-y-1 text-xs text-slate-400">
               <li>- repo: {packet.target.repo_full_name}</li>
               <li>- surface: {packet.target.surface.label}</li>
               <li>- project: {packet.target.project?.project_id ?? "not assigned"}</li>
             </ul>
-          </div>
+          </OperatorGateCard>
 
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              {item.is_first_official_loop_candidate ? (
-                <div className="mb-3 rounded-lg border border-sky-900 bg-sky-950/40 p-3 text-sm text-sky-100">
+          <OperatorGateCard>
+            {item.is_first_official_loop_candidate ? (
+              <OperatorPanel className="mb-3 border-sky-900 bg-sky-950/30">
+                <OperatorBadge tone="readOnly" label="ACTIVE BY STATIC GOVERNANCE" />
+                <p className="mt-2 text-sm text-sky-100">
                   This seeded agenda item is the first official deterministic
                   loop-through candidate for root overview, agenda review,
                   deliberation, and CONTROL_THREAD passalong.
-                </div>
-              ) : null}
-              {item.is_first_official_loop_candidate ? (
-                <p className="mb-3 text-xs text-gray-400">
-                  Switching remains static/local and code/governance controlled
-                  only. No runtime control, route state, query state, API call,
-                  or persistence path exists for changing the active candidate.
                 </p>
-              ) : null}
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs uppercase tracking-wide text-gray-500">
-                  Assigned identity
+                <p className="mt-2 text-xs text-slate-400">
+                  Switching remains static/local and code/governance controlled only.
+                  No runtime control, route state, query state, API call, or
+                  persistence path exists for changing the active candidate.
+                </p>
+              </OperatorPanel>
+            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                Assigned identity
               </span>
               <Link
                 href={`/operator/agents#${packet.agent.key}`}
@@ -239,97 +295,119 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
               >
                 {packet.agent.label}
               </Link>
-              <ToneBadge
-                tone={packet.agent.agent_class === "canonical_active" ? "emerald" : "amber"}
-              >
-                {packet.agent.agent_class === "canonical_active"
-                  ? "canonical active"
-                  : "palette draft"}
-              </ToneBadge>
+              <OperatorStatusChip
+                status={
+                  packet.agent.agent_class === "canonical_active"
+                    ? "CANONICAL ACTIVE"
+                    : "PALETTE DRAFT"
+                }
+                tone={
+                  packet.agent.agent_class === "canonical_active"
+                    ? "canonical"
+                    : "advisory"
+                }
+              />
             </div>
-            <div className="mt-2 font-mono text-xs text-gray-400">{packet.agent.handle}</div>
-            <p className="mt-2 text-sm text-gray-300">{packet.agent.summary}</p>
-            <div className="mt-3 rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
-              <div className="text-xs uppercase tracking-wide text-gray-500">
+            <div className="mt-2">
+              <OperatorIdChip>{packet.agent.handle}</OperatorIdChip>
+            </div>
+            <p className="mt-2 text-sm text-slate-300">{packet.agent.summary}</p>
+            <OperatorGateCard className="mt-3">
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                 Source activation seam
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                <ToneBadge tone={packet.source.kind === "motion" ? "emerald" : "amber"}>
-                  {packet.source.kind}
-                </ToneBadge>
+                <OperatorBadge
+                  tone={packet.source.kind === "motion" ? "readOnly" : "advisory"}
+                  label={packet.source.kind}
+                />
                 {packet.source.motion_id ? (
-                  <ToneBadge tone="sky">{packet.source.motion_id}</ToneBadge>
+                  <OperatorIdChip>{packet.source.motion_id}</OperatorIdChip>
                 ) : null}
-                <ToneBadge tone="slate">{packet.source.label}</ToneBadge>
+                <OperatorIdChip>{packet.source.label}</OperatorIdChip>
               </div>
-            </div>
-          </div>
+            </OperatorGateCard>
+          </OperatorGateCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">
+          <OperatorGateCard>
+            <h4 className="text-sm font-semibold text-slate-100">
               Requested actions and compatibility
             </h4>
+            <p className="mt-1 text-xs text-slate-400">
+              Compatibility is not acceptance and does not open a capability gate.
+            </p>
             <div className="mt-3 space-y-3">
               {packet.compatibility.requested_action_statuses.map((compatibility) => (
-                <div
+                <OperatorGateCard
                   key={`${packet.packet_id}-${compatibility.requested_action}`}
-                  className="rounded-lg border border-gray-800 bg-zinc-950/60 p-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <ToneBadge tone={compatibilityTone(compatibility.status)}>
-                      {compatibility.status}
-                    </ToneBadge>
-                    <span className="text-sm font-medium text-gray-100">
+                    <OperatorStatusChip
+                      status={compatibility.status}
+                      tone={compatibilityTone(compatibility.status)}
+                    />
+                    <span className="text-sm font-medium text-slate-100">
                       {compatibilityLabel(compatibility)}
                     </span>
-                    <span className="text-xs text-gray-500">
-                      via {compatibility.registry_capability_key}
-                    </span>
+                    <OperatorIdChip>
+                      {compatibility.registry_capability_key}
+                    </OperatorIdChip>
                   </div>
-                  <p className="mt-2 text-xs text-gray-400">{compatibility.reason}</p>
-                </div>
+                  <p className="mt-2 text-xs text-slate-400">
+                    {compatibility.reason}
+                  </p>
+                </OperatorGateCard>
               ))}
             </div>
-          </div>
+          </OperatorGateCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Authority posture</h4>
+          <OperatorContradictionCard>
+            <h4 className="text-sm font-semibold text-red-100">
+              Authority posture
+            </h4>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ToneBadge tone="rose">
-                execution blocked: {item.authority_posture.execution_blocked ? "yes" : "no"}
-              </ToneBadge>
-              <ToneBadge tone="rose">
-                branch_write disabled:{" "}
-                {item.authority_posture.branch_write_disabled ? "yes" : "no"}
-              </ToneBadge>
-              <ToneBadge tone="rose">
-                propose_pr disabled:{" "}
-                {item.authority_posture.propose_pr_disabled ? "yes" : "no"}
-              </ToneBadge>
-              <ToneBadge tone="rose">
-                execute_runtime disabled:{" "}
-                {item.authority_posture.execute_runtime_disabled ? "yes" : "no"}
-              </ToneBadge>
+              <OperatorBadge
+                tone="blocked"
+                label={`EXECUTION BLOCKED: ${item.authority_posture.execution_blocked ? "YES" : "NO"}`}
+              />
+              <OperatorBadge
+                tone="blocked"
+                label={`BRANCH WRITE DISABLED: ${item.authority_posture.branch_write_disabled ? "YES" : "NO"}`}
+              />
+              <OperatorBadge
+                tone="blocked"
+                label={`PROPOSE PR DISABLED: ${item.authority_posture.propose_pr_disabled ? "YES" : "NO"}`}
+              />
+              <OperatorBadge
+                tone="blocked"
+                label={`RUNTIME DISABLED: ${item.authority_posture.execute_runtime_disabled ? "YES" : "NO"}`}
+              />
             </div>
-          </div>
+          </OperatorContradictionCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Selection metadata</h4>
+          <OperatorGateCard>
+            <h4 className="text-sm font-semibold text-slate-100">
+              Selection metadata
+            </h4>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ToneBadge tone="sky">
-                repo posture: {packet.selection_metadata.repo_posture}
-              </ToneBadge>
-              <ToneBadge tone="amber">
-                work class: {packet.selection_metadata.work_class}
-              </ToneBadge>
-              <ToneBadge tone="slate">
-                action class: {packet.selection_metadata.requested_action_class}
-              </ToneBadge>
-              <ToneBadge tone="slate">
-                mutation boundary: {packet.selection_metadata.mutation_boundary}
-              </ToneBadge>
+              <OperatorBadge
+                tone="readOnly"
+                label={`REPO: ${packet.selection_metadata.repo_posture}`}
+              />
+              <OperatorBadge
+                tone="advisory"
+                label={`WORK: ${packet.selection_metadata.work_class}`}
+              />
+              <OperatorBadge
+                tone="neutral"
+                label={`ACTION: ${packet.selection_metadata.requested_action_class}`}
+              />
+              <OperatorBadge
+                tone="gated"
+                label={`MUTATION: ${packet.selection_metadata.mutation_boundary}`}
+              />
             </div>
-            <ul className="mt-3 space-y-2 text-sm text-gray-300">
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
               {packet.selection_metadata.selection_notes.map((note) => (
                 <li key={note}>- {note}</li>
               ))}
@@ -338,68 +416,44 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
                 {packet.selection_metadata.deterministic_chain_complete ? "yes" : "no"}
               </li>
             </ul>
-          </div>
+          </OperatorGateCard>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">Allowed paths</h4>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                {packet.allowed_paths.map((allowedPath) => (
-                  <li key={allowedPath}>- {allowedPath}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">Blocked paths</h4>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                {packet.blocked_paths.map((blockedPath) => (
-                  <li key={blockedPath}>- {blockedPath}</li>
-                ))}
-              </ul>
-            </div>
+            <TextList title="Allowed paths" items={packet.allowed_paths} />
+            <TextList
+              title="Blocked paths"
+              items={packet.blocked_paths}
+              tone="blocked"
+            />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">Verification gates</h4>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                {packet.verification_commands.map((command) => (
-                  <li key={command}>- {command}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">Human gates</h4>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                {packet.human_gates.map((gate) => (
-                  <li key={gate}>- {gate}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">Evidence expectations</h4>
-              <ul className="mt-3 space-y-2 text-sm text-gray-300">
-                {packet.evidence_expectations.map((expectation) => (
-                  <li key={expectation}>- {expectation}</li>
-                ))}
-              </ul>
-            </div>
+            <TextList
+              title="Verification gates"
+              items={packet.verification_commands}
+            />
+            <TextList title="Human gates" items={packet.human_gates} />
+            <TextList
+              title="Evidence expectations"
+              items={packet.evidence_expectations}
+            />
           </div>
         </div>
 
         <div className="space-y-4">
-            <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-              <h4 className="text-sm font-semibold text-gray-100">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-slate-100">
                 Deliberation review and next target
               </h4>
-            <div className="mt-3 rounded-lg border border-gray-800 bg-zinc-950/60 p-3">
+              <OperatorBadge tone="readOnly" label="NAVIGATION ONLY" />
+            </div>
+            <OperatorGateCard className="mt-3">
               <div className="flex flex-wrap items-center gap-2">
-                <ToneBadge tone="slate">
-                  switching: {item.switching_policy_mode}
-                </ToneBadge>
+                <OperatorStatusChip
+                  status={`SWITCHING: ${item.switching_policy_mode}`}
+                  tone="gated"
+                />
                 <Link
                   href={item.deliberation_context_href}
                   className="text-sm font-medium text-sky-300 underline"
@@ -407,78 +461,99 @@ function AgendaItemCard({ item }: { item: DeterministicAgendaItem }) {
                   Review in deliberation
                 </Link>
               </div>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-slate-400">
                 {item.deliberation_context_note}
               </p>
-              <p className="mt-2 text-xs text-gray-400">
+              <p className="mt-2 text-xs text-slate-400">
                 {item.no_selection_mutation_note}
               </p>
-            </div>
+            </OperatorGateCard>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ToneBadge tone="emerald">{packet.next_prompt_target.target}</ToneBadge>
-              <ToneBadge tone="sky">{packet.next_prompt_target.label}</ToneBadge>
+              <OperatorBadge
+                tone="advisory"
+                label={`TARGET: ${packet.next_prompt_target.target}`}
+              />
+              <OperatorBadge
+                tone="readOnly"
+                label={packet.next_prompt_target.label}
+              />
             </div>
-
             {item.is_first_official_loop_candidate ? (
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-                <h4 className="text-sm font-semibold text-gray-100">Loop-through links</h4>
+              <OperatorGateCard className="mt-3">
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  Loop-through links
+                </div>
                 <div className="mt-3 flex flex-wrap gap-3 text-sm">
                   <Link href="/" className="text-sky-300 underline">
                     Root overview
                   </Link>
-                  <Link href="/operator/deliberation" className="text-sky-300 underline">
+                  <Link
+                    href="/operator/deliberation"
+                    className="text-sky-300 underline"
+                  >
                     Deliberation and passalong
                   </Link>
                 </div>
-              </div>
+              </OperatorGateCard>
             ) : null}
-            <p className="mt-3 text-sm text-gray-300">{packet.next_prompt_target.prompt}</p>
-          </div>
+            <p className="mt-3 text-sm text-slate-300">
+              {packet.next_prompt_target.prompt}
+            </p>
+          </OperatorGateCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
-            <h4 className="text-sm font-semibold text-gray-100">Guardrails</h4>
-            <ul className="mt-3 space-y-2 text-sm text-gray-300">
+          <OperatorContradictionCard>
+            <h4 className="text-sm font-semibold text-red-100">Guardrails</h4>
+            <ul className="mt-3 space-y-2 text-sm text-slate-300">
               <li>- no live agent runtime exists here</li>
               <li>- no branch write or PR creation controls exist here</li>
               <li>- no scheduler, automation, or hidden persistence exists here</li>
               <li>- prompt previews and branch suggestions remain copy-only</li>
             </ul>
-          </div>
+          </OperatorContradictionCard>
 
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-4">
+          <OperatorPanel>
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm font-semibold text-gray-100">Task prompt preview</h4>
-              <ToneBadge tone={promptTone(prompt.preview_status)}>
-                {prompt.preview_status}
-              </ToneBadge>
-              <ToneBadge tone="amber">copy only</ToneBadge>
+              <h4 className="text-sm font-semibold text-slate-100">
+                Task prompt preview
+              </h4>
+              <OperatorStatusChip
+                status={prompt.preview_status}
+                tone={promptTone(prompt.preview_status)}
+              />
+              <OperatorBadge tone="composeOnly" label="COPY-ONLY PREVIEW" />
+              <OperatorBadge tone="gated" label="NO SUBMIT" />
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              <ToneBadge tone="slate">
-                agenda status: {statusLabel(prompt.agenda_status)}
-              </ToneBadge>
-              <ToneBadge tone="sky">
-                next target: {prompt.next_prompt_target}
-              </ToneBadge>
-              <ToneBadge tone="emerald">
-                canonical role: {prompt.canonical_role_label ?? "none"}
-              </ToneBadge>
+              <OperatorStatusChip
+                status={`AGENDA: ${statusLabel(prompt.agenda_status)}`}
+                tone={statusTone(prompt.agenda_status)}
+              />
+              <OperatorBadge
+                tone="readOnly"
+                label={`NEXT: ${prompt.next_prompt_target}`}
+              />
+              <OperatorBadge
+                tone={
+                  prompt.canonical_role_label ? "canonical" : "advisory"
+                }
+                label={`ROLE: ${prompt.canonical_role_label ?? "NONE"}`}
+              />
             </div>
-            <div className="mt-4 rounded-lg border border-gray-800 bg-zinc-950/70 p-3">
-              <div className="text-xs font-medium uppercase tracking-wide text-gray-500">
+            <OperatorGateCard className="mt-4">
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                 Prompt text
               </div>
               <textarea
                 readOnly
                 value={prompt.prompt_text}
                 rows={30}
-                className="mt-3 w-full rounded-lg border border-gray-800 bg-black px-3 py-3 font-mono text-xs text-gray-200"
+                className="mt-3 w-full rounded border border-slate-800 bg-slate-950 px-3 py-3 font-mono text-xs text-slate-200"
               />
-            </div>
-          </div>
+            </OperatorGateCard>
+          </OperatorPanel>
         </div>
       </div>
-    </article>
+    </OperatorPanel>
   );
 }
 
@@ -488,56 +563,79 @@ export default function WorkPage() {
   const loopCandidate = getOperatorLoopCandidate();
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">
-              JAI NEXUS - Deterministic Agent Agenda
-            </h1>
-            <ToneBadge tone="amber">draft-only activation</ToneBadge>
-            <ToneBadge tone="rose">execution disabled in v0</ToneBadge>
-          </div>
-          <p className="max-w-4xl text-sm text-gray-400">
-            Read-only operator surface for deterministic JAI Agent activation
-            agenda items. Every item binds agent, canonical role, repo, surface,
-            motion or control-thread seam, allowed output, validation gate, and
-            human decision without enabling runtime execution.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-300">
-            <p>
-              Shared alias <span className="font-mono">agent@jai.nexus</span>{" "}
-              remains view-only and is not assignable as an execution identity.
-              Requested actions here are deterministic planning/review outputs
-              only: <span className="font-mono">view_only</span>,{" "}
-              <span className="font-mono">draft_plan</span>,{" "}
-              <span className="font-mono">draft_files_preview</span>, and{" "}
-              <span className="font-mono">verify</span>.
+    <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <OperatorPanel className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="gated" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="readOnly" label="DERIVED / READ-ONLY" />
+              <OperatorBadge tone="advisory" label="DRAFT-ONLY" />
+              <OperatorBadge tone="composeOnly" label="COPY-ONLY PREVIEWS" />
+              <OperatorBadge tone="blocked" label="NO EXECUTION" />
+              <OperatorBadge tone="blocked" label="NO DISPATCH" />
+              <OperatorBadge tone="gated" label="ZERO GATES GRANTED" />
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.22em] text-slate-500">
+                Operator Slate / Deterministic agenda
+              </div>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+                JAI NEXUS Deterministic Agent Agenda
+              </h1>
+            </div>
+            <p className="max-w-4xl text-sm text-slate-400">
+              Read-only operator surface for deterministic JAI Agent activation
+              agenda items. Every item binds agent, canonical role, repo, surface,
+              source seam, allowed output, validation gate, and human decision
+              without enabling runtime execution.
             </p>
-            <p className="mt-3 text-xs text-gray-400">
-              Current selected loop-through candidate:{" "}
-              <span className="font-mono">{loopCandidate.selected_work_packet_id}</span>.{" "}
-              {loopCandidate.selection_reason}
+            <OperatorGateCard>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorIdChip>agent@jai.nexus</OperatorIdChip>
+                <OperatorBadge tone="readOnly" label="VIEW-ONLY ALIAS" />
+                <OperatorBadge tone="gated" label="NOT EXECUTION IDENTITY" />
+              </div>
+              <p className="mt-2 text-sm text-slate-300">
+                Requested actions are deterministic planning and review outputs only:
+                view_only, draft_plan, draft_files_preview, and verify.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <OperatorIdChip>{loopCandidate.selected_work_packet_id}</OperatorIdChip>
+                <OperatorBadge tone="readOnly" label="ACTIVE BY STATIC GOVERNANCE" />
+              </div>
+              <p className="mt-2 text-xs text-slate-400">
+                {loopCandidate.selection_reason}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Selection criteria: {loopCandidate.criteria_summary}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Static switching policy:{" "}
+                {loopCandidate.static_switching.switching_policy.summary}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Agenda-to-deliberation routing is navigation/context only. It does
+                not change selected candidate, route state, query state, or
+                persistence.
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail
+            title="Agenda Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Run Agent</OperatorBlockedAction>
+              <OperatorBlockedAction>Write branch</OperatorBlockedAction>
+              <OperatorBlockedAction>Route candidate</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Agent lane candidates are staged, not executing. Compatibility,
+              readiness, validation, and dashboard display do not authorize action.
             </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Selection criteria: {loopCandidate.criteria_summary}
-            </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Static switching policy:{" "}
-              {loopCandidate.static_switching.switching_policy.summary}
-            </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Agenda-to-deliberation routing is navigation/context only. Opening
-              deliberation does not change the active selected candidate, route
-              state, query state, or persistence.
-            </p>
-            <p className="mt-2 text-xs text-gray-400">
-              Eligible alternative ids:{" "}
-              {loopCandidate.static_switching.eligible_candidate_ids.length > 0
-                ? loopCandidate.static_switching.eligible_candidate_ids.join(", ")
-                : "none"}
-            </p>
-          </div>
+          </OperatorSafetyRail>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -549,134 +647,145 @@ export default function WorkPage() {
           <SummaryCard
             label="Ready for review"
             value={String(agenda.summary.status_counts.ready_for_review)}
-            detail="Items that are fully framed and ready for operator review or bounded prompt packaging."
+            detail="Readiness means framed for human review, not accepted or executable."
           />
           <SummaryCard
             label="Blocked or deferred"
             value={String(
-              agenda.summary.status_counts.blocked + agenda.summary.status_counts.deferred,
+              agenda.summary.status_counts.blocked +
+                agenda.summary.status_counts.deferred,
             )}
-            detail="Items that remain held behind scope, timing, or seam-order constraints."
+            detail="Items held behind scope, timing, or seam-order constraints."
           />
           <SummaryCard
             label="Target repos"
             value={String(agenda.summary.repo_count)}
-            detail="Actual repo targets resolved by the current deterministic agenda."
+            detail="Derived repo targets; display does not mutate repo state."
           />
           <SummaryCard
             label="Action coverage"
             value={String(
-              Object.values(agenda.summary.requested_action_counts).filter((count) => count > 0)
-                .length,
+              Object.values(agenda.summary.requested_action_counts).filter(
+                (count) => count > 0,
+              ).length,
             )}
-            detail="Requested-action coverage includes view_only, draft_plan, draft_files_preview, and verify."
+            detail="Coverage includes view, draft, preview, and verify actions only."
           />
         </section>
 
         <Section
+          index="01"
           title="Agenda status coverage"
-          description="Visible agenda states remain bounded to draft, ready_for_review, blocked, deferred, and settled."
+          description="Derived agenda states remain bounded to draft, ready for review, blocked, deferred, and settled."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+          <OperatorPanel>
             <div className="flex flex-wrap gap-2">
               {Object.entries(agenda.summary.status_counts).map(([status, count]) => (
-                <ToneBadge key={status} tone={statusTone(status as DraftWorkPacketStatus)}>
-                  {statusLabel(status as DraftWorkPacketStatus)}: {count}
-                </ToneBadge>
+                <OperatorStatusChip
+                  key={status}
+                  status={`${statusLabel(status as DraftWorkPacketStatus)}: ${count}`}
+                  tone={statusTone(status as DraftWorkPacketStatus)}
+                />
               ))}
             </div>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="02"
           title="Eligible Candidate Review Panel"
-          description="Compact read-only posture summary for active, eligible, deferred, and blocked loop-through candidates. Review only; no runtime selection or mutation."
+          description="Read-only posture for active, eligible, deferred, and blocked candidates. Review does not select or mutate."
         >
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+          <OperatorPanel>
             <div className="flex flex-wrap gap-2">
-              <ToneBadge tone="sky">
-                active: {loopCandidate.review_panel.active_candidate_id}
-              </ToneBadge>
-              <ToneBadge tone="slate">
-                switching: {loopCandidate.static_switching.switching_policy.mode}
-              </ToneBadge>
-              <ToneBadge tone="rose">no selection mutation</ToneBadge>
+              <OperatorIdChip>
+                ACTIVE: {loopCandidate.review_panel.active_candidate_id}
+              </OperatorIdChip>
+              <OperatorBadge
+                tone="gated"
+                label={`SWITCHING: ${loopCandidate.static_switching.switching_policy.mode}`}
+              />
+              <OperatorBadge tone="blocked" label="NO SELECTION MUTATION" />
             </div>
-            <p className="mt-3 text-sm text-gray-300">
+            <p className="mt-3 text-sm text-slate-300">
               {loopCandidate.review_panel.selection_criteria_summary}
             </p>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-slate-400">
               {loopCandidate.review_panel.switching_policy_summary}
             </p>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs text-slate-400">
               {loopCandidate.review_panel.no_selection_mutation_note}
             </p>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Eligible</div>
-                <div className="mt-2 text-sm text-gray-200">
+              <OperatorGateCard>
+                <OperatorBadge tone="pending" label="ELIGIBLE" />
+                <div className="mt-2 text-sm text-slate-200">
                   {loopCandidate.review_panel.eligible_candidate_ids.length > 0
                     ? loopCandidate.review_panel.eligible_candidate_ids.join(", ")
                     : "none"}
                 </div>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Deferred</div>
-                <div className="mt-2 text-sm text-gray-200">
+              </OperatorGateCard>
+              <OperatorGateCard>
+                <OperatorBadge tone="warning" label="DEFERRED" />
+                <div className="mt-2 text-sm text-slate-200">
                   {loopCandidate.review_panel.deferred_candidate_ids.length > 0
                     ? loopCandidate.review_panel.deferred_candidate_ids.join(", ")
                     : "none"}
                 </div>
-              </div>
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-                <div className="text-xs uppercase tracking-wide text-gray-500">Blocked</div>
-                <div className="mt-2 text-sm text-gray-200">
+              </OperatorGateCard>
+              <OperatorContradictionCard>
+                <OperatorBadge tone="blocked" label="BLOCKED" />
+                <div className="mt-2 text-sm text-slate-200">
                   {loopCandidate.review_panel.blocked_candidate_ids.length > 0
                     ? loopCandidate.review_panel.blocked_candidate_ids.join(", ")
                     : "none"}
                 </div>
-              </div>
+              </OperatorContradictionCard>
             </div>
-          </div>
+          </OperatorPanel>
         </Section>
 
         <Section
+          index="03"
           title="Authority posture"
-          description="Activation agenda semantics remain planning/review-only and preserve the disabled control-plane boundary."
+          description="Agenda semantics remain planning/review-only and preserve the disabled control-plane boundary."
         >
           <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+            <OperatorContradictionCard>
               <div className="flex flex-wrap gap-2">
-                <ToneBadge tone="rose">execution blocked</ToneBadge>
-                <ToneBadge tone="rose">branch_write disabled</ToneBadge>
-                <ToneBadge tone="rose">propose_pr disabled</ToneBadge>
-                <ToneBadge tone="rose">execute_runtime disabled</ToneBadge>
+                <OperatorBadge tone="blocked" label="EXECUTION BLOCKED" />
+                <OperatorBadge tone="blocked" label="BRANCH WRITE DISABLED" />
+                <OperatorBadge tone="blocked" label="PROPOSE PR DISABLED" />
+                <OperatorBadge tone="blocked" label="RUNTIME DISABLED" />
               </div>
-              <ul className="mt-4 space-y-2 text-sm text-gray-300">
+              <ul className="mt-4 space-y-2 text-sm text-slate-300">
                 {authorityPosture.notes.map((note) => (
                   <li key={note}>- {note}</li>
                 ))}
               </ul>
-            </div>
+            </OperatorContradictionCard>
 
-            <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-              <div className="text-xs uppercase tracking-wide text-gray-500">
+            <OperatorPanel>
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
                 Blocked capabilities
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 {authorityPosture.blocked_capabilities.map((capability) => (
-                  <ToneBadge key={capability} tone="rose">
-                    {capability}
-                  </ToneBadge>
+                  <OperatorBadge
+                    key={capability}
+                    tone="blocked"
+                    label={capability}
+                  />
                 ))}
               </div>
-            </div>
+            </OperatorPanel>
           </div>
         </Section>
 
         <Section
+          index="04"
           title="Deterministic agenda queue"
-          description="Each item resolves agent, role, repo, surface, source seam, allowed output, verification gates, human gates, evidence expectations, and next passalong target."
+          description="Each derived item resolves agent, role, repo, surface, source seam, allowed output, gates, evidence, and next advisory target."
         >
           <div className="space-y-4">
             {agenda.items.map((item) => (

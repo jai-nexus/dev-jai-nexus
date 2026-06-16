@@ -1,14 +1,23 @@
-// portal/src/app/operator/page.tsx
 export const runtime = "nodejs";
 export const revalidate = 30;
 
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorReadOnlyAction,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+} from "@/components/operator/slate";
 import { getAgencyConfig } from "@/lib/agencyConfig";
+import { prisma } from "@/lib/prisma";
 import { getProjectsConfig } from "@/lib/projectsConfig";
 
 export default async function OperatorHomePage() {
-  // Pull lightweight stats for the cards
   const [eventCount, agency, projectsConfig] = await Promise.all([
     prisma.sotEvent.count(),
     getAgencyConfig(),
@@ -19,72 +28,106 @@ export default async function OperatorHomePage() {
   const projectCount = projectsConfig.projects.length;
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-semibold">JAI NEXUS · Operator</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Control panel for NH maps, project registry, and SoT streams.
-        </p>
-      </header>
+    <main className="min-h-screen bg-slate-950 p-6 text-slate-300 lg:p-8">
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <OperatorPanel className="p-5">
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              dev.jai.nexus / operator
+            </div>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+              JAI NEXUS - Operator
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">
+              Read-only entry point for event, agent, and project posture.
+              Existing source reads and route topology are unchanged.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
+              <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
+              <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+              <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+          </OperatorPanel>
+          <OperatorSafetyRail
+            title="Operator Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <p className="text-xs text-slate-400">
+              Counts summarize existing DB and checked-in configuration sources.
+              Display does not authorize action.
+            </p>
+          </OperatorSafetyRail>
+        </header>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        {/* Events card */}
-        <Link
-          href="/operator/events"
-          className="group rounded-lg border border-gray-800 bg-zinc-950 p-4 hover:border-sky-500/70 hover:bg-zinc-900/60 transition-colors"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-gray-100">Events</h2>
-            <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[11px] text-gray-300">
-              {eventCount.toLocaleString()} events
-            </span>
-          </div>
-          <p className="text-xs text-gray-400 mb-3">
-            Stream-of-record (SoT) events from chats, sync runs, and agents.
-          </p>
-          <span className="text-xs text-sky-300 group-hover:underline">
-            View event stream →
-          </span>
-        </Link>
+        <section>
+          <OperatorSectionHeader
+            index="01"
+            title="Operator Entry Surfaces"
+            right={<OperatorBadge tone="readOnly">READ-ONLY LINKS</OperatorBadge>}
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            <Link href="/operator/events" className="group">
+              <OperatorPanel className="h-full transition-colors group-hover:border-sky-700">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-slate-100">Events</h2>
+                  <OperatorStatusChip
+                    status={`${eventCount.toLocaleString()} EVENTS`}
+                    tone="readOnly"
+                  />
+                </div>
+                <p className="mt-3 text-xs text-slate-400">
+                  DB-backed stream-of-record rows from chats, sync runs, and
+                  agents. Database-backed does not imply complete canon.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <OperatorBadge tone="readOnly">DB READ</OperatorBadge>
+                  <OperatorReadOnlyAction>Open event stream</OperatorReadOnlyAction>
+                </div>
+              </OperatorPanel>
+            </Link>
 
-        {/* Agents card */}
-        <Link
-          href="/operator/agents"
-          className="group rounded-lg border border-gray-800 bg-zinc-950 p-4 hover:border-sky-500/70 hover:bg-zinc-900/60 transition-colors"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-gray-100">Agents</h2>
-            <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[11px] text-gray-300">
-              {agentCount} agents
-            </span>
-          </div>
-          <p className="text-xs text-gray-400 mb-3">
-            NH-based agent map for dev.jai.nexus and attached products.
-          </p>
-          <span className="text-xs text-sky-300 group-hover:underline">
-            View agency map →
-          </span>
-        </Link>
+            <Link href="/operator/agents" className="group">
+              <OperatorPanel className="h-full transition-colors group-hover:border-sky-700">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-slate-100">Agents</h2>
+                  <OperatorStatusChip status={`${agentCount} AGENTS`} tone="advisory" />
+                </div>
+                <p className="mt-3 text-xs text-slate-400">
+                  Checked-in agency configuration for dev.jai.nexus and attached
+                  products. Configuration does not grant execution authority.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <OperatorBadge tone="advisory">CONFIG SOURCE</OperatorBadge>
+                  <OperatorReadOnlyAction>Open agency map</OperatorReadOnlyAction>
+                </div>
+              </OperatorPanel>
+            </Link>
 
-        {/* Projects card */}
-        <Link
-          href="/operator/projects"
-          className="group rounded-lg border border-gray-800 bg-zinc-950 p-4 hover:border-sky-500/70 hover:bg-zinc-900/60 transition-colors"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-gray-100">Projects</h2>
-            <span className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[11px] text-gray-300">
-              {projectCount} projects
-            </span>
+            <Link href="/operator/projects" className="group">
+              <OperatorPanel className="h-full transition-colors group-hover:border-sky-700">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-semibold text-slate-100">Projects</h2>
+                  <OperatorStatusChip
+                    status={`${projectCount} PROJECTS`}
+                    tone="fixture"
+                  />
+                </div>
+                <p className="mt-3 text-xs text-slate-400">
+                  Checked-in project configuration count. The destination page
+                  owns its fixture and provenance labels.
+                </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <OperatorBadge tone="fixture">CHECKED-IN CONFIG</OperatorBadge>
+                  <OperatorIdChip>PROJECT REGISTRY</OperatorIdChip>
+                  <OperatorReadOnlyAction>Open project registry</OperatorReadOnlyAction>
+                </div>
+              </OperatorPanel>
+            </Link>
           </div>
-          <p className="text-xs text-gray-400 mb-3">
-            Registry of NH roots, tiers, and repos for all Nexus projects.
-          </p>
-          <span className="text-xs text-sky-300 group-hover:underline">
-            View project registry →
-          </span>
-        </Link>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }

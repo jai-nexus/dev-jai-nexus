@@ -4,45 +4,31 @@ export const revalidate = 0;
 import type { ReactNode } from "react";
 
 import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorContradictionCard,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+  OperatorStatusChip,
+  type OperatorSlateTone,
+} from "@/components/operator/slate";
+import {
   getPortfolioStatusFixture,
   type PortfolioStatusLaneCard,
 } from "@/lib/controlPlane/portfolioStatusFixture";
 
 const FALLBACK_TEXT = "Not recorded in the checked-in fixture.";
 
-function ToneBadge({
-  children,
-  tone,
-}: {
-  children: ReactNode;
-  tone: "sky" | "amber" | "emerald" | "rose" | "slate";
-}) {
-  const toneClass =
-    tone === "sky"
-      ? "border-sky-800 bg-sky-950 text-sky-200"
-      : tone === "amber"
-        ? "border-amber-800 bg-amber-950 text-amber-200"
-        : tone === "emerald"
-          ? "border-emerald-800 bg-emerald-950 text-emerald-200"
-          : tone === "rose"
-            ? "border-rose-800 bg-rose-950 text-rose-200"
-            : "border-gray-800 bg-zinc-900 text-gray-200";
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${toneClass}`}
-    >
-      {children}
-    </span>
-  );
-}
-
-function statusTone(status?: string): "sky" | "amber" | "emerald" | "rose" | "slate" {
-  if (status === "active") return "sky";
-  if (status === "queued") return "amber";
-  if (status === "completed") return "emerald";
-  if (status === "blocked") return "rose";
-  return "slate";
+function statusTone(status?: string): OperatorSlateTone {
+  if (status === "blocked") return "blocked";
+  if (status === "queued" || status === "deferred" || status === "held") {
+    return "warning";
+  }
+  return "fixture";
 }
 
 function safeText(value: string | undefined, fallback = FALLBACK_TEXT) {
@@ -59,20 +45,24 @@ function formatStatus(status: string | undefined) {
 }
 
 function Section({
+  index,
   title,
   description,
   children,
 }: {
+  index: string;
   title: string;
   description: string;
   children: ReactNode;
 }) {
   return (
     <section className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-lg font-medium text-gray-100">{title}</h2>
-        <p className="text-sm text-gray-400">{description}</p>
-      </div>
+      <OperatorSectionHeader
+        index={index}
+        title={title}
+        right={<OperatorBadge tone="fixture" label="FIXTURE" />}
+      />
+      <p className="max-w-5xl text-sm text-slate-400">{description}</p>
       {children}
     </section>
   );
@@ -80,9 +70,14 @@ function Section({
 
 function EmptyState({ label }: { label: string }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-500">
-      No {label} recorded in the checked-in fixture.
-    </div>
+    <OperatorGateCard>
+      <div className="flex flex-wrap items-center gap-2">
+        <OperatorBadge tone="fixture" label="FIXTURE EMPTY STATE" />
+        <span className="text-sm text-slate-500">
+          No {label} recorded in the checked-in fixture.
+        </span>
+      </div>
+    </OperatorGateCard>
   );
 }
 
@@ -94,7 +89,7 @@ function TextList({ items, label }: { items?: string[]; label: string }) {
   }
 
   return (
-    <ul className="space-y-1 text-sm text-gray-300">
+    <ul className="space-y-1 text-sm text-slate-300">
       {safeItems.map((item, index) => (
         <li key={`${label}-${index}`}>- {item}</li>
       ))}
@@ -112,73 +107,113 @@ function SummaryCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-gray-100">{value}</div>
-      <p className="mt-2 text-sm text-gray-400">{detail}</p>
-    </div>
+    <OperatorPanel>
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="fixture" label="FIXTURE COUNT" />
+      </div>
+      <div className="mt-2 font-mono text-2xl font-semibold text-slate-100">
+        {value}
+      </div>
+      <p className="mt-2 text-sm text-slate-400">{detail}</p>
+    </OperatorPanel>
   );
 }
 
 function MetadataItem({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-      <div className="text-[11px] uppercase tracking-wide text-gray-500">{label}</div>
-      <div className="mt-2 break-words font-mono text-xs text-gray-300">
+    <OperatorGateCard>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <OperatorBadge tone="fixture" label="STATIC METADATA" />
+      </div>
+      <div className="mt-2 break-words font-mono text-xs text-slate-300">
         {safeText(value)}
       </div>
-    </div>
+    </OperatorGateCard>
   );
 }
 
 function LaneCard({ lane }: { lane: PortfolioStatusLaneCard }) {
   return (
-    <article className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+    <OperatorPanel className="p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-100">{safeText(lane.display_title)}</h3>
-            <ToneBadge tone={statusTone(lane.status)}>{formatStatus(lane.status)}</ToneBadge>
-            <ToneBadge tone="slate">{safeText(lane.repo, "unknown repo")}</ToneBadge>
+            <h3 className="text-base font-semibold text-slate-100">
+              {safeText(lane.display_title)}
+            </h3>
+            <OperatorBadge tone="fixture" label="FIXTURE LANE" />
+            <OperatorStatusChip
+              status={formatStatus(lane.status)}
+              tone={statusTone(lane.status)}
+            />
+            <OperatorIdChip>{safeText(lane.repo, "unknown repo")}</OperatorIdChip>
           </div>
-          <p className="max-w-4xl text-sm text-gray-300">{safeText(lane.scope)}</p>
+          <p className="max-w-4xl text-sm text-slate-300">
+            {safeText(lane.scope)}
+          </p>
         </div>
+        <OperatorIdChip>{safeText(lane.lane_id)}</OperatorIdChip>
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-3">
-        <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">Branch</div>
-          <div className="mt-2 font-mono text-xs text-gray-300">{safeText(lane.branch)}</div>
-        </div>
-        <div className="rounded-lg border border-gray-800 bg-black/30 p-3 lg:col-span-2">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">Artifact</div>
-          <div className="mt-2 font-mono text-xs text-gray-300">{safeText(lane.artifact)}</div>
+        <MetadataItem label="Branch" value={lane.branch} />
+        <div className="lg:col-span-2">
+          <MetadataItem label="Artifact" value={lane.artifact} />
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-5">
-        <div>
-          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Active work</div>
+        <OperatorGateCard>
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
+            Active work
+          </div>
           <TextList items={lane.active_work} label="active work" />
-        </div>
-        <div>
-          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Queued work</div>
+        </OperatorGateCard>
+        <OperatorGateCard>
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
+            Queued work
+          </div>
           <TextList items={lane.queued_work} label="queued work" />
-        </div>
-        <div>
-          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Deferred work</div>
+        </OperatorGateCard>
+        <OperatorGateCard>
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
+            Deferred work
+          </div>
           <TextList items={lane.deferred_work} label="deferred work" />
-        </div>
-        <div>
-          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Risks</div>
+        </OperatorGateCard>
+        <OperatorContradictionCard>
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-red-300">
+            Risks
+          </div>
           <TextList items={lane.risks} label="risks" />
-        </div>
-        <div>
-          <div className="mb-2 text-xs uppercase tracking-wide text-gray-500">Next prompts</div>
+        </OperatorContradictionCard>
+        <OperatorGateCard>
+          <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
+            Next prompts
+          </div>
           <TextList items={lane.next_prompts} label="next prompts" />
-        </div>
+        </OperatorGateCard>
       </div>
-    </article>
+
+      <OperatorContradictionCard className="mt-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <OperatorBadge tone="fixture" label="FIXTURE STATE" />
+          <OperatorBadge tone="gated" label="NOT LIVE REPO STATE" />
+          <OperatorBadge tone="blocked" label="NO ROUTE EXECUTION" />
+        </div>
+        <p className="mt-2 text-sm text-red-200">
+          Lane display, completion, branch, artifact, and work lists are checked-in
+          fixture claims. They do not mutate repos, route work, create receipts, or
+          update canon.
+        </p>
+      </OperatorContradictionCard>
+    </OperatorPanel>
   );
 }
 
@@ -197,28 +232,60 @@ export default function OperatorPortfolioStatusPage() {
     deferredWork.length;
 
   return (
-    <main className="min-h-screen bg-black px-8 py-10 text-gray-100">
+    <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
-        <header className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-3xl font-semibold">{safeText(fixture.display_title)}</h1>
-            <ToneBadge tone="amber">static</ToneBadge>
-            <ToneBadge tone="sky">local</ToneBadge>
-            <ToneBadge tone="slate">fixture-backed</ToneBadge>
-            <ToneBadge tone="rose">non-live</ToneBadge>
-            <ToneBadge tone="amber">non-canonical unless accepted</ToneBadge>
-          </div>
-          <p className="max-w-5xl text-sm text-gray-400">
-            Static Operator Control Plane surface for portfolio batches and repo
-            lanes. This page is backed only by checked-in fixture data and is
-            non-canonical until accepted by CONTROL_THREAD.
-          </p>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4 text-sm text-gray-200">
-            {safeText(fixture.authority_boundary_label)}
-          </div>
-          <div className="rounded-xl border border-amber-800 bg-amber-950/40 p-4 text-sm text-amber-100">
-            {safeText(statusSummary?.status_note)}
-          </div>
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <OperatorPanel className="space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="gated" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="fixture" label="FIXTURE-BACKED" />
+              <OperatorBadge tone="readOnly" label="LOCAL STATIC" />
+              <OperatorBadge tone="blocked" label="NON-LIVE" />
+              <OperatorBadge tone="blocked" label="NO EXECUTION" />
+              <OperatorBadge tone="blocked" label="NO DISPATCH" />
+              <OperatorBadge tone="gated" label="ZERO GATES GRANTED" />
+            </div>
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.22em] text-slate-500">
+                Operator Slate / Portfolio fixture posture
+              </div>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-100">
+                {safeText(fixture.display_title)}
+              </h1>
+            </div>
+            <p className="max-w-5xl text-sm text-slate-400">
+              Static local Operator Control Plane view for portfolio batches and repo
+              lanes. This route reads checked-in fixture data only; it does not fetch
+              remote artifacts, synchronize repos, or represent live status.
+            </p>
+            <OperatorGateCard>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="fixture" label="FIXTURE SOURCE" />
+                <OperatorBadge tone="gated" label="NOT CANON UNTIL ACCEPTED" />
+              </div>
+              <p className="mt-2 text-sm text-slate-300">
+                {safeText(fixture.authority_boundary_label)}
+              </p>
+              <p className="mt-2 text-xs text-amber-300">
+                {safeText(statusSummary?.status_note)}
+              </p>
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorSafetyRail
+            title="Portfolio Authority Rail"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="flex flex-wrap gap-2">
+              <OperatorBlockedAction>Route lane</OperatorBlockedAction>
+              <OperatorBlockedAction>Sync repo</OperatorBlockedAction>
+              <OperatorBlockedAction>Create receipt</OperatorBlockedAction>
+            </div>
+            <p className="text-xs text-slate-400">
+              Dashboard display does not authorize action. Fixture completion does
+              not create acceptance, a receipt, or a canon update.
+            </p>
+          </OperatorSafetyRail>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -230,7 +297,7 @@ export default function OperatorPortfolioStatusPage() {
           <SummaryCard
             label="Active lanes"
             value={activeCount}
-            detail="Static fixture count only; not live repo state."
+            detail="Fixture count only; active does not mean live or authorized."
           />
           <SummaryCard
             label="Queued lanes"
@@ -240,7 +307,7 @@ export default function OperatorPortfolioStatusPage() {
           <SummaryCard
             label="Completed lanes"
             value={completedCount}
-            detail="Completion is fixture text, not live repo status."
+            detail="Fixture completion is not a receipt, acceptance, or live repo status."
           />
           <SummaryCard
             label="Deferred / held"
@@ -250,13 +317,20 @@ export default function OperatorPortfolioStatusPage() {
         </section>
 
         <Section
+          index="01"
           title="Static Baseline Metadata"
-          description="Manual checked-in baseline context for this fixture. This metadata is not live sync and does not fetch upstream artifacts."
+          description="Manual checked-in baseline context. This metadata is not live sync and does not fetch upstream artifacts."
         >
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <MetadataItem label="Status date" value={baselineMetadata?.status_date} />
-            <MetadataItem label="Artifact version" value={baselineMetadata?.artifact_version} />
-            <MetadataItem label="Read model version" value={baselineMetadata?.read_model_version} />
+            <MetadataItem
+              label="Artifact version"
+              value={baselineMetadata?.artifact_version}
+            />
+            <MetadataItem
+              label="Read model version"
+              value={baselineMetadata?.read_model_version}
+            />
             <MetadataItem
               label="Authority boundary"
               value={fixture.authority_boundary_label}
@@ -265,10 +339,7 @@ export default function OperatorPortfolioStatusPage() {
               label="Source baseline note"
               value={baselineMetadata?.source_baseline_note}
             />
-            <MetadataItem
-              label="Checksum"
-              value={baselineMetadata?.checksum}
-            />
+            <MetadataItem label="Checksum" value={baselineMetadata?.checksum} />
             <MetadataItem
               label="Checksum algorithm"
               value={baselineMetadata?.checksum_algorithm}
@@ -278,25 +349,23 @@ export default function OperatorPortfolioStatusPage() {
               value={baselineMetadata?.checksum_scope}
             />
           </div>
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Checksum / integrity note
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="fixture" label="DOCUMENTARY TOKEN" />
+              <OperatorBadge tone="gated" label="MANUAL REVIEW ONLY" />
             </div>
-            <div className="mt-2 text-sm text-gray-300">
+            <p className="mt-2 text-sm text-slate-300">
               {safeText(baselineMetadata?.checksum_integrity_note)}
-            </div>
-          </div>
-          <div className="rounded-lg border border-gray-800 bg-black/30 p-3">
-            <div className="text-[11px] uppercase tracking-wide text-gray-500">
-              Handoff manifest path
-            </div>
-            <div className="mt-2 break-words font-mono text-xs text-gray-300">
-              {safeText(baselineMetadata?.handoff_manifest_path)}
-            </div>
-          </div>
+            </p>
+          </OperatorGateCard>
+          <MetadataItem
+            label="Handoff manifest path"
+            value={baselineMetadata?.handoff_manifest_path}
+          />
         </Section>
 
         <Section
+          index="02"
           title="Current Batches"
           description="Checked-in fixture batches. Batch state is local display data only."
         >
@@ -305,35 +374,43 @@ export default function OperatorPortfolioStatusPage() {
           ) : (
             <div className="grid gap-4 xl:grid-cols-2">
               {batches.map((batch) => (
-                <article key={batch.batch_id} className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
+                <OperatorPanel key={batch.batch_id}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-gray-100">
+                    <h3 className="text-base font-semibold text-slate-100">
                       {safeText(batch.display_title)}
                     </h3>
-                    <ToneBadge tone="slate">{formatStatus(batch.status)}</ToneBadge>
+                    <OperatorBadge tone="fixture" label="FIXTURE BATCH" />
+                    <OperatorStatusChip
+                      status={formatStatus(batch.status)}
+                      tone="fixture"
+                    />
+                    <OperatorIdChip>{batch.batch_id}</OperatorIdChip>
                   </div>
-                  <p className="mt-3 text-sm text-gray-300">{safeText(batch.summary)}</p>
-                  <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Lane IDs</div>
+                  <p className="mt-3 text-sm text-slate-300">
+                    {safeText(batch.summary)}
+                  </p>
+                  <div className="mt-4 font-mono text-xs uppercase tracking-widest text-slate-500">
+                    Lane IDs
+                  </div>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {safeArray(batch.lane_ids).length === 0 ? (
-                      <ToneBadge tone="slate">none recorded</ToneBadge>
+                      <OperatorBadge tone="fixture" label="NONE RECORDED" />
                     ) : (
                       safeArray(batch.lane_ids).map((laneId) => (
-                        <ToneBadge key={laneId} tone="sky">
-                          {laneId}
-                        </ToneBadge>
+                        <OperatorIdChip key={laneId}>{laneId}</OperatorIdChip>
                       ))
                     )}
                   </div>
-                </article>
+                </OperatorPanel>
               ))}
             </div>
           )}
         </Section>
 
         <Section
+          index="03"
           title="Repo Lanes"
-          description="Repo lane cards show fixture status, active work, queued work, risks, and next prompts."
+          description="Repo lane cards show checked-in fixture status, work lists, risks, and next prompts."
         >
           {lanes.length === 0 ? (
             <EmptyState label="repo lanes" />
@@ -346,75 +423,100 @@ export default function OperatorPortfolioStatusPage() {
           )}
         </Section>
 
-        <section className="grid gap-4 xl:grid-cols-3">
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <h2 className="text-lg font-medium text-gray-100">Active Work</h2>
-            <div className="mt-3">
-              <TextList items={statusSummary?.active_work} label="active work" />
-            </div>
+        <Section
+          index="04"
+          title="Portfolio Work Summary"
+          description="Summary lists are fixture claims only and do not route or mutate work."
+        >
+          <div className="grid gap-4 xl:grid-cols-3">
+            <OperatorPanel>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-medium text-slate-100">Active Work</h3>
+                <OperatorBadge tone="fixture" label="FIXTURE" />
+              </div>
+              <div className="mt-3">
+                <TextList items={statusSummary?.active_work} label="active work" />
+              </div>
+            </OperatorPanel>
+            <OperatorPanel>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-medium text-slate-100">Queued Work</h3>
+                <OperatorBadge tone="warning" label="FIXTURE QUEUE" />
+              </div>
+              <div className="mt-3">
+                <TextList items={statusSummary?.queued_work} label="queued work" />
+              </div>
+            </OperatorPanel>
+            <OperatorPanel>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-medium text-slate-100">Deferred Work</h3>
+                <OperatorBadge tone="warning" label="FIXTURE DEFERRED" />
+              </div>
+              <div className="mt-3">
+                <TextList items={statusSummary?.deferred_work} label="deferred work" />
+              </div>
+            </OperatorPanel>
           </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <h2 className="text-lg font-medium text-gray-100">Queued Work</h2>
-            <div className="mt-3">
-              <TextList items={statusSummary?.queued_work} label="queued work" />
-            </div>
-          </div>
-          <div className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-            <h2 className="text-lg font-medium text-gray-100">Deferred Work</h2>
-            <div className="mt-3">
-              <TextList items={statusSummary?.deferred_work} label="deferred work" />
-            </div>
-          </div>
-        </section>
+        </Section>
 
         <section className="grid gap-4 xl:grid-cols-2">
-          <div className="rounded-xl border border-rose-900 bg-rose-950/30 p-4">
-            <h2 className="text-lg font-medium text-rose-100">Risks</h2>
+          <OperatorContradictionCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-medium text-red-100">Risks</h2>
+              <OperatorBadge tone="fixture" label="FIXTURE RISKS" />
+            </div>
             <div className="mt-3">
               <TextList items={fixture.risk_summary?.risks} label="risks" />
             </div>
-          </div>
-          <div className="rounded-xl border border-sky-900 bg-sky-950/30 p-4">
-            <h2 className="text-lg font-medium text-sky-100">Next Prompts</h2>
+          </OperatorContradictionCard>
+          <OperatorPanel>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="font-medium text-slate-100">Next Prompts</h2>
+              <OperatorBadge tone="advisory" label="ADVISORY ONLY" />
+              <OperatorBadge tone="fixture" label="FIXTURE" />
+            </div>
             <div className="mt-3">
               <TextList items={fixture.next_prompts} label="next prompts" />
             </div>
-          </div>
+          </OperatorPanel>
         </section>
 
-        <section className="rounded-xl border border-gray-800 bg-zinc-950 p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-lg font-medium text-gray-100">Authority Boundary</h2>
-            <ToneBadge tone="rose">display only</ToneBadge>
-            <ToneBadge tone="amber">not canonical</ToneBadge>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-            {safeArray(fixture.non_authorizations).length === 0 ? (
-              <div className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-500">
-                No non-authorizations recorded in the checked-in fixture.
-              </div>
-            ) : (
-              safeArray(fixture.non_authorizations).map((item, index) => (
-                <div
-                  key={`non-authorization-${index}`}
-                  className="rounded-lg border border-gray-800 bg-black/30 p-3 text-sm text-gray-300"
-                >
-                  {item}
-                </div>
-              ))
-            )}
-          </div>
-          <div className="mt-4 text-xs uppercase tracking-wide text-gray-500">Source refs</div>
-          <ul className="mt-2 space-y-1 font-mono text-xs text-gray-400">
-            {safeArray(fixture.source_refs).length === 0 ? (
-              <li>No source refs recorded in the checked-in fixture.</li>
-            ) : (
-              safeArray(fixture.source_refs).map((sourceRef, index) => (
-                <li key={`source-ref-${index}`}>{sourceRef}</li>
-              ))
-            )}
-          </ul>
-        </section>
+        <Section
+          index="05"
+          title="Authority Boundary"
+          description="Display-only non-authorizations and source references remain explicit."
+        >
+          <OperatorPanel>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {safeArray(fixture.non_authorizations).length === 0 ? (
+                <EmptyState label="non-authorizations" />
+              ) : (
+                safeArray(fixture.non_authorizations).map((item, index) => (
+                  <OperatorGateCard key={`non-authorization-${index}`}>
+                    <OperatorBadge tone="blocked" label="BLOCKED" />
+                    <p className="mt-2 text-sm text-slate-300">{item}</p>
+                  </OperatorGateCard>
+                ))
+              )}
+            </div>
+            <div className="mt-4 font-mono text-xs uppercase tracking-widest text-slate-500">
+              Source refs
+            </div>
+            <ul className="mt-2 space-y-2">
+              {safeArray(fixture.source_refs).length === 0 ? (
+                <li className="text-sm text-slate-500">
+                  No source refs recorded in the checked-in fixture.
+                </li>
+              ) : (
+                safeArray(fixture.source_refs).map((sourceRef, index) => (
+                  <li key={`source-ref-${index}`}>
+                    <OperatorIdChip>{sourceRef}</OperatorIdChip>
+                  </li>
+                ))
+              )}
+            </ul>
+          </OperatorPanel>
+        </Section>
       </div>
     </main>
   );
