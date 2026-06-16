@@ -8,6 +8,15 @@ import { getServerAuthSession } from "@/auth";
 import crypto from "node:crypto";
 import { emitWorkPacketSotEvent } from "@/lib/sotWorkPackets";
 import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
+import {
   EXECUTION_ROLES,
   getAgentByNhId,
   getExecutionAgents,
@@ -336,13 +345,56 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
       : true;
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">New Work Packet</h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Execution role is the canonical lane. Assignee is the optional execution-capable carrier selected from the explicit execution pool.
-        </p>
-      </header>
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <OperatorPanel className="space-y-4 p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="blocked" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+              <OperatorBadge tone="gated" label="AUTH REQUIRED" />
+              <OperatorBadge tone="blocked" label="ZERO GATES GRANTED" />
+              <OperatorBadge tone="readOnly" label="NO NEW AUTHORITY" />
+            </div>
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-slate-500">
+                Operator / Work Packet Create
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold text-slate-50">
+                New work packet
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm text-slate-400">
+                This route preserves a pre-existing work-packet creation path
+                that writes packet, inbox, queue, and SoT event state. Slate
+                containment labels the authority boundary; it does not add
+                dispatch, Agent execution, receipt creation, canon update, or
+                execution gates.
+              </p>
+            </div>
+          </OperatorPanel>
+
+          <OperatorSafetyRail
+            title="Work Packet Mutation Safety"
+            invariants={OPERATOR_SAFETY_INVARIANTS}
+          >
+            <div className="space-y-2 text-xs text-slate-400">
+              <p>
+                Existing mutation controls are not new Slate authority. Slate
+                migration does not grant new authority. Authentication is not
+                authorization. Verified session does not open execution gates.
+              </p>
+              <p>
+                Prompt text is not dispatch. Generated content is not
+                acceptance. Derived output is not canon.
+              </p>
+              <div className="space-y-1.5">
+                <OperatorBlockedAction>Agent execution</OperatorBlockedAction>
+                <OperatorBlockedAction>Repo mutation</OperatorBlockedAction>
+                <OperatorBlockedAction>Receipt creation</OperatorBlockedAction>
+              </div>
+            </div>
+          </OperatorSafetyRail>
+        </header>
 
       {errorMsg ? (
         <div className="mb-4 rounded-md border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-200">
@@ -350,7 +402,17 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
         </div>
       ) : null}
 
-      <section className="mb-6 max-w-4xl rounded-md border border-gray-800 bg-zinc-950 p-4">
+      <OperatorPanel className="p-5">
+        <OperatorSectionHeader
+          index="01"
+          title="Role-Scoped Assignee Filter"
+          right={
+            <>
+              <OperatorBadge tone="readOnly" label="GET FILTER" />
+              <OperatorBadge tone="gated" label="PREVIEW-ONLY" />
+            </>
+          }
+        />
         <h2 className="text-sm font-semibold text-gray-200">Role-Scoped Assignee Filter</h2>
         <p className="mt-1 text-sm text-gray-400">
           Choose an execution role first to narrow the assignee pool to eligible execution agents.
@@ -375,7 +437,7 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
 
           <button
             type="submit"
-            className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
+            className="rounded-md border border-sky-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-sky-300 hover:bg-sky-950/40"
           >
             Apply role filter
           </button>
@@ -392,9 +454,35 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
           Eligible assignees:{" "}
           <span className="font-mono text-gray-300">{eligibleAgents.length}</span>
         </div>
-      </section>
+      </OperatorPanel>
 
-      <form action={createPacket} className="max-w-4xl space-y-4">
+      <OperatorPanel className="p-5">
+        <OperatorSectionHeader
+          index="02"
+          title="Create Work Packet"
+          right={
+            <>
+              <OperatorBadge tone="blocked" label="PRE-EXISTING MUTATION" />
+              <OperatorBadge tone="blocked" label="DB TRANSACTION" />
+              <OperatorBadge tone="blocked" label="EVENT WRITE" />
+            </>
+          }
+        />
+
+        <OperatorGateCard className="mb-4 border-amber-900/70 bg-amber-950/20">
+          <div className="flex flex-wrap items-center gap-2">
+            <OperatorBadge tone="gated" label="FORM SUBMIT" />
+            <OperatorBadge tone="blocked" label="NO EXECUTION" />
+          </div>
+          <p className="mt-2 text-sm text-amber-100/80">
+            This form preserves the existing creation transaction. It may create
+            work-packet, inbox, queue, and SoT event rows through the existing
+            server action, but it does not dispatch a model, execute an Agent,
+            mutate repos, create receipts, or update canon.
+          </p>
+        </OperatorGateCard>
+
+      <form action={createPacket} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-1 md:col-span-2">
             <label className="block text-xs text-gray-300">NH ID</label>
@@ -572,11 +660,13 @@ export default async function NewWorkPacketPage({ searchParams }: Props) {
 
         <button
           type="submit"
-          className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-500"
+          className="rounded-md border border-amber-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-300 hover:bg-amber-950/40"
         >
-          Create packet
+          Create work packet
         </button>
       </form>
+      </OperatorPanel>
+      </div>
     </main>
   );
 }
