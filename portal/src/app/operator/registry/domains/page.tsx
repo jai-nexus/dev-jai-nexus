@@ -3,8 +3,19 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+
+import {
+  OPERATOR_SAFETY_INVARIANTS,
+  OperatorBadge,
+  OperatorBlockedAction,
+  OperatorGateCard,
+  OperatorIdChip,
+  OperatorPanel,
+  OperatorSafetyRail,
+  OperatorSectionHeader,
+} from "@/components/operator/slate";
 import { getServerAuthSession } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function OperatorRegistryDomainsPage() {
   const session = await getServerAuthSession();
@@ -17,67 +28,141 @@ export default async function OperatorRegistryDomainsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-black text-gray-100 p-8">
-      <header className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">Operator · Registry · Domains</h1>
-          <p className="text-sm text-gray-400 mt-1">DB-backed domain registry.</p>
-        </div>
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
+      <header className="mb-6 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <OperatorPanel className="space-y-4 p-5">
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <OperatorBadge tone="blocked" label="NON-AUTHORIZING" />
+              <OperatorBadge tone="gated" label="ADMIN-GATED" />
+              <OperatorBadge tone="readOnly" label="READ-ONLY LIST" />
+              <OperatorBadge tone="blocked" label="NO NEW AUTHORITY" />
+              <OperatorBadge tone="blocked" label="ZERO GATES GRANTED" />
+            </div>
+            <h1 className="text-3xl font-semibold">
+              Operator - Registry - Domains
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              DB-backed domain registry. Dashboard display does not authorize.
+              Read-only is not authority.
+            </p>
+          </div>
 
-        <Link
-          href="/operator/registry/domains/new"
-          className="rounded-md border border-gray-700 bg-zinc-950 px-3 py-2 text-sm hover:bg-zinc-900"
+          <OperatorGateCard>
+            <div className="mb-2 flex flex-wrap items-center gap-1.5">
+              <OperatorBadge tone="readOnly" label="READ-ONLY INDEX" />
+              <OperatorBadge tone="blocked" label="NO DNS WRITES" />
+              <OperatorBadge tone="blocked" label="NO PROVIDER CALLS" />
+            </div>
+            <p className="mb-3 text-sm text-slate-400">
+              Domain create/edit/delete controls remain on separate existing
+              admin-gated routes. Slate migration does not grant new authority.
+            </p>
+            <Link
+              href="/operator/registry/domains/new"
+              className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-slate-200 hover:bg-slate-900"
+            >
+              + New Domain
+            </Link>
+          </OperatorGateCard>
+        </OperatorPanel>
+
+        <OperatorSafetyRail
+          title="Domain Registry Safety"
+          invariants={OPERATOR_SAFETY_INVARIANTS}
         >
-          + New Domain
-        </Link>
+          <div className="space-y-2 text-xs text-slate-400">
+            <p>
+              DNS/provider writes are blocked. Live domain mutation is blocked.
+              All execution gates remain closed. Zero gates granted.
+            </p>
+            <div className="space-y-1.5">
+              <OperatorBlockedAction>DNS/provider writes</OperatorBlockedAction>
+              <OperatorBlockedAction>Live domain mutation</OperatorBlockedAction>
+              <OperatorBlockedAction>Repo mutation</OperatorBlockedAction>
+              <OperatorBlockedAction>Branch / PR automation</OperatorBlockedAction>
+              <OperatorBlockedAction>Receipt creation</OperatorBlockedAction>
+              <OperatorBlockedAction>Canon update</OperatorBlockedAction>
+            </div>
+          </div>
+        </OperatorSafetyRail>
       </header>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-800">
-        <table className="w-full text-sm border-collapse">
-          <thead className="bg-zinc-950 border-b border-gray-800 text-left">
-            <tr>
-              <th className="py-2 px-3">Domain</th>
-              <th className="py-2 px-3">NH_ID</th>
-              <th className="py-2 px-3">Engine</th>
-              <th className="py-2 px-3">Env</th>
-              <th className="py-2 px-3">Status</th>
-              <th className="py-2 px-3">Repo</th>
-              <th className="py-2 px-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {domains.map((d) => (
-              <tr
-                key={d.id}
-                className="border-b border-gray-900 hover:bg-zinc-900/60"
-              >
-                <td className="py-2 px-3 whitespace-nowrap">{d.domain}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{d.nhId}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{d.engineType ?? "—"}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{d.env ?? "—"}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{d.status ?? "—"}</td>
-                <td className="py-2 px-3 whitespace-nowrap">{d.repo?.name ?? "—"}</td>
-                <td className="py-2 px-3 whitespace-nowrap">
-                  <Link
-                    className="underline hover:text-white"
-                    href={`/operator/registry/domains/${d.id}`}
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-
-            {domains.length === 0 ? (
+      <OperatorPanel className="overflow-hidden p-0">
+        <OperatorSectionHeader
+          index="01"
+          title="Read-Only Domain Rows"
+          right={
+            <>
+              <OperatorBadge tone="readOnly" label="READ-ONLY" />
+              <OperatorBadge tone="blocked" label="NO DOMAIN MUTATION" />
+              <OperatorBadge
+                tone="blocked"
+                label="NO DNS/PROVIDER INTEGRATION"
+              />
+            </>
+          }
+          className="m-3"
+        />
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead className="border-b border-slate-800 bg-slate-950 text-left">
               <tr>
-                <td className="py-6 px-3 text-gray-400" colSpan={7}>
-                  No domains in DB.
-                </td>
+                <th className="py-2 px-3">Domain</th>
+                <th className="py-2 px-3">NH_ID</th>
+                <th className="py-2 px-3">Engine</th>
+                <th className="py-2 px-3">Env</th>
+                <th className="py-2 px-3">Status</th>
+                <th className="py-2 px-3">Repo</th>
+                <th className="py-2 px-3">Actions</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {domains.map((d) => (
+                <tr
+                  key={d.id}
+                  className="border-b border-slate-900 hover:bg-slate-900/60"
+                >
+                  <td className="py-2 px-3 whitespace-nowrap text-slate-100">
+                    {d.domain}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <OperatorIdChip>{d.nhId}</OperatorIdChip>
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-slate-300">
+                    {d.engineType ?? "-"}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-slate-300">
+                    {d.env ?? "-"}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <OperatorBadge tone="readOnly" label={d.status ?? "UNKNOWN"} />
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap text-slate-300">
+                    {d.repo?.name ?? "-"}
+                  </td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    <Link
+                      className="font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
+                      href={`/operator/registry/domains/${d.id}`}
+                    >
+                      Edit
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+
+              {domains.length === 0 ? (
+                <tr>
+                  <td className="py-6 px-3 text-slate-400" colSpan={7}>
+                    No domains in DB.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </OperatorPanel>
     </main>
   );
 }

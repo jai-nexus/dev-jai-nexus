@@ -39,6 +39,13 @@ const ARTIFACT_KEYS: MotionArtifactKey[] = [
   "challenge.md",
 ];
 
+const slateFormFieldClass =
+  "rounded border border-slate-700 bg-slate-950/70 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600/50";
+const slatePanelClass = "rounded border border-slate-800 bg-slate-900";
+const slateInsetClass = "rounded border border-slate-800 bg-slate-950/60";
+const slateMetaLabelClass =
+  "font-mono text-[11px] uppercase tracking-wide text-slate-500";
+
 function firstParam(value: SearchParamValue): string | undefined {
   if (!value) return undefined;
   return Array.isArray(value) ? value[0] : value;
@@ -269,6 +276,11 @@ export default async function MotionsPage(props: {
             Existing interactive behavior is preserved. Preview generation is
             not a motion, and promotion is not acceptance or CONTROL_THREAD
             approval.
+            <span className="mt-1 block">
+              Preview generation is not a motion. Promotion is not acceptance.
+              Artifact display is not receipt creation. Execution evidence display
+              is not execution authority. Chat pack display is not dispatch.
+            </span>
           </p>
           <PromoteContenderForm
             highestMotionNumber={highestMotionNumber}
@@ -338,35 +350,41 @@ export default async function MotionsPage(props: {
                 Ratified
               </div>
               <div className="mt-1 font-mono text-2xl text-emerald-300">{ratifiedCount}</div>
+              <div className="mt-2">
+                <OperatorBadge tone="canonical">RATIFIED</OperatorBadge>
+              </div>
             </OperatorPanel>
             <OperatorPanel>
               <div className="font-mono text-[11px] uppercase tracking-wide text-slate-500">
                 Status mismatches
               </div>
               <div className="mt-1 font-mono text-2xl text-amber-300">{mismatchCount}</div>
+              <div className="mt-2">
+                <OperatorBadge tone="neutral">DERIVED</OperatorBadge>
+              </div>
             </OperatorPanel>
           </section>
 
           <form
             method="GET"
-            className="flex flex-wrap items-end gap-3 rounded border border-slate-800 bg-slate-900 p-4"
+            className="flex flex-wrap items-end gap-3 rounded border border-slate-800 bg-slate-950/50 p-4"
           >
             <div>
-              <div className="mb-1 text-[11px] text-gray-500">search</div>
+              <div className={slateMetaLabelClass}>search</div>
               <input
                 name="q"
                 defaultValue={query ?? ""}
                 placeholder="motion id, title, program, basis"
-                className="w-[280px] rounded border border-slate-700 bg-slate-950/60 px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600"
+                className={`mt-1 w-[280px] ${slateFormFieldClass}`}
               />
             </div>
 
             <div>
-              <div className="mb-1 text-[11px] text-gray-500">queue state</div>
+              <div className={slateMetaLabelClass}>queue state</div>
               <select
                 name="state"
                 defaultValue={queueState ?? ""}
-                className="rounded border border-slate-700 bg-slate-950/60 px-3 py-2 text-xs text-slate-100"
+                className={`mt-1 ${slateFormFieldClass}`}
               >
                 <option value="">ANY</option>
                 <option value="attention">attention</option>
@@ -384,45 +402,49 @@ export default async function MotionsPage(props: {
                 name="attention"
                 value="1"
                 defaultChecked={attentionOnly}
-                className="rounded border-zinc-700 bg-black"
+                className="rounded border-slate-700 bg-slate-950 text-amber-500"
               />
               attention only
             </label>
 
             <button
               type="submit"
-              className="rounded border border-zinc-800 bg-sky-900/40 px-3 py-2 text-xs text-sky-100 hover:bg-sky-900/60"
+              className="rounded border border-amber-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-300 hover:bg-amber-950/30"
             >
               Apply
             </button>
 
             <Link
               href="/operator/motions"
-              className="rounded border border-zinc-800 px-3 py-2 text-xs text-gray-400 hover:bg-zinc-900 hover:text-gray-200"
+              className="rounded border border-slate-800 px-3 py-2 font-mono text-xs uppercase tracking-wide text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100"
             >
               Clear
             </Link>
 
-            <div className="ml-auto text-xs text-gray-500">
-              Showing <span className="font-mono text-gray-200">{filteredItems.length}</span>{" "}
-              of <span className="font-mono text-gray-200">{totalCount}</span>{" "}
+            <div className="ml-auto text-xs text-slate-500">
+              Showing <span className="font-mono text-slate-200">{filteredItems.length}</span>{" "}
+              of <span className="font-mono text-slate-200">{totalCount}</span>{" "}
               canonical motions
             </div>
           </form>
 
           <section className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="rounded border border-slate-800 bg-slate-900">
+          <div className={slatePanelClass}>
             <div className="border-b border-slate-800 px-4 py-3">
-              <div className="text-sm font-semibold text-gray-200">
-                Canonical motion browser
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-slate-200">
+                  Canonical motion browser
+                </div>
+                <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+                <OperatorBadge tone="canonical">CANONICAL</OperatorBadge>
               </div>
-              <div className="mt-1 text-xs text-gray-500">
+              <div className="mt-2 text-xs text-slate-500">
                 Read-only reference view over existing motion packages.
               </div>
             </div>
 
             {filteredItems.length === 0 ? (
-              <div className="px-4 py-5 text-sm text-gray-400">
+              <div className="px-4 py-5 text-sm text-slate-400">
                 No canonical motions matched the current filters.
               </div>
             ) : (
@@ -443,20 +465,20 @@ export default async function MotionsPage(props: {
                       href={href}
                       className={`block rounded border p-3 transition-colors ${
                         active
-                          ? "border-sky-700 bg-sky-950/20"
+                          ? "border-amber-700 bg-slate-950/80 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.12)]"
                           : "border-slate-800 bg-slate-950/50 hover:border-slate-700 hover:bg-slate-800/60"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="font-mono text-sm text-sky-300">
+                          <div className="font-mono text-sm text-amber-300">
                             {item.motion_id}
                           </div>
-                          <div className="mt-1 text-sm font-medium text-gray-100">
+                          <div className="mt-1 text-sm font-medium text-slate-100">
                             {item.title}
                           </div>
                           {item.subtitle ? (
-                            <div className="mt-1 text-xs text-gray-500">
+                            <div className="mt-1 text-xs text-slate-500">
                               {item.subtitle}
                             </div>
                           ) : null}
@@ -468,16 +490,16 @@ export default async function MotionsPage(props: {
                         />
                       </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-400">
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
                         <div>
-                          <div className="text-gray-500">motion.yaml</div>
-                          <div className="font-mono text-gray-300">
+                          <div className="text-slate-500">motion.yaml</div>
+                          <div className="font-mono text-slate-300">
                             {item.motion_status ?? "null"}
                           </div>
                         </div>
                         <div>
-                          <div className="text-gray-500">decision.yaml</div>
-                          <div className="font-mono text-gray-300">
+                          <div className="text-slate-500">decision.yaml</div>
+                          <div className="font-mono text-slate-300">
                             {item.decision_status ?? "null"}
                           </div>
                         </div>
@@ -495,32 +517,35 @@ export default async function MotionsPage(props: {
             )}
           </div>
 
-          <div className="rounded border border-slate-800 bg-slate-900">
+          <div className={slatePanelClass}>
             {!detail ? (
-              <div className="px-6 py-8 text-sm text-gray-400">
+              <div className="px-6 py-8 text-sm text-slate-400">
                 Select a canonical motion to inspect its current read-only package state.
               </div>
             ) : (
               <div className="space-y-6 p-6">
-                <div className="flex flex-col gap-4 border-b border-zinc-800 pb-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex flex-col gap-4 border-b border-slate-800 pb-6 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <OperatorIdChip>{detail.item.motion_id}</OperatorIdChip>
-                    <h2 className="mt-1 text-2xl font-semibold text-gray-50">
+                    <h2 className="mt-1 text-2xl font-semibold text-slate-50">
                       {detail.item.title}
                     </h2>
                     {detail.item.subtitle ? (
-                      <div className="mt-2 max-w-3xl text-sm text-gray-400">
+                      <div className="mt-2 max-w-3xl text-sm text-slate-400">
                         {detail.item.subtitle}
                       </div>
                     ) : null}
                   </div>
 
-                  <div className="rounded border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-xs text-gray-400">
-                    Chat search:
+                  <div className={`${slateInsetClass} px-3 py-2 text-xs text-slate-400`}>
+                    <div className="mb-1 flex flex-wrap items-center gap-2">
+                      <span>Chat search</span>
+                      <OperatorBadge tone="readOnly">CHAT PACK</OperatorBadge>
+                    </div>
                     <div className="mt-1">
                       <Link
                         href={detail.chat_search_href}
-                        className="font-mono text-sky-300 hover:text-sky-200"
+                        className="font-mono text-amber-300 hover:text-amber-200"
                       >
                         {detail.chat_search_href}
                       </Link>
@@ -548,9 +573,13 @@ export default async function MotionsPage(props: {
 
                 <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
                   <div className="space-y-6">
-                    <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
-                      <div className="text-sm font-semibold text-gray-200">
-                        Attention and package inventory
+                    <div className={`${slateInsetClass} p-4`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-semibold text-slate-200">
+                          Attention and package inventory
+                        </div>
+                        <OperatorBadge tone="readOnly">ARTIFACT</OperatorBadge>
+                        <OperatorBadge tone="blocked">NOT A RECEIPT</OperatorBadge>
                       </div>
 
                       {detail.item.attention_flags.length > 0 ? (
@@ -569,19 +598,19 @@ export default async function MotionsPage(props: {
 
                       <div className="mt-4 grid gap-3 md:grid-cols-2">
                         <div>
-                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                          <div className={slateMetaLabelClass}>
                             Core files
                           </div>
                           <div className="mt-2 space-y-2 text-xs">
                             {detail.core_artifacts.map((artifact) => (
                               <div
                                 key={artifact.key}
-                                className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2"
+                                className="flex items-center justify-between rounded border border-slate-800 bg-slate-900 px-3 py-2"
                               >
-                                <div className="font-mono text-gray-200">
+                                <div className="font-mono text-slate-200">
                                   {artifact.key}
                                 </div>
-                                <div className="font-mono text-gray-400">
+                                <div className="font-mono text-slate-400">
                                   {artifact.present
                                     ? artifact.parse_ok === false
                                       ? "parse-error"
@@ -594,20 +623,20 @@ export default async function MotionsPage(props: {
                         </div>
 
                         <div>
-                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                          <div className={slateMetaLabelClass}>
                             Secondary artifacts
                           </div>
                           <div className="mt-2 space-y-2 text-xs">
                             {detail.secondary_artifacts.map((artifact) => (
                               <div
                                 key={artifact.path}
-                                className="rounded border border-zinc-800 bg-zinc-900/40 px-3 py-2"
+                                className="rounded border border-slate-800 bg-slate-900 px-3 py-2"
                               >
-                                <div className="font-mono text-gray-200">
+                                <div className="font-mono text-slate-200">
                                   {artifact.label}
                                 </div>
-                                <div className="mt-1 text-gray-400">{artifact.path}</div>
-                                <div className="mt-1 font-mono text-gray-500">
+                                <div className="mt-1 text-slate-400">{artifact.path}</div>
+                                <div className="mt-1 font-mono text-slate-500">
                                   {artifact.present
                                     ? artifact.detail ?? "present"
                                     : "not present"}
@@ -619,7 +648,7 @@ export default async function MotionsPage(props: {
                       </div>
                     </div>
 
-                    <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
+                    <div className={`${slateInsetClass} p-4`}>
                       <div className="flex flex-wrap gap-2">
                         {detail.core_artifacts.map((artifact) => {
                           const href = buildMotionsHref({
@@ -637,8 +666,8 @@ export default async function MotionsPage(props: {
                               href={href}
                               className={`rounded border px-2 py-1 text-xs font-mono transition-colors ${
                                 active
-                                  ? "border-sky-700 bg-sky-950/30 text-sky-100"
-                                  : "border-zinc-800 bg-zinc-900/50 text-gray-400 hover:bg-zinc-900 hover:text-gray-100"
+                                  ? "border-amber-700 bg-slate-900 text-amber-300"
+                                  : "border-slate-800 bg-slate-950/70 text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-slate-100"
                               }`}
                             >
                               {artifact.key}
@@ -651,14 +680,17 @@ export default async function MotionsPage(props: {
                         <div className="mt-4">
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                              <div className="text-sm font-semibold text-gray-200">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="text-sm font-semibold text-slate-200">
                                 {selectedArtifact.key}
+                                </div>
+                                <OperatorBadge tone="readOnly">ARTIFACT</OperatorBadge>
                               </div>
-                              <div className="mt-1 font-mono text-xs text-gray-500">
+                              <div className="mt-1 font-mono text-xs text-slate-500">
                                 {selectedArtifact.path}
                               </div>
                             </div>
-                            <div className="font-mono text-xs text-gray-400">
+                            <div className="font-mono text-xs text-slate-400">
                               {selectedArtifact.present
                                 ? selectedArtifact.parse_ok === false
                                   ? "parse-error"
@@ -667,7 +699,7 @@ export default async function MotionsPage(props: {
                             </div>
                           </div>
 
-                          <pre className="mt-4 max-h-[28rem] overflow-auto whitespace-pre-wrap rounded border border-zinc-800 bg-black/50 p-4 text-xs leading-6 text-gray-200">
+                          <pre className="mt-4 max-h-[28rem] overflow-auto whitespace-pre-wrap rounded border border-slate-800 bg-slate-950/70 p-4 text-xs leading-6 text-slate-200">
                             {selectedArtifact.preview ??
                               "Artifact not present in this motion package."}
                           </pre>
@@ -677,48 +709,57 @@ export default async function MotionsPage(props: {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
-                      <div className="text-sm font-semibold text-gray-200">
-                        Execution evidence
+                    <div className={`${slateInsetClass} p-4`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-semibold text-slate-200">
+                          Execution evidence
+                        </div>
+                        <OperatorBadge tone="readOnly">EXECUTION EVIDENCE</OperatorBadge>
+                        <OperatorBadge tone="blocked">NO EXECUTION AUTHORITY</OperatorBadge>
                       </div>
-                      <div className="mt-2 text-xs text-gray-500">
+                      <div className="mt-2 text-xs text-slate-500">
                         Excerpted from <span className="font-mono">execution.md</span>{" "}
-                        when present.
+                        when present. Execution evidence display is not execution authority.
                       </div>
-                      <pre className="mt-4 max-h-[18rem] overflow-auto whitespace-pre-wrap rounded border border-zinc-800 bg-black/50 p-4 text-xs leading-6 text-gray-200">
+                      <pre className="mt-4 max-h-[18rem] overflow-auto whitespace-pre-wrap rounded border border-slate-800 bg-slate-950/70 p-4 text-xs leading-6 text-slate-200">
                         {detail.execution_excerpt ?? "No execution.md excerpt available."}
                       </pre>
                     </div>
 
-                    <div className="rounded border border-zinc-800 bg-zinc-950/60 p-4">
-                      <div className="text-sm font-semibold text-gray-200">Chat pack</div>
-                      <div className="mt-2 text-xs text-gray-500">
+                    <div className={`${slateInsetClass} p-4`}>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-semibold text-slate-200">Chat pack</div>
+                        <OperatorBadge tone="readOnly">CHAT PACK</OperatorBadge>
+                        <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
+                      </div>
+                      <div className="mt-2 text-xs text-slate-500">
                         Read-only prompt and handoff text for manual operator chat flow.
+                        Chat pack display is not dispatch.
                       </div>
 
                       <div className="mt-4">
-                        <div className="mb-2 text-[11px] uppercase tracking-wide text-gray-500">
+                        <div className={slateMetaLabelClass}>
                           Operator review prompt
                         </div>
                         <textarea
                           readOnly
                           value={detail.prompt_pack}
-                          className="h-56 w-full resize-y rounded border border-zinc-800 bg-black/50 p-3 font-mono text-xs leading-6 text-gray-200"
+                          className="mt-2 h-56 w-full resize-y rounded border border-slate-800 bg-slate-950/70 p-3 font-mono text-xs leading-6 text-slate-200"
                         />
                       </div>
 
                       <div className="mt-4">
-                        <div className="mb-2 text-[11px] uppercase tracking-wide text-gray-500">
+                        <div className={slateMetaLabelClass}>
                           Artifact handoff pack
                         </div>
                         <textarea
                           readOnly
                           value={detail.handoff_pack}
-                          className="h-48 w-full resize-y rounded border border-zinc-800 bg-black/50 p-3 font-mono text-xs leading-6 text-gray-200"
+                          className="mt-2 h-48 w-full resize-y rounded border border-slate-800 bg-slate-950/70 p-3 font-mono text-xs leading-6 text-slate-200"
                         />
                       </div>
 
-                      <div className="mt-4 rounded border border-zinc-800 bg-zinc-900/40 px-3 py-3 text-xs text-gray-400">
+                      <div className="mt-4 rounded border border-slate-800 bg-slate-900 px-3 py-3 text-xs text-slate-400">
                         Read-only boundary:
                         <ul className="mt-2 list-disc space-y-1 pl-4">
                           <li>no dispatch or scheduler behavior</li>
@@ -730,7 +771,7 @@ export default async function MotionsPage(props: {
                         <div className="mt-3">
                           <Link
                             href={detail.chat_search_href}
-                            className="font-mono text-sky-300 hover:text-sky-200"
+                            className="font-mono text-amber-300 hover:text-amber-200"
                           >
                             {detail.chat_search_href}
                           </Link>

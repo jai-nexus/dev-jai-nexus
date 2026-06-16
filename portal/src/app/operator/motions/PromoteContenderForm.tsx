@@ -17,6 +17,16 @@ import type { MotionPromotionAvailability } from "@/lib/motion/motionPromotion";
 
 const SESSION_STORAGE_KEY = "jai.motion-contenders.v0";
 
+const slatePanelClass = "rounded border border-slate-800 bg-slate-900 p-4";
+const slateInsetClass = "rounded border border-slate-800 bg-slate-950/50";
+const slateFieldClass =
+  "mt-1 w-full rounded border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-600/50";
+const slateLabelClass = "block text-xs text-slate-400";
+const slateMetaLabelClass =
+  "text-[11px] uppercase tracking-wide text-slate-500";
+const slateBadgeClass =
+  "rounded border border-slate-700 bg-slate-950/70 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-slate-300";
+
 type PromoteContenderFormProps = {
   highestMotionNumber: number;
   motionIdStrategy: MotionContenderIdStrategy;
@@ -72,15 +82,15 @@ function shortTs(value: string): string {
 function queueStateTone(queueState: ContenderQueueState) {
   switch (queueState) {
     case "promoted":
-      return "border-emerald-800/60 bg-emerald-900/20 text-emerald-200";
+      return "border-amber-800/60 bg-amber-950/20 text-amber-200";
     case "ready_to_promote":
-      return "border-sky-800/60 bg-sky-900/20 text-sky-200";
+      return "border-amber-800/60 bg-slate-950/60 text-amber-300";
     case "promotion_blocked":
       return "border-amber-900/60 bg-amber-950/20 text-amber-200";
     case "stale_preview":
       return "border-violet-800/60 bg-violet-900/20 text-violet-200";
     default:
-      return "border-zinc-700 bg-zinc-900/60 text-zinc-200";
+      return "border-slate-700 bg-slate-950/70 text-slate-300";
   }
 }
 
@@ -511,70 +521,82 @@ export function PromoteContenderForm({
   return (
     <section className="space-y-6">
       <section className="grid gap-3 md:grid-cols-4">
-        <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">
+        <div className={slatePanelClass}>
+          <div className={slateMetaLabelClass}>
             Total contenders
           </div>
-          <div className="mt-1 font-mono text-2xl text-gray-100">{summary.total}</div>
+          <div className="mt-1 font-mono text-2xl text-slate-100">{summary.total}</div>
+          <div className="mt-2 text-[11px] text-slate-500">SESSION-LOCAL PREVIEW</div>
         </div>
-        <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">
+        <div className={slatePanelClass}>
+          <div className={slateMetaLabelClass}>
             Ready to promote
           </div>
-          <div className="mt-1 font-mono text-2xl text-sky-300">{summary.ready}</div>
+          <div className="mt-1 font-mono text-2xl text-amber-300">{summary.ready}</div>
+          <div className="mt-2 text-[11px] text-slate-500">EXPLICIT GUARDS REQUIRED</div>
         </div>
-        <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">
+        <div className={slatePanelClass}>
+          <div className={slateMetaLabelClass}>
             Promotion blocked
           </div>
           <div className="mt-1 font-mono text-2xl text-amber-300">{summary.blocked}</div>
+          <div className="mt-2 text-[11px] text-slate-500">PROMOTION IS NOT ACCEPTANCE</div>
         </div>
-        <div className="rounded border border-zinc-800 bg-zinc-950/70 p-4">
-          <div className="text-[11px] uppercase tracking-wide text-gray-500">
+        <div className={slatePanelClass}>
+          <div className={slateMetaLabelClass}>
             Promoted in session
           </div>
-          <div className="mt-1 font-mono text-2xl text-emerald-300">{summary.promoted}</div>
+          <div className="mt-1 font-mono text-2xl text-amber-300">{summary.promoted}</div>
+          <div className="mt-2 text-[11px] text-slate-500">NOT CONTROL_THREAD APPROVAL</div>
         </div>
       </section>
 
-      <section className="rounded border border-zinc-800 bg-zinc-950/50 p-4">
+      <section className="rounded border border-slate-800 bg-slate-900 p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="text-sm font-semibold text-gray-100">Contender Queue</div>
-            <div className="mt-1 max-w-3xl text-xs text-gray-500">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-sm font-semibold text-slate-100">Contender Queue</div>
+              <span className={slateBadgeClass}>SESSION-LOCAL PREVIEW</span>
+              <span className="rounded border border-amber-800 bg-amber-950/20 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-amber-300">
+                EXPLICIT GUARDS REQUIRED
+              </span>
+            </div>
+            <div className="mt-2 max-w-3xl text-xs text-slate-400">
               Generated contenders are preview only, not a motion package yet, and
               promotion creates the first real DRAFT package on a guarded same-repo
               branch.
+              Dashboard display does not authorize, prompt text is not dispatch,
+              and copy-only is not submit.
             </div>
           </div>
 
-          <div className="rounded border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-gray-400">
+          <div className="rounded border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-slate-400">
             Target repo:{" "}
-            <span className="font-mono text-gray-200">{promotion.target_repo}</span>
+            <span className="font-mono text-slate-200">{promotion.target_repo}</span>
             <div className="mt-1">
               Base branch:{" "}
-              <span className="font-mono text-gray-200">{promotion.base_branch}</span>
+              <span className="font-mono text-slate-200">{promotion.base_branch}</span>
             </div>
           </div>
         </div>
 
         <div className="mt-4 grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div className="space-y-4">
-            <div className="rounded border border-zinc-800 bg-zinc-950/40 p-4">
+            <div className={slatePanelClass}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-gray-200">
+                  <div className="text-sm font-semibold text-slate-200">
                     Session-local contender queue
                   </div>
-                  <div className="mt-1 text-xs text-gray-500">
+                  <div className="mt-1 text-xs text-slate-500">
                     Newest first. These rows are previews, not repo-native motion packages.
                   </div>
                 </div>
-                <div className="font-mono text-xs text-gray-400">{contenders.length}</div>
+                <div className="font-mono text-xs text-slate-400">{contenders.length}</div>
               </div>
 
               {contenders.length === 0 ? (
-                <div className="mt-4 rounded border border-zinc-800 bg-black/20 px-3 py-3 text-sm text-gray-400">
+                <div className={`${slateInsetClass} mt-4 px-3 py-3 text-sm text-slate-400`}>
                   No contenders yet. Generate a preview to start the queue.
                 </div>
               ) : (
@@ -593,26 +615,26 @@ export function PromoteContenderForm({
                         }}
                         className={`w-full rounded border px-3 py-3 text-left transition-colors ${
                           active
-                            ? "border-sky-700 bg-sky-950/20"
-                            : "border-zinc-800 bg-black/20 hover:border-zinc-700 hover:bg-zinc-900/60"
+                            ? "border-amber-700 bg-slate-950/80 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.12)]"
+                            : "border-slate-800 bg-slate-950/50 hover:border-slate-700 hover:bg-slate-800/60"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <div className="font-mono text-xs text-sky-300">
+                            <div className="font-mono text-xs text-amber-300">
                               {contender.provisional_motion_id_preview}
                             </div>
-                            <div className="mt-1 text-sm font-medium text-gray-100">
+                            <div className="mt-1 text-sm font-medium text-slate-100">
                               {contender.title}
                             </div>
                             {contender.subtitle ? (
-                              <div className="mt-1 text-xs text-gray-500">
+                              <div className="mt-1 text-xs text-slate-500">
                                 {contender.subtitle}
                               </div>
                             ) : null}
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <span className="rounded border border-zinc-700 bg-zinc-900/70 px-2 py-1 text-[11px] font-mono text-gray-300">
+                            <span className={slateBadgeClass}>
                               preview only
                             </span>
                             <span
@@ -625,24 +647,24 @@ export function PromoteContenderForm({
                           </div>
                         </div>
 
-                        <div className="mt-3 text-[11px] text-gray-500">
+                        <div className="mt-3 text-[11px] text-slate-500">
                           not a motion package yet
                         </div>
 
-                        <div className="mt-2 text-[11px] text-gray-400">
+                        <div className="mt-2 text-[11px] text-slate-400">
                           {motionIdResolutionLabel(contender)}
                         </div>
 
-                        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-gray-400">
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-slate-400">
                           <div>
-                            <div className="text-gray-500">generated</div>
-                            <div className="font-mono text-gray-300">
+                            <div className="text-slate-500">generated</div>
+                            <div className="font-mono text-slate-300">
                               {shortTs(contender.generated_at)}
                             </div>
                           </div>
                           <div>
-                            <div className="text-gray-500">basis</div>
-                            <div className="font-mono text-gray-300">
+                            <div className="text-slate-500">basis</div>
+                            <div className="font-mono text-slate-300">
                               {contender.basis_motion_id ?? "null"}
                             </div>
                           </div>
@@ -662,116 +684,124 @@ export function PromoteContenderForm({
           </div>
 
           <div className="space-y-4">
-            <div className="rounded border border-zinc-800 bg-zinc-950/40 p-4">
-              <div className="text-sm font-semibold text-gray-200">Generate contender</div>
-              <div className="mt-1 text-xs text-gray-500">
+            <div className={slatePanelClass}>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm font-semibold text-slate-200">
+                  Generate contender
+                </div>
+                <span className={slateBadgeClass}>PREVIEW GENERATION</span>
+                <span className="rounded border border-red-900 bg-red-950/50 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-red-300">
+                  NOT A MOTION
+                </span>
+              </div>
+              <div className="mt-2 text-xs text-slate-500">
                 Deterministic preview only. No LLM calls, no file writes, and no
                 `.nexus/candidates/**` usage.
               </div>
 
               {selectedMotionId ? (
-                <div className="mt-4 rounded border border-zinc-800 bg-black/20 px-3 py-3 text-xs text-gray-400">
+                <div className={`${slateInsetClass} mt-4 px-3 py-3 text-xs text-slate-400`}>
                   Current canonical reference:
-                  <div className="mt-1 font-mono text-gray-200">{selectedMotionId}</div>
+                  <div className="mt-1 font-mono text-slate-200">{selectedMotionId}</div>
                   {selectedMotionTitle ? (
-                    <div className="mt-1 text-gray-500">{selectedMotionTitle}</div>
+                    <div className="mt-1 text-slate-500">{selectedMotionTitle}</div>
                   ) : null}
                 </div>
               ) : null}
 
               <div className="mt-4 space-y-3">
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Title
                   <input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    className="mt-1 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={slateFieldClass}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Subtitle
                   <input
                     value={subtitle}
                     onChange={(event) => setSubtitle(event.target.value)}
-                    className="mt-1 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={slateFieldClass}
                   />
                 </label>
 
                 <div className="grid gap-3 md:grid-cols-2">
-                  <label className="block text-xs text-gray-400">
+                  <label className={slateLabelClass}>
                     Program
                     <input
                       value={program}
                       onChange={(event) => setProgram(event.target.value)}
-                      className="mt-1 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                      className={slateFieldClass}
                     />
                   </label>
 
-                  <label className="block text-xs text-gray-400">
+                  <label className={slateLabelClass}>
                     Kind
                     <input
                       value={kind}
                       onChange={(event) => setKind(event.target.value)}
-                      className="mt-1 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                      className={slateFieldClass}
                     />
                   </label>
                 </div>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Basis motion id
                   <input
                     value={basisMotionId}
                     onChange={(event) => setBasisMotionId(event.target.value)}
-                    className="mt-1 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-sm text-gray-100"
+                    className={`${slateFieldClass} font-mono`}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Bounded scope
                   <textarea
                     value={boundedScope}
                     onChange={(event) => setBoundedScope(event.target.value)}
-                    className="mt-1 h-24 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={`${slateFieldClass} h-24`}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Touched paths
                   <textarea
                     value={touchedPaths}
                     onChange={(event) => setTouchedPaths(event.target.value)}
                     placeholder="one path per line"
-                    className="mt-1 h-20 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-xs text-gray-100"
+                    className={`${slateFieldClass} h-20 font-mono text-xs`}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Non-goals
                   <textarea
                     value={nonGoals}
                     onChange={(event) => setNonGoals(event.target.value)}
                     placeholder="one non-goal per line"
-                    className="mt-1 h-20 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={`${slateFieldClass} h-20`}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Rationale
                   <textarea
                     value={rationale}
                     onChange={(event) => setRationale(event.target.value)}
-                    className="mt-1 h-24 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={`${slateFieldClass} h-24`}
                   />
                 </label>
 
-                <label className="block text-xs text-gray-400">
+                <label className={slateLabelClass}>
                   Risks
                   <textarea
                     value={risks}
                     onChange={(event) => setRisks(event.target.value)}
                     placeholder="one risk per line"
-                    className="mt-1 h-20 w-full rounded border border-zinc-800 bg-black/40 px-3 py-2 text-sm text-gray-100"
+                    className={`${slateFieldClass} h-20`}
                   />
                 </label>
               </div>
@@ -779,15 +809,15 @@ export function PromoteContenderForm({
               <button
                 type="button"
                 onClick={handleGenerateContender}
-                className="mt-4 rounded border border-sky-800/60 bg-sky-900/30 px-3 py-2 text-xs text-sky-100 hover:bg-sky-900/50"
+                className="mt-4 rounded border border-amber-800 bg-slate-950 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-300 hover:bg-amber-950/30"
               >
                 Generate contender preview
               </button>
             </div>
 
-            <div className="rounded border border-zinc-800 bg-zinc-950/40 p-4">
+            <div className={slatePanelClass}>
               {!selectedContender ? (
-                <div className="rounded border border-zinc-800 bg-black/20 px-4 py-6 text-sm text-gray-400">
+                <div className={`${slateInsetClass} px-4 py-6 text-sm text-slate-400`}>
                   Select a contender from the queue to inspect its preview-only package
                   and guarded promotion path.
                 </div>
@@ -795,21 +825,21 @@ export function PromoteContenderForm({
                 <div className="space-y-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <div className="font-mono text-xs text-sky-300">
+                      <div className="font-mono text-xs text-amber-300">
                         {selectedContender.provisional_motion_id_preview}
                       </div>
-                      <div className="mt-1 text-xl font-semibold text-gray-100">
+                      <div className="mt-1 text-xl font-semibold text-slate-100">
                         {selectedContender.title}
                       </div>
                       {selectedContender.subtitle ? (
-                        <div className="mt-2 text-sm text-gray-400">
+                        <div className="mt-2 text-sm text-slate-400">
                           {selectedContender.subtitle}
                         </div>
                       ) : null}
                     </div>
 
-                    <div className="rounded border border-zinc-800 bg-black/30 px-3 py-2 text-xs text-gray-400">
-                      <div className="font-medium text-gray-200">preview only</div>
+                    <div className="rounded border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs text-slate-400">
+                      <div className="font-medium text-slate-200">preview only</div>
                       <div className="mt-1">not a motion package yet</div>
                       <div className="mt-1">
                         promotion creates the first real DRAFT package
@@ -818,108 +848,114 @@ export function PromoteContenderForm({
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Motion id preview
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.provisional_motion_id_preview}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Provisional branch
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.provisional_branch_name_preview}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Id resolution
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {motionIdResolutionLabel(selectedContender)}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Queue state
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {queueStateLabel(selectedContender.queue_state)}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Target repo
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.target_repo}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Base branch
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.base_branch}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Write root preview
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.write_root_preview}
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded border border-zinc-800 bg-zinc-950/30 px-3 py-3 text-xs text-gray-300">
+                  <div className="rounded border border-slate-800 bg-slate-950/60 px-3 py-3 text-xs text-slate-300">
                     {selectedContender.motion_id_notice}
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Generated at
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {shortTs(selectedContender.generated_at)}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Generated from
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.generated_from_motion_id ?? "null"}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Basis motion
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.basis_motion_id ?? "null"}
                       </div>
                     </div>
-                    <div className="rounded border border-zinc-800 bg-black/20 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-gray-500">
+                    <div className={`${slateInsetClass} p-3`}>
+                      <div className={slateMetaLabelClass}>
                         Exact files
                       </div>
-                      <div className="mt-1 font-mono text-sm text-gray-100">
+                      <div className="mt-1 font-mono text-sm text-slate-100">
                         {selectedContender.written_paths_preview.length}
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded border border-zinc-800 bg-black/20 p-4">
-                    <div className="text-sm font-semibold text-gray-200">
-                      Exact DRAFT package preview
+                  <div className={`${slateInsetClass} p-4`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-sm font-semibold text-slate-200">
+                        Exact DRAFT package preview
+                      </div>
+                      <span className={slateBadgeClass}>DRAFT PACKAGE</span>
+                      <span className="rounded border border-red-900 bg-red-950/50 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-red-300">
+                        NOT CANON
+                      </span>
                     </div>
-                    <div className="mt-1 text-xs text-gray-500">
+                    <div className="mt-2 text-xs text-slate-500">
                       {selectedContender.requires_server_id_confirmation
                         ? "Preview shows placeholder paths because the real motion id is assigned only after server confirmation at promotion."
                         : "Promotion writes exactly these 8 files if explicitly confirmed."}
@@ -928,24 +964,24 @@ export function PromoteContenderForm({
                       {selectedContender.draft_package.files.map((file) => (
                         <details
                           key={file.path}
-                          className="rounded border border-zinc-800 bg-zinc-950/40"
+                          className="rounded border border-slate-800 bg-slate-900"
                         >
                           <summary className="cursor-pointer list-none px-3 py-3">
                             <div className="flex items-center justify-between gap-3">
                               <div>
-                                <div className="font-mono text-sm text-gray-100">
+                                <div className="font-mono text-sm text-slate-100">
                                   {filePreviewLabel(file.path)}
                                 </div>
-                                <div className="mt-1 font-mono text-[11px] text-gray-500">
+                                <div className="mt-1 font-mono text-[11px] text-slate-500">
                                   {file.path}
                                 </div>
                               </div>
-                              <span className="rounded border border-zinc-700 bg-zinc-900/70 px-2 py-1 text-[11px] text-gray-300">
+                              <span className={slateBadgeClass}>
                                 preview
                               </span>
                             </div>
                           </summary>
-                          <pre className="max-h-72 overflow-auto border-t border-zinc-800 bg-black/40 p-3 text-xs leading-6 text-gray-200">
+                          <pre className="max-h-72 overflow-auto border-t border-slate-800 bg-slate-950/70 p-3 text-xs leading-6 text-slate-200">
                             {file.content}
                           </pre>
                         </details>
@@ -953,9 +989,17 @@ export function PromoteContenderForm({
                     </div>
                   </div>
 
-                  <div className="rounded border border-zinc-800 bg-black/20 p-4">
-                    <div className="text-sm font-semibold text-gray-200">
-                      Promotion confirmation
+                  <div className={`${slateInsetClass} p-4`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-sm font-semibold text-slate-200">
+                        Promotion confirmation
+                      </div>
+                      <span className="rounded border border-amber-800 bg-amber-950/20 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-amber-300">
+                        GUARDED PROMOTION
+                      </span>
+                      <span className="rounded border border-red-900 bg-red-950/50 px-2 py-1 font-mono text-[11px] uppercase tracking-wide text-red-300">
+                        NOT ACCEPTANCE
+                      </span>
                     </div>
                     {selectedContender.requires_server_id_confirmation ? (
                       <div className="mt-2 rounded border border-violet-900/50 bg-violet-950/20 px-3 py-3 text-xs text-violet-200">
@@ -965,9 +1009,9 @@ export function PromoteContenderForm({
                       </div>
                     ) : (
                       <>
-                        <div className="mt-2 text-xs text-gray-500">
+                        <div className="mt-2 text-xs text-slate-500">
                           Type{" "}
-                          <span className="font-mono text-gray-200">
+                          <span className="font-mono text-slate-200">
                             {selectedContender.provisional_motion_id_preview}
                           </span>{" "}
                           to confirm guarded branch-only promotion. The server
@@ -980,7 +1024,7 @@ export function PromoteContenderForm({
                             value={confirmationText}
                             onChange={(event) => setConfirmationText(event.target.value)}
                             placeholder={selectedContender.provisional_motion_id_preview}
-                            className="rounded border border-zinc-800 bg-black/40 px-3 py-2 font-mono text-sm text-gray-100"
+                            className={`${slateFieldClass} font-mono`}
                           />
                           <button
                             type="button"
@@ -991,7 +1035,7 @@ export function PromoteContenderForm({
                               confirmationText.trim() !==
                                 selectedContender.provisional_motion_id_preview
                             }
-                            className="rounded border border-emerald-800/60 bg-emerald-900/20 px-3 py-2 text-xs text-emerald-100 disabled:cursor-not-allowed disabled:border-zinc-800 disabled:bg-zinc-900/40 disabled:text-gray-500"
+                            className="rounded border border-amber-800 bg-amber-950/20 px-3 py-2 font-mono text-xs uppercase tracking-wide text-amber-200 hover:bg-amber-950/40 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900/40 disabled:text-slate-500"
                           >
                             {submitting ? "Promoting..." : "Promote to draft branch"}
                           </button>
@@ -1025,18 +1069,18 @@ export function PromoteContenderForm({
                     ) : null}
 
                     {selectedContender.promotion_result ? (
-                      <div className="mt-4 rounded border border-emerald-900/50 bg-emerald-950/20 px-3 py-3 text-xs text-emerald-200">
+                      <div className="mt-4 rounded border border-amber-900/50 bg-amber-950/20 px-3 py-3 text-xs text-amber-200">
                         <div>
                           Promoted: {selectedContender.promotion_result.motion_id}
                         </div>
-                        <div className="mt-1 font-mono text-emerald-100">
+                        <div className="mt-1 font-mono text-amber-100">
                           {selectedContender.promotion_result.branch_name}
                         </div>
-                        <div className="mt-1 font-mono text-emerald-100">
+                        <div className="mt-1 font-mono text-amber-100">
                           {selectedContender.promotion_result.commit_sha}
                         </div>
                         {selectedContender.promotion_result.compare_url ? (
-                          <div className="mt-2 break-all text-emerald-100">
+                          <div className="mt-2 break-all text-amber-100">
                             {selectedContender.promotion_result.compare_url}
                           </div>
                         ) : null}
@@ -1050,7 +1094,7 @@ export function PromoteContenderForm({
                     ) : null}
 
                     {result && result.ok ? (
-                      <div className="mt-4 text-xs text-gray-400">
+                      <div className="mt-4 text-xs text-slate-400">
                         {result.next_manual_action}
                       </div>
                     ) : null}
