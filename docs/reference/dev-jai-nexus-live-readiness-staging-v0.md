@@ -155,10 +155,91 @@ CONTROL_THREAD decides. Decision copy generated in v0 is local `REAL-COMPOSE` te
 - No execution gates are opened.
 - ZERO GATES GRANTED.
 
+## Commit 3: JAI Agents Readiness Surfaces
+
+Commit 3 stages read-only and compose-only readiness surfaces for JAI Agents. It does not activate an Agent runtime, runner, scheduler, autonomous loop, tool invocation path, terminal action, browser/desktop control, repo write path, branch/PR automation, or execution gate.
+
+### JAI Agents Readiness Summary
+
+Agents are staged, not executing. Agent readiness can be represented as lane candidates, expected artifacts, validation requirements, receipt expectations, rollback requirements, and blocked authority classes. Agent readiness records are local/static `SYN-*` records and must not look like runnable queues or live Agent state.
+
+Current Agent posture:
+
+- `READ-ONLY` for registry, agenda, scope, and readiness records.
+- `REAL-COMPOSE` only for local clipboard handoff drafts.
+- `GATED` for future lane candidates.
+- `BLOCKED` for tool invocation, Agent runners, schedulers, autonomous loops, terminal actions, repo mutation, branch/PR automation, browser/desktop control, receipt creation, canon update, and gate evaluation.
+- `MANUAL HANDOFF` for any Agent lane prompt or development-work packet that leaves the interface.
+
+### Agent Lane Candidate Posture
+
+Agent lane candidates do not execute. A lane candidate may describe a possible Builder, Verifier, Docs, or Security role, but it cannot run tools, write files, call terminals, control browsers/desktops, create branches, open PRs, mutate repos, or invoke providers/models.
+
+Each lane candidate should remain visibly bounded by:
+
+- Expected artifact.
+- Expected validation.
+- Expected receipt requirement.
+- Expected rollback requirement.
+- Blocked behavior list.
+- CONTROL_THREAD decision boundary.
+
+### Blocked Agent Authority Classes
+
+- Tool invocation.
+- Agent runner.
+- Scheduler.
+- Autonomous loop.
+- Terminal or command execution.
+- Repo mutation.
+- Branch creation.
+- PR creation.
+- Branch/PR automation.
+- Browser or desktop control.
+- Provider/model dispatch.
+- Live model calls.
+- Receipt creation.
+- Canon update.
+- Gate evaluation.
+
+### Expected Artifact / Validation / Receipt / Rollback Model
+
+Expected artifacts are drafts and review packets only. Validation is evidence for operator review and is not acceptance. Receipts record accepted decisions or evidence after the fact; they do not decide and do not grant gates. Rollback requirements must be visible before any future write-capable gate can be considered.
+
+Required future posture before activation:
+
+- Named Agent execution gate.
+- Tool invocation gate.
+- Repo mutation gate.
+- Branch/PR automation gate.
+- Terminal/command execution gate.
+- Browser/desktop control gate.
+- Validation evidence requirements.
+- Receipt requirement for accepted changes.
+- Rollback plan requirement.
+- CONTROL_THREAD decision record.
+
+### Manual Handoff Prompt Posture
+
+Agent handoff prompts in v0 are local `REAL-COMPOSE` text only. They do not submit, dispatch, persist, invoke tools, run Agents, create receipts, update canon, mutate motion-state, mutate route-state, or open gates.
+
+### Agent Execution Blockers
+
+- Agents are staged, not executing.
+- Agent lane candidate does not execute.
+- No Agent execution authority in v0.
+- No repo mutation.
+- No browser/desktop control.
+- No branch/PR automation.
+- No autonomous loop.
+- CONTROL_THREAD decides.
+- Validation is not acceptance.
+- Receipts record; they do not decide.
+- ZERO GATES GRANTED.
+
 ## Recommended Later Commit Sequence
 
-1. Commit 3: add activation blocker visibility where existing surfaces need clearer gate language.
-2. Commit 4: improve read-only compose and manual handoff posture without dispatch.
-3. Commit 5: refine prototype/canonical/fixture source posture.
-4. Commit 6: consolidate gate/readiness matrix.
-5. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
+1. Commit 4: improve read-only compose and manual handoff posture without dispatch.
+2. Commit 5: refine prototype/canonical/fixture source posture.
+3. Commit 6: consolidate gate/readiness matrix.
+4. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.

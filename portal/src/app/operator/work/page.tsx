@@ -17,6 +17,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacketAction,
@@ -672,6 +673,8 @@ export default function WorkPage() {
             detail="Coverage includes view, draft, preview, and verify actions only."
           />
         </section>
+
+        <JaiAgentReadiness index="00" />
 
         <Section
           index="01"
