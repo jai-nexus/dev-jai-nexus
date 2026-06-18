@@ -16,6 +16,7 @@ import {
     OperatorSectionHeader,
     type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 
 type IconProps = {
     className?: string;
@@ -238,6 +239,8 @@ export default function LiveDashboardPrototype() {
                         <B label="NO AGENT EXECUTION" tone="red" />
                         <B label="ZERO EXECUTION GATES GRANTED" tone="red" />
                     </div>
+
+                    <RouteTopologyReadiness index="00" compact />
 
                     {/* 1 · LIVE OPERATOR HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">

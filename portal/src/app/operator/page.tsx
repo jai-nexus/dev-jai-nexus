@@ -13,6 +13,7 @@ import {
   OperatorSectionHeader,
   OperatorStatusChip,
 } from "@/components/operator/slate";
+import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 import { getAgencyConfig } from "@/lib/agencyConfig";
 import { prisma } from "@/lib/prisma";
 import { getProjectsConfig } from "@/lib/projectsConfig";
@@ -60,6 +61,8 @@ export default async function OperatorHomePage() {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <RouteTopologyReadiness index="00" />
 
         <section>
           <OperatorSectionHeader
