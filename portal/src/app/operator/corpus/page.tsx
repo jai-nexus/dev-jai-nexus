@@ -155,27 +155,30 @@ export default function OperatorCorpusPage() {
               Static local data model mirrored from readiness canon and
               machine-checkable gate modeling.
             </p>
-            <Link href="/" className="text-sm text-sky-300 underline">
+            <Link
+              href="/"
+              className="font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
+            >
               Back to root overview
             </Link>
           </div>
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full border-collapse text-sm">
-              <thead className="border-b border-gray-800 bg-black/20 text-left">
+              <thead className="border-b border-slate-800 bg-slate-950/60 text-left">
                 <tr>
-                  <th className="px-3 py-2 text-xs text-gray-400">Gate</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Status</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Checkability</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Current evidence</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Missing before V2</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Authority note</th>
-                  <th className="px-3 py-2 text-xs text-gray-400">Source</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Gate</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Status</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Checkability</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Current evidence</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Missing before V2</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Authority note</th>
+                  <th className="px-3 py-2 text-xs text-slate-400">Source</th>
                 </tr>
               </thead>
               <tbody>
                 {corpusReadinessGates.map((gate) => (
-                  <tr key={gate.gate_id} className="border-b border-gray-900 align-top hover:bg-zinc-900/60">
+                  <tr key={gate.gate_id} className="border-b border-slate-900 align-top hover:bg-slate-900/60">
                     <td className="px-3 py-3 text-xs text-slate-200">
                       <div className="flex flex-wrap items-center gap-2">
                         <OperatorIdChip>{gate.gate_id}</OperatorIdChip>
@@ -205,8 +208,8 @@ export default function OperatorCorpusPage() {
           />
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="border-amber-800 bg-amber-950 text-amber-200">Fixture-only</Badge>
-            <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Simulated</Badge>
-            <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not canon</Badge>
+            <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Simulated</Badge>
+            <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Not canon</Badge>
             <Badge tone="border-rose-800 bg-rose-950 text-rose-200">No authority</Badge>
           </div>
           <p className="mt-3 text-sm text-slate-400">{sandbox.note}</p>
@@ -214,12 +217,12 @@ export default function OperatorCorpusPage() {
             <OperatorIdChip>{sandbox.canon_ref}</OperatorIdChip>
           </div>
 
-          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="text-sm font-semibold text-gray-100">Validator posture</div>
-              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Static/manual validation</Badge>
-              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Review-only</Badge>
-              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">No runtime enforcement</Badge>
+              <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Static/manual validation</Badge>
+              <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Review-only</Badge>
+              <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">No runtime enforcement</Badge>
               <Badge tone="border-rose-800 bg-rose-950 text-rose-200">No authority</Badge>
             </div>
             <p className="mt-3 text-sm text-gray-300">{sandbox.validator.note}</p>
@@ -248,11 +251,11 @@ export default function OperatorCorpusPage() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="text-sm font-semibold text-gray-100">Fixture guard posture</div>
-              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Guardrails only</Badge>
-              <Badge tone="border-gray-800 bg-zinc-900 text-gray-200">Not runtime enforcement</Badge>
+              <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Guardrails only</Badge>
+              <Badge tone="border-slate-800 bg-slate-950/70 text-slate-300">Not runtime enforcement</Badge>
               <Badge tone="border-rose-800 bg-rose-950 text-rose-200">Corpus V2 not open</Badge>
             </div>
             <p className="mt-3 text-sm text-gray-300">{sandbox.guardrails.note}</p>
@@ -286,7 +289,7 @@ export default function OperatorCorpusPage() {
           </div>
 
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-semibold text-gray-100">Sample draft trace</div>
                 <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
@@ -305,7 +308,7 @@ export default function OperatorCorpusPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-semibold text-gray-100">
                   Sample vote/ratification trace
@@ -328,7 +331,7 @@ export default function OperatorCorpusPage() {
           </div>
 
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-semibold text-gray-100">
                   Failure trace examples
@@ -354,7 +357,7 @@ export default function OperatorCorpusPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-semibold text-gray-100">
                   Gate evidence fixture
@@ -382,7 +385,7 @@ export default function OperatorCorpusPage() {
           </div>
 
           <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_1fr]">
-            <div className="rounded-xl border border-gray-800 bg-black/20 p-4">
+            <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
               <div className="text-sm font-semibold text-gray-100">Validation / evidence summary</div>
               <ul className="mt-3 space-y-1 text-sm text-gray-300">
                 {sandbox.validation_summary.map((item) => (
@@ -396,7 +399,7 @@ export default function OperatorCorpusPage() {
             </OperatorContradictionCard>
           </div>
 
-          <div className="mt-4 rounded-xl border border-gray-800 bg-black/20 p-4">
+          <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
             <div className="flex flex-wrap items-center gap-2">
               <div className="text-sm font-semibold text-gray-100">Draft review prototype</div>
               <OperatorBadge tone="fixture">FIXTURE</OperatorBadge>
@@ -408,7 +411,7 @@ export default function OperatorCorpusPage() {
             </div>
             <p className="mt-3 text-sm text-gray-300">{draftReview.draft_review_summary}</p>
             <div className="mt-4 grid gap-4 xl:grid-cols-2">
-              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">Draft identity</div>
                 <div className="mt-2 text-sm text-gray-300">{draftReview.fixture_id}</div>
                 <div className="mt-1 text-sm text-gray-300">
@@ -433,7 +436,7 @@ export default function OperatorCorpusPage() {
                 </ul>
               </div>
 
-              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">Proposed scope</div>
                 <ul className="mt-2 space-y-1 text-sm text-gray-300">
                   {draftReview.proposed_scope.map((item) => (
@@ -458,7 +461,7 @@ export default function OperatorCorpusPage() {
             </div>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">Validation expectations</div>
                 <ul className="mt-2 space-y-1 text-sm text-gray-300">
                   {draftReview.validation_expectations.map((item) => (
@@ -474,7 +477,7 @@ export default function OperatorCorpusPage() {
                 </ul>
               </div>
 
-              <div className="rounded-xl border border-gray-800 bg-zinc-950/60 p-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">Human review / authority boundary</div>
                 <p className="mt-2 text-sm text-gray-300">
                   Human review required: {draftReview.human_review_required ? "true" : "false"}

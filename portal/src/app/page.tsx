@@ -243,7 +243,7 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/operator/corpus"
-                className="mt-3 inline-flex text-xs font-medium text-sky-300 underline"
+                className="mt-3 inline-flex font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
               >
                 Open /operator/corpus
               </Link>
@@ -326,7 +326,7 @@ export default async function HomePage() {
               <p className="mt-3 text-sm text-gray-300">{overview.operator_jai.note}</p>
               <Link
                 href={overview.operator_jai.href}
-                className="mt-4 inline-flex text-sm font-medium text-sky-300 underline"
+                className="mt-4 inline-flex font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
               >
                 Open /operator/jai
               </Link>
@@ -375,10 +375,16 @@ export default async function HomePage() {
                 {overview.first_official_loop_candidate.switching_policy_summary}
               </p>
               <div className="mt-3 flex flex-wrap gap-3 text-xs">
-                <Link href="/operator/work" className="text-sky-300 underline">
+                <Link
+                  href="/operator/work"
+                  className="font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
+                >
                   Open /operator/work
                 </Link>
-                <Link href="/operator/deliberation" className="text-sky-300 underline">
+                <Link
+                  href="/operator/deliberation"
+                  className="font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
+                >
                   Open /operator/deliberation
                 </Link>
               </div>
@@ -681,11 +687,11 @@ export default async function HomePage() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="group rounded border border-slate-800 bg-slate-900 p-4 transition-colors hover:border-sky-700 hover:bg-slate-800"
+                className="group rounded border border-slate-800 bg-slate-900 p-4 transition-colors hover:border-amber-700/70 hover:bg-slate-800"
               >
                 <div className="text-sm font-semibold text-gray-100">{link.label}</div>
                 <p className="mt-2 text-sm text-gray-400">{link.summary}</p>
-                <div className="mt-3 text-xs text-sky-300 group-hover:underline">
+                <div className="mt-3 font-mono text-xs uppercase tracking-wide text-amber-300 group-hover:underline">
                   Open {link.href}
                 </div>
               </Link>
@@ -792,7 +798,7 @@ export default async function HomePage() {
                   {overview.telemetry.sync_runs.recent_runs.map((run) => (
                     <tr
                       key={run.id}
-                      className="border-b border-gray-900 hover:bg-zinc-900/60"
+                      className="border-b border-slate-900 hover:bg-slate-900/60"
                     >
                       <td
                         className="whitespace-nowrap px-3 py-2 text-xs"
@@ -810,7 +816,10 @@ export default async function HomePage() {
                         {run.summary ?? "none"}
                       </td>
                       <td className="px-3 py-2 text-xs">
-                        <Link href={run.review_href} className="text-sky-300 underline">
+                        <Link
+                          href={run.review_href}
+                          className="font-mono text-xs uppercase tracking-wide text-amber-300 underline-offset-4 hover:underline"
+                        >
                           review
                         </Link>
                       </td>
