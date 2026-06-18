@@ -237,9 +237,92 @@ Agent handoff prompts in v0 are local `REAL-COMPOSE` text only. They do not subm
 - Receipts record; they do not decide.
 - ZERO GATES GRANTED.
 
+## Commit 4: JAI Palette + JAI Grid Readiness Surfaces
+
+Commit 4 stages read-only and compose-only readiness surfaces for JAI Palette and JAI Grid. It does not add a retrieval engine, automatic context injection, customer-data handling, live memory writes, hidden persistence, model dispatch, Agent dispatch, execution, or a live Palette/Grid runtime.
+
+### JAI Palette Readiness Summary
+
+Palette assembles context; it does not authorize. Palette readiness can describe relevant project context, repo context, motion/receipt context, Council context, Agent lane context, retrieval/source posture, freshness, blocked context classes, privacy boundaries, and customer-data boundaries. Palette readiness records are local/static `SYN-*` records unless an existing route already exposes accepted read-only canonical data.
+
+Current Palette posture:
+
+- `READ-ONLY` for context cards and source/freshness labels.
+- `REAL-COMPOSE` only for local clipboard context packet drafts.
+- `BLOCKED` for retrieval engines, automatic context injection, live memory writes, hidden persistence, customer-data handling, model dispatch, Agent dispatch, receipt creation, canon update, and gate evaluation.
+- `MANUAL HANDOFF` for any context packet that leaves the interface.
+
+### JAI Grid Readiness Summary
+
+Grid displays operational state; it does not execute. Grid readiness can describe operational-state maps, project/repo/work relationships, workflow lanes, route queues, motion queues, work queues, capability maps, source posture, and live-readiness blockers. Grid readiness does not authorize routing, scheduling, dispatch, execution, repo mutation, or state mutation.
+
+### Context Assembly Posture
+
+Context selection is not authority. Retrieval is not acceptance. Unknown-source context must not appear canonical. Context cards must carry source and freshness posture labels and must distinguish fixture, derived, read-only canonical, and unknown-source context conservatively.
+
+Relevant context classes:
+
+- Project context.
+- Repo context.
+- Motion and receipt context.
+- Council context.
+- Agent lane context.
+- Capability and gate context.
+
+### Source / Freshness Posture
+
+Palette and Grid readiness records must label source posture and freshness posture. Fixture snapshots stay marked fixture. Derived displays stay marked derived. Read-only canonical data must be clearly labeled. Unknown-source context must be blocked or conservatively labeled and must never appear canonical.
+
+### Blocked Context Classes
+
+- Unknown-source context as canonical.
+- Customer data handling.
+- Private memory writes.
+- Hidden persistence.
+- Automatic context injection.
+- Retrieval engine.
+- Live memory write.
+- Model dispatch.
+- Agent dispatch.
+- Execution.
+- Gate evaluation.
+- Canon update.
+
+### Privacy And Customer-Data Boundaries
+
+Customer data is not handled in Commit 4. Private, unknown-source, or customer-origin context remains blocked unless future gates, provenance, privacy review, and receipts are explicitly established. Copy-only context packet drafts must not imply customer-data handling, memory writes, retrieval injection, or persistence.
+
+### Operational-State Map Posture
+
+Operational state maps show relationships and readiness posture only. Dashboard display does not authorize. Route, work, motion, and capability displays are not execution authority and do not mutate route-state, motion-state, canon, receipts, repos, branches, PRs, memory, or gates.
+
+### Route / Work / Motion Queue Readiness Posture
+
+Route queues recommend; they do not execute. Work queues frame review; they do not schedule. Motion queues record posture; they do not accept. Validation is not acceptance. Receipts record; they do not decide. CONTROL_THREAD decides.
+
+### Capability Map Readiness
+
+Capability maps must show capabilities as `READ-ONLY`, `GATED`, `BLOCKED`, `FUTURE`, or `NOT AUTHORIZED IN V0`. Capability display is not a grant. ZERO GATES GRANTED remains the controlling posture.
+
+### Palette And Grid Activation Blockers
+
+- Palette assembles context; it does not authorize.
+- Grid displays operational state; it does not execute.
+- Context selection is not authority.
+- Retrieval is not acceptance.
+- Dashboard display does not authorize.
+- Unknown-source context must not appear canonical.
+- No retrieval engine exists in v0.
+- No automatic context injection exists in v0.
+- No live memory write exists in v0.
+- No hidden persistence exists in v0.
+- No customer-data handling exists in v0.
+- No model or Agent dispatch exists in v0.
+- CONTROL_THREAD decides.
+- ZERO GATES GRANTED.
+
 ## Recommended Later Commit Sequence
 
-1. Commit 4: improve read-only compose and manual handoff posture without dispatch.
-2. Commit 5: refine prototype/canonical/fixture source posture.
-3. Commit 6: consolidate gate/readiness matrix.
-4. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
+1. Commit 5: refine prototype/canonical/fixture source posture.
+2. Commit 6: consolidate gate/readiness matrix.
+3. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.

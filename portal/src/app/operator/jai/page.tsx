@@ -17,6 +17,7 @@ import {
   OperatorStatusChip,
 } from "@/components/operator/slate";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getJaiChatSurfaceModel } from "@/lib/controlPlane/jaiChatSurface";
 import { getConfiguredAgentScopeSubset, getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
@@ -161,6 +162,8 @@ export default function OperatorJaiPage() {
         </section>
 
         <JaiCouncilReadiness index="00" />
+
+        <PaletteGridReadiness index="P/G" />
 
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <OperatorPanel className="p-5">

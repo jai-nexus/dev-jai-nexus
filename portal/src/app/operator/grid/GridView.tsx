@@ -18,6 +18,7 @@
 
 import { useReducer, useState, useCallback, useEffect } from "react";
 import { OperatorBadge } from "@/components/operator/slate";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import type { GridConfig, AgencyAgent, ExecutionRole } from "@/lib/grid/gridConfig";
 import {
   draftReducer,
@@ -365,6 +366,10 @@ export function GridView({ config }: { config: GridConfig }) {
               : "Canonical topology. Drag agents between zones or draw connections to stage changes."}
         </p>
       </header>
+
+      <div className="mb-4">
+        <PaletteGridReadiness index="00" compact />
+      </div>
 
       {/* ── Connection mode toolbar ── */}
       {connMode && (
