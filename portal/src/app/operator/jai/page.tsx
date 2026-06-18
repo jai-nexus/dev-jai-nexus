@@ -16,6 +16,7 @@ import {
   OperatorSectionHeader,
   OperatorStatusChip,
 } from "@/components/operator/slate";
+import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getJaiChatSurfaceModel } from "@/lib/controlPlane/jaiChatSurface";
 import { getConfiguredAgentScopeSubset, getFullRepoRegistry } from "@/lib/controlPlane/repoSurfaceModel";
@@ -158,6 +159,8 @@ export default function OperatorJaiPage() {
             detail="No live model, provider, or backend chat integration exists in v0."
           />
         </section>
+
+        <JaiCouncilReadiness index="00" />
 
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <OperatorPanel className="p-5">

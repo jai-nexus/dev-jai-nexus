@@ -13,6 +13,7 @@ import {
     OperatorSectionHeader,
     type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 
 type IconProps = {
     className?: string;
@@ -514,6 +515,8 @@ export default function CouncilPanelPrototype() {
                         <Badge tone="red">NO AGENT EXECUTION</Badge>
                         <Badge tone="red">ZERO EXECUTION GATES GRANTED</Badge>
                     </div>
+                    <JaiCouncilReadiness index="00" compact />
+
                     {/* 1 · SESSION HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">
                         <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">

@@ -78,11 +78,87 @@ Current action posture:
 
 Commit 1 does not authorize execution, route promotion, route redirect, live runtime behavior, provider/model calls, Agent execution, GitHub automation, repo mutation, customer data handling, production behavior, automatic scoring, automatic synthesis, automatic best-agent selection, automatic gate evaluation, receipt creation, canon update, motion-state mutation, route-state mutation, or opened execution gates.
 
+## Commit 2: JAI / JAI Council Readiness Surfaces
+
+Commit 2 stages read-only and compose-only readiness surfaces for JAI and JAI Council. It does not activate a JAI runtime, Council runtime, provider SDK, model dispatch path, automatic synthesis path, canon merge path, or receipt path.
+
+### JAI Readiness Summary
+
+JAI is not live runtime in v0. The Operator JAI route can show context, guardrails, draft prompt posture, model-slot readiness labels, and activation blockers. It cannot submit prompts, call providers, persist conversations, dispatch Agents, mutate repos, create receipts, update canon, or open execution gates.
+
+Current JAI posture:
+
+- `READ-ONLY` for context and readiness records.
+- `REAL-COMPOSE` only for local clipboard handoff drafts.
+- `BLOCKED` for model dispatch, live model calls, Agent execution, provider integration, receipt creation, canon update, and runtime activation.
+- `MANUAL HANDOFF` for any prompt or Council packet that leaves the interface.
+
+### JAI Council Readiness Summary
+
+JAI Council is advisory only. Council agreement is not authority. Council output can be displayed as claims, dissent, contradictions, unresolved questions, and advisory route recommendations, but it cannot decide, accept, merge, execute, or update canon.
+
+Current Council posture:
+
+- Model-slot records are synthetic `SYN-*` readiness records, not live provider/model state.
+- Council session lifecycle examples are fixture/readiness records, not live sessions.
+- Synthesis drafts are advisory display, not automatic synthesis.
+- CONTROL_THREAD decision drafts are copy-only local text and do not create receipts.
+
+### Model-Slot Readiness Posture
+
+Model-slot readiness is represented as fixture data. Slot labels such as Builder, Challenger, Evidence, or Future JAI describe expected review roles only. They do not imply live provider availability, provider health, model credentials, automatic dispatch, or best-model selection.
+
+Required future posture before activation:
+
+- Provider/model dispatch gate.
+- Explicit model-call authorization.
+- Source and evidence labeling requirements.
+- Dissent and contradiction preservation requirements.
+- Receipt requirement for any accepted decision path.
+- CONTROL_THREAD decision record before any readiness progression.
+
+### Council Output Boundary
+
+Model-slot output produces claims, not facts. Claims require evidence references and source posture labels before they can be reviewed. Agreement across slots remains advisory. Synthesis is not acceptance. Receipts record; they do not decide. CONTROL_THREAD decides.
+
+Forbidden output behavior in Commit 2:
+
+- Automatic Council dispatch.
+- Automatic synthesis.
+- Automatic scoring.
+- Automatic best-agent or best-model selection.
+- Output merge into canon.
+- Receipt creation.
+- Gate evaluation.
+- Motion-state or route-state mutation.
+
+### Dissent And Contradiction Handling
+
+Dissent must remain visible. Contradictions must remain visible. Neither may be hidden by Council agreement, majority posture, synthesis polish, or route recommendation. Contradictions remain open until CONTROL_THREAD records a decision path.
+
+### CONTROL_THREAD Decision Boundary
+
+CONTROL_THREAD decides. Decision copy generated in v0 is local `REAL-COMPOSE` text only. It is not a receipt, not canon, not route-state, not motion-state, and not an execution grant.
+
+### JAI And Council Activation Blockers
+
+- JAI is not live runtime in v0.
+- JAI Council is advisory only.
+- No provider SDK has been added for Commit 2.
+- No model dispatch exists in v0.
+- No live model calls exist in v0.
+- No automatic Council dispatch exists.
+- No automatic synthesis exists.
+- No automatic best-agent or best-model selection exists.
+- No output merge into canon exists.
+- No receipt creation exists.
+- No execution gates are opened.
+- ZERO GATES GRANTED.
+
 ## Recommended Later Commit Sequence
 
-1. Commit 2: deepen source/readiness labels without changing route topology.
-2. Commit 3: add activation blocker visibility where existing surfaces need clearer gate language.
-3. Commit 4: improve read-only compose and manual handoff posture without dispatch.
-4. Commit 5: refine prototype/canonical/fixture source posture.
-5. Commit 6: consolidate gate/readiness matrix.
-6. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
+1. Commit 3: add activation blocker visibility where existing surfaces need clearer gate language.
+2. Commit 4: improve read-only compose and manual handoff posture without dispatch.
+3. Commit 5: refine prototype/canonical/fixture source posture.
+4. Commit 6: consolidate gate/readiness matrix.
+5. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
