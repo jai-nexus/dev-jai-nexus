@@ -14,6 +14,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import {
   getAgentConfigurationRegistry,
   getCanonicalActiveAgents,
@@ -359,6 +360,8 @@ export default function AgentsPage() {
             detail="Actual repos remain modeled separately and surfaced on /repos."
           />
         </section>
+
+        <JaiAgentReadiness index="00" />
 
         <Section
           index="01"

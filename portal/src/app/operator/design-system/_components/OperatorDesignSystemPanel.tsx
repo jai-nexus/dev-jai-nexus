@@ -15,6 +15,7 @@ import {
     OperatorSectionHeader,
     type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 
 type IconProps = {
     className?: string;
@@ -264,6 +265,8 @@ export default function OperatorDesignSystemPanel() {
                         <B label="FIXTURE" tone="slate" />
                     </div>
                 </div>
+
+                <RouteTopologyReadiness index="ROUTE" compact />
 
                 {/* 1 · IDENTITY / STYLE THESIS */}
                 <section>
