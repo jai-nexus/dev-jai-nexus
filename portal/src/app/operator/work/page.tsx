@@ -18,6 +18,7 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
+import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacketAction,
@@ -675,6 +676,8 @@ export default function WorkPage() {
         </section>
 
         <JaiAgentReadiness index="00" />
+
+        <DevelopmentWorkReadiness index="DEV" />
 
         <Section
           index="01"

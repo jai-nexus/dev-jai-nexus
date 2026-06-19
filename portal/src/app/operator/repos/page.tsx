@@ -11,6 +11,7 @@ import {
   OperatorSectionHeader,
   OperatorStatusChip,
 } from "@/components/operator/slate";
+import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -58,6 +59,8 @@ export default async function OperatorReposPage() {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <DevelopmentWorkReadiness index="00" />
 
         <OperatorPanel className="overflow-hidden p-0">
           <OperatorSectionHeader

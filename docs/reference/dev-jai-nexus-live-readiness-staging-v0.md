@@ -321,8 +321,101 @@ Capability maps must show capabilities as `READ-ONLY`, `GATED`, `BLOCKED`, `FUTU
 - CONTROL_THREAD decides.
 - ZERO GATES GRANTED.
 
+## Commit 5: Development Work Readiness Surfaces
+
+Commit 5 stages read-only and compose-only readiness surfaces for future development work. It does not authorize GitHub integration, branch creation, PR creation, push, merge, file mutation, repo write, code-generation execution, commit automation, receipt creation, canon update, or execution gates.
+
+### Development Work Readiness Summary
+
+Development-work readiness can represent branch planning, PR description drafting, validation requirements, diff/patch posture, closeout expectations, rollback requirements, and security gates. Development readiness records are local/static `SYN-*` records and must not look like executable workflow state or live GitHub state.
+
+Current development posture:
+
+- `READ-ONLY` for repo/work/project posture and readiness records.
+- `REAL-COMPOSE` only for local clipboard branch, PR, validation, and closeout drafts.
+- `GATED` for future branch, PR, validation, receipt, rollback, and security gates.
+- `BLOCKED` for GitHub API, branch creation, PR creation, push, merge, file mutation, repo write, commit automation, code-generation execution, receipt creation, canon update, and gate evaluation.
+- `MANUAL HANDOFF` for any development packet that leaves the interface.
+
+### Branch Planning Readiness
+
+Branch planning may be represented. Branch names may be suggested as copy-only local text. Branch creation is not authorized. Code push is not authorized. Repo mutation is not authorized.
+
+### PR Planning Readiness
+
+PR descriptions may be composed. PR body drafts are local `REAL-COMPOSE` text only. PR creation, branch/PR automation, push, merge, GitHub API usage, and repo mutation remain blocked.
+
+### Validation Requirements
+
+Validation requirements may be displayed or copied as checklists. Validation is not acceptance. Validation output does not create receipts, update canon, open gates, or authorize merge/push/PR behavior.
+
+### GitHub Integration Blockers
+
+- GitHub integration is not authorized.
+- GitHub API is not authorized.
+- Branch creation is not authorized.
+- PR creation is not authorized.
+- Code push is not authorized.
+- Merge is not authorized.
+- Commit automation is not authorized.
+- Branch/PR automation is not authorized.
+
+### Diff / Patch Readiness
+
+Diff and patch readiness may describe intended files, review posture, validation expectations, and rollback notes. It must not write files, mutate repos, run code generation, invoke Agents, create commits, or execute terminal commands.
+
+### Receipt / Closeout Expectations
+
+Closeout drafts may be copied locally. Receipt creation is not authorized. Receipts record; they do not decide. CONTROL_THREAD decides whether any later receipt path is valid.
+
+### Rollback / Revert Readiness
+
+Rollback and revert requirements may be represented before any future write-capable gate is considered. Rollback readiness does not execute rollback and does not authorize repo mutation.
+
+### Step-Up And Security Requirements
+
+Authentication is not authorization. Step-up verification confirms operator presence only. Verified session does not open execution gates. Future branch, PR, push, merge, repo write, validation, receipt, rollback, and security gates require explicit CONTROL_THREAD authority.
+
+### Blocked Development Actions
+
+- GitHub API.
+- Branch creation.
+- PR creation.
+- Code push.
+- Merge.
+- File mutation.
+- Repo write.
+- Commit automation.
+- Branch/PR automation.
+- Code-generation execution path.
+- Receipt creation.
+- Canon update.
+- Gate evaluation.
+- Provider/model dispatch.
+- Agent execution.
+
+### Compose-Only Development Handoff Posture
+
+Compose-only development drafts are local clipboard text only. They do not submit, persist, dispatch, call GitHub APIs, create branches, create PRs, write repos, mutate files, execute code, create receipts, update canon, mutate route-state, or mutate motion-state.
+
+### Required Future Gates And Receipts
+
+Required future posture before development activation:
+
+- GitHub integration gate.
+- Branch creation gate.
+- PR creation gate.
+- Push/merge gate.
+- Repo write gate.
+- File mutation gate.
+- Code-generation execution gate.
+- Validation evidence requirement.
+- Rollback plan requirement.
+- Step-up and security review requirement.
+- Receipt requirement after accepted decisions.
+- CONTROL_THREAD decision record.
+
 ## Recommended Later Commit Sequence
 
-1. Commit 5: refine prototype/canonical/fixture source posture.
-2. Commit 6: consolidate gate/readiness matrix.
-3. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
+1. Commit 6: consolidate gate/readiness matrix.
+2. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
