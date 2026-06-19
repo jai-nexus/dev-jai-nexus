@@ -7,6 +7,7 @@ import {
   OperatorSafetyRail,
   OperatorSectionHeader,
 } from "@/components/operator/slate";
+import { LiveReadinessMatrix } from "@/components/operator/LiveReadinessMatrix";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 import { controlPlanePrototypeFixture } from "@/lib/controlPlane/controlPlanePrototypeFixture";
 import { readControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
@@ -101,6 +102,8 @@ export default async function OperatorControlPlanePage() {
         <ControlPlanePanels fixture={fixture} canonicalPosture={canonicalPosture} />
 
         <RouteTopologyReadiness index="TOPOLOGY" compact />
+
+        <LiveReadinessMatrix index="MATRIX" />
 
         <OperatorPanel>
           <OperatorSectionHeader

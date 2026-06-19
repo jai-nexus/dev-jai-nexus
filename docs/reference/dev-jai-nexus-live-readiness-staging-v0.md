@@ -415,7 +415,131 @@ Required future posture before development activation:
 - Receipt requirement after accepted decisions.
 - CONTROL_THREAD decision record.
 
+## Commit 6: Gate / Readiness Matrix + Activation Blockers
+
+Commit 6 stages the consolidated live-readiness matrix for JAI, Council, model slots, Agents, Palette, Grid, and development workflows. It is read-only, local/static, and non-authorizing. It does not evaluate gates, open gates, activate runtime behavior, create receipts, update canon, mutate route-state, mutate motion-state, call providers, dispatch Agents, call GitHub APIs, write repos, handle customer data, or introduce production behavior.
+
+### Capability Status Legend
+
+| Status | Meaning |
+| --- | --- |
+| `READ-ONLY READY` | Visible as a local/static or accepted read-only surface. |
+| `COMPOSE-ONLY READY` | Local clipboard drafts may be prepared where already labeled. |
+| `REPRESENTABLE` | Can be shown as synthetic readiness posture, not live state. |
+| `GATED` | Requires future gates before any active capability exists. |
+| `BLOCKED IN V0` | Not authorized in this staging branch. |
+| `DEFERRED` | Reserved for later route, doctrine, or activation work. |
+| `NEEDS DOCTRINE` | Requires explicit operating doctrine before activation review. |
+| `NEEDS SECURITY GATE` | Requires explicit security and step-up posture. |
+| `NEEDS EXECUTION GATE` | Requires a named execution gate that is not opened here. |
+| `NEEDS RECEIPT MODEL` | Requires receipt shape before any accepted change path. |
+| `NEEDS .jai PROFILE` | Requires future `.jai` profile semantics; none are activated. |
+| `NEEDS ROUTE DECISION` | Requires CONTROL_THREAD topology decision before promotion. |
+
+### Consolidated Live-Readiness Matrix
+
+All rows are synthetic `SYN-*` readiness records unless an existing route already exposes accepted read-only canonical data. Rows are representational readiness posture and must not be interpreted as live capability state.
+
+| Capability | Current status | Current allowed behavior | Blocked behavior | Required doctrine | Required security gate | Required execution gate | Required receipt | Required validation | Required rollback | Required operator confirmation | Data/source prerequisites | Unresolved questions | Next route |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| JAI | `READ-ONLY READY`, `GATED`, `NEEDS DOCTRINE`, `NEEDS EXECUTION GATE` | Read-only readiness posture and existing local compose references. | Live JAI runtime, provider dispatch, model calls, persistence, canon update, and execution. | Runtime role, claim boundaries, acceptance boundaries, and CONTROL_THREAD decision rules. | Operator step-up plus explicit runtime authorization gate. | Named JAI runtime execution gate remains closed. | Receipt model for accepted JAI-assisted decisions. | Validation evidence; validation is not acceptance. | Runtime deactivation and rollback path. | CONTROL_THREAD activation review. | Local/static and read-only canonical sources only. | What `.jai` profile and source doctrine are required? | `/operator/jai` |
+| JAI Council | `REPRESENTABLE`, `GATED`, `NEEDS RECEIPT MODEL`, `NEEDS EXECUTION GATE` | Advisory Council readiness, dissent, contradiction, and claim boundary display. | Council dispatch, automatic synthesis, agreement-as-authority, canon merge, and receipt creation. | Council output produces claims, not facts; Council agreement is not authority. | Operator confirmation and Council session gate. | Council runtime and dispatch gate remains closed. | Decision receipt after CONTROL_THREAD acceptance. | Evidence, dissent, and contradiction review. | Session closeout and output retraction path. | CONTROL_THREAD decision. | Synthetic model-slot records only. | What Council route and session lifecycle become canonical? | `/operator/council-prototype` |
+| model slots | `REPRESENTABLE`, `BLOCKED IN V0`, `NEEDS SECURITY GATE`, `NEEDS .jai PROFILE` | Static role labels for expected review slots. | Provider SDKs, credentials, live calls, best-model selection, and automatic dispatch. | Model-slot roles, evidence requirements, and provider boundaries. | Provider credential and dispatch security gate. | Model dispatch gate remains closed. | Provider call and output receipt model. | Output validation and source checking. | Provider disable and output quarantine path. | CONTROL_THREAD model-slot activation approval. | Fixture records only; no live provider/model state. | Which slots map to provider policy and `.jai` profile? | `/operator/jai` |
+| JAI Agents | `REPRESENTABLE`, `BLOCKED IN V0`, `NEEDS SECURITY GATE`, `NEEDS EXECUTION GATE` | Read-only Agent readiness and expected artifact display. | Agent execution, tool invocation, runners, schedulers, terminal control, browser/desktop control, and repo mutation. | Agent authority classes and staged/non-executing posture. | Tool, repo, terminal, browser, and step-up gates. | Agent execution gate remains closed. | Agent action receipt model. | Artifact validation, security review, and operator review. | Stop-the-run and rollback requirements. | CONTROL_THREAD Agent lane activation approval. | Synthetic lane posture only. | What runner and tool boundary doctrine is acceptable? | `/operator/agents` |
+| Agent lane candidates | `COMPOSE-ONLY READY`, `REPRESENTABLE`, `GATED` | Lane prompts and handoff drafts where already present. | Dispatch, scheduler placement, autonomous loop, repo write, receipt creation, and canon update. | Lane candidate does not execute and does not select itself. | Lane-to-tool authorization and operator presence gate. | Lane execution gate remains closed. | Lane assignment and output receipt model. | Expected artifact and validation checklist. | Lane rollback and cancellation posture. | CONTROL_THREAD lane selection and authorization. | Static `SYN-*` candidates only. | Which lanes are allowed for first activation review? | `/operator/work` |
+| JAI Palette | `READ-ONLY READY`, `COMPOSE-ONLY READY`, `GATED`, `NEEDS .jai PROFILE` | Context assembly cards and local context packet drafts. | Retrieval engine, automatic context injection, live memory writes, hidden persistence, and customer-data handling. | Palette assembles context; it does not authorize. | Source, privacy, and customer-data gates. | Context retrieval/injection gate remains closed. | Context packet receipt model. | Source, freshness, privacy, and provenance review. | Context withdrawal and memory purge path. | CONTROL_THREAD context-use authorization. | Local/static, derived, or accepted read-only canonical sources only. | What `.jai` context profile and privacy posture are required? | `/operator/jai` |
+| JAI Grid | `READ-ONLY READY`, `REPRESENTABLE`, `GATED` | Operational-state map and capability relationship display. | Execution, route-state mutation, motion-state mutation, scheduling, dispatch, and hidden persistence. | Grid displays operational state; it does not execute. | Operational-state source and display gate. | Grid action/execution gate remains closed. | State-change receipt model. | Source posture and freshness validation. | State correction and display rollback. | CONTROL_THREAD active Grid transition approval. | Fixture, derived, or accepted read-only canonical source labels. | Which operational state source becomes authoritative? | `/operator/grid` |
+| branch planning | `COMPOSE-ONLY READY`, `REPRESENTABLE`, `GATED` | Branch name planning and local handoff drafts. | Branch creation, code push, repo write, GitHub API use, and commit automation. | Branch planning may be represented; branch creation is not authorized. | Repo authorization and GitHub integration gate. | Branch creation gate remains closed. | Branch creation receipt model. | Branch intent and scope validation. | Branch deletion or revert plan. | CONTROL_THREAD branch action approval. | No live GitHub state implied. | What branch naming and repo authority doctrine is required? | `/operator/work` |
+| PR planning | `COMPOSE-ONLY READY`, `REPRESENTABLE`, `GATED` | PR body drafts and validation checklist composition. | PR creation, branch/PR automation, push, merge, GitHub API use, and repo mutation. | PR descriptions may be composed; PR creation is not authorized. | GitHub integration and repo write gates. | PR creation and merge gates remain closed. | PR creation and closeout receipt models. | Validation checklist and review evidence. | Revert/rollback plan before merge authority. | CONTROL_THREAD PR action approval. | No live GitHub state implied. | What PR review and closeout doctrine is required? | `/operator/repos` |
+| GitHub integration | `BLOCKED IN V0`, `NEEDS SECURITY GATE`, `NEEDS RECEIPT MODEL` | Readiness blockers and future prerequisite display only. | GitHub API calls, branch creation, PR creation, push, merge, webhook use, and repo writes. | Integration authority, audit trail, token scope, and operator decision rules. | Credential, token-scope, repo-scope, and step-up gates. | GitHub action gate remains closed. | GitHub action receipt model. | API result, diff, and permission validation. | Revert, branch cleanup, and integration disable plan. | CONTROL_THREAD integration authorization. | No GitHub API data introduced. | Which repos and token scopes are acceptable? | `/operator/repos` |
+| repo mutation | `BLOCKED IN V0`, `NEEDS SECURITY GATE`, `NEEDS EXECUTION GATE` | Read-only repo posture and compose-only planning on existing surfaces. | File mutation, repo write, push, merge, commit automation, and code-generation execution. | Repo write authority, review requirements, and rollback requirements. | Repo write and step-up gates. | Repo mutation gate remains closed. | Repo mutation receipt. | Diff, test, lint, typecheck, and security validation. | Revert plan and recovery owner. | CONTROL_THREAD repo mutation approval. | Existing read-only repo displays only. | What repos are eligible for any future write gate? | `/operator/repos` |
+| receipt creation | `BLOCKED IN V0`, `NEEDS RECEIPT MODEL`, `NEEDS DOCTRINE` | Receipt expectations may be displayed. | Receipt creation, automatic receipt synthesis, canon update, and acceptance decisions. | Receipts record; they do not decide. | Receipt author and source verification gate. | Receipt write gate remains closed. | Receipt schema and storage path are prerequisites only. | Receipt evidence and decision provenance validation. | Receipt correction and supersession policy. | CONTROL_THREAD receipt validity decision. | No new receipt storage or write path. | What receipt shape and canonical location are acceptable? | `/operator/control-plane` |
+| canon update | `BLOCKED IN V0`, `NEEDS DOCTRINE`, `NEEDS EXECUTION GATE` | Read-only canonical posture where already accepted. | Canon write, automatic synthesis merge, receipt-driven auto-acceptance, and state mutation. | Canon acceptance, supersession, and audit requirements. | Canon write and operator step-up gates. | Canon update gate remains closed. | Accepted canon update receipt. | Source, contradiction, and acceptance validation. | Canon rollback and supersession path. | CONTROL_THREAD canon update acceptance. | Read-only canonical reads only. | What canon update path is allowed, if any? | `/operator/control-plane` |
+| route-state update | `BLOCKED IN V0`, `NEEDS ROUTE DECISION`, `NEEDS RECEIPT MODEL` | Route topology and pending decision display. | Route promotion, redirects, route-state mutation, navigation redesign, and route automation. | Routes recommend; they do not execute. | Route-state authority and operator confirmation gate. | Route-state update gate remains closed. | Route decision receipt. | Route impact and regression validation. | Redirect and route rollback plan. | CONTROL_THREAD route topology decision. | Static route relationship records only. | Should live dashboard, Council, DCT, or design-system routes change? | `/operator/control-plane` |
+| motion-state update | `BLOCKED IN V0`, `NEEDS RECEIPT MODEL`, `NEEDS EXECUTION GATE` | Read-only motion posture display where already present. | Motion-state mutation, automatic acceptance, gate evaluation, and canon update. | Motion queues record posture; they do not accept. | Motion-state write and operator confirmation gates. | Motion-state update gate remains closed. | Motion decision receipt. | Motion evidence and validation review. | Motion correction and reversal policy. | CONTROL_THREAD motion-state decision. | Existing accepted read-only sources only. | What motion-state write model is acceptable? | `/operator/control-plane` |
+| customer-data access | `BLOCKED IN V0`, `NEEDS SECURITY GATE`, `NEEDS DOCTRINE` | Boundary display only. | Customer-data handling, retrieval, context injection, persistence, memory writes, model dispatch, and Agent dispatch. | Privacy, consent, source, retention, and redaction requirements. | Privacy review, customer-data, retention, and step-up gates. | Customer-data access gate remains closed. | Access and use receipt model. | Privacy, provenance, and minimization validation. | Data purge and incident response path. | CONTROL_THREAD customer-data review authorization. | No customer data introduced. | What customer-data classes are permitted, if any? | `/operator/jai` |
+| production deployment | `DEFERRED`, `BLOCKED IN V0`, `NEEDS DOCTRINE`, `NEEDS SECURITY GATE` | Activation blockers and future deployment prerequisite display only. | Production behavior, live runtime activation, deployment automation, gate opening, and customer-impacting behavior. | Production readiness, ownership, rollback, incident, and acceptance doctrine. | Production, security, incident, and operator approval gates. | Production deployment gate remains closed. | Deployment and acceptance receipt models. | Full validation, audit, incident readiness, and rollback validation. | Production rollback and disablement plan. | CONTROL_THREAD production review approval. | No production data or behavior in v0. | What production authority chain and deployment route are acceptable? | `/operator/live-dashboard` |
+
+### Activation Blockers
+
+- CONTROL_THREAD decides.
+- Validation is not acceptance.
+- Receipts record; they do not decide.
+- Routes recommend; they do not execute.
+- Council agreement is not authority.
+- Agents are staged, not executing.
+- Authentication is not authorization.
+- Step-up verification confirms operator presence only.
+- Verified session does not open execution gates.
+- Dashboard display does not authorize.
+- Read-only is not authority.
+- ZERO GATES GRANTED.
+- No code push authority in v0.
+- No Agent execution authority in v0.
+- No model dispatch in v0.
+- No execution gates opened.
+
+### Current Allowed Behavior By Capability
+
+- Read-only display for route topology, JAI, Council, Agents, Palette, Grid, development work, gate posture, validation requirements, rollback requirements, and blocker posture.
+- Compose-only local handoff drafts only where already introduced by earlier commits and visibly labeled `REAL-COMPOSE`.
+- Static `SYN-*` fixture records, derived read-only displays, and accepted read-only canonical reads where routes already support them.
+- Manual handoff framing for future doctrine, gate, receipt, validation, rollback, route, or activation decisions.
+
+### Blocked Behavior By Capability
+
+- Execution, live runtime activation, model/provider dispatch, live model calls, Agent execution, Agent dispatch, tool invocation, scheduler, autonomous loop, browser/desktop control, terminal/command execution, retrieval engine, automatic context injection, live memory writes, hidden persistence, customer-data handling, production behavior, GitHub API use, branch creation, PR creation, push, merge, file mutation, repo write, code-generation execution path, commit automation, receipt creation, canon update, route-state mutation, motion-state mutation, route promotion, redirects, navigation redesign, gate evaluation, and gate opening.
+
+### Required Doctrine / Security / Execution / Receipt / Validation / Rollback
+
+- Doctrine must define capability roles, source posture, acceptance posture, authority boundaries, receipt rules, contradiction handling, privacy posture, and rollback posture before activation review.
+- Security gates must define step-up, credential, repo, provider, customer-data, privacy, route-state, motion-state, canon, and production authority before activation review.
+- Execution gates must be named, explicit, closed by default, auditable, reversible, and separately authorized by CONTROL_THREAD.
+- Receipt models must exist before any future accepted action path. Receipts record; they do not decide.
+- Validation must be evidence for operator review. Validation is not acceptance.
+- Rollback requirements must exist before any write-capable, runtime-capable, state-mutating, or production-capable gate can be considered.
+
+### Operator Confirmation Prerequisites
+
+- CONTROL_THREAD must explicitly approve any future activation review.
+- Authentication is not authorization.
+- Step-up verification confirms operator presence only.
+- Verified session does not open execution gates.
+- Dashboard display does not authorize.
+- Read-only is not authority.
+
+### Data / Source Prerequisites
+
+- Use local/static fixtures unless a route already has accepted read-only canonical data.
+- Use `SYN-*` IDs for synthetic readiness records.
+- Label fixture, sample, synthetic, derived, read-only canonical, and unknown-source data conservatively.
+- Unknown-source prerequisites must not appear canonical.
+- Customer-data readiness remains blocked unless future doctrine, security gates, privacy review, provenance, receipts, and CONTROL_THREAD authorization are established.
+
+### Unresolved Activation Questions
+
+- What `.jai` profile is required for JAI, model slots, Palette context, and Agent lanes?
+- What Council route and session lifecycle become canonical?
+- What Agent runner, tool, terminal, browser/desktop, and autonomous-loop boundaries are acceptable?
+- What operational-state source becomes authoritative for Grid?
+- What receipt schema and canonical location are acceptable?
+- What canon update path is allowed, if any?
+- What route topology decisions are required before promotion or redirects can even be considered?
+- What repos, token scopes, branch rules, PR rules, rollback rules, and GitHub integration boundaries are acceptable?
+- What customer-data classes are permitted, if any?
+- What production authority chain and deployment route are acceptable?
+
+### Recommended Next Routes
+
+- `/operator/control-plane` remains the consolidated matrix and gate posture route for Commit 6.
+- `/operator/jai` remains the JAI, model-slot, Palette, and customer-data boundary route.
+- `/operator/council-prototype` remains advisory Council readiness, not `/operator/council`.
+- `/operator/agents` remains Agent readiness, not an Agent runner.
+- `/operator/work` remains development and Agent lane planning posture.
+- `/operator/repos` remains development repo readiness posture, not GitHub integration.
+- `/operator/grid` remains operational-state display readiness, not execution authority.
+- `/operator/live-dashboard` remains prototype/readiness display, not production deployment.
+
 ## Recommended Later Commit Sequence
 
-1. Commit 6: consolidate gate/readiness matrix.
-2. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
+1. Commit 7: final live-readiness staging review and closeout, still without activation unless separately authorized.
