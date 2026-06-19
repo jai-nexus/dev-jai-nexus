@@ -69,11 +69,11 @@ const QUEUE = [
 ];
 
 const REPOS = [
-    { name: "dev-jai-nexus", status: "ACTIVE", tone: "emerald", focus: "control plane shell + eval harness", lastCloseout: "SYN-CI-0009 · 1d", nextRoute: "CONTROL_PLANE_PROTOTYPE_V0 PR1", risk: "LOW", authority: "operator-routed lanes only", gatesOpen: 0 },
-    { name: "jai-format", status: "ACTIVE", tone: "emerald", focus: "RECEIPT_SCHEMA_V0 (queued)", lastCloseout: "cascade profile · 0d", nextRoute: "RECEIPT_SCHEMA_V0", risk: "MED — receipts precede schema", authority: "schema authority · docs only", gatesOpen: 0 },
-    { name: "orchestrator-nexus", status: "ACTIVE", tone: "emerald", focus: "none routed", lastCloseout: "—", nextRoute: "none", risk: "LOW", authority: "EXCLUDED from work-packet authority", gatesOpen: 0 },
-    { name: "api-nexus", status: "ACTIVE", tone: "emerald", focus: "read-model contracts (queued)", lastCloseout: "—", nextRoute: "VOC effective-config read model", risk: "LOW", authority: "contracts + fixtures only", gatesOpen: 0 },
-    { name: "audit-nexus", status: "ACTIVE", tone: "emerald", focus: "divergence verifier scope (spec)", lastCloseout: "—", nextRoute: "AUDIT_SCOPE_EXTENSION_V0", risk: "LOW", authority: "read-only reports", gatesOpen: 0 },
+    { name: "dev-jai-nexus", status: "READ-ONLY", tone: "sky", focus: "control plane shell + eval harness", lastCloseout: "SYN-CI-0009 · 1d", nextRoute: "CONTROL_PLANE_PROTOTYPE_V0 PR1", risk: "LOW", authority: "operator-routed lanes only", gatesOpen: 0 },
+    { name: "jai-format", status: "READ-ONLY", tone: "sky", focus: "RECEIPT_SCHEMA_V0 (queued)", lastCloseout: "cascade profile · 0d", nextRoute: "RECEIPT_SCHEMA_V0", risk: "MED — receipts precede schema", authority: "schema authority · docs only", gatesOpen: 0 },
+    { name: "orchestrator-nexus", status: "READ-ONLY", tone: "sky", focus: "none routed", lastCloseout: "—", nextRoute: "none", risk: "LOW", authority: "EXCLUDED from work-packet authority", gatesOpen: 0 },
+    { name: "api-nexus", status: "READ-ONLY", tone: "sky", focus: "read-model contracts (queued)", lastCloseout: "—", nextRoute: "VOC effective-config read model", risk: "LOW", authority: "contracts + fixtures only", gatesOpen: 0 },
+    { name: "audit-nexus", status: "READ-ONLY", tone: "sky", focus: "divergence verifier scope (spec)", lastCloseout: "—", nextRoute: "AUDIT_SCOPE_EXTENSION_V0", risk: "LOW", authority: "read-only reports", gatesOpen: 0 },
     { name: "jai-edge", status: "FROZEN", tone: "slate", focus: "tier-3 freeze", lastCloseout: "—", nextRoute: "none until contracts stable", risk: "—", authority: "none", gatesOpen: 0 },
     { name: "jai-vscode", status: "FROZEN", tone: "slate", focus: "tier-3 freeze", lastCloseout: "—", nextRoute: "none until contracts stable", risk: "—", authority: "none", gatesOpen: 0 },
     { name: "jai-pilot", status: "FROZEN", tone: "slate", focus: "tier-3 freeze", lastCloseout: "—", nextRoute: "none until contracts stable", risk: "—", authority: "none", gatesOpen: 0 },
@@ -83,7 +83,7 @@ const REPOS = [
 const SPINE = [
     { stage: "Motion", count: 3, status: "open", note: "intent on record" },
     { stage: "Route", count: 2, status: "queued", note: "recommends — does not execute" },
-    { stage: "Repo Lane", count: 1, status: "active", note: "operator-carried" },
+    { stage: "Repo Lane", count: 1, status: "routed", note: "operator-carried only" },
     { stage: "Diff / PR Draft", count: 1, status: "draft", note: "text only — human opens PRs" },
     { stage: "Validation", count: 2, status: "shape-only", note: "checks shape — not acceptance" },
     { stage: "Closeout", count: 2, status: "awaiting", note: "records work — not a receipt" },
@@ -398,7 +398,7 @@ export default function LiveDashboardPrototype() {
                         <H n="05" title="Council / model slots" right={<><B label="ADVISORY ONLY" tone="amber" /><B label="NO DISPATCH" tone="red" /></>} />
                         <div className="rounded border border-slate-800 bg-slate-900 p-3">
                             <div className="flex flex-wrap items-center gap-2 text-xs">
-                                <span className="font-mono uppercase text-slate-500">active session · </span>
+                                <span className="font-mono uppercase text-slate-500">advisory fixture session · </span>
                                 <Id>SYN-COUNCIL-0001</Id>
                                 <B label="SYNTHESIS: DRAFT" tone="amber" />
                                 <span className="text-red-300 font-mono">dissent: 1</span>
@@ -409,7 +409,7 @@ export default function LiveDashboardPrototype() {
                                 {SLOTS.map((s) => (
                                     <div key={s.id} className="flex items-center justify-between rounded border border-slate-800 bg-slate-950 px-2 py-1.5 text-xs">
                                         <span className="text-slate-300">{s.name} <span className="text-slate-500">· {s.role}</span></span>
-                                        <B label={s.ret} tone={s.ret.includes("DISSENT") ? "red" : s.ret === "RETURNED" ? "emerald" : s.ret === "RESERVED" ? "amber" : "slate"} />
+                                        <B label={s.ret} tone={s.ret.includes("DISSENT") ? "red" : s.ret === "RETURNED" ? "sky" : s.ret === "RESERVED" ? "amber" : "slate"} />
                                     </div>
                                 ))}
                             </div>

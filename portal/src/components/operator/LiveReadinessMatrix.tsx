@@ -477,7 +477,7 @@ export function LiveReadinessMatrix({ index = "MATRIX" }: { index?: string }) {
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div>
             <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
-              dev.jai.nexus / live-readiness staging v0 / Commit 6
+              dev.jai.nexus / live-readiness staging v0 / final audit
             </div>
             <p className="mt-2 text-sm text-slate-300">
               This consolidated matrix records readiness posture, required
