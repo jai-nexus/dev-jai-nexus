@@ -16,6 +16,7 @@ import {
     OperatorSectionHeader,
     type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
@@ -252,6 +253,8 @@ export default function LiveDashboardPrototype() {
                     <JaiAgentReadiness index="AGENT" compact />
 
                     <PaletteGridReadiness index="P/G" compact />
+
+                    <DevelopmentWorkReadiness index="DEV" compact />
 
                     {/* 1 · LIVE OPERATOR HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">

@@ -215,7 +215,7 @@ ZERO GATES GRANTED.
 ### Relationship To Later Commits
 
 Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
-covers Palette/Grid. Commit 6 should cover development compose spine.
+covers Palette/Grid. Commit 6 covers development compose spine.
 Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8 should
 consolidate final audit and closeout posture. Later commits must not reinterpret
 Commit 2 source labels as authorization.
@@ -344,7 +344,7 @@ All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
 
 Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
 fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
-Agents. Commit 5 covers Palette/Grid. Commit 6 should cover development
+Agents. Commit 5 covers Palette/Grid. Commit 6 covers development
 compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
 
@@ -473,7 +473,7 @@ ZERO GATES GRANTED.
 Commit 4 builds on Commit 2 source posture by labeling Agent records as
 synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
 It builds on Commit 3 by keeping model/Council output advisory and separate from
-Agent execution. Commit 5 covers Palette/Grid. Commit 6 should cover
+Agent execution. Commit 5 covers Palette/Grid. Commit 6 covers
 development compose posture. Commit 7 should cover `.jai`, receipt, and gate
 alignment. Commit 8 should consolidate final audit and closeout posture.
 
@@ -654,6 +654,148 @@ ZERO GATES GRANTED.
 Commit 5 builds on Commit 2 source posture by carrying source and freshness
 labels into context assembly and operational-state display. It builds on Commit
 3 by keeping Council context advisory. It builds on Commit 4 by keeping Agent
-lane context staged and non-executing. Commit 6 should cover development
+lane context staged and non-executing. Commit 6 covers development
 compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
+
+## Commit 6: Development Work Compose Spine
+
+Development compose spine does not mean development execution. Commit 6 makes
+branch planning, PR body drafting, validation checklist drafting, closeout
+drafting, and implementation planning clearer as local/manual handoff support.
+These drafts may be copied by an operator, but they are not submitted,
+persisted, dispatched, converted into GitHub actions, used to mutate files,
+used to create branches or PRs, used to push or merge, used to create receipts,
+used to update canon, or used to change route or motion state.
+
+The shared development compose spine remains compose-only and read-only. It adds
+no GitHub API, branch creation, PR creation, push, merge, file mutation, repo
+write, code-generation execution path, commit automation, branch/PR automation,
+execution, provider/model dispatch, live model calls, Agent dispatch, tool
+invocation, scheduler, autonomous loop, browser/desktop control, terminal
+command execution, persistence, API route, server action, DB write, Prisma
+change, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, or runtime activation.
+
+### Development-Work Compose Spine Posture
+
+Branch planning may be represented. PR descriptions may be composed. GitHub
+integration is not authorized. Branch creation is not authorized. PR creation is
+not authorized. Code push is not authorized. Repo mutation is not authorized.
+Receipt creation is not authorized. Validation is not acceptance.
+CONTROL_THREAD decides. ZERO GATES GRANTED.
+
+Allowed development compose posture in Commit 6:
+
+- `REAL-COMPOSE` branch name suggestion drafts;
+- `REAL-COMPOSE` implementation plan drafts;
+- `REAL-COMPOSE` PR body drafts;
+- `REAL-COMPOSE` validation checklist drafts;
+- `REAL-COMPOSE` closeout drafts;
+- `READ-ONLY` development workflow readiness cards;
+- `READ-ONLY` cross-surface links among work, repos, control plane, and live
+  dashboard.
+
+Blocked development compose posture in Commit 6:
+
+- GitHub API or GitHub integration;
+- branch creation or PR creation;
+- push, merge, commit automation, or branch/PR automation;
+- repo writes or file mutation;
+- code execution or code-generation execution paths;
+- receipt creation, canon update, route-state mutation, or motion-state
+  mutation.
+
+### Branch Planning Compose Posture
+
+Branch name suggestions are local text drafts only. They do not create a branch,
+push to a remote, call GitHub, mutate repo state, or imply branch naming
+authority.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-BRANCH-0001` | branch name suggestion | `REAL-COMPOSE` | No branch creation, no push, no GitHub API, no repo write |
+
+### PR Body Compose Posture
+
+PR body drafts are local text drafts only. They do not create PRs, call GitHub,
+open browsers, mutate branches, submit review requests, push, merge, or commit.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-PR-0001` | PR body draft | `REAL-COMPOSE` | PR creation, branch/PR automation, push, merge, and GitHub API remain blocked |
+
+### Validation Checklist Compose Posture
+
+Validation checklist drafts name checks for manual execution outside this
+surface. They do not run commands, validate automatically, accept work, evaluate
+gates, or create receipts. Validation is not acceptance.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-VALIDATION-0001` | validation checklist | `REAL-COMPOSE` | Checklist copy is not command execution, validation execution, or acceptance |
+
+### Closeout Draft Compose Posture
+
+Closeout drafts are local passalong text only. They do not create receipts,
+update canon, close work, approve work, route state, motion state, or gate
+state.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-CLOSEOUT-0001` | closeout draft | `REAL-COMPOSE` | Does not create receipt, update canon, or grant authority |
+
+### Implementation Plan Compose Posture
+
+Implementation plan drafts can name scope, touched paths, validation plan,
+boundaries, and manual handoff notes. They do not execute implementation,
+generate code, mutate files, mutate repos, create commits, or start automation.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-PLAN-0001` | implementation plan draft | `REAL-COMPOSE` | Plan is not execution and does not mutate files |
+
+### Blocked / Gated Future Development Capabilities
+
+Commit 6 keeps these classes visibly blocked: GitHub API, GitHub integration,
+branch creation, PR creation, code push, merge, file mutation, repo write, code
+execution, commit automation, branch/PR automation, code-generation execution
+path, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, provider/model dispatch, Agent execution, tool
+invocation, and terminal/command execution.
+
+### Local-Only Manual Handoff Posture
+
+The development compose spine copies local draft text only. It has no submit
+path, persistence, dispatch behavior, GitHub API call, branch creation, PR
+creation, push, merge, repo write, file mutation, code execution, commit
+automation, receipt creation, canon update, route-state mutation, or
+motion-state mutation.
+
+### Required Future Gates And Receipts
+
+Future controlled development workflows would require explicit CONTROL_THREAD
+authority, named GitHub/repo/file/branch/PR gates where applicable, validation
+evidence, rollback posture, security review, receipt design, and canon-update
+authority after acceptance. None are opened in Commit 6.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 6 builds on Commit 2 source posture by preserving read-only labels on
+repo and work context. It builds on Commit 4 Agent posture by keeping work
+handoff manual and non-executing. It builds on Commit 5 Palette/Grid posture by
+keeping project/repo/work context representational and non-authorizing. Commit 7
+should cover `.jai`, receipt, and gate alignment. Commit 8 should consolidate
+final audit and closeout posture.
