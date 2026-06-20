@@ -11,6 +11,7 @@ import {
   OperatorSectionHeader,
   OperatorStatusChip,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +22,10 @@ export default async function OperatorReposPage() {
   const repos = await prisma.repo.findMany({
     orderBy: [{ nhId: "asc" }],
   });
+  const activeRepos = repos.filter(
+    (repo) => repo.status?.toUpperCase() === "ACTIVE",
+  ).length;
+  const unknownRepos = repos.filter((repo) => !repo.status).length;
 
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
@@ -59,6 +64,48 @@ export default async function OperatorReposPage() {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "REPO-DB",
+              label: "Registered repos",
+              value: repos.length,
+              source: "DB READ-ONLY",
+              freshness: "Current database read; sync freshness is not verified here.",
+              detail:
+                "Repo registry rows are display-only and do not authorize repo mutation.",
+            },
+            {
+              id: "REPO-ACTIVE",
+              label: "Active stored",
+              value: activeRepos,
+              source: "DERIVED",
+              freshness: "Derived from stored repo status values.",
+              detail:
+                "Stored ACTIVE status is not live GitHub, filesystem, or health verification.",
+            },
+            {
+              id: "REPO-UNKNOWN",
+              label: "Unknown status",
+              value: unknownRepos,
+              source: "UNKNOWN SOURCE",
+              freshness: "Missing status is treated conservatively.",
+              detail:
+                "Unknown status must not be promoted to healthy, active, or live.",
+            },
+            {
+              id: "REPO-WORK",
+              label: "Work scaffold",
+              value: "readiness",
+              source: "SYNTHETIC",
+              freshness: "Development work readiness uses local static posture.",
+              detail:
+                "Readiness display does not dispatch work or mutate repository files.",
+            },
+          ]}
+        />
 
         <DevelopmentWorkReadiness index="00" />
 

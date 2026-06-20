@@ -16,6 +16,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import { prisma } from "@/lib/prisma";
 import { formatCentral } from "@/lib/time";
 
@@ -152,6 +153,50 @@ export default async function DecisionsPage({
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "DECISION-DB",
+              label: "Matching rows",
+              value: totalCount,
+              source: "DB READ-ONLY",
+              freshness:
+                "Current database query result; extraction freshness is manual/unknown.",
+              detail:
+                "Decision rows are extracted records, not receipts or automatic canon.",
+            },
+            {
+              id: "DECISION-CAT",
+              label: "Categories",
+              value: categories.length,
+              source: "DERIVED",
+              freshness: "Derived from decision table grouping.",
+              detail:
+                "Category grouping helps scan records; it is not scoring or acceptance.",
+            },
+            {
+              id: "DECISION-STATUS",
+              label: "Statuses",
+              value: statuses.length,
+              source: "DERIVED",
+              freshness: "Derived from stored decision status values.",
+              detail:
+                "Stored status is not live verification or CONTROL_THREAD approval.",
+            },
+            {
+              id: "DECISION-LINEAGE",
+              label: "Lineage",
+              value: "chat-linked",
+              source: "PARTIAL STREAM",
+              freshness:
+                "Source chat lineage is stored when extraction captured it; coverage may be partial.",
+              detail:
+                "Chat linkage provides provenance only and does not create authority.",
+            },
+          ]}
+        />
 
         <section>
           <OperatorSectionHeader

@@ -7,6 +7,7 @@ import {
   OperatorSafetyRail,
   OperatorSectionHeader,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import { LiveReadinessMatrix } from "@/components/operator/LiveReadinessMatrix";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 import { controlPlanePrototypeFixture } from "@/lib/controlPlane/controlPlanePrototypeFixture";
@@ -104,6 +105,50 @@ export default async function OperatorControlPlanePage() {
         </header>
 
         <ControlPlanePanels fixture={fixture} canonicalPosture={canonicalPosture} />
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "CANON-MOTION",
+              label: "Latest motion",
+              value: canonicalPosture.latest_motion_id ?? "none",
+              source: "READ-ONLY CANONICAL",
+              freshness: canonicalPosture.source_label,
+              detail:
+                "Bundled motion posture display only; latest does not imply live verification.",
+              href: "/operator/motions",
+            },
+            {
+              id: "CANON-ATTN",
+              label: "Attention",
+              value: canonicalPosture.attention_count,
+              source: "DERIVED",
+              freshness: "Derived from current motion queue index read.",
+              detail:
+                "Attention count highlights stored package flags; it does not evaluate gates.",
+              href: "/operator/motions?attention=1",
+            },
+            {
+              id: "CANON-FIXTURE",
+              label: "Fixture panels",
+              value: fixture.fixture_id,
+              source: "SYNTHETIC",
+              freshness: fixture.snapshot_label,
+              detail:
+                "Control-plane panels remain local static fixture records, not canonical state.",
+            },
+            {
+              id: "CANON-GATES",
+              label: "Gates granted",
+              value: fixture.gates_granted,
+              source: "FIXTURE",
+              freshness: "Local static gate posture fixture.",
+              detail:
+                "Gate display is non-authorizing; no execution gates are opened.",
+            },
+          ]}
+        />
 
         <RouteTopologyReadiness index="TOPOLOGY" compact />
 

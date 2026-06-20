@@ -16,6 +16,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import {
   getPortfolioStatusFixture,
   type PortfolioStatusLaneCard,
@@ -287,6 +288,51 @@ export default function OperatorPortfolioStatusPage() {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "PORT-FIXTURE",
+              label: "Fixture source",
+              value: fixture.static_baseline_metadata.read_model_version,
+              source: "FIXTURE",
+              freshness:
+                fixture.static_baseline_metadata.status_date ??
+                "Fixture status date not recorded.",
+              detail:
+                "Checked-in portfolio fixture is not live portfolio verification.",
+            },
+            {
+              id: "PORT-LANES",
+              label: "Repo lanes",
+              value: lanes.length,
+              source: "DERIVED",
+              freshness: "Derived from checked-in fixture lane cards.",
+              detail:
+                "Lane counts do not route work, update repos, or create receipts.",
+            },
+            {
+              id: "PORT-RISK",
+              label: "Risks",
+              value: safeArray(fixture.risk_summary?.risks).length,
+              source: "FIXTURE",
+              freshness: "Risk list is fixture-backed and manually maintained.",
+              detail:
+                "Risk display is advisory posture only, not automatic evaluation.",
+            },
+            {
+              id: "PORT-SOURCE",
+              label: "Source refs",
+              value: safeArray(fixture.source_refs).length,
+              source: "UNKNOWN SOURCE",
+              freshness:
+                "References are recorded in fixture; upstream freshness is not fetched.",
+              detail:
+                "Recorded references are provenance hints, not live source confirmation.",
+            },
+          ]}
+        />
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard

@@ -12,6 +12,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import { PromoteContenderForm } from "./PromoteContenderForm";
 import { parseMotionNumber } from "@/lib/motion/motionContenders";
 import { readMotionPromotionAvailability } from "@/lib/motion/motionPromotion";
@@ -260,6 +261,48 @@ export default async function MotionsPage(props: {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "MOTION-SRC",
+              label: "Motion source",
+              value: queueIndex.source_mode,
+              source: "READ-ONLY CANONICAL",
+              freshness: sourceLabel,
+              detail:
+                "Motion packages are displayed as stored read-only reference state.",
+            },
+            {
+              id: "MOTION-LATEST",
+              label: "Latest motion",
+              value: highestMotionNumber > 0 ? `motion-${String(highestMotionNumber).padStart(4, "0")}` : "none",
+              source: "DERIVED",
+              freshness: "Derived from motion IDs in the current queue index.",
+              detail:
+                "Highest motion ID is a browser summary, not a promotion or acceptance.",
+            },
+            {
+              id: "MOTION-ATTN",
+              label: "Attention",
+              value: attentionCount,
+              source: "DERIVED",
+              freshness: "Derived from stored attention flags.",
+              detail:
+                "Attention flags surface stored package issues; they do not evaluate gates.",
+            },
+            {
+              id: "MOTION-RATIFIED",
+              label: "Ratified",
+              value: ratifiedCount,
+              source: "READ-ONLY CANONICAL",
+              freshness: "Stored decision status in motion package snapshot.",
+              detail:
+                "Ratified status display is not new acceptance, receipt creation, or execution.",
+            },
+          ]}
+        />
 
         <section>
           <OperatorSectionHeader

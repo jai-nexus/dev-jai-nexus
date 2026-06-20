@@ -114,3 +114,107 @@ expand, authorize, or present them as newly authorized:
 7. Commit 8: final activation-spine closeout and validation summary.
 
 Later commits must preserve the hard boundary: CONTROL_THREAD decides.
+
+## Commit 2: Canonical Read-Only Operator Spine
+
+Canonical read-only display is not authority. Commit 2 makes existing state
+easier to scan by separating source posture, freshness posture, and authority
+posture across the Operator cockpit. It does not create, mutate, accept,
+validate, confirm, route, receipt, score, synthesize, or activate anything.
+
+The shared canonical read-only spine uses only values already available to the
+touched route at render time. It does not introduce new fetch behavior, API
+routes, server actions, DB writes, subscriptions, persistence, or runtime
+dispatch.
+
+### Canonical Read-Only Spine Thesis
+
+Operators need to know what they are looking at before they can decide what to
+do with it. Commit 2 distinguishes:
+
+- accepted or bundled read-only motion posture;
+- DB read-only tables and partial event streams;
+- YAML-backed canonical or configuration posture where already present;
+- derived counts and groupings;
+- fixture and synthetic readiness records;
+- unknown-source or unknown-freshness records.
+
+Read-only source display can inform CONTROL_THREAD review, but it cannot become
+CONTROL_THREAD review.
+
+### Accepted Read-Only Source Posture
+
+| Surface | Source posture | Freshness posture | Authority posture |
+| --- | --- | --- | --- |
+| `/operator/control-plane` | Mixed read-only canonical motion posture plus synthetic fixture panels | Motion source label from existing queue index; fixture snapshot label for local panels | Display-only; no gate evaluation or activation |
+| `/operator/motions` | `READ-ONLY CANONICAL` motion package browser | Existing source label and stored package snapshot | Browser only; guarded promotion path remains separate and pre-existing |
+| `/operator/decisions` | `DB READ-ONLY` extracted decision rows | Query-time DB read; extraction freshness manual/unknown | Extracted claims, not receipts or canon |
+| `/operator/repos` | `DB READ-ONLY` repo registry rows | Query-time DB read; sync freshness not verified | Repo display only; no repo mutation or GitHub authority |
+| `/operator/events` | `DB READ-ONLY` partial event stream | Query-time DB read; partial stream coverage | Evidence display only; not acceptance or receipt creation |
+| `/operator/portfolio-status` | `FIXTURE` checked-in portfolio status | Fixture status date where recorded; upstream freshness not fetched | Static local portfolio view, not live portfolio state |
+
+### Route-Level Source Labels
+
+Commit 2 uses these labels conservatively:
+
+- `READ-ONLY CANONICAL` for existing motion package posture displayed as stored
+  reference state.
+- `DB READ-ONLY` for database reads that are not writable through the display.
+- `YAML-BACKED CANONICAL` for accepted YAML/config sources where a route already
+  exposes them. Commit 2 does not add a new YAML loader.
+- `DERIVED` for counts, groupings, highest IDs, and summaries computed from an
+  already-read source.
+- `PARTIAL STREAM` for event and lineage views that are known not to cover all
+  governance artifacts.
+- `FIXTURE` for checked-in static readiness or portfolio records.
+- `SYNTHETIC` for `SYN-*` readiness records.
+- `UNKNOWN SOURCE` when freshness, upstream origin, or coverage cannot be
+  verified from the current route.
+
+### Current Allowed Behavior
+
+- Display source posture and freshness posture.
+- Link to existing Operator routes.
+- Show read-only canonical, DB read-only, derived, partial, fixture, synthetic,
+  and unknown-source summaries.
+- Show latest motion, attention, risk, stale/partial-source, and source-ref
+  posture when already available from accepted read-only sources.
+- Preserve existing read-only filters and links.
+
+### Current Blocked Behavior
+
+- New API behavior, server actions, DB writes, Prisma changes, telemetry,
+  auth/session changes, hidden persistence, or localStorage/sessionStorage as a
+  system of record.
+- Motion-state mutation, route-state mutation, canon update, receipt creation,
+  automatic gate evaluation, automatic scoring, automatic synthesis, or
+  automatic best-agent selection.
+- Provider/model dispatch, live model calls, Agent execution, Agent dispatch,
+  GitHub integration, GitHub API use, repo mutation, branch creation, PR
+  creation, push, merge, commit automation, or branch/PR automation.
+- Runtime activation, execution gates, scheduler behavior, autonomous loops,
+  retrieval engines, automatic context injection, live memory writes, live
+  settings mutation, customer-data handling, or production behavior.
+
+### Stale, Partial, Derived, And Unknown-Source Handling
+
+Stored status is not live verification unless the surface explicitly names a
+live verification source. Derived counts are not source-of-truth. Fixture and
+synthetic records are not canonical. Unknown or unverified freshness is labeled
+as unknown, fixture-backed, partial, or manually maintained rather than current.
+
+### No-Mutation Posture
+
+The canonical read-only spine is presentational. It receives values from existing
+route reads and renders cards with `READ-ONLY`, `DISPLAY IS NOT AUTHORITY`, and
+`NO MUTATION` posture. It adds no submit behavior and no new copy behavior.
+
+ZERO GATES GRANTED.
+
+### Relationship To Later Commits
+
+Commit 3 should cover the JAI and Council spine. Commit 4 should cover Agents.
+Commit 5 should cover Palette/Grid. Commit 6 should cover development compose
+spine. Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8
+should consolidate final audit and closeout posture. Later commits must not
+reinterpret Commit 2 source labels as authorization.
