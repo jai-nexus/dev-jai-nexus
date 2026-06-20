@@ -9,9 +9,12 @@ import {
 type RouteTopologySurface = {
   id: string;
   route: string;
+  labels: string[];
   role: string;
   currentPosture: string;
+  relationship: string;
   deferredDecision: string;
+  actionLabel: "READ-ONLY" | "GATED" | "BLOCKED" | "FUTURE" | "NOT AUTHORIZED IN V0";
   source: "SYNTHETIC" | "READ-ONLY CANONICAL";
 };
 
@@ -19,57 +22,87 @@ const routeTopologySurfaces: RouteTopologySurface[] = [
   {
     id: "SYN-ROUTE-0001",
     route: "/operator",
-    role: "Current Operator entry point.",
-    currentPosture: "Remains the entry route in Commit 1.",
+    labels: ["PRIMARY", "READ-ONLY", "NO ACTIVATION"],
+    role: "Current Operator entry point and orientation surface.",
+    currentPosture: "Remains the Operator root in Commit 1.",
+    relationship:
+      "Points operators toward current read-only posture, source counts, and route topology without becoming a live cockpit.",
     deferredDecision: "Should another Operator surface become the root?",
+    actionLabel: "READ-ONLY",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0002",
     route: "/operator/control-plane",
-    role: "Current control-plane route.",
-    currentPosture: "Retained with no redirect or specialization decision.",
+    labels: ["PRIMARY", "CONTROL PLANE", "READ-ONLY"],
+    role: "Current control-plane surface for cockpit posture and gated readiness display.",
+    currentPosture:
+      "Retained with no redirect, replacement, or specialization decision.",
+    relationship:
+      "Carries canonical posture reads and synthetic panels; does not replace the Operator root.",
     deferredDecision: "Remain, redirect, or become a specialized subsection?",
+    actionLabel: "READ-ONLY",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0003",
     route: "/operator/live-dashboard",
-    role: "Prototype and readiness surface.",
+    labels: ["SECONDARY", "PROTOTYPE", "PENDING DECISION"],
+    role: "Live-readiness prototype and future cockpit candidate.",
     currentPosture: "Not promoted to Operator root in Commit 1.",
+    relationship:
+      "Shows live-looking readiness fixtures only; route promotion requires a later CONTROL_THREAD decision.",
     deferredDecision: "Should live-dashboard become /operator?",
+    actionLabel: "FUTURE",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0004",
     route: "/operator/council-prototype",
-    role: "Council prototype and readiness surface.",
+    labels: ["SECONDARY", "PROTOTYPE", "PENDING DECISION"],
+    role: "Council prototype and advisory readiness surface.",
     currentPosture: "Not promoted to /operator/council in Commit 1.",
+    relationship:
+      "Represents Council returns, dissent, and synthesis; it is not an active Council route.",
     deferredDecision: "Should council-prototype become /operator/council?",
+    actionLabel: "GATED",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0005",
     route: "/operator/design-system",
+    labels: ["SECONDARY", "REFERENCE", "READ-ONLY"],
     role: "Operator Slate design and reference surface.",
     currentPosture: "Kept as a design/reference route.",
+    relationship:
+      "Documents route/action/status visual language; it does not govern route state.",
     deferredDecision: "Should design-system remain in the Operator subnav?",
+    actionLabel: "READ-ONLY",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0006",
-    route: "DCT",
-    role: "Decision/context tooling surface.",
-    currentPosture: "Remains available in existing subnav.",
+    route: "/operator/dct",
+    labels: ["SECONDARY", "COMPATIBILITY", "READ-ONLY POSTURE"],
+    role: "Decision/context tooling projection surface.",
+    currentPosture:
+      "Remains available; no DCT removal, redirect, or semantics change in Commit 1.",
+    relationship:
+      "Existing DCT paths include pre-existing mutation-capable API surfaces; this topology pass does not expand them.",
     deferredDecision: "Should DCT remain in the Operator subnav?",
+    actionLabel: "NOT AUTHORIZED IN V0",
     source: "SYNTHETIC",
   },
   {
     id: "SYN-ROUTE-0007",
-    route: "legacy nav",
+    route: "legacy top nav",
+    labels: ["LEGACY", "COMPATIBILITY", "READ-ONLY LINKS"],
     role: "Existing global/top navigation posture.",
     currentPosture: "Remains available and unchanged in Commit 1.",
+    relationship:
+      "Global navigation stays compatible while Operator subnav topology remains undecided.",
     deferredDecision: "Should legacy top nav remain?",
+    actionLabel: "READ-ONLY",
     source: "SYNTHETIC",
   },
 ];
@@ -82,6 +115,7 @@ const pendingQuestions = [
   "Should DCT remain in subnav?",
   "Should legacy top nav remain?",
   "Should phase-clustered navigation be introduced?",
+  "Which route should become the primary future live cockpit once gates exist?",
 ];
 
 const blockedBehavior = [
@@ -145,6 +179,24 @@ export function RouteTopologyReadiness({
                 </div>
                 <OperatorIdChip>{surface.id}</OperatorIdChip>
               </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {surface.labels.map((label) => (
+                  <OperatorBadge
+                    key={`${surface.id}-${label}`}
+                    tone={
+                      label === "PRIMARY"
+                        ? "pending"
+                        : label === "LEGACY"
+                          ? "advisory"
+                          : label === "PENDING DECISION"
+                            ? "gated"
+                            : "neutral"
+                    }
+                  >
+                    {label}
+                  </OperatorBadge>
+                ))}
+              </div>
               <div className="mt-2 space-y-1 text-xs text-slate-400">
                 <div>
                   <span className="font-mono uppercase text-slate-500">
@@ -160,6 +212,12 @@ export function RouteTopologyReadiness({
                 </div>
                 <div>
                   <span className="font-mono uppercase text-slate-500">
+                    relationship /{" "}
+                  </span>
+                  {surface.relationship}
+                </div>
+                <div>
+                  <span className="font-mono uppercase text-slate-500">
                     pending /{" "}
                   </span>
                   <span className="text-sky-300">
@@ -169,6 +227,18 @@ export function RouteTopologyReadiness({
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <OperatorBadge tone="fixture">{surface.source}</OperatorBadge>
+                <OperatorBadge
+                  tone={
+                    surface.actionLabel === "READ-ONLY"
+                      ? "readOnly"
+                      : surface.actionLabel === "BLOCKED" ||
+                          surface.actionLabel === "NOT AUTHORIZED IN V0"
+                        ? "blocked"
+                        : "gated"
+                  }
+                >
+                  {surface.actionLabel}
+                </OperatorBadge>
                 <OperatorReadOnlyAction>Topology label only</OperatorReadOnlyAction>
               </div>
             </article>

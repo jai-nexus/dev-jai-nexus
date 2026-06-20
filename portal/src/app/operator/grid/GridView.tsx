@@ -18,6 +18,7 @@
 
 import { useReducer, useState, useCallback, useEffect } from "react";
 import { OperatorBadge } from "@/components/operator/slate";
+import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import type { GridConfig, AgencyAgent, ExecutionRole } from "@/lib/grid/gridConfig";
 import {
@@ -369,6 +370,10 @@ export function GridView({ config }: { config: GridConfig }) {
 
       <div className="mb-4">
         <PaletteGridReadiness index="00" compact />
+      </div>
+
+      <div className="mb-4">
+        <JaiReceiptGateAlignment index="ALIGN" compact />
       </div>
 
       {/* ── Connection mode toolbar ── */}

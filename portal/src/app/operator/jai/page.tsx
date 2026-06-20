@@ -17,6 +17,7 @@ import {
   OperatorStatusChip,
 } from "@/components/operator/slate";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
+import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { getControlPlaneAuthorityPosture } from "@/lib/controlPlane/authorityPosture";
 import { getJaiChatSurfaceModel } from "@/lib/controlPlane/jaiChatSurface";
@@ -164,6 +165,8 @@ export default function OperatorJaiPage() {
         <JaiCouncilReadiness index="00" />
 
         <PaletteGridReadiness index="P/G" />
+
+        <JaiReceiptGateAlignment index="ALIGN" compact />
 
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <OperatorPanel className="p-5">

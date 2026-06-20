@@ -14,6 +14,7 @@ import {
   OperatorSafetyRail,
   OperatorSectionHeader,
 } from "@/components/operator/slate";
+import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
 import { prisma } from "@/lib/prisma";
 
 type SearchParamValue = string | string[] | undefined;
@@ -137,6 +138,50 @@ export default async function OperatorEventsPage({
             </p>
           </OperatorSafetyRail>
         </div>
+
+        <CanonicalReadOnlySpine
+          index="CANON"
+          cards={[
+            {
+              id: "EVENT-24H",
+              label: "Events 24h",
+              value: total24h,
+              source: "DB READ-ONLY",
+              freshness:
+                "Current database count over the last 24 hours at render time.",
+              detail:
+                "Event count is a partial stream summary, not acceptance or receipt creation.",
+            },
+            {
+              id: "EVENT-LAST",
+              label: "Last event",
+              value: lastIngest,
+              source: "PARTIAL STREAM",
+              freshness:
+                "Latest stored event timestamp; absence or age does not verify system health.",
+              detail:
+                "Stored event time is not live runtime verification.",
+            },
+            {
+              id: "EVENT-KINDS",
+              label: "Top kinds",
+              value: topKinds.length,
+              source: "DERIVED",
+              freshness: "Derived from grouped event rows under active filters.",
+              detail:
+                "Kind counts help scan the stream; they are not scoring or synthesis.",
+            },
+            {
+              id: "EVENT-SCOPE",
+              label: "Stream scope",
+              value: "partial",
+              source: "PARTIAL STREAM",
+              freshness: "Coverage excludes some governance artifacts in v0.",
+              detail:
+                "Partial event display does not update canon, receipts, or motion state.",
+            },
+          ]}
+        />
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <OperatorPanel>

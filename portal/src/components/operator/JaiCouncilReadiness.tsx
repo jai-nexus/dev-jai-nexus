@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   OperatorBadge,
   OperatorBlockedAction,
@@ -17,30 +19,124 @@ const modelSlotReadiness = [
   {
     id: "SYN-JAI-SLOT-0001",
     slot: "Builder model slot",
-    readiness: "Fixture only",
+    status: "Fixture only",
+    source: "SYNTHETIC",
+    outputBoundary: "Draft claims only",
     posture: "Prompt drafts may be composed for manual handoff.",
     blocker: "No provider SDK, no dispatch, no live model call.",
+    requiredGate: "Provider/model dispatch gate",
   },
   {
     id: "SYN-JAI-SLOT-0002",
     slot: "Challenger model slot",
-    readiness: "Fixture only",
+    status: "Fixture only",
+    source: "SYNTHETIC",
+    outputBoundary: "Dissent and objections",
     posture: "Dissent role remains visible and cannot be collapsed into agreement.",
     blocker: "No automatic synthesis or best-model selection.",
+    requiredGate: "Council session gate",
   },
   {
     id: "SYN-JAI-SLOT-0003",
     slot: "Evidence model slot",
-    readiness: "Fixture only",
+    status: "Fixture only",
+    source: "SYNTHETIC",
+    outputBoundary: "Evidence-linked claims",
     posture: "Outputs must cite evidence refs before they can be considered claims.",
     blocker: "Ungrounded output remains advisory and non-canonical.",
+    requiredGate: "Evidence/source gate",
   },
   {
     id: "SYN-JAI-SLOT-0004",
     slot: "Future JAI slot",
-    readiness: "Reserved",
+    status: "Reserved",
+    source: "FUTURE",
+    outputBoundary: "No output in v0",
     posture: "Represents a possible internal capability, not a runtime.",
     blocker: "Live JAI runtime and Council runtime are not active in v0.",
+    requiredGate: "JAI runtime gate",
+  },
+];
+
+const councilLifecycle = [
+  {
+    id: "SYN-JAI-LIFE-0001",
+    phase: "draft",
+    posture: "Local prompt or packet draft may be composed.",
+    boundary: "REAL-COMPOSE only; no submit or persistence.",
+    action: "REAL-COMPOSE",
+  },
+  {
+    id: "SYN-JAI-LIFE-0002",
+    phase: "route",
+    posture: "Manual operator handoff may carry the draft outside the UI.",
+    boundary: "Route recommends; it does not execute.",
+    action: "MANUAL HANDOFF",
+  },
+  {
+    id: "SYN-JAI-LIFE-0003",
+    phase: "advisory return",
+    posture: "Return can be reviewed as claims and evidence refs.",
+    boundary: "Return cannot decide, dispatch, merge, or create receipts.",
+    action: "READ-ONLY",
+  },
+  {
+    id: "SYN-JAI-LIFE-0004",
+    phase: "dissent review",
+    posture: "Dissent remains first-class and visible.",
+    boundary: "No synthesis override and no majority collapse.",
+    action: "READ-ONLY",
+  },
+  {
+    id: "SYN-JAI-LIFE-0005",
+    phase: "contradiction review",
+    posture: "Contradictions stay open until CONTROL_THREAD decides.",
+    boundary: "No automatic scoring, resolution, or best-model selection.",
+    action: "READ-ONLY",
+  },
+  {
+    id: "SYN-JAI-LIFE-0006",
+    phase: "CONTROL_THREAD decision",
+    posture: "Operator decision boundary remains outside Council agreement.",
+    boundary: "Validation is not acceptance; CONTROL_THREAD decides.",
+    action: "MANUAL HANDOFF",
+  },
+  {
+    id: "SYN-JAI-LIFE-0007",
+    phase: "receipt requirement",
+    posture: "Future accepted decisions require receipt design.",
+    boundary: "Receipts record; they do not decide.",
+    action: "FUTURE",
+  },
+  {
+    id: "SYN-JAI-LIFE-0008",
+    phase: "canon update",
+    posture: "Canon merge remains blocked in this spine.",
+    boundary: "No output merge into canon and no canon update.",
+    action: "BLOCKED",
+  },
+];
+
+const crossSurfaceLinks = [
+  {
+    href: "/operator/jai",
+    label: "JAI shell",
+    detail: "Draft prompt and read-only control-plane context.",
+  },
+  {
+    href: "/operator/council-prototype",
+    label: "Council prototype",
+    detail: "Advisory return, dissent, contradiction, and synthesis fixture.",
+  },
+  {
+    href: "/operator/control-plane",
+    label: "Control plane",
+    detail: "Cockpit posture, gates, fixture lanes, and canonical motion read.",
+  },
+  {
+    href: "/operator/live-dashboard",
+    label: "Live dashboard",
+    detail: "Live-readiness prototype; not a live runtime.",
   },
 ];
 
@@ -100,7 +196,7 @@ export function JaiCouncilReadiness({
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div>
             <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
-              dev.jai.nexus / JAI Council readiness / Commit 2
+              dev.jai.nexus / JAI Council operator spine / Commit 3
             </div>
             <p className="mt-2 text-sm text-slate-300">
               JAI and JAI Council readiness is visible here without activating a
@@ -144,9 +240,21 @@ export function JaiCouncilReadiness({
                     <OperatorIdChip>{slot.id}</OperatorIdChip>
                   </div>
                 </div>
-                <OperatorBadge tone="fixture">{slot.readiness}</OperatorBadge>
+                <OperatorBadge tone="fixture">{slot.status}</OperatorBadge>
               </div>
               <div className="mt-3 space-y-2 text-xs text-slate-400">
+                <div>
+                  <span className="font-mono uppercase text-slate-500">
+                    source /{" "}
+                  </span>
+                  {slot.source}
+                </div>
+                <div>
+                  <span className="font-mono uppercase text-slate-500">
+                    output /{" "}
+                  </span>
+                  {slot.outputBoundary}
+                </div>
                 <div>
                   <span className="font-mono uppercase text-slate-500">
                     posture /{" "}
@@ -159,6 +267,12 @@ export function JaiCouncilReadiness({
                   </span>
                   {slot.blocker}
                 </div>
+                <div>
+                  <span className="font-mono uppercase text-slate-500">
+                    required gate /{" "}
+                  </span>
+                  {slot.requiredGate}
+                </div>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <OperatorReadOnlyAction>Readiness record</OperatorReadOnlyAction>
@@ -166,6 +280,48 @@ export function JaiCouncilReadiness({
               </div>
             </OperatorGateCard>
           ))}
+        </div>
+
+        <div>
+          <OperatorSectionHeader
+            index={`${index}-LIFE`}
+            title="Council Session Lifecycle Readiness"
+            right={
+              <>
+                <OperatorBadge tone="fixture">SYN-* LIFECYCLE</OperatorBadge>
+                <OperatorBadge tone="blocked">NO COUNCIL RUNTIME</OperatorBadge>
+              </>
+            }
+          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {councilLifecycle.map((phase) => (
+              <OperatorGateCard key={phase.id}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="font-mono text-xs uppercase tracking-widest text-slate-300">
+                    {phase.phase}
+                  </div>
+                  <OperatorIdChip>{phase.id}</OperatorIdChip>
+                </div>
+                <p className="mt-2 text-xs text-slate-300">{phase.posture}</p>
+                <p className="mt-2 text-xs text-amber-300">{phase.boundary}</p>
+                <div className="mt-3">
+                  <OperatorBadge
+                    tone={
+                      phase.action === "BLOCKED"
+                        ? "blocked"
+                        : phase.action === "FUTURE" || phase.action === "MANUAL HANDOFF"
+                          ? "gated"
+                          : phase.action === "REAL-COMPOSE"
+                            ? "composeOnly"
+                            : "readOnly"
+                    }
+                  >
+                    {phase.action}
+                  </OperatorBadge>
+                </div>
+              </OperatorGateCard>
+            ))}
+          </div>
         </div>
 
         <div className={`grid gap-3 ${compact ? "" : "lg:grid-cols-2"}`}>
@@ -217,6 +373,34 @@ export function JaiCouncilReadiness({
                 </OperatorBadge>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div>
+          <OperatorSectionHeader
+            index={`${index}-LINKS`}
+            title="JAI / Council Spine Links"
+            right={<OperatorBadge tone="readOnly">READ-ONLY LINKS</OperatorBadge>}
+          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {crossSurfaceLinks.map((surface) => (
+              <Link
+                key={surface.href}
+                href={surface.href}
+                className="rounded border border-slate-800 bg-slate-950/50 p-3 transition-colors hover:border-sky-800 hover:bg-slate-900"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-100">
+                    {surface.label}
+                  </span>
+                  <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+                </div>
+                <div className="mt-2">
+                  <OperatorIdChip>{surface.href}</OperatorIdChip>
+                </div>
+                <p className="mt-3 text-xs text-slate-400">{surface.detail}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </OperatorPanel>

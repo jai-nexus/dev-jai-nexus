@@ -14,6 +14,7 @@ import {
     type OperatorSlateTone,
 } from "@/components/operator/slate";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
+import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 
 type IconProps = {
     className?: string;
@@ -507,7 +508,9 @@ export default function CouncilPanelPrototype() {
                 <div className="min-w-0 flex-1 space-y-5">
                     <div className="flex flex-wrap gap-2 rounded border border-slate-800 bg-slate-900 p-3">
                         <Badge>LOCAL / STATIC</Badge>
+                        <Badge tone="sky">SECONDARY</Badge>
                         <Badge>PROTOTYPE</Badge>
+                        <Badge tone="amber">PENDING ROUTE DECISION</Badge>
                         <Badge>FIXTURE DATA</Badge>
                         <Badge tone="amber">NON-AUTHORIZING</Badge>
                         <Badge tone="red">NO EXECUTION</Badge>
@@ -516,11 +519,18 @@ export default function CouncilPanelPrototype() {
                         <Badge tone="red">ZERO EXECUTION GATES GRANTED</Badge>
                     </div>
                     <JaiCouncilReadiness index="00" compact />
+                    <RouteTopologyReadiness index="ROUTE" compact />
 
                     {/* 1 · SESSION HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">
                         <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
                             Council Session Header
+                        </div>
+                        <div className="mb-3 rounded border border-amber-900 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
+                            Route posture: `/operator/council-prototype`
+                            remains a Council prototype/readiness surface. It
+                            is not promoted to `/operator/council`, and Council
+                            output is not authority.
                         </div>
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="font-mono text-xs text-slate-500">

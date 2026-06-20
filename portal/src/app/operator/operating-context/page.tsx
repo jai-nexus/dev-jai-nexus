@@ -15,6 +15,7 @@ import {
   OperatorSectionHeader,
   OperatorStatusChip,
 } from "@/components/operator/slate";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { getVersionedOperatingContextFixture } from "@/lib/operatingContext/versionedOperatingContextFixture";
 import type {
   OperatingContextAgentLaneDefault,
@@ -315,6 +316,8 @@ export default function OperatingContextPage() {
             detail="Display status only; not a runtime lifecycle."
           />
         </section>
+
+        <PaletteGridReadiness index="P/G" compact />
 
         <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
           <OperatorPanel>

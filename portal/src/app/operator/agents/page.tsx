@@ -15,6 +15,7 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
+import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import {
   getAgentConfigurationRegistry,
   getCanonicalActiveAgents,
@@ -362,6 +363,8 @@ export default function AgentsPage() {
         </section>
 
         <JaiAgentReadiness index="00" />
+
+        <JaiReceiptGateAlignment index="ALIGN" compact />
 
         <Section
           index="01"

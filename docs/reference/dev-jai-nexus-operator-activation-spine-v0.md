@@ -1,0 +1,1041 @@
+# dev.jai.nexus Operator Activation Spine v0
+
+## Activation-Spine Thesis
+
+Activation spine does not mean activation. This branch prepares the Operator
+information architecture, source posture, route posture, and readiness language
+needed before live capabilities can be considered. It does not execute, dispatch,
+mutate, evaluate gates, create receipts, update canon, or promote routes.
+
+Commit 1 is the Operator Route Topology Spine only. It makes current route
+relationships visible and preserves route questions for a later explicit
+CONTROL_THREAD decision.
+
+## Route Topology Posture
+
+Commit 1 keeps the conservative no-promotion posture:
+
+- `/operator` remains the current Operator entry point.
+- `/operator/control-plane` remains the current control-plane surface.
+- `/operator/live-dashboard` remains a live-readiness prototype, not the
+  promoted Operator root.
+- `/operator/council-prototype` remains a Council prototype/readiness surface,
+  not an active `/operator/council` route.
+- `/operator/design-system` remains a design/reference surface.
+- `/operator/dct` remains available.
+- Legacy top navigation remains available.
+- Route topology decision remains pending.
+
+Routes recommend and orient; they do not execute.
+
+## Operator Route Relationship Map
+
+| ID | Route | Labels | Current role | Commit 1 posture |
+| --- | --- | --- | --- | --- |
+| `SYN-ROUTE-0001` | `/operator` | `PRIMARY`, `READ-ONLY`, `NO ACTIVATION` | Current Operator entry point and orientation surface | Remains root until CONTROL_THREAD decides otherwise |
+| `SYN-ROUTE-0002` | `/operator/control-plane` | `PRIMARY`, `CONTROL PLANE`, `READ-ONLY` | Current control-plane surface | Retained; no redirect, replacement, or specialization decision |
+| `SYN-ROUTE-0003` | `/operator/live-dashboard` | `SECONDARY`, `PROTOTYPE`, `PENDING DECISION` | Live-readiness prototype and future cockpit candidate | Not promoted to `/operator` |
+| `SYN-ROUTE-0004` | `/operator/council-prototype` | `SECONDARY`, `PROTOTYPE`, `PENDING DECISION` | Council advisory prototype/readiness surface | Not promoted to `/operator/council` |
+| `SYN-ROUTE-0005` | `/operator/design-system` | `SECONDARY`, `REFERENCE`, `READ-ONLY` | Operator Slate design/reference surface | Retained as reference; does not govern route state |
+| `SYN-ROUTE-0006` | `/operator/dct` | `SECONDARY`, `COMPATIBILITY`, `READ-ONLY POSTURE` | Decision/context tooling projection surface | Remains available; no DCT removal or semantics change |
+| `SYN-ROUTE-0007` | legacy top nav | `LEGACY`, `COMPATIBILITY`, `READ-ONLY LINKS` | Existing global/top navigation posture | Remains available and unchanged |
+
+All records above are synthetic route-topology fixtures. They describe route
+posture only and are not live route-state records.
+
+## Pending Route Topology Decisions
+
+- Should `/operator/live-dashboard` become `/operator`?
+- Should `/operator/council-prototype` become `/operator/council`?
+- Should `/operator/control-plane` remain, redirect, or become a specialized
+  subsection?
+- Should `/operator/design-system` remain in subnav?
+- Should DCT remain in subnav?
+- Should legacy top nav remain?
+- Should phase-clustered navigation be introduced?
+- Which route should become the primary future live cockpit once gates exist?
+
+## Current Allowed Behavior
+
+- `READ-ONLY` route relationship cards, route labels, and explanatory copy.
+- Static `SYN-*` route-topology readiness records.
+- Existing accepted canonical reads where already present.
+- Existing local/static fixture display.
+- Existing local-only `REAL-COMPOSE` copy behavior where already labeled.
+- `GATED`, `BLOCKED`, `FUTURE`, and `NOT AUTHORIZED IN V0` labels for future or
+  unauthorized capabilities.
+- Manual handoff language for later route decisions.
+
+## Current Blocked Behavior
+
+- Route promotion, route redirect, route removal, or destructive redirect.
+- DCT removal or legacy top-nav removal.
+- Control-plane replacement or council-prototype deletion.
+- Runtime execution, route-state mutation, motion-state mutation, gate
+  evaluation, receipt creation, or canon update.
+- Provider/model dispatch, live model calls, Agent execution, Agent dispatch, or
+  GitHub integration.
+- New API routes, new server actions, Prisma changes, DB write expansion,
+  telemetry, auth/session changes, hidden persistence, production behavior, or
+  customer-data handling.
+
+## Non-Authorizations
+
+This commit and branch do not authorize execution, provider/model dispatch, live
+model calls, Agent execution, GitHub API use, repo mutation, file mutation,
+branch creation, PR creation, push, merge, commit automation, branch/PR
+automation, browser/desktop control, terminal/command execution, schedulers,
+autonomous loops, retrieval engines, automatic context injection, live memory
+writes, live settings mutation, `.jai` parser/runtime behavior, `.nexus` active
+semantics, policy enforcement, automatic scoring, automatic synthesis, automatic
+best-agent selection, automatic gate evaluation, receipt creation, canon update,
+route-state mutation, motion-state mutation, or opened execution gates.
+
+ZERO GATES GRANTED.
+
+## Pre-Existing Mutation-Capable Paths
+
+The following known paths pre-exist this commit. Commit 1 does not remove,
+expand, authorize, or present them as newly authorized:
+
+- `/operator/registry/repos` admin-gated `repos.yaml` import with DB upsert.
+- `/operator/sync-runs/[syncRunId]/apply`.
+- `/operator/sync-runs/[syncRunId]/reject`.
+- DCT API mutation endpoints behind their existing internal-token posture.
+
+## Recommended Later Commit Sequence
+
+1. Commit 2: canonical read-only spine.
+2. Commit 3: JAI and JAI Council operator spine.
+3. Commit 4: Agents readiness posture and staged-agent non-execution boundary.
+4. Commit 5: Palette/Grid readiness posture and visual/source labeling.
+5. Commit 6: development compose spine and local-only handoff language.
+6. Commit 7: `.jai`, receipt, gate, and dependency readiness documentation.
+7. Commit 8: final activation-spine closeout, audit consolidation, and
+   validation summary.
+
+Later commits must preserve the hard boundary: CONTROL_THREAD decides.
+
+## Commit 2: Canonical Read-Only Operator Spine
+
+Canonical read-only display is not authority. Commit 2 makes existing state
+easier to scan by separating source posture, freshness posture, and authority
+posture across the Operator cockpit. It does not create, mutate, accept,
+validate, confirm, route, receipt, score, synthesize, or activate anything.
+
+The shared canonical read-only spine uses only values already available to the
+touched route at render time. It does not introduce new fetch behavior, API
+routes, server actions, DB writes, subscriptions, persistence, or runtime
+dispatch.
+
+### Canonical Read-Only Spine Thesis
+
+Operators need to know what they are looking at before they can decide what to
+do with it. Commit 2 distinguishes:
+
+- accepted or bundled read-only motion posture;
+- DB read-only tables and partial event streams;
+- YAML-backed canonical or configuration posture where already present;
+- derived counts and groupings;
+- fixture and synthetic readiness records;
+- unknown-source or unknown-freshness records.
+
+Read-only source display can inform CONTROL_THREAD review, but it cannot become
+CONTROL_THREAD review.
+
+### Accepted Read-Only Source Posture
+
+| Surface | Source posture | Freshness posture | Authority posture |
+| --- | --- | --- | --- |
+| `/operator/control-plane` | Mixed read-only canonical motion posture plus synthetic fixture panels | Motion source label from existing queue index; fixture snapshot label for local panels | Display-only; no gate evaluation or activation |
+| `/operator/motions` | `READ-ONLY CANONICAL` motion package browser | Existing source label and stored package snapshot | Browser only; guarded promotion path remains separate and pre-existing |
+| `/operator/decisions` | `DB READ-ONLY` extracted decision rows | Query-time DB read; extraction freshness manual/unknown | Extracted claims, not receipts or canon |
+| `/operator/repos` | `DB READ-ONLY` repo registry rows | Query-time DB read; sync freshness not verified | Repo display only; no repo mutation or GitHub authority |
+| `/operator/events` | `DB READ-ONLY` partial event stream | Query-time DB read; partial stream coverage | Evidence display only; not acceptance or receipt creation |
+| `/operator/portfolio-status` | `FIXTURE` checked-in portfolio status | Fixture status date where recorded; upstream freshness not fetched | Static local portfolio view, not live portfolio state |
+
+### Route-Level Source Labels
+
+Commit 2 uses these labels conservatively:
+
+- `READ-ONLY CANONICAL` for existing motion package posture displayed as stored
+  reference state.
+- `DB READ-ONLY` for database reads that are not writable through the display.
+- `YAML-BACKED CANONICAL` for accepted YAML/config sources where a route already
+  exposes them. Commit 2 does not add a new YAML loader.
+- `DERIVED` for counts, groupings, highest IDs, and summaries computed from an
+  already-read source.
+- `PARTIAL STREAM` for event and lineage views that are known not to cover all
+  governance artifacts.
+- `FIXTURE` for checked-in static readiness or portfolio records.
+- `SYNTHETIC` for `SYN-*` readiness records.
+- `UNKNOWN SOURCE` when freshness, upstream origin, or coverage cannot be
+  verified from the current route.
+
+### Current Allowed Behavior
+
+- Display source posture and freshness posture.
+- Link to existing Operator routes.
+- Show read-only canonical, DB read-only, derived, partial, fixture, synthetic,
+  and unknown-source summaries.
+- Show latest motion, attention, risk, stale/partial-source, and source-ref
+  posture when already available from accepted read-only sources.
+- Preserve existing read-only filters and links.
+
+### Current Blocked Behavior
+
+- New API behavior, server actions, DB writes, Prisma changes, telemetry,
+  auth/session changes, hidden persistence, or localStorage/sessionStorage as a
+  system of record.
+- Motion-state mutation, route-state mutation, canon update, receipt creation,
+  automatic gate evaluation, automatic scoring, automatic synthesis, or
+  automatic best-agent selection.
+- Provider/model dispatch, live model calls, Agent execution, Agent dispatch,
+  GitHub integration, GitHub API use, repo mutation, branch creation, PR
+  creation, push, merge, commit automation, or branch/PR automation.
+- Runtime activation, execution gates, scheduler behavior, autonomous loops,
+  retrieval engines, automatic context injection, live memory writes, live
+  settings mutation, customer-data handling, or production behavior.
+
+### Stale, Partial, Derived, And Unknown-Source Handling
+
+Stored status is not live verification unless the surface explicitly names a
+live verification source. Derived counts are not source-of-truth. Fixture and
+synthetic records are not canonical. Unknown or unverified freshness is labeled
+as unknown, fixture-backed, partial, or manually maintained rather than current.
+
+### No-Mutation Posture
+
+The canonical read-only spine is presentational. It receives values from existing
+route reads and renders cards with `READ-ONLY`, `DISPLAY IS NOT AUTHORITY`, and
+`NO MUTATION` posture. It adds no submit behavior and no new copy behavior.
+
+ZERO GATES GRANTED.
+
+### Relationship To Later Commits
+
+Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
+covers Palette/Grid. Commit 6 covers development compose spine.
+Commit 7 covers `.jai`, receipt, and gate alignment. Commit 8 consolidates
+final audit and closeout posture. Later commits must not reinterpret Commit 2
+source labels as authorization.
+
+## Commit 3: JAI + Council Operator Spine
+
+JAI/Council operator spine does not mean live JAI runtime or live Council
+runtime. Commit 3 connects the existing JAI shell, Council prototype,
+control-plane, and live-dashboard readiness views so operators can see how JAI,
+JAI Council, model slots, advisory returns, dissent, contradictions, and
+CONTROL_THREAD relate before any activation decision exists.
+
+The shared JAI/Council spine remains read-only and compose-only. It adds no
+provider SDK, model call, Council dispatch, automatic synthesis, best-model
+selection, receipt creation, canon update, state mutation, persistence, or
+runtime activation.
+
+### JAI Operator-Spine Posture
+
+JAI is not live runtime in v0. `/operator/jai` remains a local static shell for
+draft prompt reference and read-only control-plane context. Prompt text is not
+dispatch. Draft selection is not submission. Display does not grant authority.
+
+Allowed JAI posture in Commit 3:
+
+- read-only context and route links;
+- local-only `REAL-COMPOSE` readiness prompt drafting;
+- manual handoff language;
+- fixture/synthetic readiness records;
+- blocked provider/model dispatch and live model calls.
+
+Blocked JAI posture in Commit 3:
+
+- provider/model SDK use;
+- model calls or live model calls;
+- hidden persistence or memory writes;
+- automatic context injection or retrieval engine;
+- execution, Agent dispatch, or repo mutation.
+
+### Council Operator-Spine Posture
+
+JAI Council is advisory only. Council agreement is not authority. Model-slot
+output produces claims, not facts. Advisory output can be reviewed, but it cannot
+decide, merge into canon, create a receipt, dispatch a model, execute, or
+advance route/motion state.
+
+The Council prototype remains `/operator/council-prototype`; it is not promoted
+to `/operator/council`.
+
+### Council Session Lifecycle Readiness
+
+Commit 3 exposes a synthetic lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-JAI-LIFE-0001` | draft | Local prompt or packet draft may be composed | `REAL-COMPOSE` only; no submit or persistence |
+| `SYN-JAI-LIFE-0002` | route | Manual operator handoff may carry draft text | Routes recommend; they do not execute |
+| `SYN-JAI-LIFE-0003` | advisory return | Return can be reviewed as claims and evidence refs | Return cannot decide, dispatch, merge, or create receipts |
+| `SYN-JAI-LIFE-0004` | dissent review | Dissent remains visible | No synthesis override and no majority collapse |
+| `SYN-JAI-LIFE-0005` | contradiction review | Contradictions remain visible | No automatic scoring, resolution, or best-model selection |
+| `SYN-JAI-LIFE-0006` | CONTROL_THREAD decision | Operator decision boundary remains outside Council agreement | Validation is not acceptance; CONTROL_THREAD decides |
+| `SYN-JAI-LIFE-0007` | receipt requirement | Future accepted decisions require receipt design | Receipts record; they do not decide |
+| `SYN-JAI-LIFE-0008` | canon update | Canon merge remains blocked | No output merge into canon and no canon update |
+
+All lifecycle records are synthetic `SYN-*` readiness records, not live Council
+session state.
+
+### Model-Slot Readiness Posture
+
+Model slots are represented as fixture/synthetic readiness records only. They do
+not imply provider credentials, model health, dispatch availability, live
+provider state, automatic best-agent selection, or best-model selection.
+
+Current represented slots:
+
+- Builder model slot: draft claims only; provider/model dispatch gate required.
+- Challenger model slot: dissent and objections; Council session gate required.
+- Evidence model slot: evidence-linked claims; evidence/source gate required.
+- Future JAI slot: reserved; JAI runtime gate required.
+
+### Advisory Output Boundary
+
+Advisory output may include claims, evidence refs, dissent, contradictions,
+unresolved questions, and blockers. Advisory output cannot:
+
+- decide;
+- accept;
+- validate itself;
+- synthesize automatically;
+- become canon;
+- create a receipt;
+- update route state or motion state;
+- dispatch a model, provider, Agent, tool, or repo action.
+
+### Dissent And Contradiction Visibility
+
+Dissent must remain visible. Contradictions must remain visible. Neither Council
+agreement, synthesis polish, model-slot majority, nor route recommendation may
+hide dissent or resolve contradictions automatically.
+
+### CONTROL_THREAD Decision Boundary
+
+CONTROL_THREAD decides. Validation is not acceptance. Receipts record; they do
+not decide. Council agreement is not authority. Readiness display is not
+authority.
+
+Any future Council-assisted decision path requires explicit CONTROL_THREAD
+review, source/evidence review, dissent and contradiction review, named gates,
+and a receipt model after acceptance.
+
+### Required Future Gates And Receipts
+
+Future activation would require at least:
+
+- provider/model dispatch gate;
+- Council session gate;
+- evidence/source gate;
+- JAI runtime gate;
+- operator confirmation gate;
+- receipt model for accepted decisions;
+- canon update authority model.
+
+All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
+fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
+Agents. Commit 5 covers Palette/Grid. Commit 6 covers development
+compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
+Commit 8 consolidates final audit and closeout posture.
+
+## Commit 4: JAI Agents Operator Spine
+
+Agent operator spine does not mean Agent execution. Commit 4 connects staged
+Agent lane readiness to the Operator cockpit so operators can see candidate
+lifecycle, blocked authority classes, expected artifacts, validation
+requirements, receipt expectations, rollback requirements, manual handoff
+posture, and cross-surface route context before any Agent runtime exists.
+
+The shared Agent spine remains read-only and compose-only. It adds no tool
+invocation, Agent runner, scheduler, autonomous loop, GitHub integration, repo
+write, file mutation, browser or desktop control, terminal command, branch or PR
+automation, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, persistence, or execution.
+
+### Agent Operator-Spine Posture
+
+Agents are staged, not executing. Agent lane candidate does not execute. No
+Agent execution authority exists in v0. `/operator/agents` remains the Agent
+registry and readiness surface. `/operator/work` remains the deterministic
+agenda and manual work handoff surface. Commit 4 places the shared Agent spine
+in the control plane and live-dashboard context without changing route
+promotion, navigation, or backend behavior.
+
+Allowed Agent posture in Commit 4:
+
+- `READ-ONLY` Agent readiness review;
+- `REAL-COMPOSE` local Agent handoff draft;
+- `MANUAL HANDOFF` language for CONTROL_THREAD review;
+- `SYN-*` staged lane candidate and lifecycle records;
+- blocked authority display for tools, runners, schedulers, repos, terminal,
+  browser, GitHub, branch/PR automation, receipts, canon, and gates.
+
+Blocked Agent posture in Commit 4:
+
+- tool invocation, Agent runner, scheduler, or autonomous loop;
+- GitHub integration, GitHub API use, repo write, file mutation, branch
+  creation, PR creation, push, merge, or commit automation;
+- browser or desktop control;
+- terminal or command execution;
+- Agent dispatch or Agent execution;
+- receipt creation, canon update, rollback execution, or gate evaluation.
+
+### Agent Lane Candidate Lifecycle
+
+Commit 4 exposes a synthetic lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-AGENT-LIFE-0001` | candidate drafted | `READ-ONLY` | Candidate record describes a possible lane; it does not execute |
+| `SYN-AGENT-LIFE-0002` | manual handoff composed | `REAL-COMPOSE` | Local clipboard draft only; no submit, dispatch, or persistence |
+| `SYN-AGENT-LIFE-0003` | validation expected | `GATED` | Validation evidence is required later, but validation is not acceptance |
+| `SYN-AGENT-LIFE-0004` | artifact expected | `FUTURE` | Artifact shape is named for handoff; no files are written here |
+| `SYN-AGENT-LIFE-0005` | receipt expected | `FUTURE` | Receipt expectation is not receipt creation and grants no authority |
+| `SYN-AGENT-LIFE-0006` | rollback expected | `MANUAL HANDOFF` | Rollback must be documented for future work; rollback does not execute |
+| `SYN-AGENT-LIFE-0007` | execution blocked | `BLOCKED` | No Agent runner, tools, terminal command, browser control, or repo mutation |
+| `SYN-AGENT-LIFE-0008` | CONTROL_THREAD decision required | `NOT AUTHORIZED IN V0` | CONTROL_THREAD decides before any future gate, receipt, or canon path |
+
+All lifecycle records are synthetic readiness records, not live Agent runtime
+state.
+
+### Blocked Agent Authority Classes
+
+Commit 4 keeps these classes visibly blocked: tool invocation, Agent runner,
+scheduler, autonomous loop, terminal or command execution, repo mutation, branch
+creation, PR creation, branch/PR automation, browser/desktop control,
+provider/model dispatch, live model calls, receipt creation, canon update, and
+gate evaluation.
+
+### Expected Artifacts
+
+Agent lane candidates may name expected artifacts for future manual review:
+plan, diff summary, validation transcript, closeout passalong, receipt request,
+and rollback note. These are expectations only. They do not write files, create
+receipts, update canon, open PRs, run checks, or execute rollback.
+
+### Validation Requirements
+
+Validation requirements name evidence an operator would need before a later
+CONTROL_THREAD decision. Validation does not accept work, select an Agent,
+create a receipt, merge output into canon, evaluate gates, or open execution
+authority.
+
+### Receipt Expectations
+
+Receipt expectations remain future-facing. Receipts record; they do not decide.
+Commit 4 does not create receipts, request a live receipt service, write receipt
+files, or grant gates.
+
+### Rollback Requirements
+
+Rollback requirements are documentation expectations. They do not execute
+rollback, call tools, mutate repos, revert files, run terminal commands, or
+change route or motion state.
+
+### Local-Only Handoff Posture
+
+The Agent handoff composer is `REAL-COMPOSE` only. It copies local draft text
+for manual handoff and has no submit path, persistence, dispatch behavior, tool
+invocation, Agent execution, GitHub API call, repo write, receipt creation,
+canon update, route-state mutation, or motion-state mutation.
+
+### Pre-Gate Allowed Behavior
+
+Before gates exist, the Agent spine permits only:
+
+- read readiness;
+- compose a local handoff draft;
+- copy a local draft;
+- manually route outside the app through CONTROL_THREAD.
+
+### Required Future Gates And Receipts
+
+Future Agent activation would require explicit CONTROL_THREAD authority, named
+Agent execution gates, tool-invocation gates, repo and branch/PR gates where
+applicable, browser/desktop or terminal gates where applicable, validation
+evidence, rollback documentation, and receipt design. All remain closed or
+undefined in Commit 4.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 4 builds on Commit 2 source posture by labeling Agent records as
+synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
+It builds on Commit 3 by keeping model/Council output advisory and separate from
+Agent execution. Commit 5 covers Palette/Grid. Commit 6 covers
+development compose posture. Commit 7 covers `.jai`, receipt, and gate
+alignment. Commit 8 consolidates final audit and closeout posture.
+
+## Commit 5: JAI Palette + JAI Grid Operator Spine
+
+Palette/Grid operator spine does not mean retrieval, memory, dispatch, live
+context injection, customer-data handling, or execution. Commit 5 connects
+Palette and Grid readiness to the Operator cockpit so operators can understand
+context assembly, operational-state display, project/repo/work relationships,
+queues, capability maps, source posture, freshness posture, privacy boundaries,
+customer-data boundaries, and live-readiness blockers before any runtime exists.
+
+The shared Palette/Grid spine remains read-only and compose-only. It adds no
+retrieval engine, automatic context injection, live memory write, hidden
+persistence, customer-data handling, model dispatch, Agent dispatch, execution,
+API route, server action, DB write, Prisma change, receipt creation, canon
+update, route-state mutation, motion-state mutation, gate evaluation, or live
+runtime activation.
+
+### Palette Operator-Spine Posture
+
+Palette assembles context; it does not authorize. Palette readiness represents
+project context, repo context, motion/receipt context, Council context, Agent
+lane context, source posture, freshness posture, blocked context classes, the
+customer-data boundary, and the privacy boundary.
+
+Allowed Palette posture in Commit 5:
+
+- `READ-ONLY` context readiness review;
+- `REAL-COMPOSE` local context packet draft;
+- `MANUAL HANDOFF` language for CONTROL_THREAD review;
+- `SYN-*` context assembly lifecycle records;
+- source and freshness labels for canonical, DB, YAML, derived, partial,
+  fixture, synthetic, and unknown-source context.
+
+Blocked Palette posture in Commit 5:
+
+- retrieval engine;
+- automatic context injection;
+- live memory writes or hidden persistence;
+- customer-data handling;
+- model dispatch or Agent dispatch;
+- source selection as authority;
+- unknown-source context appearing canonical.
+
+### Grid Operator-Spine Posture
+
+Grid displays operational state; it does not execute. Grid readiness represents
+the operational-state map, project/repo/work relationships, workflow lanes,
+route queues, motion queues, work queues, capability maps, live-readiness
+blockers, and source posture.
+
+Allowed Grid posture in Commit 5:
+
+- `READ-ONLY` operational-state display;
+- relationship and queue posture cards;
+- capability map cards labeled as gated/readiness posture;
+- route links to existing Operator surfaces.
+
+Blocked Grid posture in Commit 5:
+
+- execution;
+- route-state or motion-state mutation;
+- repo/file mutation;
+- branch or PR automation;
+- scheduler or autonomous loop;
+- automatic gate evaluation;
+- dashboard state as authorization.
+
+### Context Assembly Posture
+
+Commit 5 exposes a synthetic Palette lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-PALETTE-LIFE-0001` | select context class | `READ-ONLY` | Context class selection orients review; it does not authorize |
+| `SYN-PALETTE-LIFE-0002` | label source posture | `READ-ONLY` | Unknown-source context must remain unknown, not canonical |
+| `SYN-PALETTE-LIFE-0003` | check freshness | `GATED` | Freshness is a label, not live verification or acceptance |
+| `SYN-PALETTE-LIFE-0004` | exclude blocked context | `BLOCKED` | Customer data, private memory, unknown-source canon, and injection remain blocked |
+| `SYN-PALETTE-LIFE-0005` | compose packet locally | `REAL-COMPOSE` | Clipboard draft only; no retrieval, injection, persistence, or dispatch |
+| `SYN-PALETTE-LIFE-0006` | manual handoff only | `MANUAL HANDOFF` | CONTROL_THREAD decides; packet display does not grant authority |
+
+All lifecycle records are synthetic readiness records, not live retrieval or
+context-injection state.
+
+### Operational-State Map Posture
+
+Commit 5 exposes a synthetic Grid lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-GRID-LIFE-0001` | display relationships | `READ-ONLY` | Project/repo/work relationships are display posture only |
+| `SYN-GRID-LIFE-0002` | display queues | `READ-ONLY` | Route, motion, and work queues do not schedule or execute |
+| `SYN-GRID-LIFE-0003` | display capability map | `GATED` | Capability display is not activation or gate evaluation |
+| `SYN-GRID-LIFE-0004` | display blockers | `BLOCKED` | Blockers remain visible and cannot be bypassed by dashboard state |
+| `SYN-GRID-LIFE-0005` | no execution | `NOT AUTHORIZED IN V0` | Grid displays operational state; it does not execute |
+| `SYN-GRID-LIFE-0006` | no mutation | `NOT AUTHORIZED IN V0` | No route-state, motion-state, repo, file, receipt, canon, or memory mutation |
+
+All lifecycle records are synthetic readiness records, not active operational
+state.
+
+### Source Posture And Freshness Labels
+
+Commit 5 uses the existing Commit 2 source label vocabulary for Palette/Grid
+context:
+
+- `READ-ONLY CANONICAL` for accepted stored shapes shown for review;
+- `DB READ-ONLY` for database rows read for display;
+- `YAML-BACKED CANONICAL` for checked-in canonical/config source;
+- `DERIVED` for computed display values;
+- `PARTIAL STREAM` for known partial queue or event posture;
+- `FIXTURE` for local/static readiness records;
+- `SYNTHETIC` for `SYN-*` future readiness records;
+- `UNKNOWN SOURCE` for context that must remain conservative and never appear
+  canonical.
+
+Stored status is not live verification. Context selection is not authority.
+Unknown-source context must not appear canonical.
+
+### Blocked Context Classes
+
+Commit 5 keeps these classes visibly blocked: unknown-source context as
+canonical, unknown-source records, stale records as current, customer-data
+handling, private context without policy, private memory writes, hidden
+persistence, automatic context injection, retrieval engine, live memory write,
+model dispatch, Agent dispatch, execution, gate evaluation, receipt creation,
+and canon update.
+
+### Customer-Data And Privacy Boundaries
+
+Customer data is not handled in this readiness surface. Private,
+unknown-source, or customer-origin context remains blocked unless future gates,
+provenance, privacy review, customer-data authorization, and receipts are
+explicitly established by CONTROL_THREAD.
+
+Privacy boundaries are not optional. Read-only context display does not allow
+customer-data handling, private memory writes, hidden persistence, automatic
+context injection, or production behavior.
+
+### Project / Repo / Work Relationships
+
+Grid relationship cards represent project, repo, and work posture only.
+Relationships do not route work, mutate repos, create branches, create PRs,
+dispatch Agents, schedule work, or evaluate gates.
+
+### Route / Motion / Work Queue Posture
+
+Route queues recommend; they do not execute. Motion queues display read-only
+posture; they do not mutate motion state. Work queues display agenda posture;
+they do not schedule, dispatch, run Agents, or operate terminal/browser tools.
+
+### Capability Map Posture
+
+Capability map cards describe readiness only. Palette can frame context packets;
+it cannot inject them. Grid can display state; it cannot execute state. Council
+context remains advisory claims, not facts. Agent lane context remains staged,
+not executing or dispatching.
+
+### Local-Only Context Packet Posture
+
+The context packet composer is `REAL-COMPOSE` only. It copies local draft text
+for manual handoff and has no submit path, retrieval behavior, automatic
+context injection, persistence, live memory write, customer-data handling, model
+call, Agent dispatch, receipt creation, canon update, route-state mutation, or
+motion-state mutation.
+
+### Live-Readiness Blockers
+
+Palette/Grid live readiness remains blocked by no retrieval engine, no
+automatic context injection, no customer-data handling, no live memory writes,
+no model dispatch, no Agent dispatch, no execution gates, and no receipt/canon
+authority model.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 5 builds on Commit 2 source posture by carrying source and freshness
+labels into context assembly and operational-state display. It builds on Commit
+3 by keeping Council context advisory. It builds on Commit 4 by keeping Agent
+lane context staged and non-executing. Commit 6 covers development
+compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
+Commit 8 consolidates final audit and closeout posture.
+
+## Commit 6: Development Work Compose Spine
+
+Development compose spine does not mean development execution. Commit 6 makes
+branch planning, PR body drafting, validation checklist drafting, closeout
+drafting, and implementation planning clearer as local/manual handoff support.
+These drafts may be copied by an operator, but they are not submitted,
+persisted, dispatched, converted into GitHub actions, used to mutate files,
+used to create branches or PRs, used to push or merge, used to create receipts,
+used to update canon, or used to change route or motion state.
+
+The shared development compose spine remains compose-only and read-only. It adds
+no GitHub API, branch creation, PR creation, push, merge, file mutation, repo
+write, code-generation execution path, commit automation, branch/PR automation,
+execution, provider/model dispatch, live model calls, Agent dispatch, tool
+invocation, scheduler, autonomous loop, browser/desktop control, terminal
+command execution, persistence, API route, server action, DB write, Prisma
+change, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, or runtime activation.
+
+### Development-Work Compose Spine Posture
+
+Branch planning may be represented. PR descriptions may be composed. GitHub
+integration is not authorized. Branch creation is not authorized. PR creation is
+not authorized. Code push is not authorized. Repo mutation is not authorized.
+Receipt creation is not authorized. Validation is not acceptance.
+CONTROL_THREAD decides. ZERO GATES GRANTED.
+
+Allowed development compose posture in Commit 6:
+
+- `REAL-COMPOSE` branch name suggestion drafts;
+- `REAL-COMPOSE` implementation plan drafts;
+- `REAL-COMPOSE` PR body drafts;
+- `REAL-COMPOSE` validation checklist drafts;
+- `REAL-COMPOSE` closeout drafts;
+- `READ-ONLY` development workflow readiness cards;
+- `READ-ONLY` cross-surface links among work, repos, control plane, and live
+  dashboard.
+
+Blocked development compose posture in Commit 6:
+
+- GitHub API or GitHub integration;
+- branch creation or PR creation;
+- push, merge, commit automation, or branch/PR automation;
+- repo writes or file mutation;
+- code execution or code-generation execution paths;
+- receipt creation, canon update, route-state mutation, or motion-state
+  mutation.
+
+### Branch Planning Compose Posture
+
+Branch name suggestions are local text drafts only. They do not create a branch,
+push to a remote, call GitHub, mutate repo state, or imply branch naming
+authority.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-BRANCH-0001` | branch name suggestion | `REAL-COMPOSE` | No branch creation, no push, no GitHub API, no repo write |
+
+### PR Body Compose Posture
+
+PR body drafts are local text drafts only. They do not create PRs, call GitHub,
+open browsers, mutate branches, submit review requests, push, merge, or commit.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-PR-0001` | PR body draft | `REAL-COMPOSE` | PR creation, branch/PR automation, push, merge, and GitHub API remain blocked |
+
+### Validation Checklist Compose Posture
+
+Validation checklist drafts name checks for manual execution outside this
+surface. They do not run commands, validate automatically, accept work, evaluate
+gates, or create receipts. Validation is not acceptance.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-VALIDATION-0001` | validation checklist | `REAL-COMPOSE` | Checklist copy is not command execution, validation execution, or acceptance |
+
+### Closeout Draft Compose Posture
+
+Closeout drafts are local passalong text only. They do not create receipts,
+update canon, close work, approve work, route state, motion state, or gate
+state.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-CLOSEOUT-0001` | closeout draft | `REAL-COMPOSE` | Does not create receipt, update canon, or grant authority |
+
+### Implementation Plan Compose Posture
+
+Implementation plan drafts can name scope, touched paths, validation plan,
+boundaries, and manual handoff notes. They do not execute implementation,
+generate code, mutate files, mutate repos, create commits, or start automation.
+
+Current synthetic record:
+
+| ID | Draft | Posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-DEV-PLAN-0001` | implementation plan draft | `REAL-COMPOSE` | Plan is not execution and does not mutate files |
+
+### Blocked / Gated Future Development Capabilities
+
+Commit 6 keeps these classes visibly blocked: GitHub API, GitHub integration,
+branch creation, PR creation, code push, merge, file mutation, repo write, code
+execution, commit automation, branch/PR automation, code-generation execution
+path, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, provider/model dispatch, Agent execution, tool
+invocation, and terminal/command execution.
+
+### Local-Only Manual Handoff Posture
+
+The development compose spine copies local draft text only. It has no submit
+path, persistence, dispatch behavior, GitHub API call, branch creation, PR
+creation, push, merge, repo write, file mutation, code execution, commit
+automation, receipt creation, canon update, route-state mutation, or
+motion-state mutation.
+
+### Required Future Gates And Receipts
+
+Future controlled development workflows would require explicit CONTROL_THREAD
+authority, named GitHub/repo/file/branch/PR gates where applicable, validation
+evidence, rollback posture, security review, receipt design, and canon-update
+authority after acceptance. None are opened in Commit 6.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 6 builds on Commit 2 source posture by preserving read-only labels on
+repo and work context. It builds on Commit 4 Agent posture by keeping work
+handoff manual and non-executing. It builds on Commit 5 Palette/Grid posture by
+keeping project/repo/work context representational and non-authorizing. Commit 7
+covers `.jai`, receipt, and gate alignment. Commit 8 consolidates
+final audit and closeout posture.
+
+## Commit 7: `.jai` / Receipt / Gate Alignment Planning
+
+### Planning Posture
+
+Commit 7 connects the activation-spine surfaces to pending `.jai`, receipt,
+gate, and object-model dependencies. It is planning-only and read-only.
+
+`.jai` profile labels do not implement parser/runtime behavior. Receipt labels
+do not create receipts. Gate labels do not evaluate or open gates. Route, motion,
+project, repo, dashboard, and canon dependencies do not mutate state.
+
+Visible planning labels introduced for this pass:
+
+- `NEEDS .jai PROFILE`
+- `NEEDS RECEIPT/V0`
+- `NEEDS SECURITY GATE`
+- `NEEDS EXECUTION GATE`
+- `NEEDS ROUTE DECISION`
+- `PLANNING ONLY`
+- `NO ACTIVATION`
+
+ZERO GATES GRANTED.
+
+### Dependency Matrix
+
+Commit 7 uses synthetic planning records only. These records are labeled
+`SYNTHETIC`, `PLANNING ONLY`, `READ-ONLY`, and `NO ACTIVATION`.
+
+| ID | Dependency | Current posture | Needed profile / model / receipt / gate | Blocked behavior | Next route |
+| --- | --- | --- | --- | --- | --- |
+| `SYN-ALIGN-DEP-0001` | `JAI_CORE_OBJECT_MODEL_V0` | Planned object model dependency | `.jai` profile and route decision | `.jai` active semantics, parser/runtime behavior, and automatic profile validation | `/operator/jai` |
+| `SYN-ALIGN-DEP-0002` | `receipt/v0` | Planned receipt dependency | `receipt/v0` and security gate | Receipt creation, receipt synthesis, storage write, and canon update | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0003` | `project-state/v0` | Planned project-state dependency | `.jai` profile and `receipt/v0` | Project-state mutation, live verification claims, and automatic acceptance | `/operator/portfolio-status` |
+| `SYN-ALIGN-DEP-0004` | `repo-lane/v0` | Planned repo-lane dependency | Security gate and `receipt/v0` | Repo write, file mutation, GitHub API, branch creation, and PR creation | `/operator/work` |
+| `SYN-ALIGN-DEP-0005` | `route/v0` | Planned route-state dependency | Route decision and `receipt/v0` | Route promotion, redirect, route-state mutation, and navigation redesign | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0006` | `council-return/v0` | Planned Council return dependency | `.jai` profile and `receipt/v0` | Council dispatch, automatic synthesis, output-to-canon, and acceptance | `/operator/jai` |
+| `SYN-ALIGN-DEP-0007` | `agent-lane-candidate/v0` | Planned Agent lane dependency | `.jai` profile and execution gate | Agent execution, runner behavior, tool invocation, scheduler, autonomous loop, and dispatch | `/operator/agents` |
+| `SYN-ALIGN-DEP-0008` | `dashboard-state-index/v0` | Planned dashboard-state dependency | Route decision and security gate | Dashboard-state mutation, gate evaluation, live verification claims, and activation | `/operator/grid` |
+| `SYN-ALIGN-DEP-0009` | Security gate dependency | Planned security prerequisite | Security gate and `receipt/v0` | Authentication or step-up verification opening execution authority | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0010` | Execution gate dependency | Planned execution prerequisite | Execution gate and `receipt/v0` | Execution gates, provider/model dispatch, Agent execution, repo mutation, route-state mutation, and motion-state mutation | `/operator/live-dashboard` |
+
+### Blocked Parser / Runtime Behavior
+
+Commit 7 does not add a `.jai` parser, `.jai` runtime, `.jai` execution
+behavior, `.nexus` active semantics, automatic profile validation, policy
+enforcement, automatic scoring, automatic synthesis, or automatic
+best-agent/model selection.
+
+### Blocked Receipt / Canon Behavior
+
+Receipt dependencies are displayed as prerequisites only. Commit 7 does not
+create receipts, synthesize receipts, persist receipt records, update canon,
+merge advisory output into canon, or treat a receipt requirement as acceptance.
+
+Receipts record; they do not decide.
+
+### Blocked Gate Evaluation Behavior
+
+Security and execution gate dependencies are displayed as blockers only. Commit
+7 does not evaluate gates, open gates, persist gate state, infer authority from
+authentication, infer authority from step-up verification, or change route,
+motion, dashboard, project, repo, or work state.
+
+Authentication is not authorization. Step-up verification confirms operator
+presence only. Verified session does not open execution gates.
+
+### Recommended Future Route Sequence
+
+Future CONTROL_THREAD work should decide route posture before activation:
+
+1. Confirm the `JAI_CORE_OBJECT_MODEL_V0` profile boundary and accepted `.jai`
+   profile shape.
+2. Define `receipt/v0` as a record format without decision authority.
+3. Define `project-state/v0`, `repo-lane/v0`, `route/v0`, and
+   `dashboard-state-index/v0` as read/write models only after explicit mutation
+   gates exist.
+4. Define `council-return/v0` and `agent-lane-candidate/v0` as advisory input
+   models before any runtime dispatch is considered.
+5. Define security gate prerequisites separately from execution gate
+   prerequisites.
+6. Require CONTROL_THREAD route decision, validation evidence, receipt design,
+   rollback posture, and explicit execution authority before any activation.
+
+### Relationship To Existing Spines
+
+Commit 7 extends Commit 1 by keeping route decisions pending and visible. It
+extends Commit 2 by preserving source labels and read-only posture. It extends
+Commit 3 by keeping Council returns advisory and non-canonical. It extends
+Commit 4 by keeping Agent lane candidates staged and non-executing. It extends
+Commit 5 by keeping Palette/Grid context and operational state
+representational. It extends Commit 6 by keeping development handoff
+compose-only and outside GitHub/repo/file mutation paths.
+
+Commit 8 performs the final no-activation audit, closeout confirmation, and
+branch-level risk summary without opening gates.
+
+## Commit 8: Final Audit / No-Activation Posture Cleanup
+
+### Final Audit Posture
+
+Commit 8 is documentation cleanup and audit evidence only. It does not introduce
+new activation-spine capability scope, new runtime behavior, new integration
+behavior, new mutation behavior, new route topology behavior, new gate behavior,
+new receipt behavior, or new canon behavior.
+
+Activation spine does not mean activation.
+
+### Branch-Level Confirmation
+
+| Audit area | Final posture |
+| --- | --- |
+| Route topology | Existing routes remain accessible; no route promotion, route removal, destructive redirect, DCT removal, legacy nav removal, or navigation removal. |
+| Navigation | Existing Operator subnav and legacy top-nav posture are preserved; route questions remain pending for CONTROL_THREAD. |
+| Dependency/package | No package, lockfile, dependency, or Prisma schema changes are introduced by the activation-spine branch. |
+| Runtime integration | No runtime activation, scheduler, autonomous loop, browser/desktop control, terminal/command execution, or production behavior is authorized. |
+| API/server-action/DB/Prisma | No new API routes, server actions, DB writes, Prisma changes, telemetry, auth/session changes, or hidden persistence are added. |
+| Provider/model/Agent/GitHub | No provider/model SDK, model calls, Agent dispatch, Agent execution, GitHub integration, or GitHub API use is added. |
+| Branch/PR/repo/file | No branch creation, PR creation, push, merge, commit automation, branch/PR automation, repo mutation, repo write, or file mutation is added. |
+| Retrieval/context/memory | No retrieval engine, automatic context injection, live memory writes, customer-data handling, or localStorage/sessionStorage system-of-record behavior is added. |
+| Receipt/canon/gate | No receipt creation, canon update, automatic gate evaluation, gate-state mutation, security gate opening, or execution gate opening is added. |
+| Route/motion state | No route-state mutation, motion-state mutation, dashboard-state mutation, project-state mutation, or repo-lane mutation is added. |
+| Source posture | Fixture, synthetic, derived, partial, unknown-source, DB read-only, YAML-backed canonical, and read-only canonical records remain labeled conservatively. |
+| Action labels | Visible actions remain `READ-ONLY`, `REAL-COMPOSE`, `MOCK`, `GATED`, `BLOCKED`, `MANUAL HANDOFF`, `FUTURE`, or `NOT AUTHORIZED IN V0`. |
+
+### Surface Smoke Coverage
+
+Production build/static route verification covers the activation-spine surfaces
+compiled by Next.js:
+
+- `/operator`
+- `/operator/control-plane`
+- `/operator/live-dashboard`
+- `/operator/design-system`
+- `/operator/council-prototype`
+- `/operator/jai`
+- `/operator/agents`
+- `/operator/work`
+- `/operator/work/new`
+- `/operator/work/[id]`
+- `/operator/repos`
+- `/operator/repos/[repoId]`
+- `/operator/grid`
+- `/operator/portfolio-status`
+- `/operator/corpus`
+- `/operator/operating-context`
+- `/operator/motions`
+- `/operator/decisions`
+- `/operator/events`
+
+Manual source review for Commit 8 confirms these surfaces remain
+non-authorizing, retain read-only or compose-only posture, and do not add
+backend/API/DB/provider/model/Agent/GitHub behavior.
+
+### Copy-Only Behavior Audit
+
+Existing copy-to-clipboard behavior remains local-only and visibly labeled
+`REAL-COMPOSE` or copy-only:
+
+- Council prompt draft copy.
+- Agent handoff prompt copy.
+- Palette/Grid context packet copy.
+- Development branch suggestion copy.
+- Development PR body copy.
+- Development validation checklist copy.
+- Development closeout draft copy.
+- Development implementation plan copy.
+- Pre-existing Grid compose copy.
+
+These copy paths do not submit, persist, dispatch, call GitHub, create branches,
+create PRs, push, merge, mutate repos, mutate files, execute code, validate
+profiles, create receipts, update canon, evaluate gates, mutate route state, or
+mutate motion state.
+
+### Pre-Existing Mutation Paths
+
+The branch observes but does not alter these pre-existing mutation-capable
+paths:
+
+- `/operator/registry/repos` admin-gated `repos.yaml` import with DB upsert.
+- `/operator/sync-runs/[syncRunId]/apply`.
+- `/operator/sync-runs/[syncRunId]/reject`.
+- Existing DCT/internal API mutation surfaces seen in build route output.
+
+These paths are outside this branch's authorization. They are not removed,
+expanded, or newly authorized.
+
+### Required Language Preserved
+
+- CONTROL_THREAD decides.
+- Validation is not acceptance.
+- Receipts record; they do not decide.
+- Routes recommend; they do not execute.
+- Council agreement is not authority.
+- Agents are staged, not executing.
+- Palette assembles context; it does not authorize.
+- Grid displays operational state; it does not execute.
+- Context selection is not authority.
+- Retrieval is not acceptance.
+- Authentication is not authorization.
+- Step-up verification confirms operator presence only.
+- Verified session does not open execution gates.
+- Dashboard display does not authorize.
+- Read-only is not authority.
+- No code push authority in v0.
+- No Agent execution authority in v0.
+- No model dispatch in v0.
+- No live model calls in v0.
+- No execution gates opened.
+- ZERO GATES GRANTED.
+
+### Final Non-Authorizations
+
+This branch does not authorize execution, provider/model dispatch, live model
+calls, Agent execution, Agent dispatch, GitHub integration, GitHub API use, repo
+mutation, file mutation, branch creation, PR creation, push, merge, commit
+automation, branch/PR automation, browser/desktop control, terminal/command
+execution, scheduler behavior, autonomous loops, retrieval engines, automatic
+context injection, live memory writes, hidden persistence, live settings
+mutation, new API routes, new server actions, DB writes beyond pre-existing
+behavior, Prisma changes, telemetry, auth/session changes, customer-data
+handling, production behavior, `.jai` parser/runtime behavior, `.jai` execution
+behavior, `.nexus` active semantics, policy enforcement, execution gates,
+automatic scoring, automatic synthesis, automatic best-agent selection,
+automatic gate evaluation, automatic profile validation, receipt creation, canon
+update, route-state mutation, motion-state mutation, route removal, destructive
+redirect, or navigation removal.
+
+ZERO GATES GRANTED.
+
+### Recommended Next Route
+
+Recommended next route after this branch:
+
+`Operator Route Topology Decision v0`
+
+Alternative follow-up:
+
+`JAI_CORE_OBJECT_MODEL_V0 follow-up integration planning`, if `jai-format` has
+landed and `.jai` profile alignment becomes the priority.

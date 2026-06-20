@@ -11,6 +11,7 @@ import {
   OperatorSafetyRail,
   OperatorSectionHeader,
 } from "@/components/operator/slate";
+import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { prisma } from "@/lib/prisma";
 
 type RouteParams = {
@@ -144,6 +145,8 @@ export default async function RepoFilesPage({ params }: RepoFilesPageProps) {
             </p>
           </OperatorSafetyRail>
         </header>
+
+        <DevelopmentWorkReadiness index="DEV" compact />
 
         <OperatorPanel className="overflow-hidden p-0">
           <OperatorSectionHeader
