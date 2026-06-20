@@ -105,13 +105,14 @@ expand, authorize, or present them as newly authorized:
 
 ## Recommended Later Commit Sequence
 
-1. Commit 2: canonical read-only spine, JAI, and JAI Council readiness surfaces.
-2. Commit 3: Agents readiness posture and staged-agent non-execution boundary.
-3. Commit 4: Palette/Grid readiness posture and visual/source labeling.
-4. Commit 5: development compose spine and local-only handoff language.
-5. Commit 6: `.jai`, receipt, gate, and dependency readiness documentation.
-6. Commit 7: source posture and audit consolidation.
-7. Commit 8: final activation-spine closeout and validation summary.
+1. Commit 2: canonical read-only spine.
+2. Commit 3: JAI and JAI Council operator spine.
+3. Commit 4: Agents readiness posture and staged-agent non-execution boundary.
+4. Commit 5: Palette/Grid readiness posture and visual/source labeling.
+5. Commit 6: development compose spine and local-only handoff language.
+6. Commit 7: `.jai`, receipt, gate, and dependency readiness documentation.
+7. Commit 8: final activation-spine closeout, audit consolidation, and
+   validation summary.
 
 Later commits must preserve the hard boundary: CONTROL_THREAD decides.
 
@@ -213,11 +214,11 @@ ZERO GATES GRANTED.
 
 ### Relationship To Later Commits
 
-Commit 3 covers the JAI and Council spine. Commit 4 should cover Agents.
-Commit 5 should cover Palette/Grid. Commit 6 should cover development compose
-spine. Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8
-should consolidate final audit and closeout posture. Later commits must not
-reinterpret Commit 2 source labels as authorization.
+Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
+should cover Palette/Grid. Commit 6 should cover development compose spine.
+Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8 should
+consolidate final audit and closeout posture. Later commits must not reinterpret
+Commit 2 source labels as authorization.
 
 ## Commit 3: JAI + Council Operator Spine
 
@@ -342,7 +343,136 @@ All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
 ### Relationship To Other Spines
 
 Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
-fixture, synthetic, advisory, read-only, or compose-only. Commit 4 should cover
+fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
 Agents. Commit 5 should cover Palette/Grid. Commit 6 should cover development
 compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
+
+## Commit 4: JAI Agents Operator Spine
+
+Agent operator spine does not mean Agent execution. Commit 4 connects staged
+Agent lane readiness to the Operator cockpit so operators can see candidate
+lifecycle, blocked authority classes, expected artifacts, validation
+requirements, receipt expectations, rollback requirements, manual handoff
+posture, and cross-surface route context before any Agent runtime exists.
+
+The shared Agent spine remains read-only and compose-only. It adds no tool
+invocation, Agent runner, scheduler, autonomous loop, GitHub integration, repo
+write, file mutation, browser or desktop control, terminal command, branch or PR
+automation, receipt creation, canon update, route-state mutation, motion-state
+mutation, gate evaluation, persistence, or execution.
+
+### Agent Operator-Spine Posture
+
+Agents are staged, not executing. Agent lane candidate does not execute. No
+Agent execution authority exists in v0. `/operator/agents` remains the Agent
+registry and readiness surface. `/operator/work` remains the deterministic
+agenda and manual work handoff surface. Commit 4 places the shared Agent spine
+in the control plane and live-dashboard context without changing route
+promotion, navigation, or backend behavior.
+
+Allowed Agent posture in Commit 4:
+
+- `READ-ONLY` Agent readiness review;
+- `REAL-COMPOSE` local Agent handoff draft;
+- `MANUAL HANDOFF` language for CONTROL_THREAD review;
+- `SYN-*` staged lane candidate and lifecycle records;
+- blocked authority display for tools, runners, schedulers, repos, terminal,
+  browser, GitHub, branch/PR automation, receipts, canon, and gates.
+
+Blocked Agent posture in Commit 4:
+
+- tool invocation, Agent runner, scheduler, or autonomous loop;
+- GitHub integration, GitHub API use, repo write, file mutation, branch
+  creation, PR creation, push, merge, or commit automation;
+- browser or desktop control;
+- terminal or command execution;
+- Agent dispatch or Agent execution;
+- receipt creation, canon update, rollback execution, or gate evaluation.
+
+### Agent Lane Candidate Lifecycle
+
+Commit 4 exposes a synthetic lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-AGENT-LIFE-0001` | candidate drafted | `READ-ONLY` | Candidate record describes a possible lane; it does not execute |
+| `SYN-AGENT-LIFE-0002` | manual handoff composed | `REAL-COMPOSE` | Local clipboard draft only; no submit, dispatch, or persistence |
+| `SYN-AGENT-LIFE-0003` | validation expected | `GATED` | Validation evidence is required later, but validation is not acceptance |
+| `SYN-AGENT-LIFE-0004` | artifact expected | `FUTURE` | Artifact shape is named for handoff; no files are written here |
+| `SYN-AGENT-LIFE-0005` | receipt expected | `FUTURE` | Receipt expectation is not receipt creation and grants no authority |
+| `SYN-AGENT-LIFE-0006` | rollback expected | `MANUAL HANDOFF` | Rollback must be documented for future work; rollback does not execute |
+| `SYN-AGENT-LIFE-0007` | execution blocked | `BLOCKED` | No Agent runner, tools, terminal command, browser control, or repo mutation |
+| `SYN-AGENT-LIFE-0008` | CONTROL_THREAD decision required | `NOT AUTHORIZED IN V0` | CONTROL_THREAD decides before any future gate, receipt, or canon path |
+
+All lifecycle records are synthetic readiness records, not live Agent runtime
+state.
+
+### Blocked Agent Authority Classes
+
+Commit 4 keeps these classes visibly blocked: tool invocation, Agent runner,
+scheduler, autonomous loop, terminal or command execution, repo mutation, branch
+creation, PR creation, branch/PR automation, browser/desktop control,
+provider/model dispatch, live model calls, receipt creation, canon update, and
+gate evaluation.
+
+### Expected Artifacts
+
+Agent lane candidates may name expected artifacts for future manual review:
+plan, diff summary, validation transcript, closeout passalong, receipt request,
+and rollback note. These are expectations only. They do not write files, create
+receipts, update canon, open PRs, run checks, or execute rollback.
+
+### Validation Requirements
+
+Validation requirements name evidence an operator would need before a later
+CONTROL_THREAD decision. Validation does not accept work, select an Agent,
+create a receipt, merge output into canon, evaluate gates, or open execution
+authority.
+
+### Receipt Expectations
+
+Receipt expectations remain future-facing. Receipts record; they do not decide.
+Commit 4 does not create receipts, request a live receipt service, write receipt
+files, or grant gates.
+
+### Rollback Requirements
+
+Rollback requirements are documentation expectations. They do not execute
+rollback, call tools, mutate repos, revert files, run terminal commands, or
+change route or motion state.
+
+### Local-Only Handoff Posture
+
+The Agent handoff composer is `REAL-COMPOSE` only. It copies local draft text
+for manual handoff and has no submit path, persistence, dispatch behavior, tool
+invocation, Agent execution, GitHub API call, repo write, receipt creation,
+canon update, route-state mutation, or motion-state mutation.
+
+### Pre-Gate Allowed Behavior
+
+Before gates exist, the Agent spine permits only:
+
+- read readiness;
+- compose a local handoff draft;
+- copy a local draft;
+- manually route outside the app through CONTROL_THREAD.
+
+### Required Future Gates And Receipts
+
+Future Agent activation would require explicit CONTROL_THREAD authority, named
+Agent execution gates, tool-invocation gates, repo and branch/PR gates where
+applicable, browser/desktop or terminal gates where applicable, validation
+evidence, rollback documentation, and receipt design. All remain closed or
+undefined in Commit 4.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 4 builds on Commit 2 source posture by labeling Agent records as
+synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
+It builds on Commit 3 by keeping model/Council output advisory and separate from
+Agent execution. Commit 5 should cover Palette/Grid. Commit 6 should cover
+development compose posture. Commit 7 should cover `.jai`, receipt, and gate
+alignment. Commit 8 should consolidate final audit and closeout posture.

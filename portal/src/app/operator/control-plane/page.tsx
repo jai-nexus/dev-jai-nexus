@@ -8,6 +8,7 @@ import {
   OperatorSectionHeader,
 } from "@/components/operator/slate";
 import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlySpine";
+import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 import { LiveReadinessMatrix } from "@/components/operator/LiveReadinessMatrix";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
@@ -154,6 +155,8 @@ export default async function OperatorControlPlanePage() {
         <RouteTopologyReadiness index="TOPOLOGY" compact />
 
         <JaiCouncilReadiness index="JAI" compact />
+
+        <JaiAgentReadiness index="AGENT" compact />
 
         <LiveReadinessMatrix index="MATRIX" />
 
