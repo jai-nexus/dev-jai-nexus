@@ -8,6 +8,7 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import { agentRegistryStaticData } from "@/data/operator/agentRegistry";
+import { AgentVoteReviewSurface } from "./AgentVoteReviewSurface";
 
 function BadgeList({
   items,
@@ -464,52 +465,7 @@ export function AgentRegistryStaticSurface() {
         </div>
       </RegistrySection>
 
-      <RegistrySection
-        index="AR-08"
-        title="Advisory Vote / Quorum Examples"
-        description="Agent votes are evidence, not authority. Agent votes do not decide. Quorum is readiness evidence, not approval."
-      >
-        <div className="grid gap-2 lg:grid-cols-2">
-          {voteBundles.map((bundle) => (
-            <OperatorGateCard key={bundle.voteBundleId} className="space-y-2">
-              <div className="flex flex-wrap gap-2">
-                <OperatorBadge tone="readOnly">{bundle.routeType}</OperatorBadge>
-                <OperatorBadge tone="blocked">{bundle.quorum.status}</OperatorBadge>
-                <OperatorBadge tone="blocked">
-                  CONTROL_THREAD REVIEW REQUIRED
-                </OperatorBadge>
-              </div>
-              <div className="text-sm font-semibold text-slate-100">
-                {bundle.voteBundleId}
-              </div>
-              <CompactList
-                items={[
-                  `domain: ${bundle.domainEngine}`,
-                  `readiness: ${bundle.readinessEffect}`,
-                  `automatic approval: ${String(bundle.quorum.automaticApproval)}`,
-                ]}
-                limit={3}
-              />
-              <div className="grid gap-2">
-                {bundle.votes.map((vote) => (
-                  <div
-                    key={`${bundle.voteBundleId}-${vote.agentNamespace}-${vote.voteClass}`}
-                    className="rounded border border-slate-800 bg-slate-950 p-2"
-                  >
-                    <div className="flex flex-wrap gap-2">
-                      <OperatorBadge tone="advisory">{vote.voteClass}</OperatorBadge>
-                      <OperatorIdChip>{vote.agentNamespace}</OperatorIdChip>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-400">{vote.evidence}</p>
-                  </div>
-                ))}
-              </div>
-              <CompactList items={[...bundle.dissent, ...bundle.blockers]} limit={5} />
-              <p className="text-xs text-amber-200">{bundle.boundary}</p>
-            </OperatorGateCard>
-          ))}
-        </div>
-      </RegistrySection>
+      <AgentVoteReviewSurface />
 
       <RegistrySection
         index="AR-09"
