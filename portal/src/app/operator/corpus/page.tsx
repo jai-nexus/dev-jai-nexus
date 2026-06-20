@@ -13,6 +13,7 @@ import {
   OperatorStatusChip,
   type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { getAgentGovernanceSandboxModel } from "@/lib/controlPlane/agentGovernanceSandbox";
 import {
   corpusReadinessGates,
@@ -143,6 +144,8 @@ export default function OperatorCorpusPage() {
           <MetricCard label="Authority blocked" value={counts.blocked_by_authority} tone="blocked" />
           <MetricCard label="Deferred" value={counts.deferred_until_v2_opening} tone="gated" />
         </section>
+
+        <PaletteGridReadiness index="P/G" compact />
 
         <OperatorPanel>
           <OperatorSectionHeader

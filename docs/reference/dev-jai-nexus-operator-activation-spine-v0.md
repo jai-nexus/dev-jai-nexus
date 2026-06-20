@@ -215,7 +215,7 @@ ZERO GATES GRANTED.
 ### Relationship To Later Commits
 
 Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
-should cover Palette/Grid. Commit 6 should cover development compose spine.
+covers Palette/Grid. Commit 6 should cover development compose spine.
 Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8 should
 consolidate final audit and closeout posture. Later commits must not reinterpret
 Commit 2 source labels as authorization.
@@ -344,7 +344,7 @@ All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
 
 Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
 fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
-Agents. Commit 5 should cover Palette/Grid. Commit 6 should cover development
+Agents. Commit 5 covers Palette/Grid. Commit 6 should cover development
 compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
 
@@ -473,6 +473,187 @@ ZERO GATES GRANTED.
 Commit 4 builds on Commit 2 source posture by labeling Agent records as
 synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
 It builds on Commit 3 by keeping model/Council output advisory and separate from
-Agent execution. Commit 5 should cover Palette/Grid. Commit 6 should cover
+Agent execution. Commit 5 covers Palette/Grid. Commit 6 should cover
 development compose posture. Commit 7 should cover `.jai`, receipt, and gate
 alignment. Commit 8 should consolidate final audit and closeout posture.
+
+## Commit 5: JAI Palette + JAI Grid Operator Spine
+
+Palette/Grid operator spine does not mean retrieval, memory, dispatch, live
+context injection, customer-data handling, or execution. Commit 5 connects
+Palette and Grid readiness to the Operator cockpit so operators can understand
+context assembly, operational-state display, project/repo/work relationships,
+queues, capability maps, source posture, freshness posture, privacy boundaries,
+customer-data boundaries, and live-readiness blockers before any runtime exists.
+
+The shared Palette/Grid spine remains read-only and compose-only. It adds no
+retrieval engine, automatic context injection, live memory write, hidden
+persistence, customer-data handling, model dispatch, Agent dispatch, execution,
+API route, server action, DB write, Prisma change, receipt creation, canon
+update, route-state mutation, motion-state mutation, gate evaluation, or live
+runtime activation.
+
+### Palette Operator-Spine Posture
+
+Palette assembles context; it does not authorize. Palette readiness represents
+project context, repo context, motion/receipt context, Council context, Agent
+lane context, source posture, freshness posture, blocked context classes, the
+customer-data boundary, and the privacy boundary.
+
+Allowed Palette posture in Commit 5:
+
+- `READ-ONLY` context readiness review;
+- `REAL-COMPOSE` local context packet draft;
+- `MANUAL HANDOFF` language for CONTROL_THREAD review;
+- `SYN-*` context assembly lifecycle records;
+- source and freshness labels for canonical, DB, YAML, derived, partial,
+  fixture, synthetic, and unknown-source context.
+
+Blocked Palette posture in Commit 5:
+
+- retrieval engine;
+- automatic context injection;
+- live memory writes or hidden persistence;
+- customer-data handling;
+- model dispatch or Agent dispatch;
+- source selection as authority;
+- unknown-source context appearing canonical.
+
+### Grid Operator-Spine Posture
+
+Grid displays operational state; it does not execute. Grid readiness represents
+the operational-state map, project/repo/work relationships, workflow lanes,
+route queues, motion queues, work queues, capability maps, live-readiness
+blockers, and source posture.
+
+Allowed Grid posture in Commit 5:
+
+- `READ-ONLY` operational-state display;
+- relationship and queue posture cards;
+- capability map cards labeled as gated/readiness posture;
+- route links to existing Operator surfaces.
+
+Blocked Grid posture in Commit 5:
+
+- execution;
+- route-state or motion-state mutation;
+- repo/file mutation;
+- branch or PR automation;
+- scheduler or autonomous loop;
+- automatic gate evaluation;
+- dashboard state as authorization.
+
+### Context Assembly Posture
+
+Commit 5 exposes a synthetic Palette lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-PALETTE-LIFE-0001` | select context class | `READ-ONLY` | Context class selection orients review; it does not authorize |
+| `SYN-PALETTE-LIFE-0002` | label source posture | `READ-ONLY` | Unknown-source context must remain unknown, not canonical |
+| `SYN-PALETTE-LIFE-0003` | check freshness | `GATED` | Freshness is a label, not live verification or acceptance |
+| `SYN-PALETTE-LIFE-0004` | exclude blocked context | `BLOCKED` | Customer data, private memory, unknown-source canon, and injection remain blocked |
+| `SYN-PALETTE-LIFE-0005` | compose packet locally | `REAL-COMPOSE` | Clipboard draft only; no retrieval, injection, persistence, or dispatch |
+| `SYN-PALETTE-LIFE-0006` | manual handoff only | `MANUAL HANDOFF` | CONTROL_THREAD decides; packet display does not grant authority |
+
+All lifecycle records are synthetic readiness records, not live retrieval or
+context-injection state.
+
+### Operational-State Map Posture
+
+Commit 5 exposes a synthetic Grid lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-GRID-LIFE-0001` | display relationships | `READ-ONLY` | Project/repo/work relationships are display posture only |
+| `SYN-GRID-LIFE-0002` | display queues | `READ-ONLY` | Route, motion, and work queues do not schedule or execute |
+| `SYN-GRID-LIFE-0003` | display capability map | `GATED` | Capability display is not activation or gate evaluation |
+| `SYN-GRID-LIFE-0004` | display blockers | `BLOCKED` | Blockers remain visible and cannot be bypassed by dashboard state |
+| `SYN-GRID-LIFE-0005` | no execution | `NOT AUTHORIZED IN V0` | Grid displays operational state; it does not execute |
+| `SYN-GRID-LIFE-0006` | no mutation | `NOT AUTHORIZED IN V0` | No route-state, motion-state, repo, file, receipt, canon, or memory mutation |
+
+All lifecycle records are synthetic readiness records, not active operational
+state.
+
+### Source Posture And Freshness Labels
+
+Commit 5 uses the existing Commit 2 source label vocabulary for Palette/Grid
+context:
+
+- `READ-ONLY CANONICAL` for accepted stored shapes shown for review;
+- `DB READ-ONLY` for database rows read for display;
+- `YAML-BACKED CANONICAL` for checked-in canonical/config source;
+- `DERIVED` for computed display values;
+- `PARTIAL STREAM` for known partial queue or event posture;
+- `FIXTURE` for local/static readiness records;
+- `SYNTHETIC` for `SYN-*` future readiness records;
+- `UNKNOWN SOURCE` for context that must remain conservative and never appear
+  canonical.
+
+Stored status is not live verification. Context selection is not authority.
+Unknown-source context must not appear canonical.
+
+### Blocked Context Classes
+
+Commit 5 keeps these classes visibly blocked: unknown-source context as
+canonical, unknown-source records, stale records as current, customer-data
+handling, private context without policy, private memory writes, hidden
+persistence, automatic context injection, retrieval engine, live memory write,
+model dispatch, Agent dispatch, execution, gate evaluation, receipt creation,
+and canon update.
+
+### Customer-Data And Privacy Boundaries
+
+Customer data is not handled in this readiness surface. Private,
+unknown-source, or customer-origin context remains blocked unless future gates,
+provenance, privacy review, customer-data authorization, and receipts are
+explicitly established by CONTROL_THREAD.
+
+Privacy boundaries are not optional. Read-only context display does not allow
+customer-data handling, private memory writes, hidden persistence, automatic
+context injection, or production behavior.
+
+### Project / Repo / Work Relationships
+
+Grid relationship cards represent project, repo, and work posture only.
+Relationships do not route work, mutate repos, create branches, create PRs,
+dispatch Agents, schedule work, or evaluate gates.
+
+### Route / Motion / Work Queue Posture
+
+Route queues recommend; they do not execute. Motion queues display read-only
+posture; they do not mutate motion state. Work queues display agenda posture;
+they do not schedule, dispatch, run Agents, or operate terminal/browser tools.
+
+### Capability Map Posture
+
+Capability map cards describe readiness only. Palette can frame context packets;
+it cannot inject them. Grid can display state; it cannot execute state. Council
+context remains advisory claims, not facts. Agent lane context remains staged,
+not executing or dispatching.
+
+### Local-Only Context Packet Posture
+
+The context packet composer is `REAL-COMPOSE` only. It copies local draft text
+for manual handoff and has no submit path, retrieval behavior, automatic
+context injection, persistence, live memory write, customer-data handling, model
+call, Agent dispatch, receipt creation, canon update, route-state mutation, or
+motion-state mutation.
+
+### Live-Readiness Blockers
+
+Palette/Grid live readiness remains blocked by no retrieval engine, no
+automatic context injection, no customer-data handling, no live memory writes,
+no model dispatch, no Agent dispatch, no execution gates, and no receipt/canon
+authority model.
+
+ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 5 builds on Commit 2 source posture by carrying source and freshness
+labels into context assembly and operational-state display. It builds on Commit
+3 by keeping Council context advisory. It builds on Commit 4 by keeping Agent
+lane context staged and non-executing. Commit 6 should cover development
+compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
+Commit 8 should consolidate final audit and closeout posture.

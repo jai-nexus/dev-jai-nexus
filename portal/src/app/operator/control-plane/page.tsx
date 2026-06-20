@@ -11,6 +11,7 @@ import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlyS
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 import { LiveReadinessMatrix } from "@/components/operator/LiveReadinessMatrix";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 import { controlPlanePrototypeFixture } from "@/lib/controlPlane/controlPlanePrototypeFixture";
 import { readControlPlaneCanonicalPosture } from "@/lib/controlPlane/postureFromCanon";
@@ -157,6 +158,8 @@ export default async function OperatorControlPlanePage() {
         <JaiCouncilReadiness index="JAI" compact />
 
         <JaiAgentReadiness index="AGENT" compact />
+
+        <PaletteGridReadiness index="P/G" compact />
 
         <LiveReadinessMatrix index="MATRIX" />
 

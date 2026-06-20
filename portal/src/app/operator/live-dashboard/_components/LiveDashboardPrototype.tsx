@@ -18,6 +18,7 @@ import {
 } from "@/components/operator/slate";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 
 type IconProps = {
@@ -249,6 +250,8 @@ export default function LiveDashboardPrototype() {
                     <JaiCouncilReadiness index="JAI" compact />
 
                     <JaiAgentReadiness index="AGENT" compact />
+
+                    <PaletteGridReadiness index="P/G" compact />
 
                     {/* 1 · LIVE OPERATOR HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">

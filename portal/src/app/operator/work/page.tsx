@@ -19,6 +19,7 @@ import {
 } from "@/components/operator/slate";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
+import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacketAction,
@@ -676,6 +677,8 @@ export default function WorkPage() {
         </section>
 
         <JaiAgentReadiness index="00" />
+
+        <PaletteGridReadiness index="P/G" compact />
 
         <DevelopmentWorkReadiness index="DEV" />
 
