@@ -9,6 +9,7 @@ import {
 } from "@/components/operator/slate";
 import { agentRegistryStaticData } from "@/data/operator/agentRegistry";
 import { AgentVoteReviewSurface } from "./AgentVoteReviewSurface";
+import { PaletteAgentRecommendationSurface } from "./PaletteAgentRecommendationSurface";
 
 function BadgeList({
   items,
@@ -419,51 +420,7 @@ export function AgentRegistryStaticSurface() {
         </div>
       </RegistrySection>
 
-      <RegistrySection
-        index="AR-07"
-        title="Palette Recommendations"
-        description="PALETTE RECOMMENDATION  NOT CREATION records recommend staged Agent candidates for review only."
-      >
-        <div className="grid gap-2 lg:grid-cols-2">
-          {paletteRecommendations.map((recommendation) => (
-            <OperatorGateCard key={recommendation.recommendationId} className="space-y-2">
-              <div className="flex flex-wrap gap-2">
-                <OperatorBadge tone="advisory">
-                  PALETTE RECOMMENDATION  NOT CREATION
-                </OperatorBadge>
-                <OperatorBadge tone="blocked">
-                  CONTROL_THREAD REVIEW REQUIRED
-                </OperatorBadge>
-                <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
-              </div>
-              <div className="text-sm font-semibold text-slate-100">
-                {recommendation.displayName}
-              </div>
-              <p className="text-xs text-slate-300">{recommendation.rationale}</p>
-              <CompactList
-                items={[
-                  `scope: ${recommendation.scope}`,
-                  `engine: ${recommendation.primaryDomainEngine}`,
-                  `source: ${recommendation.sourcePosture}`,
-                  `operator review: ${String(recommendation.operatorReviewRequired)}`,
-                  `CONTROL_THREAD acceptance: ${String(recommendation.controlThreadAcceptanceRequired)}`,
-                ]}
-                limit={5}
-              />
-              <BadgeList items={recommendation.blockedCapabilities} tone="blocked" limit={6} />
-              <CompactList
-                items={[
-                  ...recommendation.recommendedCandidates,
-                  ...recommendation.safeAlternatives,
-                  ...recommendation.missingEvidence,
-                ]}
-                limit={7}
-              />
-              <BadgeList items={recommendation.statusLabels} tone="blocked" limit={5} />
-            </OperatorGateCard>
-          ))}
-        </div>
-      </RegistrySection>
+      <PaletteAgentRecommendationSurface />
 
       <AgentVoteReviewSurface />
 
