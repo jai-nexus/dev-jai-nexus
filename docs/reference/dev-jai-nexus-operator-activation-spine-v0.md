@@ -216,7 +216,7 @@ ZERO GATES GRANTED.
 
 Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
 covers Palette/Grid. Commit 6 covers development compose spine.
-Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8 should
+Commit 7 covers `.jai`, receipt, and gate alignment. Commit 8 should
 consolidate final audit and closeout posture. Later commits must not reinterpret
 Commit 2 source labels as authorization.
 
@@ -345,7 +345,7 @@ All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
 Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
 fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
 Agents. Commit 5 covers Palette/Grid. Commit 6 covers development
-compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
+compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
 
 ## Commit 4: JAI Agents Operator Spine
@@ -474,7 +474,7 @@ Commit 4 builds on Commit 2 source posture by labeling Agent records as
 synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
 It builds on Commit 3 by keeping model/Council output advisory and separate from
 Agent execution. Commit 5 covers Palette/Grid. Commit 6 covers
-development compose posture. Commit 7 should cover `.jai`, receipt, and gate
+development compose posture. Commit 7 covers `.jai`, receipt, and gate
 alignment. Commit 8 should consolidate final audit and closeout posture.
 
 ## Commit 5: JAI Palette + JAI Grid Operator Spine
@@ -655,7 +655,7 @@ Commit 5 builds on Commit 2 source posture by carrying source and freshness
 labels into context assembly and operational-state display. It builds on Commit
 3 by keeping Council context advisory. It builds on Commit 4 by keeping Agent
 lane context staged and non-executing. Commit 6 covers development
-compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
+compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
 Commit 8 should consolidate final audit and closeout posture.
 
 ## Commit 6: Development Work Compose Spine
@@ -797,5 +797,101 @@ Commit 6 builds on Commit 2 source posture by preserving read-only labels on
 repo and work context. It builds on Commit 4 Agent posture by keeping work
 handoff manual and non-executing. It builds on Commit 5 Palette/Grid posture by
 keeping project/repo/work context representational and non-authorizing. Commit 7
-should cover `.jai`, receipt, and gate alignment. Commit 8 should consolidate
+covers `.jai`, receipt, and gate alignment. Commit 8 should consolidate
 final audit and closeout posture.
+
+## Commit 7: `.jai` / Receipt / Gate Alignment Planning
+
+### Planning Posture
+
+Commit 7 connects the activation-spine surfaces to pending `.jai`, receipt,
+gate, and object-model dependencies. It is planning-only and read-only.
+
+`.jai` profile labels do not implement parser/runtime behavior. Receipt labels
+do not create receipts. Gate labels do not evaluate or open gates. Route, motion,
+project, repo, dashboard, and canon dependencies do not mutate state.
+
+Visible planning labels introduced for this pass:
+
+- `NEEDS .jai PROFILE`
+- `NEEDS RECEIPT/V0`
+- `NEEDS SECURITY GATE`
+- `NEEDS EXECUTION GATE`
+- `NEEDS ROUTE DECISION`
+- `PLANNING ONLY`
+- `NO ACTIVATION`
+
+ZERO GATES GRANTED.
+
+### Dependency Matrix
+
+Commit 7 uses synthetic planning records only. These records are labeled
+`SYNTHETIC`, `PLANNING ONLY`, `READ-ONLY`, and `NO ACTIVATION`.
+
+| ID | Dependency | Current posture | Needed profile / model / receipt / gate | Blocked behavior | Next route |
+| --- | --- | --- | --- | --- | --- |
+| `SYN-ALIGN-DEP-0001` | `JAI_CORE_OBJECT_MODEL_V0` | Planned object model dependency | `.jai` profile and route decision | `.jai` active semantics, parser/runtime behavior, and automatic profile validation | `/operator/jai` |
+| `SYN-ALIGN-DEP-0002` | `receipt/v0` | Planned receipt dependency | `receipt/v0` and security gate | Receipt creation, receipt synthesis, storage write, and canon update | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0003` | `project-state/v0` | Planned project-state dependency | `.jai` profile and `receipt/v0` | Project-state mutation, live verification claims, and automatic acceptance | `/operator/portfolio-status` |
+| `SYN-ALIGN-DEP-0004` | `repo-lane/v0` | Planned repo-lane dependency | Security gate and `receipt/v0` | Repo write, file mutation, GitHub API, branch creation, and PR creation | `/operator/work` |
+| `SYN-ALIGN-DEP-0005` | `route/v0` | Planned route-state dependency | Route decision and `receipt/v0` | Route promotion, redirect, route-state mutation, and navigation redesign | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0006` | `council-return/v0` | Planned Council return dependency | `.jai` profile and `receipt/v0` | Council dispatch, automatic synthesis, output-to-canon, and acceptance | `/operator/jai` |
+| `SYN-ALIGN-DEP-0007` | `agent-lane-candidate/v0` | Planned Agent lane dependency | `.jai` profile and execution gate | Agent execution, runner behavior, tool invocation, scheduler, autonomous loop, and dispatch | `/operator/agents` |
+| `SYN-ALIGN-DEP-0008` | `dashboard-state-index/v0` | Planned dashboard-state dependency | Route decision and security gate | Dashboard-state mutation, gate evaluation, live verification claims, and activation | `/operator/grid` |
+| `SYN-ALIGN-DEP-0009` | Security gate dependency | Planned security prerequisite | Security gate and `receipt/v0` | Authentication or step-up verification opening execution authority | `/operator/control-plane` |
+| `SYN-ALIGN-DEP-0010` | Execution gate dependency | Planned execution prerequisite | Execution gate and `receipt/v0` | Execution gates, provider/model dispatch, Agent execution, repo mutation, route-state mutation, and motion-state mutation | `/operator/live-dashboard` |
+
+### Blocked Parser / Runtime Behavior
+
+Commit 7 does not add a `.jai` parser, `.jai` runtime, `.jai` execution
+behavior, `.nexus` active semantics, automatic profile validation, policy
+enforcement, automatic scoring, automatic synthesis, or automatic
+best-agent/model selection.
+
+### Blocked Receipt / Canon Behavior
+
+Receipt dependencies are displayed as prerequisites only. Commit 7 does not
+create receipts, synthesize receipts, persist receipt records, update canon,
+merge advisory output into canon, or treat a receipt requirement as acceptance.
+
+Receipts record; they do not decide.
+
+### Blocked Gate Evaluation Behavior
+
+Security and execution gate dependencies are displayed as blockers only. Commit
+7 does not evaluate gates, open gates, persist gate state, infer authority from
+authentication, infer authority from step-up verification, or change route,
+motion, dashboard, project, repo, or work state.
+
+Authentication is not authorization. Step-up verification confirms operator
+presence only. Verified session does not open execution gates.
+
+### Recommended Future Route Sequence
+
+Future CONTROL_THREAD work should decide route posture before activation:
+
+1. Confirm the `JAI_CORE_OBJECT_MODEL_V0` profile boundary and accepted `.jai`
+   profile shape.
+2. Define `receipt/v0` as a record format without decision authority.
+3. Define `project-state/v0`, `repo-lane/v0`, `route/v0`, and
+   `dashboard-state-index/v0` as read/write models only after explicit mutation
+   gates exist.
+4. Define `council-return/v0` and `agent-lane-candidate/v0` as advisory input
+   models before any runtime dispatch is considered.
+5. Define security gate prerequisites separately from execution gate
+   prerequisites.
+6. Require CONTROL_THREAD route decision, validation evidence, receipt design,
+   rollback posture, and explicit execution authority before any activation.
+
+### Relationship To Existing Spines
+
+Commit 7 extends Commit 1 by keeping route decisions pending and visible. It
+extends Commit 2 by preserving source labels and read-only posture. It extends
+Commit 3 by keeping Council returns advisory and non-canonical. It extends
+Commit 4 by keeping Agent lane candidates staged and non-executing. It extends
+Commit 5 by keeping Palette/Grid context and operational state
+representational. It extends Commit 6 by keeping development handoff
+compose-only and outside GitHub/repo/file mutation paths.
+
+Commit 8 should perform the final no-activation audit, closeout confirmation,
+and branch-level risk summary without opening gates.

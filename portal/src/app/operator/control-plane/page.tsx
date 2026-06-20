@@ -11,6 +11,7 @@ import { CanonicalReadOnlySpine } from "@/components/operator/CanonicalReadOnlyS
 import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
+import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import { LiveReadinessMatrix } from "@/components/operator/LiveReadinessMatrix";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
@@ -163,6 +164,8 @@ export default async function OperatorControlPlanePage() {
         <PaletteGridReadiness index="P/G" compact />
 
         <DevelopmentWorkReadiness index="DEV" compact />
+
+        <JaiReceiptGateAlignment index="ALIGN" compact />
 
         <LiveReadinessMatrix index="MATRIX" />
 

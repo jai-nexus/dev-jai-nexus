@@ -21,6 +21,7 @@ import {
   getPortfolioStatusFixture,
   type PortfolioStatusLaneCard,
 } from "@/lib/controlPlane/portfolioStatusFixture";
+import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
 
 const FALLBACK_TEXT = "Not recorded in the checked-in fixture.";
@@ -336,6 +337,8 @@ export default function OperatorPortfolioStatusPage() {
         />
 
         <PaletteGridReadiness index="P/G" compact />
+
+        <JaiReceiptGateAlignment index="ALIGN" compact />
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
