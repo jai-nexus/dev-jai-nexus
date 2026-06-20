@@ -216,9 +216,9 @@ ZERO GATES GRANTED.
 
 Commit 3 covers the JAI and Council spine. Commit 4 covers Agents. Commit 5
 covers Palette/Grid. Commit 6 covers development compose spine.
-Commit 7 covers `.jai`, receipt, and gate alignment. Commit 8 should
-consolidate final audit and closeout posture. Later commits must not reinterpret
-Commit 2 source labels as authorization.
+Commit 7 covers `.jai`, receipt, and gate alignment. Commit 8 consolidates
+final audit and closeout posture. Later commits must not reinterpret Commit 2
+source labels as authorization.
 
 ## Commit 3: JAI + Council Operator Spine
 
@@ -346,7 +346,7 @@ Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
 fixture, synthetic, advisory, read-only, or compose-only. Commit 4 covers
 Agents. Commit 5 covers Palette/Grid. Commit 6 covers development
 compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
-Commit 8 should consolidate final audit and closeout posture.
+Commit 8 consolidates final audit and closeout posture.
 
 ## Commit 4: JAI Agents Operator Spine
 
@@ -475,7 +475,7 @@ synthetic, read-only, advisory, gated, blocked, manual handoff, or compose-only.
 It builds on Commit 3 by keeping model/Council output advisory and separate from
 Agent execution. Commit 5 covers Palette/Grid. Commit 6 covers
 development compose posture. Commit 7 covers `.jai`, receipt, and gate
-alignment. Commit 8 should consolidate final audit and closeout posture.
+alignment. Commit 8 consolidates final audit and closeout posture.
 
 ## Commit 5: JAI Palette + JAI Grid Operator Spine
 
@@ -656,7 +656,7 @@ labels into context assembly and operational-state display. It builds on Commit
 3 by keeping Council context advisory. It builds on Commit 4 by keeping Agent
 lane context staged and non-executing. Commit 6 covers development
 compose posture. Commit 7 covers `.jai`, receipt, and gate alignment.
-Commit 8 should consolidate final audit and closeout posture.
+Commit 8 consolidates final audit and closeout posture.
 
 ## Commit 6: Development Work Compose Spine
 
@@ -797,7 +797,7 @@ Commit 6 builds on Commit 2 source posture by preserving read-only labels on
 repo and work context. It builds on Commit 4 Agent posture by keeping work
 handoff manual and non-executing. It builds on Commit 5 Palette/Grid posture by
 keeping project/repo/work context representational and non-authorizing. Commit 7
-covers `.jai`, receipt, and gate alignment. Commit 8 should consolidate
+covers `.jai`, receipt, and gate alignment. Commit 8 consolidates
 final audit and closeout posture.
 
 ## Commit 7: `.jai` / Receipt / Gate Alignment Planning
@@ -893,5 +893,149 @@ Commit 5 by keeping Palette/Grid context and operational state
 representational. It extends Commit 6 by keeping development handoff
 compose-only and outside GitHub/repo/file mutation paths.
 
-Commit 8 should perform the final no-activation audit, closeout confirmation,
-and branch-level risk summary without opening gates.
+Commit 8 performs the final no-activation audit, closeout confirmation, and
+branch-level risk summary without opening gates.
+
+## Commit 8: Final Audit / No-Activation Posture Cleanup
+
+### Final Audit Posture
+
+Commit 8 is documentation cleanup and audit evidence only. It does not introduce
+new activation-spine capability scope, new runtime behavior, new integration
+behavior, new mutation behavior, new route topology behavior, new gate behavior,
+new receipt behavior, or new canon behavior.
+
+Activation spine does not mean activation.
+
+### Branch-Level Confirmation
+
+| Audit area | Final posture |
+| --- | --- |
+| Route topology | Existing routes remain accessible; no route promotion, route removal, destructive redirect, DCT removal, legacy nav removal, or navigation removal. |
+| Navigation | Existing Operator subnav and legacy top-nav posture are preserved; route questions remain pending for CONTROL_THREAD. |
+| Dependency/package | No package, lockfile, dependency, or Prisma schema changes are introduced by the activation-spine branch. |
+| Runtime integration | No runtime activation, scheduler, autonomous loop, browser/desktop control, terminal/command execution, or production behavior is authorized. |
+| API/server-action/DB/Prisma | No new API routes, server actions, DB writes, Prisma changes, telemetry, auth/session changes, or hidden persistence are added. |
+| Provider/model/Agent/GitHub | No provider/model SDK, model calls, Agent dispatch, Agent execution, GitHub integration, or GitHub API use is added. |
+| Branch/PR/repo/file | No branch creation, PR creation, push, merge, commit automation, branch/PR automation, repo mutation, repo write, or file mutation is added. |
+| Retrieval/context/memory | No retrieval engine, automatic context injection, live memory writes, customer-data handling, or localStorage/sessionStorage system-of-record behavior is added. |
+| Receipt/canon/gate | No receipt creation, canon update, automatic gate evaluation, gate-state mutation, security gate opening, or execution gate opening is added. |
+| Route/motion state | No route-state mutation, motion-state mutation, dashboard-state mutation, project-state mutation, or repo-lane mutation is added. |
+| Source posture | Fixture, synthetic, derived, partial, unknown-source, DB read-only, YAML-backed canonical, and read-only canonical records remain labeled conservatively. |
+| Action labels | Visible actions remain `READ-ONLY`, `REAL-COMPOSE`, `MOCK`, `GATED`, `BLOCKED`, `MANUAL HANDOFF`, `FUTURE`, or `NOT AUTHORIZED IN V0`. |
+
+### Surface Smoke Coverage
+
+Production build/static route verification covers the activation-spine surfaces
+compiled by Next.js:
+
+- `/operator`
+- `/operator/control-plane`
+- `/operator/live-dashboard`
+- `/operator/design-system`
+- `/operator/council-prototype`
+- `/operator/jai`
+- `/operator/agents`
+- `/operator/work`
+- `/operator/work/new`
+- `/operator/work/[id]`
+- `/operator/repos`
+- `/operator/repos/[repoId]`
+- `/operator/grid`
+- `/operator/portfolio-status`
+- `/operator/corpus`
+- `/operator/operating-context`
+- `/operator/motions`
+- `/operator/decisions`
+- `/operator/events`
+
+Manual source review for Commit 8 confirms these surfaces remain
+non-authorizing, retain read-only or compose-only posture, and do not add
+backend/API/DB/provider/model/Agent/GitHub behavior.
+
+### Copy-Only Behavior Audit
+
+Existing copy-to-clipboard behavior remains local-only and visibly labeled
+`REAL-COMPOSE` or copy-only:
+
+- Council prompt draft copy.
+- Agent handoff prompt copy.
+- Palette/Grid context packet copy.
+- Development branch suggestion copy.
+- Development PR body copy.
+- Development validation checklist copy.
+- Development closeout draft copy.
+- Development implementation plan copy.
+- Pre-existing Grid compose copy.
+
+These copy paths do not submit, persist, dispatch, call GitHub, create branches,
+create PRs, push, merge, mutate repos, mutate files, execute code, validate
+profiles, create receipts, update canon, evaluate gates, mutate route state, or
+mutate motion state.
+
+### Pre-Existing Mutation Paths
+
+The branch observes but does not alter these pre-existing mutation-capable
+paths:
+
+- `/operator/registry/repos` admin-gated `repos.yaml` import with DB upsert.
+- `/operator/sync-runs/[syncRunId]/apply`.
+- `/operator/sync-runs/[syncRunId]/reject`.
+- Existing DCT/internal API mutation surfaces seen in build route output.
+
+These paths are outside this branch's authorization. They are not removed,
+expanded, or newly authorized.
+
+### Required Language Preserved
+
+- CONTROL_THREAD decides.
+- Validation is not acceptance.
+- Receipts record; they do not decide.
+- Routes recommend; they do not execute.
+- Council agreement is not authority.
+- Agents are staged, not executing.
+- Palette assembles context; it does not authorize.
+- Grid displays operational state; it does not execute.
+- Context selection is not authority.
+- Retrieval is not acceptance.
+- Authentication is not authorization.
+- Step-up verification confirms operator presence only.
+- Verified session does not open execution gates.
+- Dashboard display does not authorize.
+- Read-only is not authority.
+- No code push authority in v0.
+- No Agent execution authority in v0.
+- No model dispatch in v0.
+- No live model calls in v0.
+- No execution gates opened.
+- ZERO GATES GRANTED.
+
+### Final Non-Authorizations
+
+This branch does not authorize execution, provider/model dispatch, live model
+calls, Agent execution, Agent dispatch, GitHub integration, GitHub API use, repo
+mutation, file mutation, branch creation, PR creation, push, merge, commit
+automation, branch/PR automation, browser/desktop control, terminal/command
+execution, scheduler behavior, autonomous loops, retrieval engines, automatic
+context injection, live memory writes, hidden persistence, live settings
+mutation, new API routes, new server actions, DB writes beyond pre-existing
+behavior, Prisma changes, telemetry, auth/session changes, customer-data
+handling, production behavior, `.jai` parser/runtime behavior, `.jai` execution
+behavior, `.nexus` active semantics, policy enforcement, execution gates,
+automatic scoring, automatic synthesis, automatic best-agent selection,
+automatic gate evaluation, automatic profile validation, receipt creation, canon
+update, route-state mutation, motion-state mutation, route removal, destructive
+redirect, or navigation removal.
+
+ZERO GATES GRANTED.
+
+### Recommended Next Route
+
+Recommended next route after this branch:
+
+`Operator Route Topology Decision v0`
+
+Alternative follow-up:
+
+`JAI_CORE_OBJECT_MODEL_V0 follow-up integration planning`, if `jai-format` has
+landed and `.jai` profile alignment becomes the priority.
