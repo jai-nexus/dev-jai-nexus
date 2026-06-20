@@ -16,6 +16,7 @@ import {
     OperatorSectionHeader,
     type OperatorSlateTone,
 } from "@/components/operator/slate";
+import { JaiCouncilReadiness } from "@/components/operator/JaiCouncilReadiness";
 import { RouteTopologyReadiness } from "@/components/operator/RouteTopologyReadiness";
 
 type IconProps = {
@@ -243,6 +244,8 @@ export default function LiveDashboardPrototype() {
                     </div>
 
                     <RouteTopologyReadiness index="00" compact />
+
+                    <JaiCouncilReadiness index="JAI" compact />
 
                     {/* 1 · LIVE OPERATOR HEADER */}
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">

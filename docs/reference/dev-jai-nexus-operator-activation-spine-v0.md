@@ -213,8 +213,136 @@ ZERO GATES GRANTED.
 
 ### Relationship To Later Commits
 
-Commit 3 should cover the JAI and Council spine. Commit 4 should cover Agents.
+Commit 3 covers the JAI and Council spine. Commit 4 should cover Agents.
 Commit 5 should cover Palette/Grid. Commit 6 should cover development compose
 spine. Commit 7 should cover `.jai`, receipt, and gate alignment. Commit 8
 should consolidate final audit and closeout posture. Later commits must not
 reinterpret Commit 2 source labels as authorization.
+
+## Commit 3: JAI + Council Operator Spine
+
+JAI/Council operator spine does not mean live JAI runtime or live Council
+runtime. Commit 3 connects the existing JAI shell, Council prototype,
+control-plane, and live-dashboard readiness views so operators can see how JAI,
+JAI Council, model slots, advisory returns, dissent, contradictions, and
+CONTROL_THREAD relate before any activation decision exists.
+
+The shared JAI/Council spine remains read-only and compose-only. It adds no
+provider SDK, model call, Council dispatch, automatic synthesis, best-model
+selection, receipt creation, canon update, state mutation, persistence, or
+runtime activation.
+
+### JAI Operator-Spine Posture
+
+JAI is not live runtime in v0. `/operator/jai` remains a local static shell for
+draft prompt reference and read-only control-plane context. Prompt text is not
+dispatch. Draft selection is not submission. Display does not grant authority.
+
+Allowed JAI posture in Commit 3:
+
+- read-only context and route links;
+- local-only `REAL-COMPOSE` readiness prompt drafting;
+- manual handoff language;
+- fixture/synthetic readiness records;
+- blocked provider/model dispatch and live model calls.
+
+Blocked JAI posture in Commit 3:
+
+- provider/model SDK use;
+- model calls or live model calls;
+- hidden persistence or memory writes;
+- automatic context injection or retrieval engine;
+- execution, Agent dispatch, or repo mutation.
+
+### Council Operator-Spine Posture
+
+JAI Council is advisory only. Council agreement is not authority. Model-slot
+output produces claims, not facts. Advisory output can be reviewed, but it cannot
+decide, merge into canon, create a receipt, dispatch a model, execute, or
+advance route/motion state.
+
+The Council prototype remains `/operator/council-prototype`; it is not promoted
+to `/operator/council`.
+
+### Council Session Lifecycle Readiness
+
+Commit 3 exposes a synthetic lifecycle map:
+
+| ID | Phase | Allowed posture | Boundary |
+| --- | --- | --- | --- |
+| `SYN-JAI-LIFE-0001` | draft | Local prompt or packet draft may be composed | `REAL-COMPOSE` only; no submit or persistence |
+| `SYN-JAI-LIFE-0002` | route | Manual operator handoff may carry draft text | Routes recommend; they do not execute |
+| `SYN-JAI-LIFE-0003` | advisory return | Return can be reviewed as claims and evidence refs | Return cannot decide, dispatch, merge, or create receipts |
+| `SYN-JAI-LIFE-0004` | dissent review | Dissent remains visible | No synthesis override and no majority collapse |
+| `SYN-JAI-LIFE-0005` | contradiction review | Contradictions remain visible | No automatic scoring, resolution, or best-model selection |
+| `SYN-JAI-LIFE-0006` | CONTROL_THREAD decision | Operator decision boundary remains outside Council agreement | Validation is not acceptance; CONTROL_THREAD decides |
+| `SYN-JAI-LIFE-0007` | receipt requirement | Future accepted decisions require receipt design | Receipts record; they do not decide |
+| `SYN-JAI-LIFE-0008` | canon update | Canon merge remains blocked | No output merge into canon and no canon update |
+
+All lifecycle records are synthetic `SYN-*` readiness records, not live Council
+session state.
+
+### Model-Slot Readiness Posture
+
+Model slots are represented as fixture/synthetic readiness records only. They do
+not imply provider credentials, model health, dispatch availability, live
+provider state, automatic best-agent selection, or best-model selection.
+
+Current represented slots:
+
+- Builder model slot: draft claims only; provider/model dispatch gate required.
+- Challenger model slot: dissent and objections; Council session gate required.
+- Evidence model slot: evidence-linked claims; evidence/source gate required.
+- Future JAI slot: reserved; JAI runtime gate required.
+
+### Advisory Output Boundary
+
+Advisory output may include claims, evidence refs, dissent, contradictions,
+unresolved questions, and blockers. Advisory output cannot:
+
+- decide;
+- accept;
+- validate itself;
+- synthesize automatically;
+- become canon;
+- create a receipt;
+- update route state or motion state;
+- dispatch a model, provider, Agent, tool, or repo action.
+
+### Dissent And Contradiction Visibility
+
+Dissent must remain visible. Contradictions must remain visible. Neither Council
+agreement, synthesis polish, model-slot majority, nor route recommendation may
+hide dissent or resolve contradictions automatically.
+
+### CONTROL_THREAD Decision Boundary
+
+CONTROL_THREAD decides. Validation is not acceptance. Receipts record; they do
+not decide. Council agreement is not authority. Readiness display is not
+authority.
+
+Any future Council-assisted decision path requires explicit CONTROL_THREAD
+review, source/evidence review, dissent and contradiction review, named gates,
+and a receipt model after acceptance.
+
+### Required Future Gates And Receipts
+
+Future activation would require at least:
+
+- provider/model dispatch gate;
+- Council session gate;
+- evidence/source gate;
+- JAI runtime gate;
+- operator confirmation gate;
+- receipt model for accepted decisions;
+- canon update authority model.
+
+All remain closed or undefined in Commit 3. ZERO GATES GRANTED.
+
+### Relationship To Other Spines
+
+Commit 3 builds on Commit 2 source posture by labeling JAI/Council records as
+fixture, synthetic, advisory, read-only, or compose-only. Commit 4 should cover
+Agents. Commit 5 should cover Palette/Grid. Commit 6 should cover development
+compose posture. Commit 7 should cover `.jai`, receipt, and gate alignment.
+Commit 8 should consolidate final audit and closeout posture.
