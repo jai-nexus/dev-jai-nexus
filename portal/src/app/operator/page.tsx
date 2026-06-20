@@ -40,12 +40,15 @@ export default async function OperatorHomePage() {
               JAI NEXUS - Operator
             </h1>
             <p className="mt-2 text-sm text-slate-400">
-              Read-only entry point for event, agent, and project posture.
-              Existing source reads and route topology are unchanged.
+              Current primary Operator entry point for event, agent, project,
+              and route-topology posture. This root remains the Operator entry
+              route until a later CONTROL_THREAD route decision changes it.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
+              <OperatorBadge tone="pending">PRIMARY</OperatorBadge>
               <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
               <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="gated">ROUTE DECISION PENDING</OperatorBadge>
               <OperatorBadge tone="blocked">NO EXECUTION</OperatorBadge>
               <OperatorBadge tone="blocked">NO DISPATCH</OperatorBadge>
               <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>

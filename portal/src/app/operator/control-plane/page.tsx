@@ -43,9 +43,13 @@ export default async function OperatorControlPlanePage() {
                   Read-only operator cockpit combining canonical motion posture
                   with clearly labeled synthetic fixture panels. Nothing on this
                   page executes, dispatches, persists, or mutates system state.
+                  This remains the current control-plane surface; it does not
+                  replace `/operator` or promote `/operator/live-dashboard`.
                 </p>
               </div>
               <div className="flex max-w-2xl flex-wrap justify-end gap-2">
+                <OperatorBadge tone="pending">PRIMARY CONTROL PLANE</OperatorBadge>
+                <OperatorBadge tone="gated">ROUTE DECISION PENDING</OperatorBadge>
                 <OperatorBadge tone="blocked">NON-AUTHORIZING</OperatorBadge>
                 <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
                 <OperatorBadge tone="fixture">LOCAL STATIC SNAPSHOT</OperatorBadge>

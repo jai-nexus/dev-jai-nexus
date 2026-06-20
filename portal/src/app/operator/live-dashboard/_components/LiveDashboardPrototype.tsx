@@ -231,7 +231,9 @@ export default function LiveDashboardPrototype() {
                 <div className="min-w-0 flex-1 space-y-5">
                     <div className="flex flex-wrap gap-2 rounded border border-slate-800 bg-slate-900 p-3">
                         <B label="LOCAL / STATIC" />
+                        <B label="SECONDARY" tone="sky" />
                         <B label="PROTOTYPE" />
+                        <B label="PENDING ROUTE DECISION" tone="amber" />
                         <B label="FIXTURE DATA" />
                         <B label="NON-AUTHORIZING" tone="amber" />
                         <B label="NO EXECUTION" tone="red" />
@@ -246,6 +248,12 @@ export default function LiveDashboardPrototype() {
                     <section className="rounded border border-slate-800 bg-slate-900 p-4">
                         <div className="mb-2 font-mono text-xs uppercase tracking-widest text-slate-500">
                             Live Operator Header
+                        </div>
+                        <div className="mb-3 rounded border border-amber-900 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
+                            Route posture: `/operator/live-dashboard` is a
+                            live-readiness prototype and future cockpit
+                            candidate. It is not promoted to `/operator` in
+                            Commit 1.
                         </div>
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="font-mono text-sm font-semibold tracking-wide text-slate-100">

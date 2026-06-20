@@ -241,7 +241,10 @@ export default function OperatorDesignSystemPanel() {
             <div className="mx-auto max-w-6xl space-y-8">
                 <div className="flex flex-wrap gap-2 rounded border border-slate-800 bg-slate-900 p-3">
                     <B label="LOCAL / STATIC" />
+                    <B label="SECONDARY" tone="sky" />
+                    <B label="REFERENCE" tone="sky" />
                     <B label="PROTOTYPE" />
+                    <B label="READ-ONLY" tone="sky" />
                     <B label="NON-AUTHORIZING" tone="amber" />
                     <B label="NO EXECUTION" tone="red" />
                     <B label="NO PROVIDER / MODEL DISPATCH" tone="red" />
@@ -257,6 +260,12 @@ export default function OperatorDesignSystemPanel() {
                         <div className="font-mono text-lg font-semibold tracking-wide text-slate-100">
                             OPERATOR SLATE
                         </div>
+                        <p className="mt-2 max-w-3xl text-xs text-slate-400">
+                            Route posture: design/reference surface only. It
+                            documents Operator Slate vocabulary and does not
+                            decide navigation, route state, authority, or gate
+                            posture.
+                        </p>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                         <B label="NON-AUTHORIZING" tone="slate" />
