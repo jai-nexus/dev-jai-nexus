@@ -16,6 +16,7 @@ import {
 } from "@/components/operator/slate";
 import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
+import { agentRegistryStaticData } from "@/data/operator/agentRegistry";
 import {
   getAgentConfigurationRegistry,
   getCanonicalActiveAgents,
@@ -74,6 +75,439 @@ function SummaryCard({
       </div>
       <p className="mt-2 text-sm text-slate-400">{detail}</p>
     </OperatorPanel>
+  );
+}
+
+function InlineList({ items, tone = "neutral" }: { items: readonly string[]; tone?: OperatorSlateTone }) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <OperatorBadge key={item} tone={tone}>
+          {item}
+        </OperatorBadge>
+      ))}
+    </div>
+  );
+}
+
+function TextList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="mt-2 space-y-1 text-xs text-slate-400">
+      {items.map((item) => (
+        <li key={item}>- {item}</li>
+      ))}
+    </ul>
+  );
+}
+
+function AgentRegistryReadOnlySurface() {
+  const {
+    roleTemplates,
+    domainEngines,
+    repoDomainScope,
+    serviceDomains,
+    tierAgentModel,
+    projectAgentCandidates,
+    paletteRecommendations,
+    voteBundles,
+  } = agentRegistryStaticData;
+  const highRiskRepos = repoDomainScope.filter(
+    (repo) => repo.riskTreatment !== "LOW" && repo.riskTreatment !== "MEDIUM",
+  );
+
+  return (
+    <section className="space-y-8">
+      <OperatorPanel className="space-y-4">
+        <OperatorSectionHeader
+          index="AR"
+          title="Agent Registry Overview"
+          right={
+            <>
+              <OperatorBadge tone="readOnly">READ-ONLY</OperatorBadge>
+              <OperatorBadge tone="fixture">STATIC DATA</OperatorBadge>
+              <OperatorBadge tone="blocked">NON-EXECUTING</OperatorBadge>
+              <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+            </>
+          }
+        />
+        <p className="max-w-5xl text-sm text-slate-300">
+          Cross-polyrepo JAI Agent Registry static data rendered for operator
+          review. Registry visibility is not activation. This page does not add
+          activation, dispatch, execution, provider/model calls, GitHub/tool
+          integration, persistence, receipts, canon updates, or gate mutation.
+        </p>
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-7">
+          <SummaryCard label="Role templates" value={String(roleTemplates.length)} detail="Reusable JAI::AGENT::<ROLE> templates." />
+          <SummaryCard label="Domain engines" value={String(domainEngines.length)} detail="Governed namespace scopes." />
+          <SummaryCard label="Repo records" value={String(repoDomainScope.length)} detail="Static polyrepo scope." />
+          <SummaryCard label="DNS domains" value={String(serviceDomains.length)} detail="Read-only service domains." />
+          <SummaryCard label="Candidates" value={String(projectAgentCandidates.length)} detail="Project-scoped staged candidates." />
+          <SummaryCard label="Palette sets" value={String(paletteRecommendations.length)} detail="Recommendation examples." />
+          <SummaryCard label="Vote bundles" value={String(voteBundles.length)} detail="Advisory quorum examples." />
+        </div>
+        <OperatorGateCard>
+          <div className="grid gap-2 text-xs text-slate-300 md:grid-cols-2 xl:grid-cols-3">
+            {[
+              "JAI Agents are staged, not executing.",
+              "Agent registry entries do not execute.",
+              "Agent lanes do not execute.",
+              "Agent votes are evidence, not authority.",
+              "Agent votes do not decide.",
+              "Quorum is readiness evidence, not approval.",
+              "Template expansion is recommendation.",
+              "Template instantiation is review.",
+              "Agent activation is gated.",
+              "Palette recommendation is not creation.",
+              "Palette recommendation is not activation.",
+              "Palette recommendation is not dispatch.",
+              "Palette recommendation is not authority.",
+              "Palette recommends staged Agent candidates for review.",
+              "Registry visibility is not activation.",
+              "DNS/domain status is not runtime authority.",
+              "Repo registry status is not execution authority.",
+              "Grid displays Agent posture; it does not create or activate Agents.",
+              "CONTROL_THREAD decides.",
+              "ZERO GATES GRANTED.",
+            ].map((phrase) => (
+              <div key={phrase} className="rounded border border-slate-800 bg-slate-950 px-2 py-1">
+                {phrase}
+              </div>
+            ))}
+          </div>
+        </OperatorGateCard>
+      </OperatorPanel>
+
+      <Section
+        index="AR-01"
+        title="Role Templates"
+        description="Reusable templates define governed role envelopes. TEMPLATE records do not create or activate Agents."
+      >
+        <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          {roleTemplates.map((template) => (
+            <OperatorGateCard key={template.namespace}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="fixture">TEMPLATE</OperatorBadge>
+                <OperatorBadge tone="readOnly">{template.namespace}</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{template.displayName}</h3>
+              <div className="mt-3 space-y-2">
+                <InlineList items={template.status} tone="blocked" />
+                <InlineList items={template.safeV0Posture} tone="readOnly" />
+              </div>
+              <p className="mt-3 text-xs text-slate-300">{template.sourceDoctrineLabel}</p>
+              <TextList items={[`vote role: ${template.voteRole}`, `work role: ${template.workRole}`]} />
+              <div className="mt-3 text-xs text-slate-500">Allowed outputs</div>
+              <TextList items={template.allowedOutputs} />
+              <div className="mt-3 text-xs text-red-300">Blocked actions</div>
+              <InlineList items={template.blockedActions} tone="blocked" />
+              <div className="mt-3 text-xs text-amber-300">Required gates</div>
+              <TextList items={template.requiredGates} />
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-02"
+        title="Domain Engines"
+        description="DOMAIN ENGINE records define governed namespaces and collaboration semantics; they do not execute, grant authority, open gates, create receipts, update canon, or dispatch Agents."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          {domainEngines.map((engine) => (
+            <OperatorGateCard key={engine.namespace}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="fixture">DOMAIN ENGINE</OperatorBadge>
+                <OperatorBadge tone="readOnly">{engine.namespace}</OperatorBadge>
+                <OperatorBadge tone="blocked">{engine.riskPosture}</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{engine.displayName}</h3>
+              <p className="mt-2 text-xs text-slate-300">{engine.purpose}</p>
+              <div className="mt-3 text-xs text-slate-500">Allowed templates</div>
+              <InlineList items={engine.allowedAgentTemplates} tone="readOnly" />
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <div className="text-xs text-slate-500">Expected artifacts</div>
+                  <TextList items={engine.expectedArtifacts} />
+                </div>
+                <div>
+                  <div className="text-xs text-slate-500">Review expectations</div>
+                  <TextList items={engine.reviewExpectations} />
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-red-300">Blocked capabilities</div>
+              <InlineList items={engine.blockedCapabilities} tone="blocked" />
+              <div className="mt-3 grid gap-3 text-xs md:grid-cols-2">
+                <div>
+                  <span className="text-slate-500">Primary repos: </span>
+                  {engine.primaryRepos.join(", ")}
+                </div>
+                <div>
+                  <span className="text-slate-500">Secondary repos: </span>
+                  {engine.secondaryRepos.join(", ")}
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-amber-200">{engine.v0Boundary}</p>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-03"
+        title="Polyrepo Scope Map"
+        description="Repo/domain scope records are static registry visibility only. Repo registry status is not execution authority."
+      >
+        <OperatorPanel className="overflow-x-auto p-0">
+          <table className="min-w-full divide-y divide-slate-800 text-sm">
+            <thead className="bg-slate-950">
+              <tr>
+                {["Repo", "Role", "Tier", "Status", "Engines", "Risk"].map((heading) => (
+                  <th key={heading} className="px-4 py-3 text-left font-mono text-xs uppercase tracking-widest text-slate-500">
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {repoDomainScope.map((repo) => (
+                <tr key={repo.repoId}>
+                  <td className="px-4 py-3 align-top">
+                    <OperatorIdChip>{repo.githubRepo}</OperatorIdChip>
+                    <div className="mt-1 text-xs text-slate-500">{repo.repoId}</div>
+                  </td>
+                  <td className="px-4 py-3 align-top text-xs text-slate-300">{repo.role}<div className="mt-1 text-slate-500">{repo.notes}</div></td>
+                  <td className="px-4 py-3 align-top"><OperatorBadge tone="readOnly">{repo.tier}</OperatorBadge></td>
+                  <td className="px-4 py-3 align-top"><OperatorBadge tone={repo.status === "ACTIVE" ? "readOnly" : "blocked"}>{repo.status}</OperatorBadge></td>
+                  <td className="px-4 py-3 align-top text-xs">
+                    <div>{repo.primaryDomainEngine}</div>
+                    <div className="text-slate-500">{repo.secondaryDomainEngines.join(", ")}</div>
+                  </td>
+                  <td className="px-4 py-3 align-top"><OperatorBadge tone={repo.riskTreatment === "LOW" || repo.riskTreatment === "MEDIUM" ? "advisory" : "blocked"}>{repo.riskTreatment}</OperatorBadge></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </OperatorPanel>
+      </Section>
+
+      <Section
+        index="AR-04"
+        title="DNS / Service Domain Scope"
+        description="DNS/domain status is not runtime authority. DOMAIN / READ-ONLY is not activation."
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {serviceDomains.map((domain) => (
+            <OperatorGateCard key={domain.domain}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="readOnly">{domain.status}</OperatorBadge>
+                <OperatorBadge tone="fixture">STATIC DATA</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{domain.domain}</h3>
+              <TextList items={[
+                `key: ${domain.key}`,
+                `engine type: ${domain.engineType}`,
+                `env: ${domain.env}`,
+                `expires: ${domain.expires ?? "unknown"}`,
+                `repo: ${domain.repo}`,
+                `nhID: ${domain.nhID ?? "unknown"}`,
+                `primary engine: ${domain.primaryEngine}`,
+                `secondary engines: ${domain.secondaryEngines.join(", ")}`,
+              ]} />
+              <p className="mt-3 text-xs text-amber-200">{domain.activationBoundary}</p>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-05"
+        title="Tier Agent Model"
+        description="Tier labels group review posture only. Tier does not grant authority, authorize execution, or open gates."
+      >
+        <div className="grid gap-3 md:grid-cols-3">
+          {tierAgentModel.map((tier) => (
+            <OperatorGateCard key={tier.tier}>
+              <OperatorBadge tone="readOnly">{tier.tier}</OperatorBadge>
+              <p className="mt-3 text-sm text-slate-300">{tier.description}</p>
+              <div className="mt-3 text-xs text-slate-500">Typical engines</div>
+              <InlineList items={tier.typicalEngines} tone="advisory" />
+              <p className="mt-3 text-xs text-amber-200">{tier.boundary}</p>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-06"
+        title="Project-Scoped Agent Candidates"
+        description="PROJECT CANDIDATE records are staged for review and not executing. Palette recommendation is not activation."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          {projectAgentCandidates.map((candidate) => (
+            <OperatorGateCard key={candidate.candidateId}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="fixture">PROJECT CANDIDATE</OperatorBadge>
+                <OperatorBadge tone="blocked">NOT EXECUTING</OperatorBadge>
+                <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{candidate.displayName}</h3>
+              <div className="mt-2"><OperatorIdChip>{candidate.namespace}</OperatorIdChip></div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <OperatorBadge tone="readOnly">{candidate.tier}</OperatorBadge>
+                <OperatorBadge tone="readOnly">{candidate.domainEngine}</OperatorBadge>
+                <OperatorBadge tone="fixture">{candidate.roleTemplate}</OperatorBadge>
+              </div>
+              <div className="mt-3"><InlineList items={candidate.status} tone="blocked" /></div>
+              <TextList items={[
+                `candidate ID: ${candidate.candidateId}`,
+                `project: ${candidate.projectId}`,
+                `repo scope: ${candidate.repoScope.join(", ")}`,
+                `recommendation source: ${candidate.recommendationSource}`,
+                `receipt expectation: ${candidate.receiptExpectation}`,
+                `risk posture: ${candidate.riskPosture}`,
+              ]} />
+              <div className="mt-3 text-xs text-slate-500">Allowed outputs</div>
+              <TextList items={candidate.allowedOutputs} />
+              <div className="mt-3 text-xs text-red-300">Blocked actions</div>
+              <InlineList items={candidate.blockedActions} tone="blocked" />
+              <div className="mt-3 text-xs text-amber-300">Required reviews and gates</div>
+              <TextList items={[...candidate.requiredReviews, ...candidate.requiredGates]} />
+              <p className="mt-3 text-xs text-amber-200">{candidate.activationBoundary}</p>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-07"
+        title="Palette Recommendations"
+        description="PALETTE RECOMMENDATION  NOT CREATION records recommend staged Agent candidates for review only."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          {paletteRecommendations.map((recommendation) => (
+            <OperatorGateCard key={recommendation.recommendationId}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="advisory">PALETTE RECOMMENDATION  NOT CREATION</OperatorBadge>
+                <OperatorBadge tone="blocked">CONTROL_THREAD REVIEW REQUIRED</OperatorBadge>
+                <OperatorBadge tone="blocked">ZERO GATES GRANTED</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{recommendation.displayName}</h3>
+              <p className="mt-2 text-xs text-slate-300">{recommendation.rationale}</p>
+              <TextList items={[
+                `recommendation ID: ${recommendation.recommendationId}`,
+                `scope: ${recommendation.scope}`,
+                `primary engine: ${recommendation.primaryDomainEngine}`,
+                `source posture: ${recommendation.sourcePosture}`,
+                `operator review required: ${String(recommendation.operatorReviewRequired)}`,
+                `CONTROL_THREAD acceptance required: ${String(recommendation.controlThreadAcceptanceRequired)}`,
+              ]} />
+              <div className="mt-3 text-xs text-slate-500">Recommended candidates</div>
+              <TextList items={recommendation.recommendedCandidates} />
+              <div className="mt-3 text-xs text-amber-300">Required reviews and gates</div>
+              <TextList items={[...recommendation.requiredReviews, ...recommendation.requiredGates]} />
+              <div className="mt-3 text-xs text-red-300">Blocked capabilities</div>
+              <InlineList items={recommendation.blockedCapabilities} tone="blocked" />
+              <div className="mt-3 text-xs text-slate-500">Safe alternatives and missing evidence</div>
+              <TextList items={[...recommendation.safeAlternatives, ...recommendation.missingEvidence]} />
+              <div className="mt-3"><InlineList items={recommendation.statusLabels} tone="blocked" /></div>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-08"
+        title="Advisory Vote / Quorum Examples"
+        description="Agent votes are evidence, not authority. Agent votes do not decide. Quorum is readiness evidence, not approval."
+      >
+        <div className="grid gap-3 lg:grid-cols-2">
+          {voteBundles.map((bundle) => (
+            <OperatorGateCard key={bundle.voteBundleId}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="readOnly">{bundle.routeType}</OperatorBadge>
+                <OperatorBadge tone="blocked">{bundle.quorum.status}</OperatorBadge>
+                <OperatorBadge tone="blocked">CONTROL_THREAD REVIEW REQUIRED</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{bundle.voteBundleId}</h3>
+              <TextList items={[
+                `domain engine: ${bundle.domainEngine}`,
+                `participating Agents: ${bundle.participatingAgents.join(", ")}`,
+                `readiness effect: ${bundle.readinessEffect}`,
+                `automatic approval: ${String(bundle.quorum.automaticApproval)}`,
+              ]} />
+              <div className="mt-3 space-y-2">
+                {bundle.votes.map((vote) => (
+                  <div key={`${bundle.voteBundleId}-${vote.agentNamespace}-${vote.voteClass}`} className="rounded border border-slate-800 bg-slate-950 p-2">
+                    <div className="flex flex-wrap gap-2">
+                      <OperatorBadge tone="advisory">{vote.voteClass}</OperatorBadge>
+                      <OperatorIdChip>{vote.agentNamespace}</OperatorIdChip>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">{vote.evidence}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 text-xs text-red-300">Dissent and blockers</div>
+              <TextList items={[...bundle.dissent, ...bundle.blockers]} />
+              <p className="mt-3 text-xs text-amber-200">{bundle.boundary}</p>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-09"
+        title="High-Risk / Frozen / Deprecated Treatment"
+        description="High-risk and frozen records are included to preserve blockers, not to normalize activation."
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {highRiskRepos.map((repo) => (
+            <OperatorGateCard key={`risk-${repo.repoId}`}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="blocked">{repo.riskTreatment}</OperatorBadge>
+                {repo.riskTreatment.includes("FROZEN") ? (
+                  <OperatorBadge tone="blocked">FROZEN / LINEAGE</OperatorBadge>
+                ) : null}
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">{repo.githubRepo}</h3>
+              <p className="mt-2 text-xs text-slate-400">{repo.notes}</p>
+              <TextList items={[
+                `status: ${repo.status}`,
+                `role: ${repo.role}`,
+                `primary engine: ${repo.primaryDomainEngine}`,
+                `secondary engines: ${repo.secondaryDomainEngines.join(", ")}`,
+              ]} />
+            </OperatorGateCard>
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        index="AR-10"
+        title="Gate / Authority Boundary Rail"
+        description="Static registry data does not open gates, dispatch Agents, run tools, or mutate state."
+      >
+        <OperatorPanel>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              "no execution",
+              "no activation",
+              "no dispatch",
+              "no provider/model calls",
+              "no API/server-action/DB/Prisma behavior",
+              "no GitHub/tool integration",
+              "no receipt/canon mutation",
+              "no route/motion/gate-state mutation",
+              "CONTROL_THREAD decides.",
+              "ZERO GATES GRANTED.",
+            ].map((item) => (
+              <OperatorBadge key={item} tone="blocked">
+                {item}
+              </OperatorBadge>
+            ))}
+          </div>
+        </OperatorPanel>
+      </Section>
+    </section>
   );
 }
 
@@ -361,6 +795,8 @@ export default function AgentsPage() {
             detail="Actual repos remain modeled separately and surfaced on /repos."
           />
         </section>
+
+        <AgentRegistryReadOnlySurface />
 
         <JaiAgentReadiness index="00" />
 
