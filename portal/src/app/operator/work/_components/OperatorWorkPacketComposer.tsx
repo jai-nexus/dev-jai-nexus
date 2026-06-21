@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import {
   OperatorBadge,
@@ -81,6 +81,23 @@ const warningRail = [
   "Generated packets do not open gates.",
   "CONTROL_THREAD review is required.",
   "ZERO GATES GRANTED.",
+] as const;
+
+const packetSectionNames = [
+  "source",
+  "target repo",
+  "scope",
+  "mode",
+  "branch",
+  "current baseline",
+  "purpose",
+  "task",
+  "files allowed",
+  "files blocked",
+  "required exact phrases",
+  "non-authorizations",
+  "validation",
+  "closeout requirements",
 ] as const;
 
 const defaultNonAuthorizations = [
@@ -308,7 +325,7 @@ function TextInput({
 function TextArea({
   label,
   value,
-  rows = 4,
+  rows = 3,
   onChange,
 }: {
   label: string;
@@ -328,6 +345,29 @@ function TextArea({
         className="w-full resize-y rounded border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none transition focus:border-sky-600"
       />
     </label>
+  );
+}
+
+function FieldGroup({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <OperatorPanel className="space-y-3 bg-slate-950/45 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
+          <p className="mt-1 text-xs text-slate-500">{description}</p>
+        </div>
+        <OperatorBadge tone="composeOnly" label="LOCAL STATE ONLY" />
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">{children}</div>
+    </OperatorPanel>
   );
 }
 
@@ -375,24 +415,40 @@ export function OperatorWorkPacketComposer() {
         right={<OperatorBadge tone="composeOnly" label="LOCAL / COPY-ONLY" />}
       />
 
-      <OperatorPanel className="space-y-5">
-        <div className="flex flex-wrap gap-2">
-          {visibleLabels.map((label) => (
-            <OperatorBadge
-              key={label}
-              tone={label.includes("NO ") ? "blocked" : "composeOnly"}
-              label={label}
-            />
-          ))}
+      <OperatorPanel className="space-y-4">
+        <div className="grid gap-4 xl:grid-cols-[1fr_auto]">
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {visibleLabels.map((label) => (
+                <OperatorBadge
+                  key={label}
+                  tone={label.includes("NO ") ? "blocked" : "composeOnly"}
+                  label={label}
+                />
+              ))}
+            </div>
+            <p className="max-w-5xl text-sm text-slate-300">
+              Draft work packets, route packets, validation expectations, and
+              closeout handoffs for manual CONTROL_THREAD review. The preview
+              is local text only; it does not dispatch, persist, route, or
+              execute.
+            </p>
+          </div>
+          <OperatorGateCard>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Current local draft
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label={fields.targetRepo} />
+              <OperatorBadge tone="composeOnly" label={fields.laneType} />
+            </div>
+            <p className="mt-2 break-all font-mono text-xs text-slate-300">
+              {fields.branch || branchSuggestion}
+            </p>
+          </OperatorGateCard>
         </div>
 
-        <p className="max-w-5xl text-sm text-slate-300">
-          Draft work packets, route packets, validation expectations, and
-          closeout handoffs for manual CONTROL_THREAD review. The preview is
-          local text only; it does not dispatch, persist, route, or execute.
-        </p>
-
-        <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
           <OperatorContradictionCard>
             <div className="flex flex-wrap gap-2">
               <OperatorBadge tone="blocked" label="NO DISPATCH" />
@@ -400,7 +456,7 @@ export function OperatorWorkPacketComposer() {
               <OperatorBadge tone="blocked" label="NO EXECUTION" />
               <OperatorBadge tone="gated" label="ZERO GATES GRANTED" />
             </div>
-            <ul className="mt-4 grid gap-2 text-sm text-slate-300 md:grid-cols-2">
+            <ul className="mt-3 grid gap-x-4 gap-y-1 text-xs text-slate-300 md:grid-cols-2">
               {warningRail.map((warning) => (
                 <li key={warning}>- {warning}</li>
               ))}
@@ -411,7 +467,7 @@ export function OperatorWorkPacketComposer() {
             <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
               Doctrine rail
             </div>
-            <ul className="mt-3 space-y-2 text-sm text-slate-300">
+            <ul className="mt-3 grid gap-x-4 gap-y-1 text-xs text-slate-300 sm:grid-cols-2">
               {doctrinePhrases.map((phrase) => (
                 <li key={phrase}>- {phrase}</li>
               ))}
@@ -419,9 +475,12 @@ export function OperatorWorkPacketComposer() {
           </OperatorGateCard>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <OperatorPanel className="space-y-4 bg-slate-950/45">
-            <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(31rem,0.82fr)]">
+          <div className="space-y-4">
+            <FieldGroup
+              title="Packet Identity"
+              description="Set the static repo, lane, source, scope, mode, and branch text. Branch text is representational only."
+            >
               <label className="block space-y-2">
                 <span className="font-mono text-xs uppercase tracking-widest text-slate-500">
                   target repo
@@ -459,154 +518,209 @@ export function OperatorWorkPacketComposer() {
                   ))}
                 </select>
               </label>
-            </div>
 
-            <TextInput
-              label="source"
-              value={fields.source}
-              onChange={(value) => updateField("source", value)}
-            />
-            <TextInput
-              label="scope"
-              value={fields.scope}
-              onChange={(value) => updateField("scope", value)}
-            />
-            <TextInput
-              label="mode"
-              value={fields.mode}
-              onChange={(value) => updateField("mode", value)}
-            />
-            <TextInput
-              label="branch text"
-              value={fields.branch}
-              onChange={(value) => updateField("branch", value)}
-            />
+              <TextInput
+                label="source"
+                value={fields.source}
+                onChange={(value) => updateField("source", value)}
+              />
+              <TextInput
+                label="scope"
+                value={fields.scope}
+                onChange={(value) => updateField("scope", value)}
+              />
+              <TextInput
+                label="mode"
+                value={fields.mode}
+                onChange={(value) => updateField("mode", value)}
+              />
+              <TextInput
+                label="branch text"
+                value={fields.branch}
+                onChange={(value) => updateField("branch", value)}
+              />
+              <OperatorGateCard>
+                <div className="flex flex-wrap items-center gap-2">
+                  <OperatorBadge tone="composeOnly" label="BRANCH TEXT ONLY" />
+                  <OperatorBadge tone="blocked" label="NO BRANCH CREATION" />
+                </div>
+                <p className="mt-2 break-all font-mono text-sm text-slate-100">
+                  {fields.branch || branchSuggestion}
+                </p>
+              </OperatorGateCard>
+            </FieldGroup>
 
-            <OperatorGateCard>
-              <div className="flex flex-wrap items-center gap-2">
-                <OperatorBadge tone="composeOnly" label="BRANCH TEXT ONLY" />
-                <OperatorBadge tone="blocked" label="NO BRANCH CREATION" />
+            <FieldGroup
+              title="Work Definition"
+              description="Describe the baseline, purpose, and bounded task without implying execution or automatic route progression."
+            >
+              <TextArea
+                label="current baseline"
+                value={fields.currentBaseline}
+                onChange={(value) => updateField("currentBaseline", value)}
+              />
+              <TextArea
+                label="purpose"
+                value={fields.purpose}
+                onChange={(value) => updateField("purpose", value)}
+              />
+              <div className="md:col-span-2">
+                <TextArea
+                  label="task"
+                  rows={4}
+                  value={fields.task}
+                  onChange={(value) => updateField("task", value)}
+                />
               </div>
-              <p className="mt-2 font-mono text-sm text-slate-100">
-                {fields.branch || branchSuggestion}
-              </p>
-            </OperatorGateCard>
+            </FieldGroup>
 
-            <TextArea
-              label="current baseline"
-              value={fields.currentBaseline}
-              onChange={(value) => updateField("currentBaseline", value)}
-            />
-            <TextArea
-              label="purpose"
-              value={fields.purpose}
-              onChange={(value) => updateField("purpose", value)}
-            />
-            <TextArea
-              label="task"
-              value={fields.task}
-              onChange={(value) => updateField("task", value)}
-            />
-            <TextArea
-              label="files allowed"
-              value={fields.filesAllowed}
-              onChange={(value) => updateField("filesAllowed", value)}
-            />
-            <TextArea
-              label="files blocked"
-              value={fields.filesBlocked}
-              onChange={(value) => updateField("filesBlocked", value)}
-            />
-            <TextArea
-              label="required exact phrases"
-              rows={5}
-              value={fields.requiredExactPhrases}
-              onChange={(value) => updateField("requiredExactPhrases", value)}
-            />
-            <TextArea
-              label="validation expectations"
-              value={fields.validationExpectations}
-              onChange={(value) => updateField("validationExpectations", value)}
-            />
-            <TextArea
-              label="closeout requirements"
-              value={fields.closeoutRequirements}
-              onChange={(value) => updateField("closeoutRequirements", value)}
-            />
-            <TextArea
-              label="extra notes"
-              value={fields.extraNotes}
-              onChange={(value) => updateField("extraNotes", value)}
-            />
+            <FieldGroup
+              title="Boundaries"
+              description="Keep scoped files, blocked files, and required exact phrases close to the packet controls."
+            >
+              <TextArea
+                label="files allowed"
+                value={fields.filesAllowed}
+                onChange={(value) => updateField("filesAllowed", value)}
+              />
+              <TextArea
+                label="files blocked"
+                value={fields.filesBlocked}
+                onChange={(value) => updateField("filesBlocked", value)}
+              />
+              <div className="md:col-span-2">
+                <TextArea
+                  label="required exact phrases"
+                  rows={4}
+                  value={fields.requiredExactPhrases}
+                  onChange={(value) =>
+                    updateField("requiredExactPhrases", value)
+                  }
+                />
+              </div>
+            </FieldGroup>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={copyPacket}
-                className="rounded border border-sky-700 bg-sky-950 px-3 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-500"
-              >
-                Copy packet
-              </button>
-              <button
-                type="button"
-                onClick={resetLocalDraft}
-                className="rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
-              >
-                Reset local draft
-              </button>
-              <span className="self-center text-xs text-slate-500">
+            <FieldGroup
+              title="Validation And Closeout"
+              description="Validation is report posture only; closeout is handoff text only."
+            >
+              <TextArea
+                label="validation expectations"
+                value={fields.validationExpectations}
+                onChange={(value) =>
+                  updateField("validationExpectations", value)
+                }
+              />
+              <TextArea
+                label="closeout requirements"
+                value={fields.closeoutRequirements}
+                onChange={(value) => updateField("closeoutRequirements", value)}
+              />
+              <div className="md:col-span-2">
+                <TextArea
+                  label="extra notes"
+                  value={fields.extraNotes}
+                  onChange={(value) => updateField("extraNotes", value)}
+                />
+              </div>
+            </FieldGroup>
+          </div>
+
+          <div className="space-y-4">
+            <OperatorPanel className="space-y-4 bg-slate-950/45">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-100">
+                    Generated packet preview
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Plain text derived from local inputs only.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <OperatorBadge tone="composeOnly" label="COPY ONLY" />
+                  <OperatorBadge tone="blocked" label="NO DISPATCH" />
+                  <OperatorBadge tone="blocked" label="NO PERSISTENCE" />
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                <OperatorGateCard>
+                  <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                    Required sections
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {packetSectionNames.map((section) => (
+                      <span
+                        key={section}
+                        className="rounded border border-slate-800 bg-slate-900 px-2 py-1 font-mono text-[11px] uppercase text-slate-300"
+                      >
+                        {section}
+                      </span>
+                    ))}
+                  </div>
+                </OperatorGateCard>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={copyPacket}
+                    className="rounded border border-sky-700 bg-sky-950 px-3 py-2 text-sm font-semibold text-sky-100 transition hover:border-sky-500"
+                  >
+                    Copy packet
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetLocalDraft}
+                    className="rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm font-semibold text-slate-200 transition hover:border-slate-500"
+                  >
+                    Reset local draft
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500">
                 {copyState === "copied"
                   ? "Copied to local clipboard only."
                   : copyState === "failed"
                     ? "Clipboard copy unavailable in this browser context."
                     : "No packet is persisted or dispatched."}
-              </span>
-            </div>
-          </OperatorPanel>
+              </p>
+              <p className="text-sm text-slate-400">
+                Preview text is not executable and does not create branches,
+                PRs, receipts, canon updates, gates, route state, or motion
+                state.
+              </p>
+              <pre className="max-h-[64rem] overflow-auto rounded border border-slate-800 bg-slate-950 p-4 text-xs leading-relaxed text-slate-200">
+                {packetPreview}
+              </pre>
+            </OperatorPanel>
 
-          <OperatorPanel className="space-y-4 bg-slate-950/45">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-base font-semibold text-slate-100">
-                Generated packet preview
-              </h3>
-              <OperatorBadge tone="composeOnly" label="COPY ONLY" />
-              <OperatorBadge tone="blocked" label="NO DISPATCH" />
-              <OperatorBadge tone="blocked" label="NO PERSISTENCE" />
-            </div>
-            <p className="text-sm text-slate-400">
-              Preview text is derived from local inputs only. It is not
-              executable and does not create branches, PRs, receipts, canon
-              updates, gates, route state, or motion state.
-            </p>
-            <pre className="max-h-[52rem] overflow-auto rounded border border-slate-800 bg-slate-950 p-4 text-xs leading-relaxed text-slate-200">
-              {packetPreview}
-            </pre>
-          </OperatorPanel>
+            <OperatorPanel className="bg-slate-950/45">
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                Blocked composer capabilities
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  "dispatch work",
+                  "persist draft",
+                  "call GitHub",
+                  "create branch",
+                  "open PR",
+                  "invoke tool",
+                  "dispatch Agent",
+                  "create receipt",
+                  "update canon",
+                  "open gate",
+                ].map((capability) => (
+                  <OperatorBlockedAction key={capability}>
+                    {capability}
+                  </OperatorBlockedAction>
+                ))}
+              </div>
+            </OperatorPanel>
+          </div>
         </div>
-
-        <OperatorPanel className="bg-slate-950/45">
-          <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
-            Blocked composer capabilities
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {[
-              "dispatch work",
-              "persist draft",
-              "call GitHub",
-              "create branch",
-              "open PR",
-              "invoke tool",
-              "dispatch Agent",
-              "create receipt",
-              "update canon",
-              "open gate",
-            ].map((capability) => (
-              <OperatorBlockedAction key={capability}>
-                {capability}
-              </OperatorBlockedAction>
-            ))}
-          </div>
-        </OperatorPanel>
       </OperatorPanel>
     </section>
   );
