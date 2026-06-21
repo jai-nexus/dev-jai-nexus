@@ -21,6 +21,7 @@ import { JaiAgentReadiness } from "@/components/operator/JaiAgentReadiness";
 import { DevelopmentWorkReadiness } from "@/components/operator/DevelopmentWorkReadiness";
 import { JaiReceiptGateAlignment } from "@/components/operator/JaiReceiptGateAlignment";
 import { PaletteGridReadiness } from "@/components/operator/PaletteGridReadiness";
+import { OperatorWorkPacketComposer } from "./_components/OperatorWorkPacketComposer";
 import { buildDraftWorkPacketTaskPrompt } from "@/lib/agents/workPacketTaskPrompts";
 import type {
   DraftWorkPacketAction,
@@ -684,6 +685,8 @@ export default function WorkPage() {
         <DevelopmentWorkReadiness index="DEV" />
 
         <JaiReceiptGateAlignment index="ALIGN" compact />
+
+        <OperatorWorkPacketComposer />
 
         <Section
           index="01"
