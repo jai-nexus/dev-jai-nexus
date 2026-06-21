@@ -51,6 +51,33 @@ const blockedCapabilities = [
   "gate opening",
 ] as const;
 
+const postureDistinctions = [
+  {
+    label: "Planning",
+    statement: "Planning only; not execution.",
+  },
+  {
+    label: "Recommendation",
+    statement: "Recommendation only; not routing authority.",
+  },
+  {
+    label: "Request",
+    statement: "Request only; not activation.",
+  },
+  {
+    label: "Approval",
+    statement: "Validation Report is not approval.",
+  },
+  {
+    label: "Acceptance",
+    statement: "Closeout Packet is not acceptance.",
+  },
+  {
+    label: "Execution",
+    statement: "ZERO GATES GRANTED.",
+  },
+] as const;
+
 const domainWorkspaceLanes = [
   {
     laneId: "Q3M7-DOMAIN-FRAMEWORK",
@@ -60,6 +87,7 @@ const domainWorkspaceLanes = [
     focus:
       ".nexus and .jai profile planning, compatibility posture, and reference handoff.",
     workWaveLane: "PROFILE_DRAFT / DOCS_SPEC / ALIGNMENT_REVIEW",
+    approvalNeed: "profile doctrine acceptance",
     humanCheckpoint: "CONTROL_THREAD accepts profile doctrine before parser/runtime work.",
   },
   {
@@ -70,6 +98,7 @@ const domainWorkspaceLanes = [
     focus:
       "Infrastructure readiness, future work-wave lanes, rollback planning, and blocked execution gates.",
     workWaveLane: "BOUNDARY_REVIEW / VALIDATION_ONLY / FUTURE_GATED_EXECUTION_DESIGN",
+    approvalNeed: "security and rollback evidence review",
     humanCheckpoint: "CONTROL_THREAD reviews security and rollback evidence before any future gate proposal.",
   },
   {
@@ -80,6 +109,7 @@ const domainWorkspaceLanes = [
     focus:
       "Operator cockpit, work packet handoff, route packet visibility, validation reports, and closeout packets.",
     workWaveLane: "COMPOSE_ONLY_UI / READ_ONLY_UI / QA_DENSITY",
+    approvalNeed: "manual repo execution prompt approval",
     humanCheckpoint: "CONTROL_THREAD reviews generated packets and manually approves repo execution prompts.",
   },
 ] as const;
@@ -95,7 +125,7 @@ const workWaveStages = [
   {
     label: "Route Packets",
     posture: "recommended route and file boundary handoff",
-    boundary: "Route packet is not routing itself.",
+    boundary: "Route Packet is not route execution.",
   },
   {
     label: "Validation Reports",
@@ -167,6 +197,9 @@ ${lane.workWaveLane}
 Purpose:
 Represent .nexus domain-engine planning, staged Agent assignment, work/wave planning, and manual CONTROL_THREAD handoff without Agent activation.
 
+Planning / recommendation / approval distinctions:
+${formatList(postureDistinctions.map((item) => `${item.label}: ${item.statement}`))}
+
 Staged Agent assignment:
 ${formatList(
   candidates.length > 0
@@ -191,7 +224,16 @@ Work/wave packet flow:
 ${formatList(workWaveStages.map((stage) => `${stage.label}: ${stage.posture}`))}
 
 Human approval checkpoint:
+${lane.approvalNeed}
 ${lane.humanCheckpoint}
+
+Copy-handoff checklist:
+* Confirm scope and files allowed.
+* Confirm files blocked and non-authorizations.
+* Confirm validation expectations.
+* Confirm closeout requirements.
+* Confirm CONTROL_THREAD acceptance remains manual.
+* Confirm ZERO GATES GRANTED.
 
 Boundary rail:
 ${formatList(boundaryPhrases)}
@@ -304,6 +346,34 @@ export function OperatorDomainEngineWorkspace() {
           </OperatorGateCard>
         </div>
 
+        <OperatorPanel className="space-y-3 bg-slate-950/45">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">
+                Planning-to-acceptance posture map
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Compact distinctions for planning, recommendation, request,
+                approval, acceptance, and execution boundaries.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="composeOnly">HUMAN APPROVAL REQUIRED</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+            {postureDistinctions.map((item) => (
+              <OperatorGateCard key={item.label}>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  {item.label}
+                </div>
+                <p className="mt-2 text-xs text-slate-300">{item.statement}</p>
+              </OperatorGateCard>
+            ))}
+          </div>
+        </OperatorPanel>
+
         <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(30rem,0.85fr)]">
           <div className="space-y-4">
             <OperatorPanel className="space-y-4 bg-slate-950/45">
@@ -387,6 +457,29 @@ export function OperatorDomainEngineWorkspace() {
                     {selectedEngine?.purpose ?? selectedLane.focus}
                   </p>
                 </OperatorGateCard>
+                <OperatorGateCard>
+                  <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                    Human approval checkpoint
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    {selectedLane.approvalNeed}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    {selectedLane.humanCheckpoint}
+                  </p>
+                </OperatorGateCard>
+                <OperatorGateCard>
+                  <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                    Work/wave lane
+                  </div>
+                  <p className="mt-2 text-sm text-slate-200">
+                    {selectedLane.workWaveLane}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Request only; not activation, routing authority, or
+                    execution.
+                  </p>
+                </OperatorGateCard>
               </div>
 
               {selectedEngine ? (
@@ -438,8 +531,27 @@ export function OperatorDomainEngineWorkspace() {
                       <p className="mt-1 break-all font-mono text-xs text-slate-500">
                         {candidate.namespace}
                       </p>
-                      <div className="mt-3">
-                        <CompactList items={candidate.requiredReviews} />
+                      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+                            Required reviews
+                          </div>
+                          <CompactList items={candidate.requiredReviews} />
+                        </div>
+                        <div>
+                          <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+                            Required gates
+                          </div>
+                          <CompactList items={candidate.requiredGates} />
+                        </div>
+                      </div>
+                      <div className="mt-3 border-t border-slate-800 pt-3">
+                        <div className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+                          Activation boundary
+                        </div>
+                        <p className="mt-2 text-xs text-slate-400">
+                          {candidate.activationBoundary}
+                        </p>
                       </div>
                     </OperatorGateCard>
                   ))
@@ -524,6 +636,24 @@ export function OperatorDomainEngineWorkspace() {
                   </div>
                 </OperatorGateCard>
               ) : null}
+
+              <OperatorGateCard>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  Copy-handoff review checklist
+                </div>
+                <div className="mt-3 grid gap-2 text-xs text-slate-300 sm:grid-cols-2">
+                  {[
+                    "scope and files allowed are explicit",
+                    "files blocked and non-authorizations are visible",
+                    "validation expectations are review-only",
+                    "closeout requirements do not accept themselves",
+                    "CONTROL_THREAD acceptance remains manual",
+                    "ZERO GATES GRANTED",
+                  ].map((item) => (
+                    <div key={item}>- {item}</div>
+                  ))}
+                </div>
+              </OperatorGateCard>
 
               <div className="flex flex-wrap items-center gap-2">
                 <button
