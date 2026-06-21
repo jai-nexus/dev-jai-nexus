@@ -14,17 +14,19 @@ import {
 import { agentRegistryStaticData } from "@/data/operator/agentRegistry";
 
 const boundaryPhrases = [
+  "Profile sketch only; not parser/runtime.",
   "Assignment recommendation is not activation.",
-  "Registry visibility is not activation.",
-  "Work packet is not execution.",
-  "Route packet is not routing itself.",
-  "Validation is not approval.",
-  "Closeout is not acceptance.",
+  "Registry visibility only; not activation.",
+  "Work Packet is not execution.",
+  "Route Packet is not route execution.",
+  "Validation Report is not approval.",
+  "Closeout Packet is not acceptance.",
   "CONTROL_THREAD decides.",
   "ZERO GATES GRANTED.",
 ] as const;
 
 const workspaceLabels = [
+  "PROFILE SKETCH ONLY",
   "STAGED",
   "RECOMMENDED",
   "PENDING HUMAN APPROVAL",
@@ -33,6 +35,19 @@ const workspaceLabels = [
   "NOT EXECUTING",
   "COPY HANDOFF",
   "ZERO GATES GRANTED",
+] as const;
+
+const profileVocabulary = [
+  "work-wave/v0",
+  "domain-engine-assignment/v0",
+  "agent-assignment-recommendation/v0",
+  "agent-activation-request/v0",
+  "work-packet/v0",
+  "route/v0",
+  "validation-report/v0",
+  "closeout-packet/v0",
+  "repo-lane/v0",
+  "agent-domain-engine/v0",
 ] as const;
 
 const blockedCapabilities = [
@@ -78,6 +93,34 @@ const postureDistinctions = [
   },
 ] as const;
 
+const profileSketchRows = [
+  {
+    profile: "domain-engine-assignment/v0",
+    localShape: "selected .nexus domain lane + agent-domain-engine/v0 namespace",
+    boundary: "Profile sketch only; not parser/runtime.",
+  },
+  {
+    profile: "agent-assignment-recommendation/v0",
+    localShape: "staged project Agent candidates + required reviews/gates",
+    boundary: "Assignment recommendation is not activation.",
+  },
+  {
+    profile: "agent-activation-request/v0",
+    localShape: "blocked future request vocabulary and human approval checkpoint",
+    boundary: "Request only; not activation.",
+  },
+  {
+    profile: "work-wave/v0",
+    localShape: "Work Packet -> Route Packet -> Validation Report -> Closeout Packet",
+    boundary: "Planning only; not execution.",
+  },
+  {
+    profile: "repo-lane/v0",
+    localShape: "static repo/domain lane text",
+    boundary: "Recommendation only; not routing authority.",
+  },
+] as const;
+
 const domainWorkspaceLanes = [
   {
     laneId: "Q3M7-DOMAIN-FRAMEWORK",
@@ -119,26 +162,31 @@ type DomainWorkspaceLaneId = (typeof domainWorkspaceLanes)[number]["laneId"];
 const workWaveStages = [
   {
     label: "Work Packets",
+    profileRef: "work-packet/v0",
     posture: "compose-only scope and task handoff",
-    boundary: "Work packet is not execution.",
+    boundary: "Work Packet is not execution.",
   },
   {
     label: "Route Packets",
+    profileRef: "route/v0",
     posture: "recommended route and file boundary handoff",
     boundary: "Route Packet is not route execution.",
   },
   {
     label: "Validation Reports",
+    profileRef: "validation-report/v0",
     posture: "reported checks and evidence gaps",
-    boundary: "Validation is not approval.",
+    boundary: "Validation Report is not approval.",
   },
   {
     label: "Closeout Packets",
+    profileRef: "closeout-packet/v0",
     posture: "summary, risks, and passalong",
-    boundary: "Closeout is not acceptance.",
+    boundary: "Closeout Packet is not acceptance.",
   },
   {
     label: "CONTROL_THREAD Acceptance",
+    profileRef: "human-approval checkpoint",
     posture: "human approval checkpoint",
     boundary: "CONTROL_THREAD decides.",
   },
@@ -197,6 +245,16 @@ ${lane.workWaveLane}
 Purpose:
 Represent .nexus domain-engine planning, staged Agent assignment, work/wave planning, and manual CONTROL_THREAD handoff without Agent activation.
 
+Profile sketch vocabulary:
+${formatList(profileVocabulary)}
+
+Static profile-shape sketch:
+${formatList(
+  profileSketchRows.map(
+    (row) => `${row.profile}: ${row.localShape} / ${row.boundary}`,
+  ),
+)}
+
 Planning / recommendation / approval distinctions:
 ${formatList(postureDistinctions.map((item) => `${item.label}: ${item.statement}`))}
 
@@ -221,7 +279,7 @@ ${formatList(
 )}
 
 Work/wave packet flow:
-${formatList(workWaveStages.map((stage) => `${stage.label}: ${stage.posture}`))}
+${formatList(workWaveStages.map((stage) => `${stage.label} (${stage.profileRef}): ${stage.posture} / ${stage.boundary}`))}
 
 Human approval checkpoint:
 ${lane.approvalNeed}
@@ -374,6 +432,43 @@ export function OperatorDomainEngineWorkspace() {
           </div>
         </OperatorPanel>
 
+        <OperatorPanel className="space-y-3 bg-slate-950/45">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">
+                Static profile sketch vocabulary
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Local display shape only. These labels align the workspace with
+                Q3M7 coordination vocabulary without creating parser/runtime
+                objects.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly">PROFILE SKETCH ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT PARSER/RUNTIME</OperatorBadge>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {profileVocabulary.map((profile) => (
+              <OperatorBadge key={profile} tone="readOnly">
+                {profile}
+              </OperatorBadge>
+            ))}
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {profileSketchRows.map((row) => (
+              <OperatorGateCard key={row.profile}>
+                <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                  {row.profile}
+                </div>
+                <p className="mt-2 text-xs text-slate-300">{row.localShape}</p>
+                <p className="mt-3 text-xs text-slate-400">{row.boundary}</p>
+              </OperatorGateCard>
+            ))}
+          </div>
+        </OperatorPanel>
+
         <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(30rem,0.85fr)]">
           <div className="space-y-4">
             <OperatorPanel className="space-y-4 bg-slate-950/45">
@@ -387,7 +482,10 @@ export function OperatorDomainEngineWorkspace() {
                     changes local preview text only.
                   </p>
                 </div>
-                <OperatorBadge tone="readOnly">LOCAL STATE ONLY</OperatorBadge>
+                <div className="flex flex-wrap gap-2">
+                  <OperatorBadge tone="readOnly">domain-engine-assignment/v0</OperatorBadge>
+                  <OperatorBadge tone="readOnly">LOCAL STATE ONLY</OperatorBadge>
+                </div>
               </div>
 
               <div className="grid gap-3 lg:grid-cols-3">
@@ -430,6 +528,8 @@ export function OperatorDomainEngineWorkspace() {
                 <h3 className="text-sm font-semibold text-slate-100">
                   Selected lane detail
                 </h3>
+                <OperatorBadge tone="readOnly">repo-lane/v0</OperatorBadge>
+                <OperatorBadge tone="readOnly">agent-domain-engine/v0</OperatorBadge>
                 <OperatorBadge tone="composeOnly">PENDING HUMAN APPROVAL</OperatorBadge>
                 <OperatorBadge tone="blocked">NOT EXECUTING</OperatorBadge>
               </div>
@@ -511,6 +611,8 @@ export function OperatorDomainEngineWorkspace() {
                 <h3 className="text-sm font-semibold text-slate-100">
                   Staged Agent assignment
                 </h3>
+                <OperatorBadge tone="readOnly">agent-assignment-recommendation/v0</OperatorBadge>
+                <OperatorBadge tone="blocked">agent-activation-request/v0 BLOCKED</OperatorBadge>
                 <OperatorBadge tone="composeOnly">RECOMMENDED</OperatorBadge>
                 <OperatorBadge tone="blocked">NOT DISPATCHED</OperatorBadge>
               </div>
@@ -571,12 +673,14 @@ export function OperatorDomainEngineWorkspace() {
                 <h3 className="text-sm font-semibold text-slate-100">
                   Work/wave planning chain
                 </h3>
+                <OperatorBadge tone="readOnly">work-wave/v0</OperatorBadge>
                 <OperatorBadge tone="composeOnly">COPY HANDOFF</OperatorBadge>
                 <OperatorBadge tone="blocked">NO ROUTE MUTATION</OperatorBadge>
               </div>
               <div className="grid gap-3 md:grid-cols-5">
                 {workWaveStages.map((stage) => (
                   <OperatorGateCard key={stage.label}>
+                    <OperatorBadge tone="readOnly">{stage.profileRef}</OperatorBadge>
                     <h4 className="text-sm font-semibold text-slate-100">
                       {stage.label}
                     </h4>
