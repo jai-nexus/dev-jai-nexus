@@ -14,8 +14,11 @@ import {
 import { agentRegistryStaticData } from "@/data/operator/agentRegistry";
 
 const boundaryPhrases = [
+  "Profile object draft only; not parser/runtime.",
   "Profile sketch only; not parser/runtime.",
+  "Static representation only; not API/DB-backed state.",
   "Assignment recommendation is not activation.",
+  "Assignment only; not activation.",
   "Registry visibility only; not activation.",
   "Work Packet is not execution.",
   "Route Packet is not route execution.",
@@ -26,7 +29,9 @@ const boundaryPhrases = [
 ] as const;
 
 const workspaceLabels = [
+  "PROFILE OBJECT DRAFT ONLY",
   "PROFILE SKETCH ONLY",
+  "STATIC REPRESENTATION ONLY",
   "STAGED",
   "RECOMMENDED",
   "PENDING HUMAN APPROVAL",
@@ -119,6 +124,20 @@ const profileSketchRows = [
     localShape: "static repo/domain lane text",
     boundary: "Recommendation only; not routing authority.",
   },
+] as const;
+
+const objectDraftKeys = [
+  "profile_object_draft_id",
+  "object_status",
+  "source_route",
+  "profile_refs",
+  "domain_engine_assignment_v0",
+  "agent_assignment_recommendation_v0",
+  "agent_activation_request_v0",
+  "work_wave_v0",
+  "repo_lane_v0",
+  "control_thread_acceptance",
+  "authority_boundary",
 ] as const;
 
 const domainWorkspaceLanes = [
@@ -214,6 +233,62 @@ function formatList(items: readonly string[]) {
   return items.map((item) => `* ${item}`).join("\n");
 }
 
+function buildProfileObjectDraft(selectedLaneId: string) {
+  const lane =
+    domainWorkspaceLanes.find((item) => item.laneId === selectedLaneId) ??
+    domainWorkspaceLanes[0];
+  const engine = findEngine(lane.engine);
+  const candidates = candidatesForEngine(lane.engine);
+
+  return {
+    profile_object_draft_id: `q3m7-${lane.laneId.toLowerCase()}`,
+    object_status: "static_profile_object_draft_only",
+    source_route: "/operator/work",
+    profile_refs: profileVocabulary,
+    domain_engine_assignment_v0: {
+      domain: lane.domain,
+      agent_domain_engine_v0: lane.engine,
+      display_name: engine?.displayName ?? lane.engine,
+      repo_lane_v0: lane.repoLane,
+      assignment_boundary: "Assignment only; not activation.",
+    },
+    agent_assignment_recommendation_v0: candidates.map((candidate) => ({
+      candidate_id: candidate.candidateId,
+      namespace: candidate.namespace,
+      role_template: candidate.roleTemplate,
+      status: candidate.status,
+      required_reviews: candidate.requiredReviews,
+      required_gates: candidate.requiredGates,
+      boundary: "Assignment recommendation is not activation.",
+    })),
+    agent_activation_request_v0: {
+      status: "blocked_in_v0",
+      request_boundary: "Request only; not activation.",
+      activation_authorized: false,
+    },
+    work_wave_v0: {
+      lane: lane.workWaveLane,
+      stages: workWaveStages.map((stage) => ({
+        profile_ref: stage.profileRef,
+        label: stage.label,
+        posture: stage.posture,
+        boundary: stage.boundary,
+      })),
+    },
+    repo_lane_v0: {
+      repo_lane: lane.repoLane,
+      routing_boundary: "Recommendation only; not routing authority.",
+    },
+    control_thread_acceptance: {
+      required: true,
+      approval_need: lane.approvalNeed,
+      checkpoint: lane.humanCheckpoint,
+      boundary: "CONTROL_THREAD decides.",
+    },
+    authority_boundary: boundaryPhrases,
+  } as const;
+}
+
 function buildHandoffPreview(selectedLaneId: string) {
   const lane =
     domainWorkspaceLanes.find((item) => item.laneId === selectedLaneId) ??
@@ -221,6 +296,7 @@ function buildHandoffPreview(selectedLaneId: string) {
   const engine = findEngine(lane.engine);
   const candidates = candidatesForEngine(lane.engine);
   const recommendations = recommendationsForEngine(lane.engine);
+  const profileObjectDraft = buildProfileObjectDraft(selectedLaneId);
 
   return `[CONTROL_THREAD  dev-jai-nexus]
 
@@ -254,6 +330,9 @@ ${formatList(
     (row) => `${row.profile}: ${row.localShape} / ${row.boundary}`,
   ),
 )}
+
+Static profile object draft:
+${JSON.stringify(profileObjectDraft, null, 2)}
 
 Planning / recommendation / approval distinctions:
 ${formatList(postureDistinctions.map((item) => `${item.label}: ${item.statement}`))}
@@ -329,6 +408,10 @@ export function OperatorDomainEngineWorkspace() {
 
   const handoffPreview = useMemo(
     () => buildHandoffPreview(selectedLaneId),
+    [selectedLaneId],
+  );
+  const profileObjectDraft = useMemo(
+    () => buildProfileObjectDraft(selectedLaneId),
     [selectedLaneId],
   );
 
@@ -466,6 +549,50 @@ export function OperatorDomainEngineWorkspace() {
                 <p className="mt-3 text-xs text-slate-400">{row.boundary}</p>
               </OperatorGateCard>
             ))}
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="space-y-3 bg-slate-950/45">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">
+                Static profile object draft
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Local object-shape preview for future profile alignment. It is
+                not parsed, persisted, API-backed, or accepted as runtime state.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly">PROFILE OBJECT DRAFT ONLY</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT API/DB-BACKED STATE</OperatorBadge>
+              <OperatorBadge tone="blocked">NOT PARSER/RUNTIME</OperatorBadge>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {objectDraftKeys.map((key) => (
+              <OperatorBadge key={key} tone="readOnly">
+                {key}
+              </OperatorBadge>
+            ))}
+          </div>
+          <div className="grid gap-3 xl:grid-cols-[0.9fr_1.1fr]">
+            <OperatorGateCard>
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                Object boundary
+              </div>
+              <ul className="mt-3 space-y-1 text-xs text-slate-300">
+                <li>- Profile object draft only; not parser/runtime.</li>
+                <li>- Static representation only; not API/DB-backed state.</li>
+                <li>- Assignment only; not activation.</li>
+                <li>- Request only; not activation.</li>
+                <li>- CONTROL_THREAD decides.</li>
+                <li>- ZERO GATES GRANTED.</li>
+              </ul>
+            </OperatorGateCard>
+            <pre className="max-h-80 overflow-auto rounded border border-slate-800 bg-slate-950 p-3 text-xs leading-relaxed text-slate-200">
+              {JSON.stringify(profileObjectDraft, null, 2)}
+            </pre>
           </div>
         </OperatorPanel>
 
