@@ -140,6 +140,39 @@ const objectDraftKeys = [
   "authority_boundary",
 ] as const;
 
+const verifierFindings = [
+  {
+    question: "Object-shape readability",
+    finding:
+      "Readable with the key list, static profile object draft panel, and JSON-style preview.",
+    status: "VERIFIED STATIC",
+  },
+  {
+    question: "Q3M7 vocabulary alignment",
+    finding:
+      "Object keys align with accepted work-wave, domain-engine-assignment, Agent recommendation, route, validation, closeout, repo-lane, and domain-engine terms.",
+    status: "VERIFIED STATIC",
+  },
+  {
+    question: "Activation request posture",
+    finding:
+      "agent-activation-request/v0 remains blocked_in_v0 with activation_authorized false.",
+    status: "BLOCKED IN V0",
+  },
+  {
+    question: "Copy-handoff usefulness",
+    finding:
+      "Handoff includes profile vocabulary, object-shape context, staged recommendations, work-wave flow, approval checkpoint, blocked capabilities, and closeout visibility.",
+    status: "COPY HANDOFF READY",
+  },
+  {
+    question: "Authority rail",
+    finding:
+      "No label grants parser/runtime, API/DB state, Agent activation, dispatch, execution, receipt creation, canon mutation, route/motion-state mutation, or gate opening.",
+    status: "ZERO GATES GRANTED",
+  },
+] as const;
+
 const domainWorkspaceLanes = [
   {
     laneId: "Q3M7-DOMAIN-FRAMEWORK",
@@ -333,6 +366,13 @@ ${formatList(
 
 Static profile object draft:
 ${JSON.stringify(profileObjectDraft, null, 2)}
+
+Verifier review findings:
+${formatList(
+  verifierFindings.map(
+    (finding) => `${finding.question}: ${finding.status} - ${finding.finding}`,
+  ),
+)}
 
 Planning / recommendation / approval distinctions:
 ${formatList(postureDistinctions.map((item) => `${item.label}: ${item.statement}`))}
@@ -593,6 +633,45 @@ export function OperatorDomainEngineWorkspace() {
             <pre className="max-h-80 overflow-auto rounded border border-slate-800 bg-slate-950 p-3 text-xs leading-relaxed text-slate-200">
               {JSON.stringify(profileObjectDraft, null, 2)}
             </pre>
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="space-y-3 bg-slate-950/45">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">
+                Verifier review summary
+              </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Static review notes for object-shape readability,
+                copy-handoff clarity, staged/non-executing semantics, and
+                authority-rail correctness.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly">VERIFIER REVIEW</OperatorBadge>
+              <OperatorBadge tone="blocked">NO RUNTIME CHANGE</OperatorBadge>
+              <OperatorBadge tone="gated">ZERO GATES GRANTED</OperatorBadge>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {verifierFindings.map((finding) => (
+              <OperatorGateCard key={finding.question}>
+                <div className="flex flex-wrap gap-1.5">
+                  <OperatorBadge
+                    tone={
+                      finding.status === "BLOCKED IN V0" ? "blocked" : "readOnly"
+                    }
+                  >
+                    {finding.status}
+                  </OperatorBadge>
+                </div>
+                <div className="mt-3 font-mono text-xs uppercase tracking-widest text-slate-500">
+                  {finding.question}
+                </div>
+                <p className="mt-2 text-xs text-slate-300">{finding.finding}</p>
+              </OperatorGateCard>
+            ))}
           </div>
         </OperatorPanel>
 
