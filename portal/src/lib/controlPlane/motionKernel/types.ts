@@ -305,3 +305,27 @@ export interface ManualDeliberationRunResult {
   aggregateRatification: AdvisoryRatificationSummary;
   nonAuthorizations: string[];
 }
+
+export type ProviderConnectorMode =
+  | "mock"
+  | "provider_disabled"
+  | "provider_config_missing"
+  | "provider_configured"
+  | "provider_error"
+  | "provider_malformed_output";
+
+export interface ProviderConnectorSafeStatus {
+  liveInferenceEnabled: boolean;
+  providerConfigured: boolean;
+  providerKeyPresent: boolean;
+  providerName: string | null;
+  modelName: string | null;
+  mode: ProviderConnectorMode;
+  advisoryMessage: string;
+}
+
+export interface ProviderDeliberationConnectorResult {
+  status: ProviderConnectorSafeStatus;
+  participantOutput: DeliberationParticipantOutput;
+  nonAuthorityDisclaimer: string;
+}

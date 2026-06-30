@@ -12,7 +12,6 @@ import type {
 const LIVE_INFERENCE_ENV = {
   provider: "JAI_MODEL_SLOT_PROVIDER",
   model: "JAI_MODEL_SLOT_MODEL",
-  apiKey: "JAI_MODEL_SLOT_API_KEY",
   enabled: "JAI_MODEL_SLOT_LIVE_INFERENCE_ENABLED",
 } as const;
 
@@ -78,8 +77,7 @@ export function createEnvGatedProviderDeliberationOutput(
   const providerConfigured =
     process.env[LIVE_INFERENCE_ENV.enabled] === "true" &&
     Boolean(process.env[LIVE_INFERENCE_ENV.provider]) &&
-    Boolean(process.env[LIVE_INFERENCE_ENV.model]) &&
-    Boolean(process.env[LIVE_INFERENCE_ENV.apiKey]);
+    Boolean(process.env[LIVE_INFERENCE_ENV.model]);
 
   if (!providerConfigured) {
     return {
@@ -93,7 +91,7 @@ export function createEnvGatedProviderDeliberationOutput(
         ratificationRecommendation: "needs_revision",
         requiredRevisions: [
           `Set ${LIVE_INFERENCE_ENV.enabled}=true only for an operator-triggered live run.`,
-          `Configure ${LIVE_INFERENCE_ENV.provider}, ${LIVE_INFERENCE_ENV.model}, and ${LIVE_INFERENCE_ENV.apiKey} outside source control.`,
+          `Configure ${LIVE_INFERENCE_ENV.provider} and ${LIVE_INFERENCE_ENV.model} outside source control; credential checks are server-only in the secure connector.`,
         ],
         blockers: ["Live provider mode is not configured in this environment."],
       },
