@@ -6,6 +6,8 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Control Thread",
     roleFamily: "routing_authority_context",
     purpose: "Frame CONTROL_THREAD routing and human approval separation.",
+    deliberationResponsibility:
+      "Evaluates routing, authority, sequencing, and final decision framing.",
     requiredLens: "Authority, sequencing, acceptance, and non-execution boundary.",
     authorityDisclaimer:
       "Role-slot output is advisory display only and does not become CONTROL_THREAD approval.",
@@ -15,6 +17,8 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Orchestrator Nexus",
     roleFamily: "coordination",
     purpose: "Review cross-repo orchestration and route draft implications.",
+    deliberationResponsibility:
+      "Evaluates work packet, wave, lane, and closeout structure.",
     requiredLens: "Program, batch, wave, lane, dependency, and handoff coherence.",
     authorityDisclaimer:
       "Role-slot output does not route work or mutate source-of-truth state.",
@@ -24,6 +28,8 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Dev Jai Nexus",
     roleFamily: "implementation_context",
     purpose: "Review dev-jai-nexus implementation and operator-surface fit.",
+    deliberationResponsibility:
+      "Evaluates product/control-plane implementation usefulness.",
     requiredLens: "Repo conventions, app surface boundaries, and validation posture.",
     authorityDisclaimer:
       "Role-slot output does not execute code, create branches, or mutate GitHub.",
@@ -33,6 +39,7 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Audit Nexus",
     roleFamily: "audit",
     purpose: "Critique authority boundaries, risk posture, and evidence sufficiency.",
+    deliberationResponsibility: "Evaluates authority-boundary risks.",
     requiredLens: "Safety, non-authorizations, traceability, and blockers.",
     authorityDisclaimer:
       "Role-slot output does not approve readiness, acceptance, or production gates.",
@@ -42,6 +49,8 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Format",
     roleFamily: "format_profile",
     purpose: "Review schema, vocabulary, and draft packet consistency.",
+    deliberationResponsibility:
+      "Evaluates vocabulary, schema-shape, and output contract consistency.",
     requiredLens: "Stable enum values, shared vocabulary, and draft-only formatting.",
     authorityDisclaimer:
       "Role-slot output does not create accepted schemas or source-of-truth transfer.",
@@ -51,6 +60,7 @@ export const JAI_ROLE_SLOTS: JaiRoleSlot[] = [
     displayName: "JAI Repo Generic",
     roleFamily: "repo_generalist",
     purpose: "Provide generic repo-thread critique and operational caution.",
+    deliberationResponsibility: "Evaluates repo-local implementation fit.",
     requiredLens: "Repo hygiene, evidence pointers, validation, and human review.",
     authorityDisclaimer:
       "Role-slot output is provider-agnostic and never provider authority.",

@@ -2,7 +2,7 @@ import { getMotionKernelModelSlot } from "./model-slots";
 import { getJaiRoleSlot } from "./role-slots";
 import type { MockInferenceRequest, MockInferenceResponse } from "./types";
 
-const LIVE_INFERENCE_GATE = "JAI_MOTION_KERNEL_LIVE_INFERENCE_ENABLED";
+const LIVE_INFERENCE_GATE = "JAI_MODEL_SLOT_LIVE_INFERENCE_ENABLED";
 
 export function runManualMotionKernelInference(
   request: MockInferenceRequest,
