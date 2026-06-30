@@ -21,6 +21,7 @@ import {
   summarizeManualDeliberationRun,
   type Motion,
 } from "@/lib/controlPlane/motionKernel";
+import { getSafeProviderStatus } from "@/lib/controlPlane/motionKernel/server-provider-config";
 
 export const metadata: Metadata = {
   title: "Motion Control Kernel | dev.jai.nexus",
@@ -471,6 +472,7 @@ function MotionCard({ motion }: { motion: Motion }) {
 
 export default function MotionControlPage() {
   const { roleSlots, modelSlots, motions } = motionKernelRegistries;
+  const providerStatus = getSafeProviderStatus();
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
@@ -597,7 +599,7 @@ export default function MotionControlPage() {
                 {slot.envGate ? (
                   <p className="mt-2 font-mono text-xs text-slate-500">
                     Env gate: {slot.envGate}; provider: JAI_MODEL_SLOT_PROVIDER;
-                    model: JAI_MODEL_SLOT_MODEL; key: JAI_MODEL_SLOT_API_KEY
+                    model: JAI_MODEL_SLOT_MODEL; credential remains server-only
                   </p>
                 ) : null}
                 <p className="mt-2 text-xs text-amber-300">
@@ -611,6 +613,62 @@ export default function MotionControlPage() {
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
             index="03"
+            title="Secure provider connector boundary"
+            right={<OperatorBadge tone="blocked">server-side POST only</OperatorBadge>}
+          />
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <FieldList
+              items={[
+                {
+                  label: "live inference enabled",
+                  value: String(providerStatus.liveInferenceEnabled),
+                },
+                {
+                  label: "provider configured",
+                  value: String(providerStatus.providerConfigured),
+                },
+                {
+                  label: "provider key present",
+                  value: String(providerStatus.providerKeyPresent),
+                },
+                {
+                  label: "provider",
+                  value: providerStatus.providerName ?? "not configured",
+                },
+                {
+                  label: "model",
+                  value: providerStatus.modelName ?? "not configured",
+                },
+                {
+                  label: "mode",
+                  value: providerStatus.mode,
+                },
+              ]}
+            />
+            <OperatorGateCard>
+              <div className="flex flex-wrap gap-2">
+                <OperatorBadge tone="blocked">manual/operator-triggered</OperatorBadge>
+                <OperatorBadge tone="blocked">no render-time provider call</OperatorBadge>
+                <OperatorBadge tone="readOnly">mock fallback</OperatorBadge>
+              </div>
+              <p className="mt-3 text-sm text-slate-300">
+                {providerStatus.advisoryMessage}
+              </p>
+              <p className="mt-3 font-mono text-xs text-slate-400">
+                POST /operator/motion-control/manual-inference
+              </p>
+              <p className="mt-2 text-xs text-amber-300">
+                The route returns safe status, normalized advisory participant
+                outputs, and aggregate ratification. It never returns provider
+                keys, does not persist results, and does not execute work packets.
+              </p>
+            </OperatorGateCard>
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="p-4">
+          <OperatorSectionHeader
+            index="04"
             title="Canonical vocabulary"
             right={<OperatorBadge tone="readOnly">stable values</OperatorBadge>}
           />
@@ -634,7 +692,7 @@ export default function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="04"
+            index="05"
             title="Participant output contract"
             right={<OperatorBadge tone="blocked">all outputs advisory</OperatorBadge>}
           />
@@ -661,7 +719,7 @@ export default function MotionControlPage() {
 
         <section className="space-y-6">
           <OperatorSectionHeader
-            index="05"
+            index="06"
             title="Manual motion review"
             right={<OperatorBadge tone="blocked">no submit / no save / no API call</OperatorBadge>}
           />
