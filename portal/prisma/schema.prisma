@@ -238,6 +238,28 @@ model PilotRun {
   updatedAt   DateTime  @updatedAt
 }
 
+model DeliberationRunHistory {
+  id                            String   @id
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+  motionId                      String
+  motionTitle                   String
+  createdBy                     String
+  sourceMode                    String
+  connectorStatus               Json
+  participantOutputs            Json
+  aggregateAdvisoryRatification Json
+  evidencePointers              Json
+  nonAuthorizations             Json
+  persistenceStatus             String
+  safeAdvisoryMessage           String
+
+  @@index([motionId])
+  @@index([createdAt])
+  @@index([sourceMode])
+  @@index([persistenceStatus])
+}
+
 model JaiTool {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
