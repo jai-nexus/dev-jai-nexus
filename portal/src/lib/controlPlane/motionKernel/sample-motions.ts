@@ -1,0 +1,306 @@
+import { MOTION_KERNEL_MODEL_SLOTS } from "./model-slots";
+import { JAI_ROLE_SLOTS } from "./role-slots";
+import { MOTION_KERNEL_NON_AUTHORIZATIONS } from "./lifecycle";
+import type { Motion } from "./types";
+
+const baseEvidence = [
+  {
+    id: "evidence-q3m7-a1-route",
+    label: "Route packet",
+    sourceType: "operator_note",
+    ref: "Q3M7 Motion / Deliberation / Vote / Ratification Kernel v0",
+    summary: "Operator-provided route packet and acceptance criteria.",
+    validationAuthority: "none",
+  },
+  {
+    id: "evidence-existing-motions",
+    label: "Existing motion corpus",
+    sourceType: "repo_path",
+    ref: ".nexus/motions",
+    summary: "Existing read-only motion package pattern.",
+    validationAuthority: "none",
+  },
+] as const;
+
+export const sampleMotionKernelMotions: Motion[] = [
+  {
+    id: "motion-kernel-draft-001",
+    title: "Draft motion for guarded control-plane kernel review",
+    summary:
+      "Draft motion demonstrating the initial typed lifecycle before submission.",
+    lifecycleStatus: "draft",
+    controlThread: {
+      id: "control-thread-2026-06-21",
+      label: "2026-06-21_dev-jai-nexus",
+      scope: "Motion kernel draft review",
+      authorityNote: "CONTROL_THREAD approval is required for authority.",
+    },
+    repoThread: {
+      id: "repo-thread-dev-jai-nexus-a1",
+      repo: "dev-jai-nexus",
+      branchCandidate: "feature/q3m7-motion-deliberation-ratification-kernel-v0",
+      scope: "Internal control-plane motion kernel",
+      authorityNote: "Repo thread display does not create GitHub authority.",
+    },
+    roleSlotIds: ["JAI_CONTROL_THREAD", "JAI_DEV_JAI_NEXUS"],
+    modelSlotIds: ["model-slot-mock-deliberator"],
+    deliberations: [],
+    critiques: [],
+    votes: [],
+    ratificationRecommendation: {
+      id: "ratification-draft-001",
+      motionId: "motion-kernel-draft-001",
+      value: "not_ratified",
+      summary: "Draft motion has not entered deliberation.",
+      conditions: [],
+      advisoryOnly: true,
+      humanApprovalRequired: true,
+    },
+    humanApprovalDecision: {
+      id: "human-approval-draft-001",
+      motionId: "motion-kernel-draft-001",
+      value: "pending",
+      decidedBy: null,
+      decidedAt: null,
+      notes: ["Pending human review."],
+      doesNotAuthorizeAutonomousExecution: true,
+      doesNotAuthorizeGitHubMutation: true,
+      doesNotOpenProductionGates: true,
+      doesNotTransferSourceOfTruth: true,
+    },
+    downstreamDrafts: {
+      programDraft: {
+        id: "program-draft-001",
+        title: "Motion Control Plane Activation draft",
+        status: "blocked_until_human_approval",
+        summary: "Program draft placeholder remains blocked.",
+      },
+      batchDraft: {
+        id: "batch-draft-001",
+        label: "Batch A draft",
+        status: "blocked_until_human_approval",
+        summary: "Batch draft placeholder remains blocked.",
+      },
+      waveDraft: {
+        id: "wave-draft-001",
+        label: "Wave A-A draft",
+        status: "blocked_until_human_approval",
+        summary: "Wave draft placeholder remains blocked.",
+      },
+      laneDraft: {
+        id: "lane-draft-001",
+        label: "Lane A1 draft",
+        status: "blocked_until_human_approval",
+        repo: "dev-jai-nexus",
+        scope: "Draft-only motion kernel implementation lane.",
+      },
+      workPacketDraft: {
+        id: "work-packet-draft-001",
+        label: "Draft work packet blocked pending approval",
+        status: "blocked_until_human_approval",
+        targetRepo: "dev-jai-nexus",
+        targetBranchCandidate: "feature/q3m7-motion-deliberation-ratification-kernel-v0",
+        instructions: ["Human approval required before draft preparation."],
+        nonAuthorizationNotes: [...MOTION_KERNEL_NON_AUTHORIZATIONS],
+      },
+    },
+    evidencePointers: [...baseEvidence],
+    closeoutPlaceholder: {
+      id: "closeout-placeholder-draft-001",
+      label: "Closeout placeholder",
+      status: "not_started",
+      notes: ["Closeout is draft-only and not CONTROL_THREAD acceptance."],
+      acceptanceAuthority: "none",
+    },
+    nonAuthorizations: [...MOTION_KERNEL_NON_AUTHORIZATIONS],
+  },
+  {
+    id: "motion-kernel-deliberation-001",
+    title: "Submitted motion for deliberation and advisory ratification",
+    summary:
+      "Submitted motion demonstrating role-slot deliberation, critique, vote, and ratification recommendation.",
+    lifecycleStatus: "ratification_recommended",
+    controlThread: {
+      id: "control-thread-2026-06-21",
+      label: "2026-06-21_dev-jai-nexus",
+      scope: "Ratification recommendation review",
+      authorityNote: "JAI ratification is advisory; CONTROL_THREAD decides.",
+    },
+    repoThread: {
+      id: "repo-thread-dev-jai-nexus-a1",
+      repo: "dev-jai-nexus",
+      branchCandidate: "feature/q3m7-motion-deliberation-ratification-kernel-v0",
+      scope: "Internal control-plane motion kernel",
+      authorityNote: "Human approval does not create GitHub mutation authority.",
+    },
+    roleSlotIds: [
+      "JAI_CONTROL_THREAD",
+      "JAI_ORCHESTRATOR_NEXUS",
+      "JAI_DEV_JAI_NEXUS",
+      "JAI_AUDIT_NEXUS",
+      "JAI_FORMAT",
+      "JAI_REPO_GENERIC",
+    ],
+    modelSlotIds: [
+      "model-slot-mock-deliberator",
+      "model-slot-env-gated-live-placeholder",
+    ],
+    deliberations: [
+      {
+        id: "delib-001",
+        motionId: "motion-kernel-deliberation-001",
+        roleSlotId: "JAI_CONTROL_THREAD",
+        modelSlotId: "model-slot-mock-deliberator",
+        summary: "Motion can proceed as advisory ratification only.",
+        reasoning: [
+          "Lifecycle values are explicit and stable.",
+          "Human approval remains separate from ratification recommendation.",
+          "Downstream drafts are blocked until approval.",
+        ],
+        createdAt: "2026-06-30T00:00:00.000Z",
+        inferenceMode: "mock",
+        nonAuthorityNote: "Deliberation entry does not accept or route work.",
+      },
+      {
+        id: "delib-002",
+        motionId: "motion-kernel-deliberation-001",
+        roleSlotId: "JAI_AUDIT_NEXUS",
+        modelSlotId: "model-slot-mock-deliberator",
+        summary: "Approval boundaries must remain visible in UI copy.",
+        reasoning: [
+          "No GitHub mutation path should exist.",
+          "No production gate behavior should exist.",
+          "Evidence pointers are metadata only.",
+        ],
+        createdAt: "2026-06-30T00:05:00.000Z",
+        inferenceMode: "mock",
+        nonAuthorityNote: "Audit critique is advisory and non-binding.",
+      },
+    ],
+    critiques: [
+      {
+        id: "critique-001",
+        motionId: "motion-kernel-deliberation-001",
+        roleSlotId: "JAI_AUDIT_NEXUS",
+        targetDeliberationId: "delib-001",
+        severity: "caution",
+        summary: "Ratification wording could be mistaken for approval.",
+        requiredFollowUp:
+          "Display a persistent disclaimer that ratification is not CONTROL_THREAD approval.",
+      },
+    ],
+    votes: [
+      {
+        id: "vote-001",
+        motionId: "motion-kernel-deliberation-001",
+        roleSlotId: "JAI_CONTROL_THREAD",
+        value: "approve",
+        rationale: "Approve advisory recommendation for human review only.",
+        conditions: ["Human approval remains required."],
+        nonBinding: true,
+      },
+      {
+        id: "vote-002",
+        motionId: "motion-kernel-deliberation-001",
+        roleSlotId: "JAI_AUDIT_NEXUS",
+        value: "revise",
+        rationale: "Revise copy if authority separation is not visible enough.",
+        conditions: ["Keep non-authorizations visible."],
+        nonBinding: true,
+      },
+    ],
+    ratificationRecommendation: {
+      id: "ratification-001",
+      motionId: "motion-kernel-deliberation-001",
+      value: "ratified_with_conditions",
+      summary:
+        "Advisory ratification can be recommended if human approval separation remains explicit.",
+      conditions: [
+        "No autonomous execution.",
+        "No GitHub mutation.",
+        "Work packet draft previews require human approval.",
+      ],
+      advisoryOnly: true,
+      humanApprovalRequired: true,
+    },
+    humanApprovalDecision: {
+      id: "human-approval-001",
+      motionId: "motion-kernel-deliberation-001",
+      value: "pending",
+      decidedBy: null,
+      decidedAt: null,
+      notes: ["Pending CONTROL_THREAD / human approval."],
+      doesNotAuthorizeAutonomousExecution: true,
+      doesNotAuthorizeGitHubMutation: true,
+      doesNotOpenProductionGates: true,
+      doesNotTransferSourceOfTruth: true,
+    },
+    downstreamDrafts: {
+      programDraft: {
+        id: "program-draft-002",
+        title: "JAI Motion Control Plane Activation draft",
+        status: "blocked_until_human_approval",
+        summary: "Program draft preview is blocked until human approval.",
+      },
+      batchDraft: {
+        id: "batch-draft-002",
+        label: "Batch A draft",
+        status: "blocked_until_human_approval",
+        summary: "Batch draft preview is blocked until human approval.",
+      },
+      waveDraft: {
+        id: "wave-draft-002",
+        label: "Wave A-A draft",
+        status: "blocked_until_human_approval",
+        summary: "Wave draft preview is blocked until human approval.",
+      },
+      laneDraft: {
+        id: "lane-draft-002",
+        label: "Lane A1 draft",
+        status: "blocked_until_human_approval",
+        repo: "dev-jai-nexus",
+        scope: "Motion / Deliberation / Vote / Ratification Kernel v0.",
+      },
+      workPacketDraft: {
+        id: "work-packet-draft-002",
+        label: "Motion kernel downstream work packet draft",
+        status: "blocked_until_human_approval",
+        targetRepo: "dev-jai-nexus",
+        targetBranchCandidate: "feature/q3m7-motion-deliberation-ratification-kernel-v0",
+        instructions: [
+          "Prepare draft-only route packet after human approval.",
+          "Do not create PRs, branches, GitHub mutations, or execution loops.",
+        ],
+        nonAuthorizationNotes: [...MOTION_KERNEL_NON_AUTHORIZATIONS],
+      },
+    },
+    evidencePointers: [
+      ...baseEvidence,
+      {
+        id: "evidence-deliberation-ui",
+        label: "Operator deliberation page",
+        sourceType: "repo_path",
+        ref: "portal/src/app/operator/deliberation/page.tsx",
+        summary: "Existing read-only advisory deliberation surface pattern.",
+        validationAuthority: "none",
+      },
+    ],
+    closeoutPlaceholder: {
+      id: "closeout-placeholder-001",
+      label: "Closeout placeholder",
+      status: "draft_only",
+      notes: [
+        "Closeout placeholder is not CONTROL_THREAD acceptance.",
+        "Closeout text remains human-reviewed.",
+      ],
+      acceptanceAuthority: "none",
+    },
+    nonAuthorizations: [...MOTION_KERNEL_NON_AUTHORIZATIONS],
+  },
+];
+
+export const motionKernelRegistries = {
+  roleSlots: JAI_ROLE_SLOTS,
+  modelSlots: MOTION_KERNEL_MODEL_SLOTS,
+  motions: sampleMotionKernelMotions,
+} as const;
