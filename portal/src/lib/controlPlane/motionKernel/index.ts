@@ -1,4 +1,5 @@
 export * from "./lifecycle";
+export * from "./deliberation-run-history";
 export * from "./live-model-slot-adapter";
 export * from "./manual-deliberation";
 export * from "./mock-inference";

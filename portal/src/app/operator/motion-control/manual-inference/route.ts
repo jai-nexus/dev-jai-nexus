@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 
 import {
+  buildDeliberationRunHistoryRecord,
   deriveAdvisoryRatificationRecommendation,
+  persistDeliberationRunHistory,
   JAI_ROLE_SLOTS,
   MOTION_KERNEL_MODEL_SLOTS,
   sampleMotionKernelMotions,
@@ -71,20 +73,57 @@ export async function POST(request: Request) {
   const participantOutputs = participantResults.map(
     (result) => result.participantOutput,
   );
+  const aggregateRatification =
+    deriveAdvisoryRatificationRecommendation(participantOutputs);
+  const providerStatus = getSafeProviderStatus();
+  const historyRecord = buildDeliberationRunHistoryRecord({
+    motionId: motion.id,
+    motionTitle: motion.title,
+    sourceMode: getHistorySourceMode(requestedMode, providerStatus.mode),
+    connectorStatusSummary: providerStatus,
+    participantOutputs,
+    aggregateAdvisoryRatification: aggregateRatification,
+    evidencePointers: motion.evidencePointers,
+    nonAuthorizations: [
+      "Stored deliberation is not CONTROL_THREAD approval.",
+      "Stored JAI vote is not route authority.",
+      "Stored ratification is not final authority.",
+      "Stored provider output is not source-of-truth transfer.",
+      "Stored evidence pointer is not validation approval.",
+      "Stored work-packet draft is not routed work.",
+      "Human / CONTROL_THREAD approval remains required.",
+      "Persistence does not create execution authority.",
+      "Persistence does not create GitHub mutation authority.",
+      "Persistence does not create production gate authority.",
+      "Persistence does not create source-of-truth authority.",
+      "Persistence does not create route authority.",
+      "Persistence does not create acceptance authority.",
+      "No provider API key persistence.",
+      "No provider API key exposure.",
+      "No provider secret storage.",
+    ],
+  });
+  const persistedHistoryRecord =
+    await persistDeliberationRunHistory(historyRecord);
 
   return NextResponse.json({
     ok: true,
-    persisted: false,
+    persisted: persistedHistoryRecord.persistenceStatus === "persisted",
     operatorTriggeredOnly: true,
-    providerStatus: getSafeProviderStatus(),
+    providerStatus,
+    persistence: {
+      id: persistedHistoryRecord.id,
+      status: persistedHistoryRecord.persistenceStatus,
+      safeAdvisoryMessage: persistedHistoryRecord.safeAdvisoryMessage,
+      createdAt: persistedHistoryRecord.createdAt,
+    },
     connectorStatuses: participantResults.map((result) => ({
       roleSlotId: result.participantOutput.roleSlotId,
       status: result.connectorStatus,
       nonAuthorityDisclaimer: result.nonAuthorityDisclaimer,
     })),
     participantOutputs,
-    aggregateRatification:
-      deriveAdvisoryRatificationRecommendation(participantOutputs),
+    aggregateRatification,
     nonAuthorizations: [
       "JAI vote is not CONTROL_THREAD approval.",
       "JAI ratification is not final authority.",
@@ -104,6 +143,9 @@ export async function POST(request: Request) {
       "Provider connector is server-side only.",
       "Provider mode is disabled by default.",
       "Mock mode remains default.",
+      "No provider API key persistence.",
+      "No provider API key exposure.",
+      "No provider secret storage.",
     ],
   });
 }
@@ -131,6 +173,22 @@ function normalizeRequestedMode(
   value: unknown,
 ): "mock" | "env_gated_provider" {
   return value === "env_gated_provider" ? "env_gated_provider" : "mock";
+}
+
+function getHistorySourceMode(
+  requestedMode: "mock" | "env_gated_provider",
+  providerMode: ReturnType<typeof getSafeProviderStatus>["mode"],
+) {
+  if (requestedMode === "mock") {
+    return "mock";
+  }
+  if (providerMode === "provider_configured") {
+    return "provider";
+  }
+  if (providerMode === "provider_disabled") {
+    return "provider_disabled";
+  }
+  return "provider_unavailable";
 }
 
 async function parseBody(

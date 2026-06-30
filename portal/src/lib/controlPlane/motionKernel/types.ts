@@ -329,3 +329,37 @@ export interface ProviderDeliberationConnectorResult {
   participantOutput: DeliberationParticipantOutput;
   nonAuthorityDisclaimer: string;
 }
+
+export type DeliberationRunSourceMode =
+  | "mock"
+  | "provider"
+  | "provider_disabled"
+  | "provider_unavailable"
+  | "persistence_staged";
+
+export type DeliberationRunPersistenceStatus =
+  | "persisted"
+  | "staged"
+  | "preview_only"
+  | "blocked";
+
+export interface DeliberationRunHistoryRecord {
+  id: string;
+  motionId: string;
+  motionTitle: string;
+  createdAt: string;
+  createdBy: string;
+  sourceMode: DeliberationRunSourceMode;
+  connectorStatusSummary: ProviderConnectorSafeStatus;
+  participantOutputs: DeliberationParticipantOutput[];
+  aggregateAdvisoryRatification: AdvisoryRatificationSummary;
+  evidencePointers: EvidencePointer[];
+  nonAuthorizations: string[];
+  persistenceStatus: DeliberationRunPersistenceStatus;
+  safeAdvisoryMessage: string;
+}
+
+export interface DeliberationRunHistoryRepository {
+  create(record: DeliberationRunHistoryRecord): Promise<DeliberationRunHistoryRecord>;
+  listRecent(limit?: number): Promise<DeliberationRunHistoryRecord[]>;
+}

@@ -15,6 +15,7 @@ import {
   canPrepareWorkPacketDraft,
   createManualDeliberationRunPreview,
   createWorkPacketDraftPreview,
+  listRecentDeliberationRunHistory,
   motionKernelRegistries,
   motionKernelVocabulary,
   runManualMotionKernelInference,
@@ -51,6 +52,21 @@ const boundaryCopy = [
   "No hidden background execution.",
   "No automatic route execution.",
   "No work-packet execution.",
+  "Stored deliberation is not CONTROL_THREAD approval.",
+  "Stored JAI vote is not route authority.",
+  "Stored ratification is not final authority.",
+  "Stored provider output is not source-of-truth transfer.",
+  "Stored evidence pointer is not validation approval.",
+  "Stored work-packet draft is not routed work.",
+  "Persistence does not create execution authority.",
+  "Persistence does not create GitHub mutation authority.",
+  "Persistence does not create production gate authority.",
+  "Persistence does not create source-of-truth authority.",
+  "Persistence does not create route authority.",
+  "Persistence does not create acceptance authority.",
+  "No provider API key persistence.",
+  "No provider API key exposure.",
+  "No provider secret storage.",
 ];
 
 function FieldList({
@@ -470,9 +486,10 @@ function MotionCard({ motion }: { motion: Motion }) {
   );
 }
 
-export default function MotionControlPage() {
+export default async function MotionControlPage() {
   const { roleSlots, modelSlots, motions } = motionKernelRegistries;
   const providerStatus = getSafeProviderStatus();
+  const recentHistory = await listRecentDeliberationRunHistory(5);
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
@@ -669,6 +686,73 @@ export default function MotionControlPage() {
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
             index="04"
+            title="Deliberation run history"
+            right={<OperatorBadge tone="blocked">advisory records only</OperatorBadge>}
+          />
+          <div className="grid gap-3 xl:grid-cols-2">
+            {recentHistory.map((run) => (
+              <OperatorGateCard key={run.id}>
+                <div className="flex flex-wrap gap-2">
+                  <OperatorIdChip>{run.id}</OperatorIdChip>
+                  <OperatorBadge
+                    tone={
+                      run.persistenceStatus === "persisted"
+                        ? "advisory"
+                        : "blocked"
+                    }
+                  >
+                    {run.persistenceStatus}
+                  </OperatorBadge>
+                  <OperatorBadge tone="readOnly">{run.sourceMode}</OperatorBadge>
+                  <OperatorBadge tone="blocked">not approval</OperatorBadge>
+                </div>
+                <h2 className="mt-3 text-sm font-semibold text-slate-100">
+                  {run.motionTitle}
+                </h2>
+                <p className="mt-2 text-xs text-slate-400">
+                  Motion: {run.motionId} / Created by: {run.createdBy}
+                </p>
+                <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  <div className="rounded border border-slate-800 bg-slate-950 p-2">
+                    <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                      aggregate
+                    </div>
+                    <div className="mt-1 font-mono text-xs text-slate-100">
+                      {run.aggregateAdvisoryRatification.value}
+                    </div>
+                  </div>
+                  <div className="rounded border border-slate-800 bg-slate-950 p-2">
+                    <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                      participants
+                    </div>
+                    <div className="mt-1 font-mono text-xs text-slate-100">
+                      {run.participantOutputs.length}
+                    </div>
+                  </div>
+                  <div className="rounded border border-slate-800 bg-slate-950 p-2">
+                    <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                      evidence pointers
+                    </div>
+                    <div className="mt-1 font-mono text-xs text-slate-100">
+                      {run.evidencePointers.length}
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-amber-300">
+                  {run.safeAdvisoryMessage}
+                </p>
+                <p className="mt-2 text-xs text-red-200">
+                  Stored deliberation is not CONTROL_THREAD approval. Stored
+                  evidence pointer is not validation approval.
+                </p>
+              </OperatorGateCard>
+            ))}
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="p-4">
+          <OperatorSectionHeader
+            index="05"
             title="Canonical vocabulary"
             right={<OperatorBadge tone="readOnly">stable values</OperatorBadge>}
           />
@@ -692,7 +776,7 @@ export default function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="05"
+            index="06"
             title="Participant output contract"
             right={<OperatorBadge tone="blocked">all outputs advisory</OperatorBadge>}
           />
@@ -719,7 +803,7 @@ export default function MotionControlPage() {
 
         <section className="space-y-6">
           <OperatorSectionHeader
-            index="06"
+            index="07"
             title="Manual motion review"
             right={<OperatorBadge tone="blocked">no submit / no save / no API call</OperatorBadge>}
           />
