@@ -24,8 +24,8 @@ export const MOTION_KERNEL_MODEL_SLOTS: ModelSlot[] = [
     id: "model-slot-env-gated-live-placeholder",
     displayName: "Env-Gated Live Placeholder",
     providerFamily: "operator_configured",
-    providerKey: "MOTION_KERNEL_PROVIDER",
-    modelName: "operator-configured",
+    providerKey: "JAI_MODEL_SLOT_PROVIDER",
+    modelName: "JAI_MODEL_SLOT_MODEL",
     enabled: false,
     compatibleRoleSlots: [
       "JAI_CONTROL_THREAD",
@@ -38,7 +38,7 @@ export const MOTION_KERNEL_MODEL_SLOTS: ModelSlot[] = [
     inferenceMode: "env_gated_live_placeholder",
     manualOperatorTriggeredOnly: true,
     mockInferenceEnabled: true,
-    envGate: "JAI_MOTION_KERNEL_LIVE_INFERENCE_ENABLED",
+    envGate: "JAI_MODEL_SLOT_LIVE_INFERENCE_ENABLED",
     nonAuthorityDisclaimer:
       "Live inference is disabled unless explicitly env-gated; it still cannot execute, mutate GitHub, or create authority.",
   },

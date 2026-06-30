@@ -13,10 +13,12 @@ import {
 import {
   buildDraftRoutePacket,
   canPrepareWorkPacketDraft,
+  createManualDeliberationRunPreview,
   createWorkPacketDraftPreview,
   motionKernelRegistries,
   motionKernelVocabulary,
   runManualMotionKernelInference,
+  summarizeManualDeliberationRun,
   type Motion,
 } from "@/lib/controlPlane/motionKernel";
 
@@ -30,8 +32,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const boundaryCopy = [
+  "JAI vote is not CONTROL_THREAD approval.",
   "JAI ratification is not CONTROL_THREAD approval.",
+  "JAI ratification is not final authority.",
   "Human approval remains required.",
+  "Human / CONTROL_THREAD approval remains required.",
   "Work packets remain draft-only until human approval.",
   "No autonomous execution.",
   "No GitHub mutation.",
@@ -40,6 +45,11 @@ const boundaryCopy = [
   "No merge action.",
   "No branch deletion.",
   "No production gates.",
+  "No production gate opening.",
+  "No source-of-truth transfer.",
+  "No hidden background execution.",
+  "No automatic route execution.",
+  "No work-packet execution.",
 ];
 
 function FieldList({
@@ -73,6 +83,13 @@ function MotionCard({ motion }: { motion: Motion }) {
     modelSlotId: "model-slot-mock-deliberator",
     operatorPrompt: motion.summary,
   });
+  const manualRun = createManualDeliberationRunPreview({
+    motion,
+    roleSlotIds: motion.roleSlotIds,
+    modelSlotId: "model-slot-mock-deliberator",
+    requestedMode: "mock",
+  });
+  const runSummary = summarizeManualDeliberationRun(manualRun);
 
   return (
     <OperatorPanel className="space-y-5 p-5">
@@ -332,6 +349,122 @@ function MotionCard({ motion }: { motion: Motion }) {
           </p>
         </OperatorGateCard>
       </section>
+
+      <section>
+        <OperatorSectionHeader
+          index="RUN"
+          title="Manual deliberation run preview"
+          right={<OperatorBadge tone="blocked">static preview / not persisted</OperatorBadge>}
+        />
+        <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="space-y-3">
+            <OperatorGateCard>
+              <div className="flex flex-wrap gap-2">
+                <OperatorIdChip>{manualRun.run.id}</OperatorIdChip>
+                <OperatorBadge tone="readOnly">{manualRun.run.requestedMode}</OperatorBadge>
+                <OperatorBadge tone="blocked">operator-triggered only</OperatorBadge>
+                <OperatorBadge tone="blocked">not persisted</OperatorBadge>
+              </div>
+              <pre className="mt-3 max-h-52 overflow-auto whitespace-pre-wrap rounded border border-slate-800 bg-slate-950 p-3 text-xs leading-6 text-slate-200">
+                {runSummary}
+              </pre>
+            </OperatorGateCard>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {manualRun.participantOutputs.map((output) => (
+                <OperatorGateCard key={`${manualRun.run.id}-${output.roleSlotId}`}>
+                  <div className="flex flex-wrap gap-2">
+                    <OperatorIdChip>{output.roleSlotId}</OperatorIdChip>
+                    <OperatorBadge tone="neutral">{output.modelSlotId}</OperatorBadge>
+                    <OperatorBadge tone="advisory">{output.voteValue}</OperatorBadge>
+                    <OperatorBadge tone="readOnly">
+                      {output.ratificationRecommendation}
+                    </OperatorBadge>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-300">
+                    {output.critiqueSummary}
+                  </p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    <div>
+                      <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                        required revisions
+                      </div>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-400">
+                        {output.requiredRevisions.length === 0 ? (
+                          <li>none</li>
+                        ) : (
+                          output.requiredRevisions.map((revision) => (
+                            <li key={`${output.roleSlotId}-${revision}`}>- {revision}</li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                    <div>
+                      <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
+                        blockers
+                      </div>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-400">
+                        {output.blockers.length === 0 ? (
+                          <li>none</li>
+                        ) : (
+                          output.blockers.map((blocker) => (
+                            <li key={`${output.roleSlotId}-${blocker}`}>- {blocker}</li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs text-amber-300">
+                    {output.confidenceReadinessNote}
+                  </p>
+                </OperatorGateCard>
+              ))}
+            </div>
+          </div>
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="blocked">aggregate is advisory</OperatorBadge>
+              <OperatorBadge tone="readOnly">
+                {manualRun.aggregateRatification.value}
+              </OperatorBadge>
+            </div>
+            <p className="mt-3 text-sm text-slate-300">
+              {manualRun.aggregateRatification.summary}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {Object.entries(manualRun.aggregateRatification.voteCounts).map(
+                ([vote, count]) => (
+                  <div
+                    key={`${manualRun.run.id}-${vote}`}
+                    className="rounded border border-slate-800 bg-slate-950 p-2"
+                  >
+                    <div className="font-mono text-xs uppercase text-slate-500">
+                      {vote}
+                    </div>
+                    <div className="mt-1 font-mono text-lg text-slate-100">
+                      {count}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+            <div className="mt-3 font-mono text-xs uppercase tracking-wide text-slate-500">
+              aggregate blockers
+            </div>
+            <ul className="mt-2 space-y-1 text-xs text-slate-400">
+              {manualRun.aggregateRatification.blockers.length === 0 ? (
+                <li>none</li>
+              ) : (
+                manualRun.aggregateRatification.blockers.map((blocker) => (
+                  <li key={`${manualRun.run.id}-${blocker}`}>- {blocker}</li>
+                ))
+              )}
+            </ul>
+            <p className="mt-3 text-xs text-red-200">
+              {manualRun.aggregateRatification.nonAuthorityDisclaimer}
+            </p>
+          </OperatorGateCard>
+        </div>
+      </section>
     </OperatorPanel>
   );
 }
@@ -428,6 +561,9 @@ export default function MotionControlPage() {
                   {slot.displayName}
                 </h2>
                 <p className="mt-2 text-sm text-slate-400">{slot.purpose}</p>
+                <p className="mt-2 text-xs text-slate-300">
+                  Responsibility: {slot.deliberationResponsibility}
+                </p>
                 <p className="mt-2 text-xs text-amber-300">
                   {slot.authorityDisclaimer}
                 </p>
@@ -458,6 +594,12 @@ export default function MotionControlPage() {
                 <p className="mt-2 text-xs text-slate-400">
                   Provider family: {slot.providerFamily}
                 </p>
+                {slot.envGate ? (
+                  <p className="mt-2 font-mono text-xs text-slate-500">
+                    Env gate: {slot.envGate}; provider: JAI_MODEL_SLOT_PROVIDER;
+                    model: JAI_MODEL_SLOT_MODEL; key: JAI_MODEL_SLOT_API_KEY
+                  </p>
+                ) : null}
                 <p className="mt-2 text-xs text-amber-300">
                   {slot.nonAuthorityDisclaimer}
                 </p>
@@ -490,9 +632,36 @@ export default function MotionControlPage() {
           </div>
         </OperatorPanel>
 
-        <section className="space-y-6">
+        <OperatorPanel className="p-4">
           <OperatorSectionHeader
             index="04"
+            title="Participant output contract"
+            right={<OperatorBadge tone="blocked">all outputs advisory</OperatorBadge>}
+          />
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              "role slot id",
+              "model slot id",
+              "critique summary",
+              "vote value",
+              "ratification recommendation",
+              "required revisions",
+              "blockers",
+              "confidence / readiness note",
+              "non-authorizations",
+            ].map((field) => (
+              <OperatorGateCard key={field}>
+                <div className="font-mono text-xs uppercase tracking-wide text-slate-300">
+                  {field}
+                </div>
+              </OperatorGateCard>
+            ))}
+          </div>
+        </OperatorPanel>
+
+        <section className="space-y-6">
+          <OperatorSectionHeader
+            index="05"
             title="Manual motion review"
             right={<OperatorBadge tone="blocked">no submit / no save / no API call</OperatorBadge>}
           />

@@ -94,6 +94,7 @@ export interface JaiRoleSlot {
   displayName: string;
   roleFamily: string;
   purpose: string;
+  deliberationResponsibility: string;
   requiredLens: string;
   authorityDisclaimer: string;
 }
@@ -247,4 +248,60 @@ export interface MockInferenceResponse {
   summary: string;
   reasoning: string[];
   nonAuthorityDisclaimer: string;
+}
+
+export interface DeliberationParticipantOutput {
+  roleSlotId: JaiRoleSlotId;
+  modelSlotId: ModelSlotId;
+  critiqueSummary: string;
+  voteValue: VoteValue;
+  ratificationRecommendation: RatificationValue;
+  requiredRevisions: string[];
+  blockers: string[];
+  confidenceReadinessNote: string;
+  nonAuthorizations: string[];
+  advisoryOnly: true;
+}
+
+export interface ModelSlotDeliberationRequest {
+  motion: Motion;
+  roleSlotId: JaiRoleSlotId;
+  modelSlotId: ModelSlotId;
+  operatorPrompt: string;
+  requestedMode?: "mock" | "env_gated_provider";
+}
+
+export interface ModelSlotDeliberationResponse {
+  mode: "mock" | "env_gated_provider_unconfigured";
+  providerConfigured: boolean;
+  participantOutput: DeliberationParticipantOutput;
+  nonAuthorityDisclaimer: string;
+}
+
+export interface ManualDeliberationRun {
+  id: string;
+  motionId: string;
+  roleSlotIds: JaiRoleSlotId[];
+  modelSlotId: ModelSlotId;
+  requestedMode: "mock" | "env_gated_provider";
+  operatorTriggeredOnly: true;
+  persisted: false;
+}
+
+export interface AdvisoryRatificationSummary {
+  value: RatificationValue;
+  summary: string;
+  requiredRevisions: string[];
+  blockers: string[];
+  voteCounts: Record<VoteValue, number>;
+  advisoryOnly: true;
+  humanApprovalRequired: true;
+  nonAuthorityDisclaimer: string;
+}
+
+export interface ManualDeliberationRunResult {
+  run: ManualDeliberationRun;
+  participantOutputs: DeliberationParticipantOutput[];
+  aggregateRatification: AdvisoryRatificationSummary;
+  nonAuthorizations: string[];
 }
