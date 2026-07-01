@@ -124,6 +124,7 @@ export async function POST(request: Request) {
     })),
     participantOutputs,
     aggregateRatification,
+    evidencePointers: motion.evidencePointers,
     nonAuthorizations: [
       "JAI vote is not CONTROL_THREAD approval.",
       "JAI ratification is not final authority.",
