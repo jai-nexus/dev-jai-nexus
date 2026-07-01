@@ -5,6 +5,7 @@ export * from "./manual-deliberation";
 export * from "./mock-inference";
 export * from "./model-slots";
 export * from "./motion-approval-drafts";
+export * from "./motion-intake";
 export * from "./provider-output-normalization";
 export * from "./ratification-summary";
 export * from "./role-slots";

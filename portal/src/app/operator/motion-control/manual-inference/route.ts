@@ -9,6 +9,7 @@ import {
   sampleMotionKernelMotions,
   type JaiRoleSlotId,
   type ModelSlotId,
+  type Motion,
 } from "@/lib/controlPlane/motionKernel";
 import { createMockDeliberationParticipantOutput } from "@/lib/controlPlane/motionKernel/live-model-slot-adapter";
 import { runSecureProviderDeliberationConnector } from "@/lib/controlPlane/motionKernel/provider-connector";
@@ -22,11 +23,13 @@ interface ManualInferenceRequestBody {
   roleSlotIds?: JaiRoleSlotId[];
   modelSlotId?: ModelSlotId;
   mode?: "mock" | "env_gated_provider";
+  motionBasis?: Motion;
 }
 
 export async function POST(request: Request) {
   const body = await parseBody(request);
   const motion =
+    normalizeMotionBasis(body.motionBasis) ??
     sampleMotionKernelMotions.find(
       (candidate) => candidate.id === body.motionId,
     ) ?? sampleMotionKernelMotions[1];
@@ -174,6 +177,29 @@ function normalizeRequestedMode(
   value: unknown,
 ): "mock" | "env_gated_provider" {
   return value === "env_gated_provider" ? "env_gated_provider" : "mock";
+}
+
+function normalizeMotionBasis(value: unknown): Motion | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  const candidate = value as Motion;
+  if (
+    typeof candidate.id !== "string" ||
+    typeof candidate.title !== "string" ||
+    typeof candidate.summary !== "string" ||
+    !Array.isArray(candidate.roleSlotIds) ||
+    !Array.isArray(candidate.evidencePointers) ||
+    !candidate.controlThread ||
+    !candidate.repoThread ||
+    !candidate.ratificationRecommendation ||
+    !candidate.humanApprovalDecision ||
+    !candidate.downstreamDrafts ||
+    !candidate.closeoutPlaceholder
+  ) {
+    return null;
+  }
+  return candidate;
 }
 
 function getHistorySourceMode(

@@ -24,8 +24,7 @@ import {
 } from "@/lib/controlPlane/motionKernel";
 import { getSafeProviderStatus } from "@/lib/controlPlane/motionKernel/server-provider-config";
 
-import { ManualDeliberationAction } from "./ManualDeliberationAction";
-import { MotionApprovalDraftSurface } from "./MotionApprovalDraftSurface";
+import { NativeMotionIntakeComposer } from "./NativeMotionIntakeComposer";
 
 export const metadata: Metadata = {
   title: "Motion Control Kernel | dev.jai.nexus",
@@ -686,13 +685,8 @@ export default async function MotionControlPage() {
           </div>
         </OperatorPanel>
 
-        <ManualDeliberationAction
-          motions={motions.map((motion) => ({
-            id: motion.id,
-            title: motion.title,
-            lifecycleStatus: motion.lifecycleStatus,
-            roleSlotIds: motion.roleSlotIds,
-          }))}
+        <NativeMotionIntakeComposer
+          sampleMotions={motions}
           roleSlots={roleSlots.map((slot) => ({
             id: slot.id,
             displayName: slot.displayName,
@@ -706,10 +700,6 @@ export default async function MotionControlPage() {
             providerFamily: slot.providerFamily,
           }))}
           providerStatus={providerStatus}
-        />
-
-        <MotionApprovalDraftSurface
-          motions={motions}
           recentRuns={recentHistory.map((run) => ({
             id: run.id,
             motionId: run.motionId,

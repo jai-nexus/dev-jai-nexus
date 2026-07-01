@@ -62,6 +62,22 @@ export type JaiRoleSlotId =
   | "JAI_FORMAT"
   | "JAI_REPO_GENERIC";
 
+export type MotionIntakeTargetThread = JaiRoleSlotId;
+
+export interface MotionIntakeDraft {
+  title: string;
+  proposer: string;
+  targetThread: MotionIntakeTargetThread;
+  repoTarget: string;
+  purpose: string;
+  scope: string;
+  requestedOutcome: string;
+  risks: string;
+  constraints: string;
+  evidencePointers: string;
+  nonAuthorizations: string;
+}
+
 export type ModelSlotId =
   | "model-slot-mock-deliberator"
   | "model-slot-env-gated-live-placeholder"
