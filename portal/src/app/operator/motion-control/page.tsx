@@ -12,10 +12,12 @@ import {
 } from "@/components/operator/slate";
 import {
   buildDraftRoutePacket,
+  buildMotionFromMotionIntakeRecord,
   canPrepareWorkPacketDraft,
   createManualDeliberationRunPreview,
   createWorkPacketDraftPreview,
   listRecentDeliberationRunHistory,
+  listRecentMotionIntakeRecords,
   motionKernelRegistries,
   motionKernelVocabulary,
   runManualMotionKernelInference,
@@ -492,6 +494,7 @@ export default async function MotionControlPage() {
   const { roleSlots, modelSlots, motions } = motionKernelRegistries;
   const providerStatus = getSafeProviderStatus();
   const recentHistory = await listRecentDeliberationRunHistory(5);
+  const recentMotionIntakeRecords = await listRecentMotionIntakeRecords(5);
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-6 text-slate-300 sm:px-6 lg:px-8">
@@ -700,6 +703,10 @@ export default async function MotionControlPage() {
             providerFamily: slot.providerFamily,
           }))}
           providerStatus={providerStatus}
+          persistedMotionRecords={recentMotionIntakeRecords}
+          persistedMotions={recentMotionIntakeRecords.map(
+            buildMotionFromMotionIntakeRecord,
+          )}
           recentRuns={recentHistory.map((run) => ({
             id: run.id,
             motionId: run.motionId,
