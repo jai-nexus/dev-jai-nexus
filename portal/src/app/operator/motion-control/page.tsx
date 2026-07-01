@@ -24,6 +24,8 @@ import {
 } from "@/lib/controlPlane/motionKernel";
 import { getSafeProviderStatus } from "@/lib/controlPlane/motionKernel/server-provider-config";
 
+import { ManualDeliberationAction } from "./ManualDeliberationAction";
+
 export const metadata: Metadata = {
   title: "Motion Control Kernel | dev.jai.nexus",
   description:
@@ -676,16 +678,38 @@ export default async function MotionControlPage() {
               </p>
               <p className="mt-2 text-xs text-amber-300">
                 The route returns safe status, normalized advisory participant
-                outputs, and aggregate ratification. It never returns provider
-                keys, does not persist results, and does not execute work packets.
+                outputs, aggregate ratification, and advisory persistence metadata.
+                It never returns provider keys and does not execute work packets.
               </p>
             </OperatorGateCard>
           </div>
         </OperatorPanel>
 
+        <ManualDeliberationAction
+          motions={motions.map((motion) => ({
+            id: motion.id,
+            title: motion.title,
+            lifecycleStatus: motion.lifecycleStatus,
+            roleSlotIds: motion.roleSlotIds,
+          }))}
+          roleSlots={roleSlots.map((slot) => ({
+            id: slot.id,
+            displayName: slot.displayName,
+            deliberationResponsibility: slot.deliberationResponsibility,
+          }))}
+          modelSlots={modelSlots.map((slot) => ({
+            id: slot.id,
+            displayName: slot.displayName,
+            enabled: slot.enabled,
+            inferenceMode: slot.inferenceMode,
+            providerFamily: slot.providerFamily,
+          }))}
+          providerStatus={providerStatus}
+        />
+
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="04"
+            index="05"
             title="Deliberation run history"
             right={<OperatorBadge tone="blocked">advisory records only</OperatorBadge>}
           />
@@ -752,7 +776,7 @@ export default async function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="05"
+            index="06"
             title="Canonical vocabulary"
             right={<OperatorBadge tone="readOnly">stable values</OperatorBadge>}
           />
@@ -776,7 +800,7 @@ export default async function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="06"
+            index="07"
             title="Participant output contract"
             right={<OperatorBadge tone="blocked">all outputs advisory</OperatorBadge>}
           />
@@ -803,7 +827,7 @@ export default async function MotionControlPage() {
 
         <section className="space-y-6">
           <OperatorSectionHeader
-            index="07"
+            index="08"
             title="Manual motion review"
             right={<OperatorBadge tone="blocked">no submit / no save / no API call</OperatorBadge>}
           />
