@@ -25,6 +25,7 @@ import {
 import { getSafeProviderStatus } from "@/lib/controlPlane/motionKernel/server-provider-config";
 
 import { ManualDeliberationAction } from "./ManualDeliberationAction";
+import { MotionApprovalDraftSurface } from "./MotionApprovalDraftSurface";
 
 export const metadata: Metadata = {
   title: "Motion Control Kernel | dev.jai.nexus",
@@ -707,9 +708,23 @@ export default async function MotionControlPage() {
           providerStatus={providerStatus}
         />
 
+        <MotionApprovalDraftSurface
+          motions={motions}
+          recentRuns={recentHistory.map((run) => ({
+            id: run.id,
+            motionId: run.motionId,
+            motionTitle: run.motionTitle,
+            sourceMode: run.sourceMode,
+            persistenceStatus: run.persistenceStatus,
+            aggregateRatification: run.aggregateAdvisoryRatification.value,
+            participantCount: run.participantOutputs.length,
+            evidencePointerCount: run.evidencePointers.length,
+          }))}
+        />
+
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="05"
+            index="06"
             title="Deliberation run history"
             right={<OperatorBadge tone="blocked">advisory records only</OperatorBadge>}
           />
@@ -776,7 +791,7 @@ export default async function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="06"
+            index="07"
             title="Canonical vocabulary"
             right={<OperatorBadge tone="readOnly">stable values</OperatorBadge>}
           />
@@ -800,7 +815,7 @@ export default async function MotionControlPage() {
 
         <OperatorPanel className="p-4">
           <OperatorSectionHeader
-            index="07"
+            index="08"
             title="Participant output contract"
             right={<OperatorBadge tone="blocked">all outputs advisory</OperatorBadge>}
           />
@@ -827,7 +842,7 @@ export default async function MotionControlPage() {
 
         <section className="space-y-6">
           <OperatorSectionHeader
-            index="08"
+            index="09"
             title="Manual motion review"
             right={<OperatorBadge tone="blocked">no submit / no save / no API call</OperatorBadge>}
           />

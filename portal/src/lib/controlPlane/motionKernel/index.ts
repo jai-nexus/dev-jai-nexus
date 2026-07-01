@@ -4,6 +4,7 @@ export * from "./live-model-slot-adapter";
 export * from "./manual-deliberation";
 export * from "./mock-inference";
 export * from "./model-slots";
+export * from "./motion-approval-drafts";
 export * from "./provider-output-normalization";
 export * from "./ratification-summary";
 export * from "./role-slots";
