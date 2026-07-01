@@ -260,6 +260,33 @@ model DeliberationRunHistory {
   @@index([persistenceStatus])
 }
 
+model MotionIntakeRecord {
+  id                    String   @id
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  title                 String
+  proposer              String
+  targetThread          String
+  repoTarget            String
+  purpose               String
+  scope                 String
+  requestedOutcome      String
+  risks                 String
+  constraints           String
+  evidencePointers      Json
+  nonAuthorizations     Json
+  intakeState           String
+  authorityState        String
+  advisoryOnly          Boolean  @default(true)
+  safeAdvisoryMessage   String
+
+  @@index([createdAt])
+  @@index([targetThread])
+  @@index([repoTarget])
+  @@index([intakeState])
+  @@index([authorityState])
+}
+
 model JaiTool {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())

@@ -64,6 +64,17 @@ export type JaiRoleSlotId =
 
 export type MotionIntakeTargetThread = JaiRoleSlotId;
 
+export const MOTION_INTAKE_STATE_VALUES = [
+  "draft",
+  "staged",
+  "selected",
+  "archived",
+] as const;
+
+export type MotionIntakeState = (typeof MOTION_INTAKE_STATE_VALUES)[number];
+
+export type MotionIntakeAuthorityState = "non_authoritative";
+
 export interface MotionIntakeDraft {
   title: string;
   proposer: string;
@@ -76,6 +87,27 @@ export interface MotionIntakeDraft {
   constraints: string;
   evidencePointers: string;
   nonAuthorizations: string;
+}
+
+export interface MotionIntakeRecord {
+  id: string;
+  title: string;
+  proposer: string;
+  targetThread: MotionIntakeTargetThread;
+  repoTarget: string;
+  purpose: string;
+  scope: string;
+  requestedOutcome: string;
+  risks: string;
+  constraints: string;
+  evidencePointers: EvidencePointer[];
+  nonAuthorizations: string[];
+  createdAt: string;
+  updatedAt: string;
+  intakeState: MotionIntakeState;
+  authorityState: MotionIntakeAuthorityState;
+  advisoryOnly: true;
+  safeAdvisoryMessage: string;
 }
 
 export type ModelSlotId =

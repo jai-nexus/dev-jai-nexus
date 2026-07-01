@@ -3,9 +3,18 @@ import type {
   JaiRoleSlotId,
   Motion,
   MotionIntakeDraft,
+  MotionIntakeRecord,
 } from "./types";
 
 export const MOTION_INTAKE_NON_AUTHORIZATIONS = [
+  "Persisted motion is not approved work.",
+  "Persisted motion is not routed work.",
+  "Persisted motion is not CONTROL_THREAD acceptance.",
+  "Persisted motion is not autonomous execution.",
+  "Persisted target thread is not route authority.",
+  "Persisted repo target is not repo execution authority.",
+  "Persisted evidence pointer is not validation approval.",
+  "Selected persisted motion basis is not final authority.",
   "A composed motion is not approved work.",
   "A submitted motion is not routed work.",
   "Motion intake is not CONTROL_THREAD acceptance.",
@@ -41,12 +50,17 @@ export const MOTION_INTAKE_NON_AUTHORIZATIONS = [
   "No provider API key persistence.",
   "No provider API key exposure.",
   "No provider secret storage.",
+  "No final CONTROL_THREAD approval by persisted motion.",
   "No final CONTROL_THREAD approval by composed motion.",
   "No final CONTROL_THREAD approval by motion intake.",
+  "No final CONTROL_THREAD approval by selected motion basis.",
+  "No route authority by persisted motion.",
   "No route authority by target thread selection.",
   "No route authority by repo-thread target.",
+  "No execution authority by persisted motion.",
   "No execution authority by target thread selection.",
   "No execution authority by repo-thread target.",
+  "No production gate authority by persisted motion.",
   "No production gate authority by composed motion.",
   "No production gate authority by selected motion basis.",
 ] as const;
@@ -241,6 +255,98 @@ export function createLocalComposedMotion(
   draft: MotionIntakeDraft,
 ): Motion {
   return buildComposedMotionBasis({ draft });
+}
+
+export function buildMotionIntakeRecordFromDraft({
+  draft,
+  createdAt,
+}: {
+  draft: MotionIntakeDraft;
+  createdAt?: string;
+}): MotionIntakeRecord {
+  const normalized = normalizeMotionIntakeDraft(draft);
+  const timestamp = createdAt ?? new Date().toISOString();
+  const slug = timestamp.replace(/[^0-9]/g, "").slice(0, 14) || "local";
+  const id = `persisted-motion-intake-${slug}`;
+  const evidencePointers = buildEvidencePointers({
+    motionId: id,
+    evidenceText: normalized.evidencePointers,
+  });
+  const nonAuthorizations = [
+    ...MOTION_INTAKE_NON_AUTHORIZATIONS,
+    ...splitLines(normalized.nonAuthorizations),
+  ];
+
+  return {
+    id,
+    title: normalized.title,
+    proposer: normalized.proposer,
+    targetThread: normalized.targetThread,
+    repoTarget: normalized.repoTarget,
+    purpose: normalized.purpose,
+    scope: normalized.scope,
+    requestedOutcome: normalized.requestedOutcome,
+    risks: normalized.risks,
+    constraints: normalized.constraints,
+    evidencePointers,
+    nonAuthorizations,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    intakeState: "staged",
+    authorityState: "non_authoritative",
+    advisoryOnly: true,
+    safeAdvisoryMessage:
+      "Persisted motion intake record is durable advisory metadata only.",
+  };
+}
+
+export function buildMotionFromMotionIntakeRecord(
+  record: MotionIntakeRecord,
+): Motion {
+  const motion = buildComposedMotionBasis({
+    draft: {
+      title: record.title,
+      proposer: record.proposer,
+      targetThread: record.targetThread,
+      repoTarget: record.repoTarget,
+      purpose: record.purpose,
+      scope: record.scope,
+      requestedOutcome: record.requestedOutcome,
+      risks: record.risks,
+      constraints: record.constraints,
+      evidencePointers: record.evidencePointers
+        .map((pointer) => pointer.ref)
+        .join("\n"),
+      nonAuthorizations: record.nonAuthorizations.join("\n"),
+    },
+    composedAt: record.createdAt,
+  });
+
+  return {
+    ...motion,
+    id: record.id,
+    controlThread: {
+      ...motion.controlThread,
+      id: `control-thread-${record.id}`,
+      label: "persisted native motion intake",
+    },
+    repoThread: {
+      ...motion.repoThread,
+      id: `repo-thread-${record.id}`,
+    },
+    ratificationRecommendation: {
+      ...motion.ratificationRecommendation,
+      id: `ratification-${record.id}`,
+      motionId: record.id,
+    },
+    humanApprovalDecision: {
+      ...motion.humanApprovalDecision,
+      id: `human-approval-${record.id}`,
+      motionId: record.id,
+    },
+    evidencePointers: record.evidencePointers,
+    nonAuthorizations: record.nonAuthorizations,
+  };
 }
 
 function buildRoleSlotIds(targetThread: JaiRoleSlotId): JaiRoleSlotId[] {
