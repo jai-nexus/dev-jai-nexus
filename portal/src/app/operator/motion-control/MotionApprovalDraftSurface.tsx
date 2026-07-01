@@ -65,11 +65,15 @@ const decisionOptions: Array<{
 export function MotionApprovalDraftSurface({
   motions,
   recentRuns,
+  selectedMotionId,
+  onSelectedMotionIdChange,
 }: {
   motions: Motion[];
   recentRuns: RecentRunBasis[];
+  selectedMotionId?: string;
+  onSelectedMotionIdChange?: (motionId: string) => void;
 }) {
-  const [selectedMotionId, setSelectedMotionId] = useState(
+  const [localSelectedMotionId, setLocalSelectedMotionId] = useState(
     motions[1]?.id ?? motions[0]?.id ?? "",
   );
   const [decision, setDecision] =
@@ -77,9 +81,10 @@ export function MotionApprovalDraftSurface({
   const [explicitOperatorSelection, setExplicitOperatorSelection] =
     useState(false);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  const activeSelectedMotionId = selectedMotionId ?? localSelectedMotionId;
 
   const selectedMotion =
-    motions.find((motion) => motion.id === selectedMotionId) ?? motions[0];
+    motions.find((motion) => motion.id === activeSelectedMotionId) ?? motions[0];
   const recentBasis = useMemo(
     () =>
       recentRuns.find((run) => run.motionId === selectedMotion?.id) ??
@@ -153,8 +158,14 @@ export function MotionApprovalDraftSurface({
                 selected motion
               </span>
               <select
-                value={selectedMotionId}
-                onChange={(event) => setSelectedMotionId(event.target.value)}
+                value={activeSelectedMotionId}
+                onChange={(event) => {
+                  if (onSelectedMotionIdChange) {
+                    onSelectedMotionIdChange(event.target.value);
+                  } else {
+                    setLocalSelectedMotionId(event.target.value);
+                  }
+                }}
                 className="mt-2 w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
               >
                 {motions.map((motion) => (

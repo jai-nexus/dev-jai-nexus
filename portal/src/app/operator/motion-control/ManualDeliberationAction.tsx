@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -17,15 +17,9 @@ import type {
   EvidencePointer,
   JaiRoleSlotId,
   ModelSlotId,
+  Motion,
   ProviderConnectorSafeStatus,
 } from "@/lib/controlPlane/motionKernel/types";
-
-type ManualActionMotionOption = {
-  id: string;
-  title: string;
-  lifecycleStatus: string;
-  roleSlotIds: JaiRoleSlotId[];
-};
 
 type ManualActionRoleSlotOption = {
   id: JaiRoleSlotId;
@@ -68,14 +62,18 @@ export function ManualDeliberationAction({
   roleSlots,
   modelSlots,
   providerStatus,
+  selectedMotionId,
+  onSelectedMotionIdChange,
 }: {
-  motions: ManualActionMotionOption[];
+  motions: Motion[];
   roleSlots: ManualActionRoleSlotOption[];
   modelSlots: ManualActionModelSlotOption[];
   providerStatus: ProviderConnectorSafeStatus;
+  selectedMotionId?: string;
+  onSelectedMotionIdChange?: (motionId: string) => void;
 }) {
   const router = useRouter();
-  const [selectedMotionId, setSelectedMotionId] = useState(
+  const [localSelectedMotionId, setLocalSelectedMotionId] = useState(
     motions[1]?.id ?? motions[0]?.id ?? "",
   );
   const [selectedModelSlotId, setSelectedModelSlotId] = useState<ModelSlotId>(
@@ -88,15 +86,28 @@ export function ManualDeliberationAction({
   const [result, setResult] = useState<ManualActionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const activeSelectedMotionId = selectedMotionId ?? localSelectedMotionId;
 
   const selectedMotion = useMemo(
-    () => motions.find((motion) => motion.id === selectedMotionId),
-    [motions, selectedMotionId],
+    () => motions.find((motion) => motion.id === activeSelectedMotionId),
+    [motions, activeSelectedMotionId],
   );
-  const canRun = selectedMotionId.length > 0 && selectedRoleSlotIds.length > 0;
+
+  useEffect(() => {
+    if (selectedMotion) {
+      setSelectedRoleSlotIds(selectedMotion.roleSlotIds);
+    }
+  }, [selectedMotion]);
+
+  const canRun =
+    activeSelectedMotionId.length > 0 && selectedRoleSlotIds.length > 0;
 
   function updateSelectedMotion(motionId: string) {
-    setSelectedMotionId(motionId);
+    if (onSelectedMotionIdChange) {
+      onSelectedMotionIdChange(motionId);
+    } else {
+      setLocalSelectedMotionId(motionId);
+    }
     const motion = motions.find((candidate) => candidate.id === motionId);
     if (motion) {
       setSelectedRoleSlotIds(motion.roleSlotIds);
@@ -125,10 +136,13 @@ export function ManualDeliberationAction({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            motionId: selectedMotionId,
+            motionId: activeSelectedMotionId,
             roleSlotIds: selectedRoleSlotIds,
             modelSlotId: selectedModelSlotId,
             mode,
+            motionBasis: selectedMotion?.id.startsWith("local-composed-motion-")
+              ? selectedMotion
+              : undefined,
           }),
         });
 
@@ -181,7 +195,7 @@ export function ManualDeliberationAction({
                 motion
               </span>
               <select
-                value={selectedMotionId}
+                value={activeSelectedMotionId}
                 onChange={(event) => updateSelectedMotion(event.target.value)}
                 className="mt-2 w-full rounded border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
               >
