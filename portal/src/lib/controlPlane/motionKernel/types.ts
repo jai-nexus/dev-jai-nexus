@@ -44,6 +44,16 @@ export const HUMAN_APPROVAL_DECISION_VALUES = [
 export type HumanApprovalDecisionValue =
   (typeof HUMAN_APPROVAL_DECISION_VALUES)[number];
 
+export const MOTION_APPROVAL_DRAFT_DECISION_VALUES = [
+  "approve_for_draft",
+  "request_revision",
+  "reject",
+  "hold",
+] as const;
+
+export type MotionApprovalDraftDecisionValue =
+  (typeof MOTION_APPROVAL_DRAFT_DECISION_VALUES)[number];
+
 export type JaiRoleSlotId =
   | "JAI_CONTROL_THREAD"
   | "JAI_ORCHESTRATOR_NEXUS"
@@ -362,4 +372,23 @@ export interface DeliberationRunHistoryRecord {
 export interface DeliberationRunHistoryRepository {
   create(record: DeliberationRunHistoryRecord): Promise<DeliberationRunHistoryRecord>;
   listRecent(limit?: number): Promise<DeliberationRunHistoryRecord[]>;
+}
+
+export interface MotionApprovalDraftPacket {
+  motionId: string;
+  motionTitle: string;
+  decision: MotionApprovalDraftDecisionValue;
+  explicitOperatorSelection: boolean;
+  canGenerateDrafts: boolean;
+  advisoryRatificationState: RatificationValue;
+  programDraftText: string;
+  batchDraftText: string;
+  waveDraftText: string;
+  laneDraftText: string;
+  workPacketDraftText: string;
+  routePacketDraftText: string;
+  closeoutPlaceholderText: string;
+  evidencePointerSummaryText: string;
+  fullDraftPacketText: string;
+  nonAuthorizations: string[];
 }
