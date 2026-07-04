@@ -11,6 +11,7 @@ import {
   getThreadMemoryNonAuthorizations,
   getThreadMemoryRecords,
 } from "@/lib/controlPlane/threadMemory";
+import { listPersistedPassalongRecords } from "@/lib/controlPlane/threadMemory/passalong-persistence";
 
 import { PassalongRouterPrototype } from "./PassalongRouterPrototype";
 
@@ -20,9 +21,12 @@ export const metadata: Metadata = {
     "Local static JAI_Control_Thread memory and passalong-router prototype.",
 };
 
-export default function OperatorControlThreadPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OperatorControlThreadPage() {
   const passalongs = getPassalongRecords();
   const selectedPassalong = passalongs[0];
+  const persistedPassalongResult = await listPersistedPassalongRecords(50);
 
   return (
     <PassalongRouterPrototype
@@ -33,6 +37,12 @@ export default function OperatorControlThreadPage() {
       sandboxTargetOptions={getSandboxTargetOptions()}
       authorityFindings={[...getAuthorityFindings()]}
       nonAuthorizations={[...getThreadMemoryNonAuthorizations()]}
+      persistedPassalongRecords={persistedPassalongResult.records}
+      persistenceStatus={{
+        available: persistedPassalongResult.available,
+        safeMessage: persistedPassalongResult.safeMessage,
+        nonAuthorizations: persistedPassalongResult.nonAuthorizations,
+      }}
       initialPassalongId={selectedPassalong?.passalongId ?? ""}
       initialRouteRecommendation={
         selectedPassalong ? buildRouteRecommendationText(selectedPassalong) : ""
