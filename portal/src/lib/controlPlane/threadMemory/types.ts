@@ -35,6 +35,25 @@ export const PASSALONG_ROUTE_STATUSES = [
 export type PassalongRouteStatus =
   (typeof PASSALONG_ROUTE_STATUSES)[number];
 
+export const PASSALONG_ARCHIVE_STATES = [
+  "active",
+  "archived",
+  "marked_for_delete",
+] as const;
+
+export type PassalongArchiveState =
+  (typeof PASSALONG_ARCHIVE_STATES)[number];
+
+export const PASSALONG_REDACTION_STATES = [
+  "not_required",
+  "pending_review",
+  "redacted",
+  "blocked_secret_risk",
+] as const;
+
+export type PassalongRedactionState =
+  (typeof PASSALONG_REDACTION_STATES)[number];
+
 export const SANDBOX_IMPORT_ADOPTION_POSTURES = [
   "discard",
   "archive",
@@ -79,6 +98,39 @@ export interface PassalongRecord {
   sandboxTargetId?: string;
   sandboxImportAdoptionPosture?: SandboxImportAdoptionPosture;
   sandboxOutputInvolved?: boolean;
+}
+
+export interface PersistedPassalongRecord {
+  id: string;
+  passalongId: string;
+  sourceThreadId: ControlThreadId;
+  targetThreadId: ControlThreadId;
+  sourceThreadLabel: string;
+  targetThreadLabel: string;
+  scope: string;
+  mode: string;
+  summary: string;
+  evidencePointers: string[];
+  requestedDecision: string;
+  routeStatus: PassalongRouteStatus;
+  createdAt: string;
+  updatedAt: string;
+  authorityBoundary: string;
+  nonAuthorizations: string[];
+  sandboxPosture: string | null;
+  importAdoptionPosture: SandboxImportAdoptionPosture | null;
+  manualOperatorNote: string | null;
+  archiveState: PassalongArchiveState;
+  archivedAt: string | null;
+  deletedAt: string | null;
+  redactionState: PassalongRedactionState;
+  schemaVersion: "v0";
+}
+
+export interface PassalongPersistenceStatus {
+  available: boolean;
+  safeMessage: string;
+  nonAuthorizations: string[];
 }
 
 export interface PassalongQueue {

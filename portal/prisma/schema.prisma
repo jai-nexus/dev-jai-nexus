@@ -287,6 +287,41 @@ model MotionIntakeRecord {
   @@index([authorityState])
 }
 
+model ControlThreadPassalongRecord {
+  id                    String    @id
+  passalongId           String    @unique @map("passalong_id")
+  sourceThreadId        String    @map("source_thread_id")
+  targetThreadId        String    @map("target_thread_id")
+  sourceThreadLabel     String    @map("source_thread_label")
+  targetThreadLabel     String    @map("target_thread_label")
+  scope                 String
+  mode                  String
+  summary               String
+  evidencePointers      Json      @map("evidence_pointers")
+  requestedDecision     String    @map("requested_decision")
+  routeStatus           String    @map("route_status")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at")
+  authorityBoundary     String    @map("authority_boundary")
+  nonAuthorizations     Json      @map("non_authorizations")
+  sandboxPosture        String?   @map("sandbox_posture")
+  importAdoptionPosture String?   @map("import_adoption_posture")
+  manualOperatorNote    String?   @map("manual_operator_note")
+  archiveState          String    @default("active") @map("archive_state")
+  archivedAt            DateTime? @map("archived_at")
+  deletedAt             DateTime? @map("deleted_at")
+  redactionState        String    @default("not_required") @map("redaction_state")
+  schemaVersion         String    @default("v0") @map("schema_version")
+
+  @@index([targetThreadId, routeStatus, createdAt])
+  @@index([sourceThreadId, routeStatus, createdAt])
+  @@index([routeStatus, createdAt])
+  @@index([archiveState, createdAt])
+  @@index([sandboxPosture, createdAt])
+  @@index([importAdoptionPosture, createdAt])
+  @@map("control_thread_passalong_records")
+}
+
 model JaiTool {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
