@@ -12,6 +12,16 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import {
+  buildSupervisedRoutePacket,
+  buildSupervisedRoutePacketJson,
+  buildSupervisedRoutePacketMarkdown,
+  createDefaultSupervisedRoutePacketInput,
+  SUPERVISED_ROUTE_PACKET_GUARDRAILS,
+  SUPERVISED_ROUTE_PACKET_LIFECYCLE_STATUSES,
+  SUPERVISED_ROUTE_PACKET_NON_AUTHORIZATIONS,
+  type SupervisedRoutePacketLifecycleStatus,
+} from "@/lib/controlPlane/routePackets/supervisedRoutePacket";
+import {
   buildCopyablePassalongPacket,
   buildPersistedPassalongInput,
   buildRouteRecommendationText,
@@ -254,6 +264,319 @@ function PersistedRecordList({
         </button>
       ))}
     </div>
+  );
+}
+
+function RoutePacketComposerPanel({
+  selectedPassalong,
+}: {
+  selectedPassalong: PassalongRecord | undefined;
+}) {
+  const [draftCreatedAt] = useState(() => new Date().toISOString());
+  const defaultInput = useMemo(
+    () => createDefaultSupervisedRoutePacketInput(draftCreatedAt),
+    [draftCreatedAt],
+  );
+  const [packetId, setPacketId] = useState(defaultInput.packetId);
+  const [lane, setLane] = useState(defaultInput.lane);
+  const [targetMode, setTargetMode] = useState(defaultInput.targetMode);
+  const [scope, setScope] = useState(defaultInput.scope);
+  const [purpose, setPurpose] = useState(defaultInput.purpose);
+  const [requestedAction, setRequestedAction] = useState(
+    defaultInput.requestedAction,
+  );
+  const [expectedOutputShape, setExpectedOutputShape] = useState(
+    defaultInput.expectedOutputShape,
+  );
+  const [lifecycleStatus, setLifecycleStatus] =
+    useState<SupervisedRoutePacketLifecycleStatus>("draft");
+  const [copyMessage, setCopyMessage] = useState(
+    "Exports are local text only; select or copy manually.",
+  );
+
+  function seedFromSelectedPassalong() {
+    if (!selectedPassalong) {
+      return;
+    }
+    setPacketId(`${selectedPassalong.passalongId}-route-packet`);
+    setScope(selectedPassalong.scope);
+    setPurpose(selectedPassalong.summary);
+    setRequestedAction(selectedPassalong.requestedDecision);
+    setExpectedOutputShape(
+      "Structured sandbox-nexus intake acknowledgement and supervised closeout fixture.",
+    );
+  }
+
+  const packet = useMemo(
+    () =>
+      buildSupervisedRoutePacket({
+        ...defaultInput,
+        packetId,
+        lane,
+        targetMode,
+        scope,
+        purpose,
+        requestedAction,
+        expectedOutputShape,
+        lifecycleStatus,
+        evidenceReferences: [
+          ...defaultInput.evidenceReferences,
+          ...(selectedPassalong
+            ? selectedPassalong.evidencePointers.map((reference, index) => ({
+                id: `${selectedPassalong.passalongId}-evidence-${index + 1}`,
+                label: "Selected passalong evidence reference",
+                reference,
+              }))
+            : []),
+        ],
+        guardrails: [...SUPERVISED_ROUTE_PACKET_GUARDRAILS],
+        nonAuthorizations: [...SUPERVISED_ROUTE_PACKET_NON_AUTHORIZATIONS],
+      }),
+    [
+      defaultInput,
+      expectedOutputShape,
+      lane,
+      lifecycleStatus,
+      packetId,
+      purpose,
+      requestedAction,
+      scope,
+      selectedPassalong,
+      targetMode,
+    ],
+  );
+  const jsonExport = useMemo(
+    () => buildSupervisedRoutePacketJson(packet),
+    [packet],
+  );
+  const markdownExport = useMemo(
+    () => buildSupervisedRoutePacketMarkdown(packet),
+    [packet],
+  );
+
+  async function copyText(label: string, text: string) {
+    if (!navigator.clipboard?.writeText) {
+      setCopyMessage(
+        `${label} copy unavailable in this browser; use the selectable export text.`,
+      );
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyMessage(`${label} copied by manual operator action.`);
+    } catch {
+      setCopyMessage(
+        `${label} copy failed; use the selectable export text fallback.`,
+      );
+    }
+  }
+
+  return (
+    <OperatorPanel className="space-y-4">
+      <OperatorSectionHeader
+        index="B5"
+        title="Supervised route-packet composer"
+        right={<OperatorBadge tone="blocked">manual handoff only</OperatorBadge>}
+      />
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-xs text-amber-100">
+          This route packet is app-local and non-authoritative.
+          CONTROL_THREAD remains the acceptance authority.
+        </div>
+        <div className="rounded border border-sky-900/70 bg-sky-950/20 p-3 text-xs text-sky-100">
+          Export/copy is manual handoff only. No automatic send or dispatch
+          occurs.
+        </div>
+        <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-100">
+          No provider/model/API call, sandbox runtime activation, JAI Agent
+          activation, target-repo mutation, accepted-code import, deployment, or
+          production gate occurs.
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-xs text-slate-400">
+              Packet id
+              <input
+                value={packetId}
+                onChange={(event) => setPacketId(event.target.value)}
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              />
+            </label>
+            <label className="block text-xs text-slate-400">
+              Lane
+              <input
+                value={lane}
+                onChange={(event) => setLane(event.target.value)}
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              />
+            </label>
+          </div>
+
+          <label className="block text-xs text-slate-400">
+            Target mode
+            <input
+              value={targetMode}
+              onChange={(event) => setTargetMode(event.target.value)}
+              className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Lifecycle status
+            <select
+              value={lifecycleStatus}
+              onChange={(event) =>
+                setLifecycleStatus(
+                  event.target.value as SupervisedRoutePacketLifecycleStatus,
+                )
+              }
+              className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            >
+              {SUPERVISED_ROUTE_PACKET_LIFECYCLE_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Scope
+            <textarea
+              value={scope}
+              onChange={(event) => setScope(event.target.value)}
+              className="mt-1 min-h-20 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Purpose
+            <textarea
+              value={purpose}
+              onChange={(event) => setPurpose(event.target.value)}
+              className="mt-1 min-h-20 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Requested action
+            <textarea
+              value={requestedAction}
+              onChange={(event) => setRequestedAction(event.target.value)}
+              className="mt-1 min-h-24 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Expected output shape
+            <textarea
+              value={expectedOutputShape}
+              onChange={(event) => setExpectedOutputShape(event.target.value)}
+              className="mt-1 min-h-20 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={seedFromSelectedPassalong}
+            disabled={!selectedPassalong}
+            className="w-full rounded border border-sky-700 bg-sky-950/40 px-3 py-2 text-sm font-semibold text-sky-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-950 disabled:text-slate-600"
+          >
+            Seed from selected passalong
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>{packet.packetId}</OperatorIdChip>
+              <OperatorBadge tone="advisory">{packet.lifecycleStatus}</OperatorBadge>
+              <OperatorBadge tone="blocked">not delivery proof</OperatorBadge>
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  target
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {packet.targetRepo} / {packet.targetSurface}
+                </p>
+              </div>
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  mode
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {packet.targetMode}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 text-sm text-slate-300">{packet.scope}</div>
+            <div className="mt-3 rounded border border-amber-900/70 bg-amber-950/20 p-2 text-xs text-amber-100">
+              {packet.controlThreadAuthority}
+            </div>
+            <div className="mt-2 rounded border border-slate-800 bg-slate-950/40 p-2 text-xs text-slate-300">
+              {packet.advisoryNonAuthoritative}
+            </div>
+          </OperatorGateCard>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  JSON export
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void copyText("JSON packet", jsonExport)}
+                  className="rounded border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Copy JSON
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={jsonExport}
+                className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+                aria-label="Supervised route packet JSON export"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  Markdown export
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void copyText("Markdown packet", markdownExport)
+                  }
+                  className="rounded border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Copy Markdown
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={markdownExport}
+                className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+                aria-label="Supervised route packet Markdown export"
+              />
+            </div>
+          </div>
+
+          <div className="rounded border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+            {copyMessage} The textareas remain selectable fallback exports.
+          </div>
+        </div>
+      </div>
+    </OperatorPanel>
   );
 }
 
@@ -703,6 +1026,8 @@ export function PassalongRouterPrototype({
             )}
           </OperatorPanel>
         </section>
+
+        <RoutePacketComposerPanel selectedPassalong={selectedPassalong} />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <OperatorPanel className="space-y-4">
