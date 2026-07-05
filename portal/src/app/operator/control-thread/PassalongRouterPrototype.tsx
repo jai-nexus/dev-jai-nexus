@@ -12,6 +12,18 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import {
+  buildJaiPaletteSandboxAgentDraft,
+  buildJaiPaletteSandboxAgentDraftJson,
+  buildJaiPaletteSandboxAgentDraftMarkdown,
+  createDefaultJaiPaletteSandboxAgentDraftInput,
+  JAI_PALETTE_AGENT_ACTIVATION_STATUSES,
+  JAI_PALETTE_AGENT_REVIEW_STATUSES,
+  JAI_SANDBOX_AGENT_CLASSES,
+  type JaiPaletteAgentActivationStatus,
+  type JaiPaletteAgentReviewStatus,
+  type JaiSandboxAgentClass,
+} from "@/lib/controlPlane/jaiPalette/sandboxAgentDraft";
+import {
   buildSupervisedRoutePacket,
   buildSupervisedRoutePacketJson,
   buildSupervisedRoutePacketMarkdown,
@@ -580,6 +592,323 @@ function RoutePacketComposerPanel({
   );
 }
 
+function JaiPaletteSandboxAgentDraftComposerPanel() {
+  const [agentClass, setAgentClass] = useState<JaiSandboxAgentClass>(
+    "JAI::SANDBOX::INTAKE_AGENT",
+  );
+  const defaultInput = useMemo(
+    () => createDefaultJaiPaletteSandboxAgentDraftInput(agentClass),
+    [agentClass],
+  );
+  const [agentId, setAgentId] = useState(defaultInput.agentId);
+  const [agentName, setAgentName] = useState(defaultInput.agentName);
+  const [sandboxDomain, setSandboxDomain] = useState(
+    defaultInput.sandboxDomain,
+  );
+  const [purpose, setPurpose] = useState(defaultInput.purpose);
+  const [coverageResponsibility, setCoverageResponsibility] = useState(
+    defaultInput.coverageResponsibility,
+  );
+  const [activationStatus, setActivationStatus] =
+    useState<JaiPaletteAgentActivationStatus>("draft");
+  const [reviewStatus, setReviewStatus] =
+    useState<JaiPaletteAgentReviewStatus>("pending");
+  const [copyMessage, setCopyMessage] = useState(
+    "Draft exports are local text only; select or copy manually.",
+  );
+
+  function loadClassDefaults(nextClass: JaiSandboxAgentClass) {
+    const nextInput = createDefaultJaiPaletteSandboxAgentDraftInput(nextClass);
+    setAgentClass(nextClass);
+    setAgentId(nextInput.agentId);
+    setAgentName(nextInput.agentName);
+    setSandboxDomain(nextInput.sandboxDomain);
+    setPurpose(nextInput.purpose);
+    setCoverageResponsibility(nextInput.coverageResponsibility);
+    setActivationStatus("draft");
+    setReviewStatus("pending");
+  }
+
+  const draft = useMemo(
+    () =>
+      buildJaiPaletteSandboxAgentDraft({
+        ...defaultInput,
+        agentId,
+        agentName,
+        sandboxDomain,
+        purpose,
+        coverageResponsibility,
+        activationStatus,
+        reviewStatus,
+      }),
+    [
+      activationStatus,
+      agentId,
+      agentName,
+      coverageResponsibility,
+      defaultInput,
+      purpose,
+      reviewStatus,
+      sandboxDomain,
+    ],
+  );
+  const jsonExport = useMemo(
+    () => buildJaiPaletteSandboxAgentDraftJson(draft),
+    [draft],
+  );
+  const markdownExport = useMemo(
+    () => buildJaiPaletteSandboxAgentDraftMarkdown(draft),
+    [draft],
+  );
+
+  async function copyText(label: string, text: string) {
+    if (!navigator.clipboard?.writeText) {
+      setCopyMessage(
+        `${label} copy unavailable in this browser; use the selectable export text.`,
+      );
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyMessage(`${label} copied by manual operator action.`);
+    } catch {
+      setCopyMessage(
+        `${label} copy failed; use the selectable export text fallback.`,
+      );
+    }
+  }
+
+  return (
+    <OperatorPanel className="space-y-4">
+      <OperatorSectionHeader
+        index="B11"
+        title="JAI Palette sandbox agent draft composer"
+        right={<OperatorBadge tone="blocked">candidate metadata only</OperatorBadge>}
+      />
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-xs text-amber-100">
+          JAI Palette drafts are app-local and non-authoritative. Drafted
+          sandbox agents are candidates only.
+        </div>
+        <div className="rounded border border-sky-900/70 bg-sky-950/20 p-3 text-xs text-sky-100">
+          Activation status is limited to draft or candidate. CONTROL_THREAD
+          remains the review/accept/hold authority.
+        </div>
+        <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-100">
+          No executable agent runtime, autonomous execution,
+          provider/model/API dispatch, sandbox runtime activation, sandbox task
+          execution, target-repo mutation/import, accepted-code import,
+          deployment, or production gate occurs.
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <div className="space-y-3">
+          <label className="block text-xs text-slate-400">
+            Coverage class
+            <select
+              value={agentClass}
+              onChange={(event) =>
+                loadClassDefaults(event.target.value as JaiSandboxAgentClass)
+              }
+              className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            >
+              {JAI_SANDBOX_AGENT_CLASSES.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-xs text-slate-400">
+              Agent id
+              <input
+                value={agentId}
+                onChange={(event) => setAgentId(event.target.value)}
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              />
+            </label>
+            <label className="block text-xs text-slate-400">
+              Agent name
+              <input
+                value={agentName}
+                onChange={(event) => setAgentName(event.target.value)}
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              />
+            </label>
+          </div>
+
+          <label className="block text-xs text-slate-400">
+            Sandbox domain
+            <input
+              value={sandboxDomain}
+              onChange={(event) => setSandboxDomain(event.target.value)}
+              className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block text-xs text-slate-400">
+              Activation status
+              <select
+                value={activationStatus}
+                onChange={(event) =>
+                  setActivationStatus(
+                    event.target.value as JaiPaletteAgentActivationStatus,
+                  )
+                }
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              >
+                {JAI_PALETTE_AGENT_ACTIVATION_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-xs text-slate-400">
+              Review status
+              <select
+                value={reviewStatus}
+                onChange={(event) =>
+                  setReviewStatus(
+                    event.target.value as JaiPaletteAgentReviewStatus,
+                  )
+                }
+                className="mt-1 w-full rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+              >
+                {JAI_PALETTE_AGENT_REVIEW_STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="block text-xs text-slate-400">
+            Purpose
+            <textarea
+              value={purpose}
+              onChange={(event) => setPurpose(event.target.value)}
+              className="mt-1 min-h-24 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+
+          <label className="block text-xs text-slate-400">
+            Coverage responsibility
+            <textarea
+              value={coverageResponsibility}
+              onChange={(event) =>
+                setCoverageResponsibility(event.target.value)
+              }
+              className="mt-1 min-h-24 w-full resize-y rounded border border-slate-800 bg-slate-950 px-2 py-2 text-sm text-slate-200"
+            />
+          </label>
+        </div>
+
+        <div className="space-y-4">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>{draft.agentId}</OperatorIdChip>
+              <OperatorBadge tone="fixture">{draft.agentClass}</OperatorBadge>
+              <OperatorBadge tone="advisory">
+                {draft.activationStatus}
+              </OperatorBadge>
+              <OperatorBadge tone="blocked">not executable</OperatorBadge>
+            </div>
+            <h3 className="mt-3 text-xl font-semibold text-slate-100">
+              {draft.agentName}
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">{draft.purpose}</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  route-packet compatibility
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {draft.routePacketCompatibility.compatiblePacketPosture}
+                </p>
+              </div>
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  fixture compatibility
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {
+                    draft.sandboxNexusFixtureCompatibility
+                      .fixtureIntakeCompatibility
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-amber-900/70 bg-amber-950/20 p-2 text-xs text-amber-100">
+              {draft.controlThreadAuthority}
+            </div>
+            <div className="mt-2 rounded border border-slate-800 bg-slate-950/40 p-2 text-xs text-slate-300">
+              {draft.advisoryNonAuthoritative}
+            </div>
+          </OperatorGateCard>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  JSON draft export
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void copyText("JSON draft", jsonExport)}
+                  className="rounded border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Copy JSON
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={jsonExport}
+                className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+                aria-label="JAI Palette sandbox agent draft JSON export"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  Markdown draft export
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void copyText("Markdown draft", markdownExport)
+                  }
+                  className="rounded border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500"
+                >
+                  Copy Markdown
+                </button>
+              </div>
+              <textarea
+                readOnly
+                value={markdownExport}
+                className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+                aria-label="JAI Palette sandbox agent draft Markdown export"
+              />
+            </div>
+          </div>
+
+          <div className="rounded border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
+            {copyMessage} The textareas remain selectable fallback exports.
+          </div>
+        </div>
+      </div>
+    </OperatorPanel>
+  );
+}
+
 export function PassalongRouterPrototype({
   threadMemoryRecords,
   passalongRecords,
@@ -1028,6 +1357,7 @@ export function PassalongRouterPrototype({
         </section>
 
         <RoutePacketComposerPanel selectedPassalong={selectedPassalong} />
+        <JaiPaletteSandboxAgentDraftComposerPanel />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <OperatorPanel className="space-y-4">
