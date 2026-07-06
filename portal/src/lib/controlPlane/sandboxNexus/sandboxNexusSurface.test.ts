@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
 
 import {
+  JAI_PALETTE_ADVISORY_STATEMENT,
+  JAI_PALETTE_AGENT_ACTIVATION_STATUSES,
+  JAI_PALETTE_AGENT_REVIEW_STATUSES,
+  JAI_PALETTE_BLOCKED_AUTHORITIES,
+  JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+  JAI_SANDBOX_AGENT_CLASSES,
+} from "../jaiPalette/sandboxAgentDraft";
+import {
   SANDBOX_NEXUS_BLOCKED_GATES,
   SANDBOX_NEXUS_BOUNDARY_COPY,
   SANDBOX_NEXUS_DRIFT_RISKS,
+  SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING,
   SANDBOX_NEXUS_NEXT_ROUTE,
   SANDBOX_NEXUS_RELATIONSHIPS,
   SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER,
@@ -75,7 +84,7 @@ function testStateVocabularyAndBoundaryCopy() {
 }
 
 function testBlockedGatesPresent() {
-  assert.deepEqual([...SANDBOX_NEXUS_BLOCKED_GATES], [
+  assertIncludesAll(SANDBOX_NEXUS_BLOCKED_GATES.join("\n"), [
     "DNS change",
     "deployment",
     "live domain activation",
@@ -169,6 +178,8 @@ function testAuthorityAndBoundaryCopy() {
 
   assertIncludesAll(surfaceText, [
     "CONTROL_THREAD remains review/accept/hold authority.",
+    JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+    JAI_PALETTE_ADVISORY_STATEMENT,
     "app-local, static, display-only, non-authoritative",
     "No DNS change occurs.",
     "No deployment occurs.",
@@ -186,6 +197,50 @@ function testAuthorityAndBoundaryCopy() {
   ]);
 }
 
+function testJaiPaletteLocalStaticDataWiring() {
+  assert.deepEqual(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.agentClassCoverage.map(
+      (entry) => entry.agentClass,
+    ),
+    [...JAI_SANDBOX_AGENT_CLASSES],
+  );
+  assert.deepEqual(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.activationStatusMapping.map(
+      (entry) => entry.jaiPaletteStatus,
+    ),
+    [...JAI_PALETTE_AGENT_ACTIVATION_STATUSES],
+  );
+  assert.deepEqual(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.reviewStatusMapping.map(
+      (entry) => entry.jaiPaletteStatus,
+    ),
+    [...JAI_PALETTE_AGENT_REVIEW_STATUSES],
+  );
+  assert.deepEqual(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.blockedAuthoritySource,
+    [...JAI_PALETTE_BLOCKED_AUTHORITIES],
+  );
+  assert.equal(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.authority,
+    JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+  );
+  assert.equal(
+    SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING.advisory,
+    JAI_PALETTE_ADVISORY_STATEMENT,
+  );
+  assertIncludesAll(
+    JSON.stringify(SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING, null, 2),
+    [
+      "Candidate metadata only; no executable agent runtime.",
+      "Route-packet compatibility does not imply route execution.",
+      "Fixture compatibility does not imply runtime activation.",
+      "Fixture compatibility does not imply sandbox task execution.",
+      "Fixture compatibility does not imply target-repo mutation or accepted-code import.",
+      "reviewed does not mean CONTROL_THREAD accepted.",
+    ],
+  );
+}
+
 function testNoRuntimeDispatchMutationImportDeploymentMetadata() {
   const serialized = JSON.stringify(
     {
@@ -194,6 +249,7 @@ function testNoRuntimeDispatchMutationImportDeploymentMetadata() {
       ladder: SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER,
       risks: SANDBOX_NEXUS_DRIFT_RISKS,
       relationships: SANDBOX_NEXUS_RELATIONSHIPS,
+      jaiPaletteDataWiring: SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING,
       nextRoute: SANDBOX_NEXUS_NEXT_ROUTE,
     },
     null,
@@ -226,6 +282,7 @@ function run() {
   testSafeActivationLadderPresent();
   testDriftRisksAndRelationshipsPresent();
   testAuthorityAndBoundaryCopy();
+  testJaiPaletteLocalStaticDataWiring();
   testNoRuntimeDispatchMutationImportDeploymentMetadata();
 }
 
