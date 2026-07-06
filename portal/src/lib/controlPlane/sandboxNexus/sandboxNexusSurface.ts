@@ -401,6 +401,170 @@ export const SANDBOX_NEXUS_RELATIONSHIPS = [
   },
 ] as const;
 
+export const SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY = {
+  fixtureId: "sandbox-nexus-fixture-intake-candidate-b21",
+  fixtureName: "Fixture Intake Display Candidate",
+  fixtureCategory: "fixture/manual intake",
+  sourcePacketPosture:
+    JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.routePacketCompatibility
+      .compatiblePacketPosture,
+  expectedInputFields: [
+    ...JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.routePacketCompatibility
+      .expectedRoutePacketInputs,
+  ],
+  rejectedFieldCategories: [
+    "secrets or credentials",
+    "endpoint URLs",
+    "provider keys",
+    "GitHub tokens",
+    "deployment data",
+    "DNS records",
+  ],
+  blockedFieldCategories: [
+    "runtime activation fields",
+    "sandbox task fields",
+    "executable runner fields",
+    "target-repo mutation or import fields",
+    "accepted-code import fields",
+    "production gate fields",
+    "hidden/background automation fields",
+  ],
+  simulatedIntakeStatus: "candidate / evidence needed / blocked gates visible",
+  guardrailStatus: "blocked authorities preserved for display review",
+  advisoryOnlyCloseoutRelationship:
+    JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.sandboxNexusFixtureCompatibility
+      .closeoutContribution,
+  noSandboxExecution:
+    "Fixture intake display does not execute sandbox work.",
+  noAutomaticIntake:
+    "Fixture intake display does not automatically ingest route packets.",
+  noRouteExecution:
+    JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.routePacketCompatibility
+      .noRouteExecution,
+  noFixtureExecution:
+    "Fixture intake display does not execute fixtures.",
+  noSourceOfTruthTransfer:
+    "Fixture intake display does not transfer source-of-truth authority.",
+  posture:
+    "Local-static candidate/display metadata only; not accepted source, executable task, runtime state, activation state, production state, or authoritative source-of-truth state.",
+} as const;
+
+export const SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY = {
+  stressTestId: "sandbox-nexus-stress-test-plan-candidate-b21",
+  stressTestName: "Stress-Test Plan Display Candidate",
+  riskClass: "authority / runtime / dispatch / mutation / import / production drift",
+  scenarioDescription:
+    "Static supervised stress-test scenario planning for future CONTROL_THREAD review.",
+  evidenceRequirement:
+    "Non-secret fixture evidence references, guardrail findings, and route context references.",
+  holdBlockTrigger:
+    "Hold or block if copy implies execution, activation, dispatch, mutation, import, deployment, production readiness, or source-of-truth authority.",
+  controlThreadDecisionRequirement:
+    "CONTROL_THREAD must review, accept, hold, or block before any future route changes status.",
+  expectedAdvisoryOutput:
+    "Advisory stress observation and hold recommendation for CONTROL_THREAD review.",
+  noExecutableRunner:
+    "Stress-test plan display does not create an executable runner.",
+  noRuntimeActivation:
+    "Stress-test plan display does not activate sandbox runtime.",
+  noSandboxTaskExecution:
+    "Stress-test plan display does not execute sandbox tasks.",
+  noStressTestExecution:
+    "Stress-test plan display does not execute stress tests.",
+  noProviderModelApiDispatch:
+    "Stress-test plan display does not dispatch to providers, models, or APIs.",
+  noProductionReadinessClaim:
+    "Stress-test plan display does not claim production readiness.",
+  posture:
+    "Local-static candidate/display metadata only; not accepted source, executable task, runtime state, activation state, production state, or authoritative source-of-truth state.",
+} as const;
+
+export const SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY = {
+  closeoutId: "sandbox-nexus-closeout-review-candidate-b21",
+  closeoutName: "Closeout Review Display Candidate",
+  sourcePacketId: "manual-route-packet-reference-only",
+  intakeStatus: "candidate / evidence needed / CONTROL_THREAD review needed",
+  acceptedFields: [
+    "packet id",
+    "scope",
+    "purpose",
+    "expected output shape",
+    "non-secret evidence references",
+    "guardrails",
+    "non-authorizations",
+  ],
+  rejectedFields: [
+    "secrets or credentials",
+    "provider keys",
+    "GitHub tokens",
+    "runtime endpoints",
+    "deployment credentials",
+    "DNS records",
+  ],
+  blockedFields: [
+    "fixture execution fields",
+    "stress-test execution fields",
+    "closeout generation fields",
+    "runtime activation fields",
+    "route authority fields",
+    "source-of-truth authority fields",
+    "production authority fields",
+  ],
+  simulatedActionSummary:
+    "Static summary of candidate fixture, stress, and closeout review posture.",
+  outputArtifactReferences: [
+    "docs/reference/q3m7-sandbox-dot-nexus-fixture-stress-closeout-display-planning-v0.md",
+    "docs/reviews/B19_SANDBOX_DOT_NEXUS_STATIC_OPERATOR_SURFACE_LOCAL_DATA_WIRING_BOUNDARY_REVIEW_V0.md",
+  ],
+  guardrailFindings:
+    "Blocked authorities remain preserved and visible for CONTROL_THREAD review.",
+  nonAuthorizationsPreserved: [
+    "No fixture execution.",
+    "No stress-test execution.",
+    "No closeout generation.",
+    "No external import.",
+    "No sandbox-nexus call.",
+    "No automatic sync.",
+    "No runtime activation.",
+    "No sandbox task execution.",
+    "No executable runner.",
+    "No provider/model/API dispatch.",
+    "No target-repo mutation or import.",
+    "No accepted-code import.",
+    "No deployment.",
+    "No production gate opening.",
+    "No source-of-truth transfer.",
+    "No hidden/background automation.",
+  ],
+  blockers: [
+    "CONTROL_THREAD acceptance remains required.",
+    "Runtime activation remains blocked.",
+    "Execution and generation remain blocked.",
+  ],
+  recommendation:
+    "Route a boundary review before any future runtime, execution, import, deployment, or production consideration.",
+  controlThreadReviewStatusPlaceholder:
+    "pending CONTROL_THREAD review / accept / hold decision",
+  advisoryNonAuthoritativePosture:
+    "Closeout review display is advisory, non-authoritative, and candidate metadata only.",
+  noCloseoutGeneration:
+    "Closeout review display does not generate closeouts.",
+  noAcceptanceAuthority:
+    "Closeout review display does not create acceptance authority.",
+  noRouteAuthority:
+    "Closeout review display does not create route authority.",
+  noActivationAuthority:
+    "Closeout review display does not create activation authority.",
+  noExecutableAuthority:
+    "Closeout review display does not create executable authority.",
+  noSourceOfTruthAuthority:
+    "Closeout review display does not create source-of-truth authority.",
+  noProductionAuthority:
+    "Closeout review display does not create production authority.",
+  posture:
+    "Local-static candidate/display metadata only; not accepted source, executable task, runtime state, activation state, production state, or authoritative source-of-truth state.",
+} as const;
+
 export const SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING = {
   agentClassCoverage: JAI_SANDBOX_AGENT_CLASSES.map((agentClass) => {
     const profile = JAI_SANDBOX_AGENT_CLASS_PROFILES[agentClass];
