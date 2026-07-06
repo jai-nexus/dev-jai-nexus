@@ -36,11 +36,14 @@ import {
 import {
   SANDBOX_NEXUS_BLOCKED_GATES,
   SANDBOX_NEXUS_BOUNDARY_COPY,
+  SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY,
   SANDBOX_NEXUS_DRIFT_RISKS,
+  SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY,
   SANDBOX_NEXUS_NEXT_ROUTE,
   SANDBOX_NEXUS_RELATIONSHIPS,
   SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER,
   SANDBOX_NEXUS_STATE_VOCABULARY,
+  SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY,
   SANDBOX_NEXUS_SURFACE_MODULES,
   SANDBOX_NEXUS_SURFACE_POSTURE,
 } from "@/lib/controlPlane/sandboxNexus/sandboxNexusSurface";
@@ -991,6 +994,195 @@ function SandboxNexusStaticSurfacePanel() {
               </div>
             </OperatorGateCard>
           ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <OperatorSectionHeader
+          index="B21"
+          title="Fixture / stress / closeout display detail"
+          right={<OperatorBadge tone="blocked">candidate metadata only</OperatorBadge>}
+        />
+        <div className="grid gap-3 xl:grid-cols-3">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.fixtureId}
+              </OperatorIdChip>
+              <OperatorBadge tone="advisory">
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.fixtureCategory}
+              </OperatorBadge>
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-slate-100">
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.fixtureName}
+            </h3>
+            <p className="mt-2 text-xs text-slate-300">
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.sourcePacketPosture}
+            </p>
+            <MiniList
+              items={SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.expectedInputFields}
+            />
+            <div className="mt-3 grid gap-2 text-xs text-slate-400">
+              <div>
+                <span className="font-semibold text-slate-300">Rejected:</span>{" "}
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.rejectedFieldCategories.join(
+                  ", ",
+                )}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Blocked:</span>{" "}
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.blockedFieldCategories.join(
+                  ", ",
+                )}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Status:</span>{" "}
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.simulatedIntakeStatus}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Guardrail:</span>{" "}
+                {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.guardrailStatus}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Closeout:</span>{" "}
+                {
+                  SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY
+                    .advisoryOnlyCloseoutRelationship
+                }
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.noSandboxExecution}{" "}
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.noAutomaticIntake}{" "}
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.noRouteExecution}{" "}
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.noFixtureExecution}{" "}
+              {SANDBOX_NEXUS_FIXTURE_INTAKE_DISPLAY.noSourceOfTruthTransfer}
+            </div>
+          </OperatorGateCard>
+
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>
+                {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.stressTestId}
+              </OperatorIdChip>
+              <OperatorBadge tone="blocked">
+                {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.riskClass}
+              </OperatorBadge>
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-slate-100">
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.stressTestName}
+            </h3>
+            <p className="mt-2 text-xs text-slate-300">
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.scenarioDescription}
+            </p>
+            <div className="mt-3 grid gap-2 text-xs text-slate-400">
+              <div>
+                <span className="font-semibold text-slate-300">Evidence:</span>{" "}
+                {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.evidenceRequirement}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Hold/block:</span>{" "}
+                {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.holdBlockTrigger}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">
+                  CONTROL_THREAD:
+                </span>{" "}
+                {
+                  SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY
+                    .controlThreadDecisionRequirement
+                }
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Output:</span>{" "}
+                {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.expectedAdvisoryOutput}
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noExecutableRunner}{" "}
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noRuntimeActivation}{" "}
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noSandboxTaskExecution}{" "}
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noStressTestExecution}{" "}
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noProviderModelApiDispatch}{" "}
+              {SANDBOX_NEXUS_STRESS_TEST_PLAN_DISPLAY.noProductionReadinessClaim}
+            </div>
+          </OperatorGateCard>
+
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.closeoutId}
+              </OperatorIdChip>
+              <OperatorBadge tone="advisory">
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.intakeStatus}
+              </OperatorBadge>
+            </div>
+            <h3 className="mt-3 text-sm font-semibold text-slate-100">
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.closeoutName}
+            </h3>
+            <p className="mt-2 text-xs text-slate-300">
+              Source packet:{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.sourcePacketId}
+            </p>
+            <div className="mt-3 grid gap-2 text-xs text-slate-400">
+              <div>
+                <span className="font-semibold text-slate-300">Accepted:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.acceptedFields.join(", ")}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Rejected:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.rejectedFields.join(", ")}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Blocked:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.blockedFields.join(", ")}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Summary:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.simulatedActionSummary}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Artifacts:</span>{" "}
+                {
+                  SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.outputArtifactReferences
+                    .length
+                }{" "}
+                static references
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Guardrail:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.guardrailFindings}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">Blockers:</span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.blockers.join(", ")}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">
+                  Recommendation:
+                </span>{" "}
+                {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.recommendation}
+              </div>
+              <div>
+                <span className="font-semibold text-slate-300">
+                  CONTROL_THREAD:
+                </span>{" "}
+                {
+                  SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY
+                    .controlThreadReviewStatusPlaceholder
+                }
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noCloseoutGeneration}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noAcceptanceAuthority}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noRouteAuthority}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noActivationAuthority}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noExecutableAuthority}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noSourceOfTruthAuthority}{" "}
+              {SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY.noProductionAuthority}
+            </div>
+          </OperatorGateCard>
         </div>
       </section>
 
