@@ -34,6 +34,17 @@ import {
   type SupervisedRoutePacketLifecycleStatus,
 } from "@/lib/controlPlane/routePackets/supervisedRoutePacket";
 import {
+  SANDBOX_NEXUS_BLOCKED_GATES,
+  SANDBOX_NEXUS_BOUNDARY_COPY,
+  SANDBOX_NEXUS_DRIFT_RISKS,
+  SANDBOX_NEXUS_NEXT_ROUTE,
+  SANDBOX_NEXUS_RELATIONSHIPS,
+  SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER,
+  SANDBOX_NEXUS_STATE_VOCABULARY,
+  SANDBOX_NEXUS_SURFACE_MODULES,
+  SANDBOX_NEXUS_SURFACE_POSTURE,
+} from "@/lib/controlPlane/sandboxNexus/sandboxNexusSurface";
+import {
   buildCopyablePassalongPacket,
   buildPersistedPassalongInput,
   buildRouteRecommendationText,
@@ -909,6 +920,251 @@ function JaiPaletteSandboxAgentDraftComposerPanel() {
   );
 }
 
+function SandboxNexusStaticSurfacePanel() {
+  return (
+    <OperatorPanel className="space-y-5">
+      <OperatorSectionHeader
+        index="B15"
+        title="sandbox.nexus static operator surface"
+        right={<OperatorBadge tone="blocked">display-only</OperatorBadge>}
+      />
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-xs text-amber-100">
+          {SANDBOX_NEXUS_SURFACE_POSTURE.advisory}
+        </div>
+        <div className="rounded border border-sky-900/70 bg-sky-950/20 p-3 text-xs text-sky-100">
+          {SANDBOX_NEXUS_SURFACE_POSTURE.authority}
+        </div>
+        <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-100">
+          No DNS change, deployment, live domain activation, sandbox runtime
+          activation, sandbox task execution, executable runner,
+          provider/model/API dispatch, autonomous JAI Agent execution,
+          target-repo mutation/import, accepted-code import, production gate,
+          source-of-truth transfer, or hidden/background automation occurs.
+        </div>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <OperatorGateCard>
+          <OperatorIdChip>sandbox.nexus</OperatorIdChip>
+          <p className="mt-3 text-sm text-slate-300">
+            {SANDBOX_NEXUS_SURFACE_POSTURE.productDefinition}
+          </p>
+        </OperatorGateCard>
+        <OperatorGateCard>
+          <OperatorIdChip>sandbox-nexus</OperatorIdChip>
+          <p className="mt-3 text-sm text-slate-300">
+            {SANDBOX_NEXUS_SURFACE_POSTURE.repoRelationship}
+          </p>
+        </OperatorGateCard>
+        <OperatorGateCard>
+          <OperatorIdChip>dev.jai.nexus</OperatorIdChip>
+          <p className="mt-3 text-sm text-slate-300">
+            {SANDBOX_NEXUS_SURFACE_POSTURE.controlSurfaceRelationship}
+          </p>
+        </OperatorGateCard>
+      </div>
+
+      <section className="space-y-3">
+        <OperatorSectionHeader
+          index="MOD"
+          title="Surface modules"
+          right={<OperatorBadge tone="readOnly">static planning state</OperatorBadge>}
+        />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          {SANDBOX_NEXUS_SURFACE_MODULES.map((module) => (
+            <OperatorGateCard key={module.module}>
+              <div className="flex flex-wrap items-center gap-2">
+                <OperatorBadge tone="advisory">{module.displayedState}</OperatorBadge>
+                <OperatorBadge tone="blocked">no action</OperatorBadge>
+              </div>
+              <h3 className="mt-3 text-sm font-semibold text-slate-100">
+                {module.module}
+              </h3>
+              <p className="mt-2 text-xs text-slate-300">{module.purpose}</p>
+              <p className="mt-2 text-xs text-slate-500">
+                {module.primaryRelationship}
+              </p>
+              <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                {module.boundary}
+              </div>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="STATE"
+            title="State vocabulary"
+            right={<OperatorBadge tone="blocked">labels grant no authority</OperatorBadge>}
+          />
+          <div className="grid gap-2 md:grid-cols-3">
+            {SANDBOX_NEXUS_STATE_VOCABULARY.map((entry) => (
+              <div
+                key={entry.state}
+                className="rounded border border-slate-800 bg-slate-950/40 p-3"
+              >
+                <OperatorBadge tone="readOnly">{entry.state}</OperatorBadge>
+                <p className="mt-2 text-xs text-slate-300">{entry.boundary}</p>
+              </div>
+            ))}
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="BOUNDARY"
+            title="Boundary copy"
+            right={<OperatorBadge tone="blocked">non-executing</OperatorBadge>}
+          />
+          <MiniList items={SANDBOX_NEXUS_BOUNDARY_COPY} />
+        </OperatorPanel>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="GATES"
+            title="Blocked gates"
+            right={<OperatorBadge tone="blocked">all blocked</OperatorBadge>}
+          />
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {SANDBOX_NEXUS_BLOCKED_GATES.map((gate) => (
+              <div
+                key={gate}
+                className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-200"
+              >
+                <div className="font-semibold">{gate}</div>
+                <div className="mt-1 text-red-300">
+                  Blocked; separate CONTROL_THREAD route required.
+                </div>
+              </div>
+            ))}
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="LADDER"
+            title="Safe activation ladder"
+            right={<OperatorBadge tone="advisory">B15 static UI sketch</OperatorBadge>}
+          />
+          <div className="grid gap-2">
+            {SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER.map((step) => (
+              <div
+                key={step.step}
+                className="grid gap-2 rounded border border-slate-800 bg-slate-950/40 p-3 sm:grid-cols-[48px_minmax(0,1fr)_180px]"
+              >
+                <OperatorIdChip>{String(step.step).padStart(2, "0")}</OperatorIdChip>
+                <div className="text-sm font-semibold text-slate-100">
+                  {step.name}
+                </div>
+                <OperatorBadge
+                  tone={step.status.includes("blocked") ? "blocked" : "advisory"}
+                >
+                  {step.status}
+                </OperatorBadge>
+              </div>
+            ))}
+          </div>
+          <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-200">
+            B15 is only the static operator surface prototype step. It does not
+            advance to runtime readiness, runtime activation, agent activation,
+            deployment, DNS change, or production gates.
+          </div>
+        </OperatorPanel>
+      </section>
+
+      <section className="space-y-3">
+        <OperatorSectionHeader
+          index="DRIFT"
+          title="Drift / hallucination control panel"
+          right={<OperatorBadge tone="blocked">hold on overclaim</OperatorBadge>}
+        />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {SANDBOX_NEXUS_DRIFT_RISKS.map((risk) => (
+            <OperatorGateCard key={risk.riskClass}>
+              <OperatorBadge tone="blocked">{risk.riskClass}</OperatorBadge>
+              <p className="mt-3 text-sm text-slate-300">{risk.meaning}</p>
+              <div className="mt-3 grid gap-2 text-xs text-slate-400">
+                <div>
+                  <span className="font-semibold text-slate-300">
+                    Evidence:
+                  </span>{" "}
+                  {risk.requiredEvidence}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">
+                    Hold/block:
+                  </span>{" "}
+                  {risk.holdBlockTrigger}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">
+                    CONTROL_THREAD:
+                  </span>{" "}
+                  {risk.controlThreadDecision}
+                </div>
+              </div>
+            </OperatorGateCard>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="REL"
+            title="Relationships"
+            right={<OperatorBadge tone="readOnly">static display only</OperatorBadge>}
+          />
+          <div className="grid gap-2 md:grid-cols-2">
+            {SANDBOX_NEXUS_RELATIONSHIPS.map((relationship) => (
+              <div
+                key={relationship.label}
+                className="rounded border border-slate-800 bg-slate-950/40 p-3"
+              >
+                <OperatorBadge tone="advisory">{relationship.label}</OperatorBadge>
+                <p className="mt-2 text-xs text-slate-300">
+                  {relationship.display}
+                </p>
+                <p className="mt-2 text-xs text-red-200">
+                  {relationship.boundary}
+                </p>
+              </div>
+            ))}
+          </div>
+        </OperatorPanel>
+
+        <OperatorPanel className="space-y-3">
+          <OperatorSectionHeader
+            index="B16"
+            title="Next route posture"
+            right={<OperatorBadge tone="blocked">recommendation only</OperatorBadge>}
+          />
+          <OperatorGateCard>
+            <OperatorIdChip>{SANDBOX_NEXUS_NEXT_ROUTE.lane}</OperatorIdChip>
+            <h3 className="mt-3 text-base font-semibold text-slate-100">
+              {SANDBOX_NEXUS_NEXT_ROUTE.title}
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">
+              {SANDBOX_NEXUS_NEXT_ROUTE.posture}
+            </p>
+            <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+              This recommendation is advisory only and does not create route
+              authority, runtime readiness, activation, execution, mutation,
+              import, deployment, DNS, or production authority.
+            </div>
+          </OperatorGateCard>
+        </OperatorPanel>
+      </section>
+    </OperatorPanel>
+  );
+}
+
 export function PassalongRouterPrototype({
   threadMemoryRecords,
   passalongRecords,
@@ -1358,6 +1614,7 @@ export function PassalongRouterPrototype({
 
         <RoutePacketComposerPanel selectedPassalong={selectedPassalong} />
         <JaiPaletteSandboxAgentDraftComposerPanel />
+        <SandboxNexusStaticSurfacePanel />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <OperatorPanel className="space-y-4">
