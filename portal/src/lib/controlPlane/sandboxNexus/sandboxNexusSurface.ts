@@ -1,3 +1,56 @@
+import {
+  createDefaultJaiPaletteSandboxAgentDraftInput,
+  JAI_PALETTE_ADVISORY_STATEMENT,
+  JAI_PALETTE_AGENT_ACTIVATION_STATUSES,
+  JAI_PALETTE_AGENT_REVIEW_STATUSES,
+  JAI_PALETTE_BLOCKED_AUTHORITIES,
+  JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+  JAI_SANDBOX_AGENT_CLASSES,
+  JAI_SANDBOX_AGENT_CLASS_PROFILES,
+} from "../jaiPalette/sandboxAgentDraft";
+
+type JaiPaletteBlockedAuthority = (typeof JAI_PALETTE_BLOCKED_AUTHORITIES)[number];
+
+function blockedGateFromJaiPaletteAuthority(
+  authority: JaiPaletteBlockedAuthority,
+): string | null {
+  switch (authority) {
+    case "No executable agent runtime.":
+      return "executable runner";
+    case "No autonomous execution.":
+      return "autonomous JAI Agent execution";
+    case "No provider/model/API dispatch.":
+      return "provider/model/API dispatch";
+    case "No sandbox runtime activation.":
+      return "sandbox runtime activation";
+    case "No sandbox task execution.":
+      return "sandbox task execution";
+    case "No target-repo mutation.":
+      return "target-repo mutation";
+    case "No target-repo import.":
+      return "target-repo import";
+    case "No accepted-code import.":
+      return "accepted-code import";
+    case "No GitHub automation.":
+      return "GitHub automation";
+    case "No PR automation.":
+      return "PR automation";
+    case "No deployment.":
+      return "deployment";
+    case "No production gate opening.":
+      return "production gates";
+    case "No source-of-truth transfer.":
+      return "source-of-truth transfer";
+    case "No hidden/background automation.":
+      return "hidden/background automation";
+    default:
+      return null;
+  }
+}
+
+const JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT =
+  createDefaultJaiPaletteSandboxAgentDraftInput("JAI::SANDBOX::INTAKE_AGENT");
+
 export const SANDBOX_NEXUS_SURFACE_POSTURE = {
   surfaceName: "sandbox.nexus",
   productDefinition:
@@ -16,6 +69,8 @@ export const SANDBOX_NEXUS_BOUNDARY_COPY = [
   "This sandbox.nexus surface is app-local, static, display-only, and non-authoritative.",
   "It is experimental and advisory-output-only.",
   "CONTROL_THREAD remains review/accept/hold authority.",
+  JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+  JAI_PALETTE_ADVISORY_STATEMENT,
   "No DNS change occurs.",
   "No deployment occurs.",
   "No live domain activation occurs.",
@@ -151,24 +206,13 @@ export const SANDBOX_NEXUS_STATE_VOCABULARY = [
 
 export const SANDBOX_NEXUS_BLOCKED_GATES = [
   "DNS change",
-  "deployment",
   "live domain activation",
-  "sandbox runtime activation",
-  "sandbox task execution",
-  "executable runner",
   "automatic intake",
   "automatic route execution",
-  "provider/model/API dispatch",
-  "autonomous JAI Agent execution",
-  "target-repo mutation",
-  "target-repo import",
-  "accepted-code import",
-  "GitHub automation",
-  "PR automation",
-  "production gates",
-  "source-of-truth transfer",
-  "hidden/background automation",
-] as const;
+  ...JAI_PALETTE_BLOCKED_AUTHORITIES.map(blockedGateFromJaiPaletteAuthority).filter(
+    (gate): gate is string => gate !== null,
+  ),
+];
 
 export const SANDBOX_NEXUS_SAFE_ACTIVATION_LADDER = [
   {
@@ -356,6 +400,45 @@ export const SANDBOX_NEXUS_RELATIONSHIPS = [
     boundary: "Draft/candidate/non-executing until separately activated.",
   },
 ] as const;
+
+export const SANDBOX_NEXUS_JAI_PALETTE_DATA_WIRING = {
+  agentClassCoverage: JAI_SANDBOX_AGENT_CLASSES.map((agentClass) => {
+    const profile = JAI_SANDBOX_AGENT_CLASS_PROFILES[agentClass];
+
+    return {
+      agentClass,
+      sandboxDomain: profile.sandboxDomain,
+      coverageResponsibility: profile.coverageResponsibility,
+      expectedFixtureScenarioRole: profile.expectedFixtureScenarioRole,
+      closeoutContribution: profile.closeoutContribution,
+      boundary: "Candidate metadata only; no executable agent runtime.",
+    };
+  }),
+  activationStatusMapping: JAI_PALETTE_AGENT_ACTIVATION_STATUSES.map((status) => ({
+    jaiPaletteStatus: status,
+    sandboxNexusDisplayState: status === "draft" ? "drafted" : "candidate",
+    boundary:
+      status === "draft"
+        ? "draft does not mean reviewed, accepted, executable, activated, or authoritative."
+        : "candidate does not mean accepted, executable, activated, or authoritative.",
+  })),
+  reviewStatusMapping: JAI_PALETTE_AGENT_REVIEW_STATUSES.map((status) => ({
+    jaiPaletteStatus: status,
+    sandboxNexusDisplayState:
+      status === "pending" ? "drafted" : status,
+    boundary:
+      status === "reviewed"
+        ? "reviewed does not mean CONTROL_THREAD accepted."
+        : "review status does not create execution or activation authority.",
+  })),
+  blockedAuthoritySource: [...JAI_PALETTE_BLOCKED_AUTHORITIES],
+  routePacketCompatibilityPosture:
+    JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.routePacketCompatibility,
+  sandboxNexusFixtureCompatibilityPosture:
+    JAI_PALETTE_INTAKE_AGENT_DRAFT_INPUT.sandboxNexusFixtureCompatibility,
+  authority: JAI_PALETTE_CONTROL_THREAD_AUTHORITY,
+  advisory: JAI_PALETTE_ADVISORY_STATEMENT,
+} as const;
 
 export const SANDBOX_NEXUS_NEXT_ROUTE = {
   lane: "B16",
