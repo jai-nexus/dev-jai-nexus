@@ -34,6 +34,10 @@ type OperatorDomainRegistryDisplayRow = {
   } | null;
 };
 
+type RawOperatorDomainRegistryRow = Omit<OperatorDomainRegistryDisplayRow, "id"> & {
+  id: number;
+};
+
 function CompactList({ items }: { items: readonly string[] }) {
   return (
     <ul className="mt-2 space-y-1 text-xs text-slate-400">
@@ -49,10 +53,24 @@ export default async function OperatorRegistryDomainsPage() {
   if (!session?.user) redirect("/login");
   if (session.user.email !== "admin@jai.nexus") redirect("/operator");
 
-  const domains = (await prisma.domain.findMany({
+  const domainRows: RawOperatorDomainRegistryRow[] = await prisma.domain.findMany({
     include: { repo: true },
     orderBy: [{ domain: "asc" }],
-  })) as OperatorDomainRegistryDisplayRow[];
+  });
+
+  const domains: OperatorDomainRegistryDisplayRow[] = domainRows.map((domain) => ({
+    id: String(domain.id),
+    nhId: domain.nhId,
+    domain: domain.domain,
+    engineType: domain.engineType,
+    env: domain.env,
+    status: domain.status,
+    repo: domain.repo
+      ? {
+          name: domain.repo.name,
+        }
+      : null,
+  }));
 
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-slate-100">

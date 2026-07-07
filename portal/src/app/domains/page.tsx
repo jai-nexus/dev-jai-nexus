@@ -38,6 +38,10 @@ type DomainRegistryDisplayRow = {
   } | null;
 };
 
+type RawDomainRegistryRow = Omit<DomainRegistryDisplayRow, "id"> & {
+  id: number;
+};
+
 function statusTone(statusRaw: string | null): OperatorSlateTone {
   const status = statusRaw?.trim().toLowerCase() ?? "";
 
@@ -68,10 +72,27 @@ export default async function DomainsPage() {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
 
-  const domains = (await prisma.domain.findMany({
+  const domainRows: RawDomainRegistryRow[] = await prisma.domain.findMany({
     orderBy: [{ domain: "asc" }],
     include: { repo: true },
-  })) as DomainRegistryDisplayRow[];
+  });
+
+  const domains: DomainRegistryDisplayRow[] = domainRows.map((domain) => ({
+    id: String(domain.id),
+    nhId: domain.nhId,
+    domain: domain.domain,
+    domainKey: domain.domainKey,
+    engineType: domain.engineType,
+    env: domain.env,
+    status: domain.status,
+    expiresAt: domain.expiresAt,
+    repo: domain.repo
+      ? {
+          nhId: domain.repo.nhId,
+          name: domain.repo.name,
+        }
+      : null,
+  }));
 
   const liveCount = domains.filter((domain) =>
     ["live", "active"].includes(domain.status?.trim().toLowerCase() ?? ""),
