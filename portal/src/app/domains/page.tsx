@@ -14,9 +14,33 @@ import {
   type OperatorSlateTone,
 } from "@/components/operator/slate";
 import { prisma } from "@/lib/prisma";
+import {
+  COMPANY_ASSET_DOMAIN_REGISTRY_BOUNDARY_COPY,
+  COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL,
+  summarizeCompanyAssetDomainRegistryDisplayModel,
+} from "@/lib/controlPlane/companyAssetDomainRegistry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+type DomainRegistryDisplayRow = {
+  id: string;
+  nhId: string;
+  domain: string;
+  domainKey: string | null;
+  engineType: string | null;
+  env: string | null;
+  status: string | null;
+  expiresAt: Date | null;
+  repo: {
+    nhId: string;
+    name: string;
+  } | null;
+};
+
+type RawDomainRegistryRow = Omit<DomainRegistryDisplayRow, "id"> & {
+  id: number;
+};
 
 function statusTone(statusRaw: string | null): OperatorSlateTone {
   const status = statusRaw?.trim().toLowerCase() ?? "";
@@ -34,14 +58,41 @@ function statusTone(statusRaw: string | null): OperatorSlateTone {
   return "neutral";
 }
 
+function CompactList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="mt-2 space-y-1 text-xs text-slate-400">
+      {items.map((item) => (
+        <li key={item}>- {item}</li>
+      ))}
+    </ul>
+  );
+}
+
 export default async function DomainsPage() {
   const session = await getServerAuthSession();
   const isAdmin = session?.user?.email === "admin@jai.nexus";
 
-  const domains = await prisma.domain.findMany({
+  const domainRows: RawDomainRegistryRow[] = await prisma.domain.findMany({
     orderBy: [{ domain: "asc" }],
     include: { repo: true },
   });
+
+  const domains: DomainRegistryDisplayRow[] = domainRows.map((domain) => ({
+    id: String(domain.id),
+    nhId: domain.nhId,
+    domain: domain.domain,
+    domainKey: domain.domainKey,
+    engineType: domain.engineType,
+    env: domain.env,
+    status: domain.status,
+    expiresAt: domain.expiresAt,
+    repo: domain.repo
+      ? {
+          nhId: domain.repo.nhId,
+          name: domain.repo.name,
+        }
+      : null,
+  }));
 
   const liveCount = domains.filter((domain) =>
     ["live", "active"].includes(domain.status?.trim().toLowerCase() ?? ""),
@@ -147,6 +198,75 @@ export default async function DomainsPage() {
                 </p>
               </OperatorPanel>
             </section>
+
+            <OperatorPanel className="space-y-4">
+              <OperatorSectionHeader
+                index="A6"
+                title="Corrected Registry Display Model"
+                right={
+                  <>
+                    <OperatorBadge tone="readOnly">LOCAL-STATIC</OperatorBadge>
+                    <OperatorBadge tone="blocked">NOT COMPANY CANON</OperatorBadge>
+                  </>
+                }
+              />
+              <p className="text-sm text-slate-400">
+                {summarizeCompanyAssetDomainRegistryDisplayModel()}. This model
+                separates domain assets, concepts, engine groups, many-to-many
+                repo bindings, environments, renewal risk, public-readiness
+                posture, and CONTROL_THREAD authority. It does not mutate the
+                existing DB-backed registry.
+              </p>
+              <div className="grid gap-3 xl:grid-cols-3">
+                <OperatorGateCard>
+                  <div className="flex flex-wrap gap-2">
+                    <OperatorBadge tone="readOnly">domain assets</OperatorBadge>
+                    <OperatorBadge tone="blocked">no DNS action</OperatorBadge>
+                  </div>
+                  <CompactList
+                    items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.ownedDomainAssets.map(
+                      (asset) =>
+                        `${asset.domain_name}: ${asset.renewal_risk_level} / ${asset.public_readiness_posture}`,
+                    )}
+                  />
+                </OperatorGateCard>
+                <OperatorGateCard>
+                  <div className="flex flex-wrap gap-2">
+                    <OperatorBadge tone="readOnly">engine concepts</OperatorBadge>
+                    <OperatorBadge tone="blocked">not repos</OperatorBadge>
+                  </div>
+                  <CompactList
+                    items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.domainEngineGroups.map(
+                      (group) =>
+                        `${group.engine_group_name}: ${group.engine_group_type}`,
+                    )}
+                  />
+                </OperatorGateCard>
+                <OperatorGateCard>
+                  <div className="flex flex-wrap gap-2">
+                    <OperatorBadge tone="readOnly">repo bindings</OperatorBadge>
+                    <OperatorBadge tone="blocked">many-to-many display</OperatorBadge>
+                  </div>
+                  <CompactList
+                    items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.repositoryBindings.map(
+                      (binding) =>
+                        `${binding.repo}: ${binding.linked_domain_asset_ids.length} assets / ${binding.linked_domain_concept_ids.length} concepts`,
+                    )}
+                  />
+                </OperatorGateCard>
+              </div>
+              <OperatorGateCard>
+                <div className="flex flex-wrap gap-2">
+                  <OperatorBadge tone="blocked">authority boundary</OperatorBadge>
+                  <OperatorBadge tone="readOnly">
+                    CONTROL_THREAD review required
+                  </OperatorBadge>
+                </div>
+                <CompactList
+                  items={COMPANY_ASSET_DOMAIN_REGISTRY_BOUNDARY_COPY.slice(0, 7)}
+                />
+              </OperatorGateCard>
+            </OperatorPanel>
 
             <OperatorPanel>
               <OperatorSectionHeader
