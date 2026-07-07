@@ -34,6 +34,21 @@ import {
   type SupervisedRoutePacketLifecycleStatus,
 } from "@/lib/controlPlane/routePackets/supervisedRoutePacket";
 import {
+  buildSandboxPacketDraftJson,
+  buildSandboxPacketDraftMarkdown,
+  createDefaultSandboxPacketDraft,
+  SANDBOX_PACKET_ALLOWED_INPUT_BOUNDARY_COPY,
+  SANDBOX_PACKET_ALLOWED_INPUT_CATEGORIES,
+  SANDBOX_PACKET_BLOCKED_AUTHORITIES,
+  SANDBOX_PACKET_CONTROL_SURFACE_POSTURE,
+  SANDBOX_PACKET_CONTROL_THREAD_HANDOFF_COPY,
+  SANDBOX_PACKET_EXPORT_LABELS,
+  SANDBOX_PACKET_FIXTURE_OPTIONS,
+  SANDBOX_PACKET_MOTION_OPTIONS,
+  SANDBOX_PACKET_RECEIPT_POSTURE,
+  SANDBOX_PACKET_ROLE_CLASS_OPTIONS,
+} from "@/lib/controlPlane/sandboxNexus/sandboxPacketControlSurface";
+import {
   SANDBOX_NEXUS_BLOCKED_GATES,
   SANDBOX_NEXUS_BOUNDARY_COPY,
   SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY,
@@ -924,6 +939,16 @@ function JaiPaletteSandboxAgentDraftComposerPanel() {
 }
 
 function SandboxNexusStaticSurfacePanel() {
+  const sandboxPacketDraft = useMemo(() => createDefaultSandboxPacketDraft(), []);
+  const sandboxPacketJson = useMemo(
+    () => buildSandboxPacketDraftJson(sandboxPacketDraft),
+    [sandboxPacketDraft],
+  );
+  const sandboxPacketMarkdown = useMemo(
+    () => buildSandboxPacketDraftMarkdown(sandboxPacketDraft),
+    [sandboxPacketDraft],
+  );
+
   return (
     <OperatorPanel className="space-y-5">
       <OperatorSectionHeader
@@ -1184,6 +1209,264 @@ function SandboxNexusStaticSurfacePanel() {
             </div>
           </OperatorGateCard>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <OperatorSectionHeader
+          index="B29"
+          title="Sandbox packet control surface"
+          right={<OperatorBadge tone="blocked">manual export only</OperatorBadge>}
+        />
+
+        <div className="grid gap-3 lg:grid-cols-3">
+          <div className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-xs text-amber-100">
+            {SANDBOX_PACKET_CONTROL_SURFACE_POSTURE.posture}
+          </div>
+          <div className="rounded border border-sky-900/70 bg-sky-950/20 p-3 text-xs text-sky-100">
+            {SANDBOX_PACKET_CONTROL_SURFACE_POSTURE.authority}
+          </div>
+          <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-100">
+            {SANDBOX_PACKET_CONTROL_SURFACE_POSTURE.sandboxNexusRelationship}
+          </div>
+        </div>
+
+        <div className="grid gap-3 xl:grid-cols-3">
+          <OperatorGateCard>
+            <OperatorSectionHeader
+              index="MOTION"
+              title="Sandbox motion selection"
+              right={<OperatorBadge tone="advisory">display only</OperatorBadge>}
+            />
+            <div className="mt-3 grid gap-2">
+              {SANDBOX_PACKET_MOTION_OPTIONS.map((motion) => (
+                <div
+                  key={motion.motionId}
+                  className="rounded border border-slate-800 bg-slate-950/40 p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OperatorIdChip>{motion.motionId}</OperatorIdChip>
+                    <OperatorBadge tone="advisory">
+                      {motion.motionCategory}
+                    </OperatorBadge>
+                  </div>
+                  <h3 className="mt-2 text-sm font-semibold text-slate-100">
+                    {motion.motionName}
+                  </h3>
+                  <p className="mt-2 text-xs text-slate-300">
+                    {motion.motionPurpose}
+                  </p>
+                  <div className="mt-2 text-xs text-slate-400">
+                    Fixture: {motion.requiredFixtureClass}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-400">
+                    Role/class: {motion.requiredSandboxRoleClass}
+                  </div>
+                  <div className="mt-2 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                    {motion.boundary}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </OperatorGateCard>
+
+          <OperatorGateCard>
+            <OperatorSectionHeader
+              index="FIXTURE"
+              title="Fixture selection"
+              right={<OperatorBadge tone="blocked">no intake</OperatorBadge>}
+            />
+            <div className="mt-3 grid gap-2">
+              {SANDBOX_PACKET_FIXTURE_OPTIONS.map((fixture) => (
+                <div
+                  key={fixture.fixtureId}
+                  className="rounded border border-slate-800 bg-slate-950/40 p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OperatorIdChip>{fixture.fixtureId}</OperatorIdChip>
+                    <OperatorBadge tone="advisory">
+                      {fixture.fixtureCategory}
+                    </OperatorBadge>
+                  </div>
+                  <h3 className="mt-2 text-sm font-semibold text-slate-100">
+                    {fixture.fixtureName}
+                  </h3>
+                  <p className="mt-2 text-xs text-slate-300">
+                    {fixture.sourcePacketPosture}
+                  </p>
+                  <MiniList items={fixture.expectedInputFields} />
+                  <div className="mt-2 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                    {fixture.noAutomaticIntakePosture}{" "}
+                    {fixture.noSandboxExecutionPosture}{" "}
+                    {fixture.noRouteExecutionPosture}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </OperatorGateCard>
+
+          <OperatorGateCard>
+            <OperatorSectionHeader
+              index="ROLE"
+              title="Sandbox role / class selection"
+              right={<OperatorBadge tone="blocked">no activation</OperatorBadge>}
+            />
+            <div className="mt-3 grid gap-2">
+              {SANDBOX_PACKET_ROLE_CLASS_OPTIONS.map((roleClass) => (
+                <div
+                  key={roleClass.roleClassId}
+                  className="rounded border border-slate-800 bg-slate-950/40 p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OperatorIdChip>{roleClass.roleClassId}</OperatorIdChip>
+                    <OperatorBadge tone="advisory">
+                      {roleClass.jaiRoleLabel}
+                    </OperatorBadge>
+                  </div>
+                  <h3 className="mt-2 text-sm font-semibold text-slate-100">
+                    {roleClass.roleClassName}
+                  </h3>
+                  <p className="mt-2 text-xs text-slate-300">
+                    {roleClass.candidateResponsibility}
+                  </p>
+                  <div className="mt-2 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                    {roleClass.candidateMetadataOnlyPosture}{" "}
+                    {roleClass.noJaiAgentActivationPosture}{" "}
+                    {roleClass.noAutonomousExecutionPosture}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </OperatorGateCard>
+        </div>
+
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="INPUTS"
+              title="Allowed inputs"
+              right={<OperatorBadge tone="readOnly">non-secret metadata</OperatorBadge>}
+            />
+            <div className="grid gap-2 md:grid-cols-2">
+              {SANDBOX_PACKET_ALLOWED_INPUT_CATEGORIES.map((input) => (
+                <div
+                  key={input}
+                  className="rounded border border-slate-800 bg-slate-950/40 p-3 text-xs text-slate-300"
+                >
+                  {input}
+                </div>
+              ))}
+            </div>
+            <MiniList items={SANDBOX_PACKET_ALLOWED_INPUT_BOUNDARY_COPY} />
+          </OperatorPanel>
+
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="BLOCKED"
+              title="Packet blocked authorities"
+              right={<OperatorBadge tone="blocked">all blocked</OperatorBadge>}
+            />
+            <div className="grid gap-2">
+              {SANDBOX_PACKET_BLOCKED_AUTHORITIES.map((authority) => (
+                <div
+                  key={authority}
+                  className="rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200"
+                >
+                  {authority}
+                </div>
+              ))}
+            </div>
+          </OperatorPanel>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-2">
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="JSON"
+              title="Sandbox packet draft JSON preview"
+              right={<OperatorBadge tone="blocked">no automatic send</OperatorBadge>}
+            />
+            <textarea
+              readOnly
+              value={sandboxPacketJson}
+              className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+              aria-label="Sandbox packet draft JSON preview"
+            />
+          </OperatorPanel>
+
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="MD"
+              title="Sandbox packet draft Markdown preview"
+              right={<OperatorBadge tone="readOnly">manual export</OperatorBadge>}
+            />
+            <textarea
+              readOnly
+              value={sandboxPacketMarkdown}
+              className="min-h-[24rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+              aria-label="Sandbox packet draft Markdown preview"
+            />
+          </OperatorPanel>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="RECEIPT"
+              title="Advisory receipt posture"
+              right={<OperatorBadge tone="advisory">placeholder only</OperatorBadge>}
+            />
+            <OperatorGateCard>
+              <OperatorIdChip>
+                {SANDBOX_PACKET_RECEIPT_POSTURE.receiptIdPlaceholder}
+              </OperatorIdChip>
+              <p className="mt-3 text-sm text-slate-300">
+                {SANDBOX_PACKET_RECEIPT_POSTURE.posture}
+              </p>
+              <div className="mt-3 grid gap-2 text-xs text-slate-400">
+                <div>
+                  <span className="font-semibold text-slate-300">Packet:</span>{" "}
+                  {SANDBOX_PACKET_RECEIPT_POSTURE.packetIdRelationship}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">Source:</span>{" "}
+                  {SANDBOX_PACKET_RECEIPT_POSTURE.receiptSourcePosture}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">Status:</span>{" "}
+                  {SANDBOX_PACKET_RECEIPT_POSTURE.receivedStatus}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">
+                    Recommendation:
+                  </span>{" "}
+                  {SANDBOX_PACKET_RECEIPT_POSTURE.recommendation}
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-300">
+                    CONTROL_THREAD:
+                  </span>{" "}
+                  {
+                    SANDBOX_PACKET_RECEIPT_POSTURE
+                      .controlThreadReviewStatusPlaceholder
+                  }
+                </div>
+              </div>
+              <MiniList items={SANDBOX_PACKET_RECEIPT_POSTURE.blockers} />
+            </OperatorGateCard>
+          </OperatorPanel>
+
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="HANDOFF"
+              title="CONTROL_THREAD handoff"
+              right={<OperatorBadge tone="blocked">manual only</OperatorBadge>}
+            />
+            <MiniList items={SANDBOX_PACKET_CONTROL_THREAD_HANDOFF_COPY} />
+            <div className="rounded border border-red-900/70 bg-red-950/20 p-3">
+              <MiniList items={SANDBOX_PACKET_EXPORT_LABELS} />
+            </div>
+          </OperatorPanel>
+        </section>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
