@@ -19,6 +19,14 @@ import {
 } from "@/components/operator/slate";
 import { getSeededWavePlans } from "@/lib/continuity/waves";
 import type { WaveNode, WavePlan } from "@/lib/continuity/types";
+import {
+  formatTaxonomyValue,
+  WAVES_TAXONOMY_ALIGNMENT,
+  WORK_WAVES_AUTHORITY_BOUNDARY_COPY,
+  WORK_WAVES_CONTROL_THREAD_DECISION_VOCABULARY,
+  WORK_WAVES_EVIDENCE_STATUS_VOCABULARY,
+  type WorkWavesTaxonomyRecord,
+} from "@/lib/controlPlane/workWavesProgramTaxonomy";
 
 function Section({
   index,
@@ -64,6 +72,86 @@ function SummaryCard({
       <div className="mt-2 text-2xl font-semibold text-slate-100">{value}</div>
       <p className="mt-2 text-sm text-slate-400">{detail}</p>
     </OperatorPanel>
+  );
+}
+
+function TaxonomyAlignmentPanel({
+  record,
+}: {
+  record: WorkWavesTaxonomyRecord;
+}) {
+  return (
+    <Section
+      index="TAX"
+      title="Program taxonomy alignment"
+      description="Local-static display metadata for program, batch, wave, lane grouping, evidence readiness, closeout readiness, and CONTROL_THREAD posture."
+    >
+      <OperatorPanel className="space-y-4 p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <OperatorBadge tone="readOnly">LOCAL-STATIC TAXONOMY</OperatorBadge>
+          <OperatorBadge tone="advisory">ADVISORY DISPLAY ONLY</OperatorBadge>
+          <OperatorBadge tone="blocked">NOT SCHEDULING</OperatorBadge>
+          <OperatorBadge tone="blocked">NOT PRODUCTION READINESS</OperatorBadge>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-3">
+          {record.display_groups.map((group) => (
+            <OperatorGateCard key={group.label}>
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                {group.label}
+              </div>
+              <dl className="mt-3 space-y-2 text-sm">
+                {group.fields.map((field) => (
+                  <div key={field} className="space-y-1">
+                    <dt className="font-mono text-xs uppercase text-slate-500">
+                      {field}
+                    </dt>
+                    <dd className="text-slate-200">
+                      {formatTaxonomyValue(record.fields[field])}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </OperatorGateCard>
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <OperatorGateCard>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              Evidence / closeout vocabulary
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {WORK_WAVES_EVIDENCE_STATUS_VOCABULARY.map((item) => (
+                <OperatorBadge key={item} tone="readOnly">
+                  {item}
+                </OperatorBadge>
+              ))}
+            </div>
+          </OperatorGateCard>
+          <OperatorGateCard>
+            <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+              CONTROL_THREAD posture vocabulary
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {WORK_WAVES_CONTROL_THREAD_DECISION_VOCABULARY.map((item) => (
+                <OperatorBadge key={item} tone="advisory">
+                  {item}
+                </OperatorBadge>
+              ))}
+            </div>
+          </OperatorGateCard>
+          <OperatorGateCard>
+            <div className="font-mono text-xs uppercase tracking-widest text-red-300">
+              Authority boundaries
+            </div>
+            <ul className="mt-3 space-y-2 text-xs text-red-200">
+              {WORK_WAVES_AUTHORITY_BOUNDARY_COPY.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
+          </OperatorGateCard>
+        </div>
+      </OperatorPanel>
+    </Section>
   );
 }
 
@@ -305,6 +393,8 @@ export default function WavesPage() {
             detail="Waves remain a planning spine only and do not authorize action."
           />
         </section>
+
+        <TaxonomyAlignmentPanel record={WAVES_TAXONOMY_ALIGNMENT} />
 
         <Section
           index="01"
