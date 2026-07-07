@@ -39,6 +39,14 @@ import {
   getOperatorLoopCandidate,
   type LoopCandidateSelectionStatus,
 } from "@/lib/controlPlane/operatorLoopCandidate";
+import {
+  formatTaxonomyValue,
+  WORK_TAXONOMY_ALIGNMENT,
+  WORK_WAVES_AUTHORITY_BOUNDARY_COPY,
+  WORK_WAVES_CONTROL_THREAD_DECISION_VOCABULARY,
+  WORK_WAVES_EVIDENCE_STATUS_VOCABULARY,
+  type WorkWavesTaxonomyRecord,
+} from "@/lib/controlPlane/workWavesProgramTaxonomy";
 
 function Section({
   index,
@@ -178,6 +186,67 @@ function TextList({
     <OperatorContradictionCard>{content}</OperatorContradictionCard>
   ) : (
     <OperatorGateCard>{content}</OperatorGateCard>
+  );
+}
+
+function TaxonomyAlignmentPanel({
+  index,
+  record,
+}: {
+  index: string;
+  record: WorkWavesTaxonomyRecord;
+}) {
+  return (
+    <Section
+      index={index}
+      title="Program taxonomy alignment"
+      description="Local-static display metadata for Q3M7Y26 program-close planning. This panel does not change work-packet state, route work, execute work, or accept closeouts."
+    >
+      <OperatorPanel className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <OperatorBadge tone="readOnly" label="LOCAL-STATIC TAXONOMY" />
+          <OperatorBadge tone="advisory" label="ADVISORY DISPLAY ONLY" />
+          <OperatorBadge tone="blocked" label="NOT ACCEPTANCE" />
+          <OperatorBadge tone="blocked" label="NOT EXECUTION" />
+        </div>
+        <div className="grid gap-4 xl:grid-cols-2">
+          {record.display_groups.map((group) => (
+            <OperatorGateCard key={group.label}>
+              <div className="font-mono text-xs uppercase tracking-widest text-slate-500">
+                {group.label}
+              </div>
+              <dl className="mt-3 space-y-2 text-sm">
+                {group.fields.map((field) => (
+                  <div key={field} className="grid gap-1 md:grid-cols-[14rem_1fr]">
+                    <dt className="font-mono text-xs uppercase text-slate-500">
+                      {field}
+                    </dt>
+                    <dd className="text-slate-200">
+                      {formatTaxonomyValue(record.fields[field])}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </OperatorGateCard>
+          ))}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-3">
+          <TextList
+            title="Evidence / closeout vocabulary"
+            items={[...WORK_WAVES_EVIDENCE_STATUS_VOCABULARY]}
+          />
+          <TextList
+            title="CONTROL_THREAD decision vocabulary"
+            items={[...WORK_WAVES_CONTROL_THREAD_DECISION_VOCABULARY]}
+          />
+          <TextList
+            title="Authority boundaries"
+            items={[...WORK_WAVES_AUTHORITY_BOUNDARY_COPY]}
+            tone="blocked"
+          />
+        </div>
+      </OperatorPanel>
+    </Section>
   );
 }
 
@@ -686,6 +755,8 @@ export default function WorkPage() {
         <DevelopmentWorkReadiness index="DEV" />
 
         <JaiReceiptGateAlignment index="ALIGN" compact />
+
+        <TaxonomyAlignmentPanel index="TAX" record={WORK_TAXONOMY_ALIGNMENT} />
 
         <OperatorDomainEngineWorkspace />
 
