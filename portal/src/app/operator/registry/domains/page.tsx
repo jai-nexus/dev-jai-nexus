@@ -16,16 +16,43 @@ import {
 } from "@/components/operator/slate";
 import { getServerAuthSession } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  COMPANY_ASSET_DOMAIN_REGISTRY_BOUNDARY_COPY,
+  COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL,
+  summarizeCompanyAssetDomainRegistryDisplayModel,
+} from "@/lib/controlPlane/companyAssetDomainRegistry";
+
+type OperatorDomainRegistryDisplayRow = {
+  id: string;
+  nhId: string;
+  domain: string;
+  engineType: string | null;
+  env: string | null;
+  status: string | null;
+  repo: {
+    name: string;
+  } | null;
+};
+
+function CompactList({ items }: { items: readonly string[] }) {
+  return (
+    <ul className="mt-2 space-y-1 text-xs text-slate-400">
+      {items.map((item) => (
+        <li key={item}>- {item}</li>
+      ))}
+    </ul>
+  );
+}
 
 export default async function OperatorRegistryDomainsPage() {
   const session = await getServerAuthSession();
   if (!session?.user) redirect("/login");
   if (session.user.email !== "admin@jai.nexus") redirect("/operator");
 
-  const domains = await prisma.domain.findMany({
+  const domains = (await prisma.domain.findMany({
     include: { repo: true },
     orderBy: [{ domain: "asc" }],
-  });
+  })) as OperatorDomainRegistryDisplayRow[];
 
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-slate-100">
@@ -87,6 +114,85 @@ export default async function OperatorRegistryDomainsPage() {
           </div>
         </OperatorSafetyRail>
       </header>
+
+      <OperatorPanel className="mb-6 space-y-4 p-5">
+        <OperatorSectionHeader
+          index="A6"
+          title="Corrected Asset / Domain / Repo Display Model"
+          right={
+            <>
+              <OperatorBadge tone="readOnly" label="LOCAL-STATIC MODEL" />
+              <OperatorBadge tone="blocked" label="NO REGISTRY MUTATION" />
+              <OperatorBadge tone="blocked" label="NOT FINAL CANON" />
+            </>
+          }
+        />
+        <p className="text-sm text-slate-400">
+          {summarizeCompanyAssetDomainRegistryDisplayModel()}. This display
+          separates candidate owned domain assets, domain concepts,
+          domain-engine groups, many-to-many repo bindings, environments,
+          renewal risk, public-readiness posture, and CONTROL_THREAD authority.
+          It does not broaden existing DB-backed admin behavior.
+        </p>
+        <div className="grid gap-3 xl:grid-cols-4">
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label="ASSETS" />
+              <OperatorBadge tone="blocked" label="NO DNS" />
+            </div>
+            <CompactList
+              items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.ownedDomainAssets.map(
+                (asset) =>
+                  `${asset.domain_name}: ${asset.ownership_status} / ${asset.renewal_risk_level}`,
+              )}
+            />
+          </OperatorGateCard>
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label="CONCEPTS" />
+              <OperatorBadge tone="blocked" label="NOT DEPLOYED APPS" />
+            </div>
+            <CompactList
+              items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.domainConcepts.map(
+                (concept) =>
+                  `${concept.concept_name}: ${concept.public_or_internal_posture}`,
+              )}
+            />
+          </OperatorGateCard>
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label="ENGINE GROUPS" />
+              <OperatorBadge tone="blocked" label="NOT REPOS" />
+            </div>
+            <CompactList
+              items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.domainEngineGroups.map(
+                (group) => `${group.engine_group_name}: ${group.responsibility}`,
+              )}
+            />
+          </OperatorGateCard>
+          <OperatorGateCard>
+            <div className="flex flex-wrap gap-2">
+              <OperatorBadge tone="readOnly" label="BINDINGS" />
+              <OperatorBadge tone="blocked" label="NO REPO MUTATION" />
+            </div>
+            <CompactList
+              items={COMPANY_ASSET_DOMAIN_REGISTRY_DISPLAY_MODEL.repositoryBindings.map(
+                (binding) =>
+                  `${binding.binding_id}: ${binding.linked_domain_asset_ids.length} assets / ${binding.linked_engine_group_ids.length} groups`,
+              )}
+            />
+          </OperatorGateCard>
+        </div>
+        <OperatorGateCard>
+          <div className="flex flex-wrap gap-2">
+            <OperatorBadge tone="blocked" label="AUTHORITY BOUNDARY" />
+            <OperatorBadge tone="readOnly" label="DISPLAY ONLY" />
+          </div>
+          <CompactList
+            items={COMPANY_ASSET_DOMAIN_REGISTRY_BOUNDARY_COPY.slice(0, 8)}
+          />
+        </OperatorGateCard>
+      </OperatorPanel>
 
       <OperatorPanel className="overflow-hidden p-0">
         <OperatorSectionHeader
