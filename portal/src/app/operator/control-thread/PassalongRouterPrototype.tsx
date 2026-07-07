@@ -49,6 +49,10 @@ import {
   SANDBOX_PACKET_ROLE_CLASS_OPTIONS,
 } from "@/lib/controlPlane/sandboxNexus/sandboxPacketControlSurface";
 import {
+  buildSandboxReceiptReturnDisplayMarkdown,
+  SANDBOX_RECEIPT_RETURN_DISPLAY,
+} from "@/lib/controlPlane/sandboxNexus/sandboxReceiptReturnDisplay";
+import {
   SANDBOX_NEXUS_BLOCKED_GATES,
   SANDBOX_NEXUS_BOUNDARY_COPY,
   SANDBOX_NEXUS_CLOSEOUT_REVIEW_DISPLAY,
@@ -948,6 +952,10 @@ function SandboxNexusStaticSurfacePanel() {
     () => buildSandboxPacketDraftMarkdown(sandboxPacketDraft),
     [sandboxPacketDraft],
   );
+  const sandboxReceiptReturnMarkdown = useMemo(
+    () => buildSandboxReceiptReturnDisplayMarkdown(),
+    [],
+  );
 
   return (
     <OperatorPanel className="space-y-5">
@@ -1465,6 +1473,130 @@ function SandboxNexusStaticSurfacePanel() {
             <div className="rounded border border-red-900/70 bg-red-950/20 p-3">
               <MiniList items={SANDBOX_PACKET_EXPORT_LABELS} />
             </div>
+          </OperatorPanel>
+        </section>
+
+        <section className="space-y-3">
+          <OperatorSectionHeader
+            index="B36"
+            title="Sandbox receipt return display"
+            right={<OperatorBadge tone="blocked">display only</OperatorBadge>}
+          />
+
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+            <OperatorPanel className="space-y-3">
+              <OperatorSectionHeader
+                index="RETURN"
+                title="Manual sandbox packet intake result"
+                right={<OperatorBadge tone="advisory">B34 / B35</OperatorBadge>}
+              />
+              <OperatorGateCard>
+                <div className="flex flex-wrap items-center gap-2">
+                  <OperatorBadge tone="readOnly">
+                    Source lane {SANDBOX_RECEIPT_RETURN_DISPLAY.sourceLane}
+                  </OperatorBadge>
+                  <OperatorBadge tone="readOnly">
+                    Review lane {SANDBOX_RECEIPT_RETURN_DISPLAY.reviewLane}
+                  </OperatorBadge>
+                </div>
+                <OperatorIdChip>
+                  {SANDBOX_RECEIPT_RETURN_DISPLAY.selectedPacket.packetId}
+                </OperatorIdChip>
+                <p className="mt-3 font-mono text-xs text-slate-300">
+                  {SANDBOX_RECEIPT_RETURN_DISPLAY.selectedPacket.packetPath}
+                </p>
+                <p className="mt-3 text-sm text-slate-300">
+                  {SANDBOX_RECEIPT_RETURN_DISPLAY.intakePosture.intakeFinding}
+                </p>
+                <div className="mt-3 grid gap-2 text-xs text-slate-400">
+                  <div>
+                    <span className="font-semibold text-slate-300">
+                      Intake mode:
+                    </span>{" "}
+                    {SANDBOX_RECEIPT_RETURN_DISPLAY.intakePosture.intakeMode.join(
+                      " / ",
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-300">
+                      Intake status:
+                    </span>{" "}
+                    {SANDBOX_RECEIPT_RETURN_DISPLAY.intakePosture.intakeStatus}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-300">
+                      Accepted:
+                    </span>{" "}
+                    {SANDBOX_RECEIPT_RETURN_DISPLAY.fieldSummary.acceptedFields.join(
+                      ", ",
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-300">
+                      Rejected:
+                    </span>{" "}
+                    {SANDBOX_RECEIPT_RETURN_DISPLAY.fieldSummary.rejectedFields.join(
+                      ", ",
+                    )}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-300">Blocked:</span>{" "}
+                    {SANDBOX_RECEIPT_RETURN_DISPLAY.fieldSummary.blockedFields.join(
+                      ", ",
+                    )}
+                  </div>
+                </div>
+              </OperatorGateCard>
+
+              <OperatorGateCard>
+                <OperatorSectionHeader
+                  index="GUARD"
+                  title="Guardrail findings"
+                  right={<OperatorBadge tone="blocked">no ingestion</OperatorBadge>}
+                />
+                <MiniList items={SANDBOX_RECEIPT_RETURN_DISPLAY.guardrailFindings} />
+                <div className="mt-3 rounded border border-amber-900/70 bg-amber-950/20 p-3">
+                  <MiniList items={SANDBOX_RECEIPT_RETURN_DISPLAY.caveats} />
+                </div>
+              </OperatorGateCard>
+            </OperatorPanel>
+
+            <OperatorPanel className="space-y-3">
+              <OperatorSectionHeader
+                index="POSTURE"
+                title="Receipt return posture"
+                right={<OperatorBadge tone="blocked">no authority transfer</OperatorBadge>}
+              />
+              <OperatorGateCard>
+                <MiniList
+                  items={Object.values(
+                    SANDBOX_RECEIPT_RETURN_DISPLAY.receiptPosture,
+                  )}
+                />
+                <div className="mt-3 rounded border border-sky-900/70 bg-sky-950/20 p-3">
+                  <MiniList
+                    items={SANDBOX_RECEIPT_RETURN_DISPLAY.controlThreadCopy}
+                  />
+                </div>
+                <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-3">
+                  <MiniList items={SANDBOX_RECEIPT_RETURN_DISPLAY.boundaryCopy} />
+                </div>
+              </OperatorGateCard>
+            </OperatorPanel>
+          </div>
+
+          <OperatorPanel className="space-y-3">
+            <OperatorSectionHeader
+              index="MD"
+              title="Receipt return Markdown display"
+              right={<OperatorBadge tone="readOnly">static preview</OperatorBadge>}
+            />
+            <textarea
+              readOnly
+              value={sandboxReceiptReturnMarkdown}
+              className="min-h-[18rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+              aria-label="Sandbox receipt return Markdown display"
+            />
           </OperatorPanel>
         </section>
       </section>
