@@ -24,6 +24,11 @@ import {
   type JaiSandboxAgentClass,
 } from "@/lib/controlPlane/jaiPalette/sandboxAgentDraft";
 import {
+  buildJaiControlThreadMotionProposalJson,
+  buildJaiControlThreadMotionProposalMarkdown,
+  JAI_CONTROL_THREAD_MOTION_PROPOSAL_SURFACE,
+} from "@/lib/controlPlane/jaiControlThreadMotionProposal";
+import {
   buildSupervisedRoutePacket,
   buildSupervisedRoutePacketJson,
   buildSupervisedRoutePacketMarkdown,
@@ -618,6 +623,272 @@ function RoutePacketComposerPanel({
 
           <div className="rounded border border-slate-800 bg-slate-950/60 p-3 text-xs text-slate-300">
             {copyMessage} The textareas remain selectable fallback exports.
+          </div>
+        </div>
+      </div>
+    </OperatorPanel>
+  );
+}
+
+function JaiControlThreadMotionProposalSurfacePanel() {
+  const surface = JAI_CONTROL_THREAD_MOTION_PROPOSAL_SURFACE;
+  const draft = surface.motion_proposal_draft;
+  const intake = surface.operator_intake;
+  const handoff = surface.council_advisory_handoff_preview;
+  const seed = surface.motion_to_program_planning_seed_preview;
+  const jsonPreview = useMemo(
+    () => buildJaiControlThreadMotionProposalJson(surface),
+    [surface],
+  );
+  const markdownPreview = useMemo(
+    () => buildJaiControlThreadMotionProposalMarkdown(surface),
+    [surface],
+  );
+
+  return (
+    <OperatorPanel className="space-y-5">
+      <OperatorSectionHeader
+        index="A7"
+        title="JAI_control_thread motion proposal surface"
+        right={<OperatorBadge tone="blocked">draft metadata only</OperatorBadge>}
+      />
+
+      <div className="grid gap-3 lg:grid-cols-3">
+        <div className="rounded border border-amber-900/70 bg-amber-950/20 p-3 text-xs text-amber-100">
+          {surface.posture.mode}. Motion proposal display is local-static and
+          non-authoritative.
+        </div>
+        <div className="rounded border border-sky-900/70 bg-sky-950/20 p-3 text-xs text-sky-100">
+          {surface.posture.exportPosture}. The JSON and Markdown previews are
+          selectable text for manual operator handling only.
+        </div>
+        <div className="rounded border border-red-900/70 bg-red-950/20 p-3 text-xs text-red-100">
+          No JAI_control_thread runtime activation, JAI Council activation,
+          JAI Agent activation, provider/model/API dispatch, GitHub mutation,
+          target-repo mutation/import, accepted-code import, deployment,
+          production gates, source-of-truth transfer, hidden automation, timers,
+          polling, background jobs, automatic route execution, or automatic
+          delivery occurs.
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="space-y-4">
+          <OperatorGateCard>
+            <div className="flex flex-wrap items-center gap-2">
+              <OperatorIdChip>{draft.motion_id}</OperatorIdChip>
+              <OperatorBadge tone="advisory">{draft.status}</OperatorBadge>
+              <OperatorBadge tone="blocked">not acceptance</OperatorBadge>
+            </div>
+            <h3 className="mt-3 text-xl font-semibold text-slate-100">
+              {draft.motion_title}
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">
+              {draft.operator_request_summary}
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  initiating thread
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {draft.initiating_thread}
+                </p>
+              </div>
+              <div>
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  requested CONTROL_THREAD decision
+                </div>
+                <p className="mt-1 text-sm text-slate-300">
+                  {draft.requested_control_thread_decision}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-amber-900/70 bg-amber-950/20 p-2 text-xs text-amber-100">
+              {draft.authority_boundary_summary}
+            </div>
+          </OperatorGateCard>
+
+          <div className="grid gap-3 lg:grid-cols-2">
+            <OperatorGateCard>
+              <OperatorSectionHeader
+                index="INTAKE"
+                title="Operator prompt / intake posture"
+                right={<OperatorBadge tone="readOnly">static prompt context</OperatorBadge>}
+              />
+              <p className="mt-3 text-sm text-slate-300">
+                {intake.operator_prompt_text_placeholder}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                {intake.operator_intent_summary}
+              </p>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    constraints
+                  </div>
+                  <MiniList items={intake.operator_provided_constraints} />
+                </div>
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    missing evidence
+                  </div>
+                  <MiniList items={intake.missing_evidence} />
+                </div>
+              </div>
+              <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                {intake.boundary_copy.join(" ")}
+              </div>
+            </OperatorGateCard>
+
+            <OperatorGateCard>
+              <OperatorSectionHeader
+                index="ASSET"
+                title="Affected asset / domain references"
+                right={<OperatorBadge tone="blocked">candidate references</OperatorBadge>}
+              />
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    domain assets
+                  </div>
+                  <MiniList items={draft.affected_domain_assets} />
+                </div>
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    repos
+                  </div>
+                  <MiniList items={draft.affected_repos} />
+                </div>
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    domain concepts
+                  </div>
+                  <MiniList items={draft.affected_domain_concepts} />
+                </div>
+                <div>
+                  <div className="font-mono text-xs uppercase text-slate-500">
+                    engine groups
+                  </div>
+                  <MiniList items={draft.affected_engine_groups} />
+                </div>
+              </div>
+              <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                {surface.asset_domain_registry_relationship.join(" ")}
+              </div>
+            </OperatorGateCard>
+          </div>
+
+          <div className="grid gap-3 xl:grid-cols-3">
+            <OperatorGateCard>
+              <OperatorSectionHeader
+                index="COUNCIL"
+                title="Council / advisory handoff preview"
+                right={<OperatorBadge tone="blocked">candidate only</OperatorBadge>}
+              />
+              <p className="mt-3 text-sm text-slate-300">
+                {handoff.proposal_summary}
+              </p>
+              <div className="mt-3">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  proposed Council reviewers
+                </div>
+                <MiniList items={handoff.proposed_council_reviewers} />
+              </div>
+              <div className="mt-3">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  advisory roles
+                </div>
+                <MiniList items={handoff.proposed_advisory_agent_roles} />
+              </div>
+              <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                {handoff.boundary_copy.join(" ")}
+              </div>
+            </OperatorGateCard>
+
+            <OperatorGateCard>
+              <OperatorSectionHeader
+                index="VOTE"
+                title="Advisory review candidate posture"
+                right={<OperatorBadge tone="blocked">not binding</OperatorBadge>}
+              />
+              <MiniList items={surface.advisory_review_candidate_postures} />
+              <div className="mt-3 rounded border border-amber-900/70 bg-amber-950/20 p-2 text-xs text-amber-100">
+                Advisory vote is not acceptance, route authority, execution
+                authority, or source-of-truth transfer. Council/advisory review
+                does not bypass CONTROL_THREAD.
+              </div>
+            </OperatorGateCard>
+
+            <OperatorGateCard>
+              <OperatorSectionHeader
+                index="SEED"
+                title="Motion-to-program planning seed"
+                right={<OperatorBadge tone="blocked">not routed work</OperatorBadge>}
+              />
+              <div className="mt-3 flex flex-wrap gap-2">
+                <OperatorIdChip>{seed.proposed_program_id}</OperatorIdChip>
+                <OperatorBadge tone="readOnly">{seed.batch_candidate}</OperatorBadge>
+                <OperatorBadge tone="readOnly">{seed.wave_candidate}</OperatorBadge>
+              </div>
+              <div className="mt-3">
+                <div className="font-mono text-xs uppercase text-slate-500">
+                  lane candidates
+                </div>
+                <MiniList
+                  items={seed.lane_candidates.map(
+                    (lane) => `${lane.lane_id}: ${lane.scope}`,
+                  )}
+                />
+              </div>
+              <div className="mt-3 rounded border border-red-900/70 bg-red-950/20 p-2 text-xs text-red-200">
+                {seed.boundary_copy.join(" ")}
+              </div>
+            </OperatorGateCard>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <OperatorGateCard>
+            <OperatorSectionHeader
+              index="MAP"
+              title="Work / Waves taxonomy mapping"
+              right={<OperatorBadge tone="readOnly">display-only</OperatorBadge>}
+            />
+            <MiniList items={surface.work_waves_taxonomy_mapping} />
+          </OperatorGateCard>
+
+          <OperatorGateCard>
+            <OperatorSectionHeader
+              index="BOUNDARY"
+              title="Authority-boundary copy"
+              right={<OperatorBadge tone="blocked">zero gates granted</OperatorBadge>}
+            />
+            <MiniList items={surface.authority_boundary_copy} />
+          </OperatorGateCard>
+
+          <div className="space-y-2">
+            <div className="font-mono text-xs uppercase text-slate-500">
+              JSON preview
+            </div>
+            <textarea
+              readOnly
+              value={jsonPreview}
+              className="min-h-[18rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+              aria-label="JAI control thread motion proposal JSON preview"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="font-mono text-xs uppercase text-slate-500">
+              Markdown preview
+            </div>
+            <textarea
+              readOnly
+              value={markdownPreview}
+              className="min-h-[18rem] w-full resize-y rounded border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-5 text-slate-200 outline-none"
+              aria-label="JAI control thread motion proposal Markdown preview"
+            />
           </div>
         </div>
       </div>
@@ -2220,6 +2491,7 @@ export function PassalongRouterPrototype({
         </section>
 
         <RoutePacketComposerPanel selectedPassalong={selectedPassalong} />
+        <JaiControlThreadMotionProposalSurfacePanel />
         <JaiPaletteSandboxAgentDraftComposerPanel />
         <SandboxNexusStaticSurfacePanel />
 
