@@ -44,8 +44,27 @@ import {
   decidePassalongDetailPatch,
 } from "./routeDecisions/passalongRouteDecisions";
 import {
-  ROUTE_DECISION_NON_AUTHORIZATIONS,
+  MANUAL_INFERENCE_HISTORY_NON_AUTHORIZATIONS,
+  MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS,
+  MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
+  PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
 } from "./routeDecisions/routeDecisionNonAuthorizations";
+
+function assertExactKeys(value: unknown, expectedKeys: string[]) {
+  assert.ok(value && typeof value === "object");
+  assert.deepEqual(Object.keys(value).sort(), [...expectedKeys].sort());
+}
+
+function assertExactNonAuthorizations(
+  value: unknown,
+  expected: readonly string[],
+) {
+  assert.ok(value && typeof value === "object");
+  assert.deepEqual(
+    (value as { nonAuthorizations?: unknown }).nonAuthorizations,
+    expected,
+  );
+}
 
 async function assertDecisionSnapshot(
   decision: { status: number; body: unknown },
@@ -69,6 +88,10 @@ async function testPassalongDecisions() {
     (listSnapshot.body as { ok?: boolean }).ok,
     false,
   );
+  assertExactNonAuthorizations(
+    listSnapshot.body,
+    PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
+  );
 
   const invalidCreateDecision = decidePassalongCollectionCreate({
     candidate: {
@@ -76,7 +99,6 @@ async function testPassalongDecisions() {
       value: null,
       errors: ["Synthetic passalong input is invalid."],
     },
-    nonAuthorizations: ROUTE_DECISION_NON_AUTHORIZATIONS,
   });
   const invalidCreateSnapshot = await assertDecisionSnapshot(
     invalidCreateDecision,
@@ -86,6 +108,21 @@ async function testPassalongDecisions() {
     (invalidCreateSnapshot.body as { error?: string }).error,
     "Passalong field boundary validation blocked persistence; no record was saved.",
   );
+  assertExactKeys(invalidCreateSnapshot.body, [
+    "ok",
+    "error",
+    "errors",
+    "nonAuthorizations",
+  ]);
+  assert.equal("record" in invalidCreateDecision.body, false);
+  assert.equal("persistence" in invalidCreateDecision.body, false);
+  assert.deepEqual(invalidCreateDecision.body, {
+    ok: false,
+    error:
+      "Passalong field boundary validation blocked persistence; no record was saved.",
+    errors: ["Synthetic passalong input is invalid."],
+    nonAuthorizations: [...PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS],
+  });
 
   const writeDecision = decidePassalongCollectionCreate({
     candidate: {
@@ -95,17 +132,27 @@ async function testPassalongDecisions() {
     },
     persistenceResult: createPassalongPersistenceUnavailableWrite(),
   });
-  await assertDecisionSnapshot(writeDecision, 400);
-
-  const methodDecision = decidePassalongDetailMethodNotAllowed(
-    ROUTE_DECISION_NON_AUTHORIZATIONS,
+  const writeSnapshot = await assertDecisionSnapshot(writeDecision, 400);
+  assertExactNonAuthorizations(
+    writeSnapshot.body,
+    PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
   );
-  await assertDecisionSnapshot(methodDecision, 405);
+
+  const methodDecision = decidePassalongDetailMethodNotAllowed();
+  const methodSnapshot = await assertDecisionSnapshot(methodDecision, 405);
+  assertExactNonAuthorizations(
+    methodSnapshot.body,
+    PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
+  );
 
   const patchDecision = decidePassalongDetailPatch(
     createPassalongPersistenceUnavailableWrite(),
   );
-  await assertDecisionSnapshot(patchDecision, 400);
+  const patchSnapshot = await assertDecisionSnapshot(patchDecision, 400);
+  assertExactNonAuthorizations(
+    patchSnapshot.body,
+    PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
+  );
 }
 
 async function testMotionIntakeDecisions() {
@@ -117,19 +164,21 @@ async function testMotionIntakeDecisions() {
         advisoryOnly: true,
       },
     ],
-    nonAuthorizations: ROUTE_DECISION_NON_AUTHORIZATIONS,
   });
   const listSnapshot = await assertDecisionSnapshot(listDecision, 200);
   assert.equal(
     (listSnapshot.body as { ok?: boolean }).ok,
     true,
   );
+  assertExactNonAuthorizations(
+    listSnapshot.body,
+    MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
+  );
 
   const missingDraftDecision = decideMotionIntakeCreate({
     draftPresent: Boolean(
       (missingMotionDraftPayload as { draft?: unknown }).draft,
     ),
-    nonAuthorizations: ROUTE_DECISION_NON_AUTHORIZATIONS,
   });
   const missingDraftSnapshot = await assertDecisionSnapshot(
     missingDraftDecision,
@@ -138,6 +187,10 @@ async function testMotionIntakeDecisions() {
   assert.equal(
     (missingDraftSnapshot.body as { error?: string }).error,
     "Missing motion intake draft. No motion was persisted, routed, approved, or executed.",
+  );
+  assertExactNonAuthorizations(
+    missingDraftSnapshot.body,
+    MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
   );
 
   const persistenceResult = createMotionIntakePersistenceUnavailable();
@@ -150,7 +203,23 @@ async function testMotionIntakeDecisions() {
       advisoryOnly: true,
     },
   });
-  await assertDecisionSnapshot(createDecision, 200);
+  const createSnapshot = await assertDecisionSnapshot(createDecision, 200);
+  assertExactKeys(createSnapshot.body, [
+    "ok",
+    "record",
+    "motionBasis",
+    "nonAuthorizations",
+  ]);
+  assert.equal("persistence" in createDecision.body, false);
+  assert.deepEqual(createDecision.body, {
+    ok: true,
+    record: persistenceResult.record,
+    motionBasis: {
+      title: syntheticMotionIntakePayload.draft.title,
+      advisoryOnly: true,
+    },
+    nonAuthorizations: [...MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS],
+  });
 }
 
 async function testManualInferenceDecision() {
@@ -170,7 +239,15 @@ async function testManualInferenceDecision() {
         "jai-counsel",
       voteValue: "abstain",
       confidenceReadinessNote: "Synthetic advisory output only.",
-      nonAuthorizations: [...ROUTE_DECISION_NON_AUTHORIZATIONS],
+      nonAuthorizations: [...MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS],
+    },
+    {
+      roleSlotId:
+        providerDisabledManualInferencePayload.roleSlotIds?.[1] ??
+        "jai-builder",
+      voteValue: "revise",
+      confidenceReadinessNote: "Second synthetic advisory output only.",
+      nonAuthorizations: [...MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS],
     },
   ];
   const aggregateRatification = {
@@ -193,22 +270,38 @@ async function testManualInferenceDecision() {
     participantOutputs,
     aggregateRatification,
     evidencePointers,
-    nonAuthorizations: ROUTE_DECISION_NON_AUTHORIZATIONS,
   });
   assert.equal(historyInput.sourceMode, "provider_config_missing");
   assert.equal(
     historyInput.connectorStatusSummary,
     providerConfigMissing.status,
   );
+  assert.deepEqual(
+    historyInput.nonAuthorizations,
+    MANUAL_INFERENCE_HISTORY_NON_AUTHORIZATIONS,
+  );
   assertNoForbiddenAuthorityClaims(historyInput);
+
+  const connectorStatuses = [
+    {
+      roleSlotId: participantOutputs[0].roleSlotId,
+      status: providerDisabled.status,
+      nonAuthorityDisclaimer: "Synthetic disabled connector disclaimer.",
+    },
+    {
+      roleSlotId: participantOutputs[1].roleSlotId,
+      status: providerConfigMissing.status,
+      nonAuthorityDisclaimer: "Synthetic missing-config connector disclaimer.",
+    },
+  ];
 
   const decision = decideManualInferenceRun({
     provider: providerDisabled,
     historyPersistence,
     participantOutputs,
+    connectorStatuses,
     aggregateRatification,
     evidencePointers,
-    nonAuthorizations: ROUTE_DECISION_NON_AUTHORIZATIONS,
   });
   const snapshot = await assertDecisionSnapshot(decision, 200);
   assert.equal(
@@ -220,16 +313,29 @@ async function testManualInferenceDecision() {
       .operatorTriggeredOnly,
     true,
   );
+  assert.deepEqual(
+    (snapshot.body as { connectorStatuses?: unknown }).connectorStatuses,
+    connectorStatuses,
+  );
+  assert.notDeepEqual(connectorStatuses[0], connectorStatuses[1]);
+  assertExactNonAuthorizations(
+    snapshot.body,
+    MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS,
+  );
 }
 
 function testNonAuthorizations() {
   const nonAuthorizations = readStringArrayField(
     {
-      nonAuthorizations: [...ROUTE_DECISION_NON_AUTHORIZATIONS],
+      nonAuthorizations: [...MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS],
     },
     "nonAuthorizations",
   );
-  assert.ok(nonAuthorizations.includes("CONTROL_THREAD remains authority."));
+  assert.ok(
+    nonAuthorizations.includes(
+      "Human / CONTROL_THREAD approval remains required.",
+    ),
+  );
   assert.ok(nonAuthorizations.includes("No automatic route execution."));
   assertNoForbiddenAuthorityClaims(nonAuthorizations);
 }

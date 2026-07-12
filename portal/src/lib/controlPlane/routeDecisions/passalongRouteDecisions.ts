@@ -1,9 +1,9 @@
 import {
+  PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
   routeDecisionNonAuthorizations,
 } from "./routeDecisionNonAuthorizations";
 import type {
   PassalongPersistenceResult,
-  RouteDecisionNonAuthorizations,
   RouteDecisionSnapshot,
 } from "./routeDecisionTypes";
 
@@ -23,17 +23,27 @@ interface PassalongCollectionListBody<RecordValue> {
   nonAuthorizations: string[];
 }
 
-interface PassalongWriteBody<RecordValue> {
+interface PassalongValidationErrorBody {
+  ok: false;
+  error: string;
+  errors: string[];
+  nonAuthorizations: string[];
+}
+
+interface PassalongPersistenceWriteBody<RecordValue> {
   ok: boolean;
   record: RecordValue | null;
   errors: string[];
-  persistence?: {
+  persistence: {
     available: boolean;
     safeMessage: string;
   };
   nonAuthorizations: string[];
-  error?: string;
 }
+
+type PassalongCollectionCreateBody<RecordValue> =
+  | PassalongValidationErrorBody
+  | PassalongPersistenceWriteBody<RecordValue>;
 
 export function decidePassalongCollectionList<RecordValue>(
   result: PassalongPersistenceResult<RecordValue>,
@@ -45,7 +55,7 @@ export function decidePassalongCollectionList<RecordValue>(
       records: result.records ?? [],
       persistence: readPassalongPersistence(result),
       nonAuthorizations: routeDecisionNonAuthorizations(
-        result.nonAuthorizations,
+        PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
       ),
     },
   };
@@ -54,8 +64,7 @@ export function decidePassalongCollectionList<RecordValue>(
 export function decidePassalongCollectionCreate<RecordValue>(input: {
   candidate: PassalongValidationResult;
   persistenceResult?: PassalongPersistenceResult<RecordValue>;
-  nonAuthorizations?: RouteDecisionNonAuthorizations;
-}): RouteDecisionSnapshot<PassalongWriteBody<RecordValue>> {
+}): RouteDecisionSnapshot<PassalongCollectionCreateBody<RecordValue>> {
   if (!input.candidate.ok || !input.candidate.value) {
     return {
       status: 400,
@@ -63,10 +72,9 @@ export function decidePassalongCollectionCreate<RecordValue>(input: {
         ok: false,
         error:
           "Passalong field boundary validation blocked persistence; no record was saved.",
-        record: null,
         errors: input.candidate.errors,
         nonAuthorizations: routeDecisionNonAuthorizations(
-          input.nonAuthorizations,
+          PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
         ),
       },
     };
@@ -76,7 +84,6 @@ export function decidePassalongCollectionCreate<RecordValue>(input: {
 }
 
 export function decidePassalongDetailMethodNotAllowed(
-  nonAuthorizations?: RouteDecisionNonAuthorizations,
 ): RouteDecisionSnapshot<{
   ok: false;
   error: string;
@@ -88,20 +95,22 @@ export function decidePassalongDetailMethodNotAllowed(
       ok: false,
       error:
         "Direct passalong mutation endpoint supports PATCH only. It does not send, route, execute, or approve passalongs.",
-      nonAuthorizations: routeDecisionNonAuthorizations(nonAuthorizations),
+      nonAuthorizations: routeDecisionNonAuthorizations(
+        PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
+      ),
     },
   };
 }
 
 export function decidePassalongDetailPatch<RecordValue>(
   result: PassalongPersistenceResult<RecordValue>,
-): RouteDecisionSnapshot<PassalongWriteBody<RecordValue>> {
+): RouteDecisionSnapshot<PassalongPersistenceWriteBody<RecordValue>> {
   return mapPassalongWriteResult(result);
 }
 
 function mapPassalongWriteResult<RecordValue>(
   result: PassalongPersistenceResult<RecordValue>,
-): RouteDecisionSnapshot<PassalongWriteBody<RecordValue>> {
+): RouteDecisionSnapshot<PassalongPersistenceWriteBody<RecordValue>> {
   return {
     status: result.record ? 200 : 400,
     body: {
@@ -110,7 +119,7 @@ function mapPassalongWriteResult<RecordValue>(
       errors: result.errors,
       persistence: readPassalongPersistence(result),
       nonAuthorizations: routeDecisionNonAuthorizations(
-        result.nonAuthorizations,
+        PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
       ),
     },
   };

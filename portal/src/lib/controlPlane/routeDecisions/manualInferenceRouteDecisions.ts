@@ -1,4 +1,6 @@
 import {
+  MANUAL_INFERENCE_HISTORY_NON_AUTHORIZATIONS,
+  MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS,
   routeDecisionNonAuthorizations,
 } from "./routeDecisionNonAuthorizations";
 import type {
@@ -38,6 +40,7 @@ export function decideManualInferenceRun<ProviderStatusValue>(input: {
   provider: RouteDecisionProviderResult<ProviderStatusValue>;
   historyPersistence: RouteDecisionHistoryPersistenceResult;
   participantOutputs: ManualInferenceParticipantOutput[];
+  connectorStatuses: Array<ManualInferenceConnectorStatus<ProviderStatusValue>>;
   aggregateRatification: unknown;
   evidencePointers: unknown[];
   nonAuthorizations?: RouteDecisionNonAuthorizations;
@@ -50,18 +53,16 @@ export function decideManualInferenceRun<ProviderStatusValue>(input: {
       operatorTriggeredOnly: true,
       providerStatus: input.provider.status,
       persistence: input.historyPersistence.persistence,
-      connectorStatuses: input.participantOutputs.map((participantOutput) => ({
-        roleSlotId: participantOutput.roleSlotId,
-        status: input.provider.status,
-        nonAuthorityDisclaimer: input.provider.nonAuthorityDisclaimer,
+      connectorStatuses: input.connectorStatuses.map((connectorStatus) => ({
+        roleSlotId: connectorStatus.roleSlotId,
+        status: connectorStatus.status,
+        nonAuthorityDisclaimer: connectorStatus.nonAuthorityDisclaimer,
       })),
       participantOutputs: input.participantOutputs,
       aggregateRatification: input.aggregateRatification,
       evidencePointers: input.evidencePointers,
       nonAuthorizations: routeDecisionNonAuthorizations(
-        input.nonAuthorizations ??
-          input.historyPersistence.nonAuthorizations ??
-          input.provider.nonAuthorizations,
+        input.nonAuthorizations ?? MANUAL_INFERENCE_RESPONSE_NON_AUTHORIZATIONS,
       ),
     },
   };
@@ -85,6 +86,8 @@ export function buildManualInferenceHistoryInput<ProviderStatusValue>(input: {
     participantOutputs: input.participantOutputs,
     aggregateAdvisoryRatification: input.aggregateRatification,
     evidencePointers: input.evidencePointers,
-    nonAuthorizations: routeDecisionNonAuthorizations(input.nonAuthorizations),
+    nonAuthorizations: routeDecisionNonAuthorizations(
+      input.nonAuthorizations ?? MANUAL_INFERENCE_HISTORY_NON_AUTHORIZATIONS,
+    ),
   };
 }

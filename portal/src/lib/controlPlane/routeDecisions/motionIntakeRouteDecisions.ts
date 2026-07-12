@@ -1,9 +1,9 @@
 import {
+  MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
   routeDecisionNonAuthorizations,
 } from "./routeDecisionNonAuthorizations";
 import type {
   MotionIntakePersistenceResult,
-  RouteDecisionNonAuthorizations,
   RouteDecisionSnapshot,
 } from "./routeDecisionTypes";
 
@@ -14,19 +14,26 @@ interface MotionIntakeListBody<RecordValue, MotionBasisValue> {
   nonAuthorizations: string[];
 }
 
-interface MotionIntakeCreateBody<RecordValue, MotionBasisValue> {
-  ok: boolean;
-  record?: RecordValue;
-  motionBasis?: MotionBasisValue;
-  error?: string;
-  persistence?: MotionIntakePersistenceResult<RecordValue>["persistence"];
+interface MotionIntakeCreateErrorBody {
+  ok: false;
+  error: string;
   nonAuthorizations: string[];
 }
+
+interface MotionIntakeCreateSuccessBody<RecordValue, MotionBasisValue> {
+  ok: true;
+  record: RecordValue;
+  motionBasis: MotionBasisValue;
+  nonAuthorizations: string[];
+}
+
+type MotionIntakeCreateBody<RecordValue, MotionBasisValue> =
+  | MotionIntakeCreateErrorBody
+  | MotionIntakeCreateSuccessBody<RecordValue, MotionBasisValue>;
 
 export function decideMotionIntakeList<RecordValue, MotionBasisValue>(input: {
   records: RecordValue[];
   motionBases: MotionBasisValue[];
-  nonAuthorizations?: RouteDecisionNonAuthorizations;
 }): RouteDecisionSnapshot<MotionIntakeListBody<RecordValue, MotionBasisValue>> {
   return {
     status: 200,
@@ -35,7 +42,7 @@ export function decideMotionIntakeList<RecordValue, MotionBasisValue>(input: {
       records: input.records,
       motionBases: input.motionBases,
       nonAuthorizations: routeDecisionNonAuthorizations(
-        input.nonAuthorizations,
+        MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
       ),
     },
   };
@@ -45,7 +52,6 @@ export function decideMotionIntakeCreate<RecordValue, MotionBasisValue>(input: {
   draftPresent: boolean;
   persistenceResult?: MotionIntakePersistenceResult<RecordValue>;
   motionBasis?: MotionBasisValue;
-  nonAuthorizations?: RouteDecisionNonAuthorizations;
 }): RouteDecisionSnapshot<
   MotionIntakeCreateBody<RecordValue, MotionBasisValue>
 > {
@@ -57,25 +63,34 @@ export function decideMotionIntakeCreate<RecordValue, MotionBasisValue>(input: {
         error:
           "Missing motion intake draft. No motion was persisted, routed, approved, or executed.",
         nonAuthorizations: routeDecisionNonAuthorizations(
-          input.nonAuthorizations,
+          MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
         ),
       },
     };
   }
 
   const persistenceResult = requirePersistenceResult(input);
+  const motionBasis = requireMotionBasis(input);
   return {
     status: 200,
     body: {
       ok: true,
       record: persistenceResult.record,
-      motionBasis: input.motionBasis,
-      persistence: persistenceResult.persistence,
+      motionBasis,
       nonAuthorizations: routeDecisionNonAuthorizations(
-        persistenceResult.nonAuthorizations ?? input.nonAuthorizations,
+        MOTION_INTAKE_ROUTE_NON_AUTHORIZATIONS,
       ),
     },
   };
+}
+
+function requireMotionBasis<MotionBasisValue>(input: {
+  motionBasis?: MotionBasisValue;
+}): MotionBasisValue {
+  if (input.motionBasis === undefined) {
+    throw new Error("Expected injected motion intake basis.");
+  }
+  return input.motionBasis;
 }
 
 function requirePersistenceResult<RecordValue>(input: {
