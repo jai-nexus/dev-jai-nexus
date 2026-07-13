@@ -296,13 +296,24 @@ function testRouteAndRepositorySourceBoundaries() {
   assertIncludesAll(listCreateRoute, [
     "export async function GET()",
     "export async function POST(request: Request)",
-    "Passalong field boundary validation blocked persistence; no record was saved.",
-    "nonAuthorizations",
+    "@/lib/controlPlane/routeDecisions/passalongRouteDecisions",
+    "decidePassalongCollectionList",
+    "decidePassalongCollectionCreate",
+    "NextResponse.json(decision.body, { status: decision.status })",
+    "listPersistedPassalongRecords(50)",
+    "persistPassalongRecord(candidate.value)",
+    "parseBody(request)",
   ]);
   assertIncludesAll(patchRoute, [
     "export async function PATCH",
-    "PATCH only",
-    "does not send, route, execute, or approve passalongs",
+    "export function GET()",
+    "@/lib/controlPlane/routeDecisions/passalongRouteDecisions",
+    "decidePassalongDetailMethodNotAllowed",
+    "decidePassalongDetailPatch",
+    "NextResponse.json(decision.body, { status: decision.status })",
+    "await context.params",
+    "updatePersistedPassalongRecord(passalongId, body)",
+    "parseBody(request)",
   ]);
   assertIncludesAll(repository, [
     "App-local passalong persistence is unavailable; static sample records remain visible as fallback only.",
@@ -314,6 +325,9 @@ function testRouteAndRepositorySourceBoundaries() {
 
   const routeSources = `${listCreateRoute}\n${patchRoute}`;
   assertExcludesAll(routeSources, [
+    "PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS",
+    "Passalong field boundary validation blocked persistence; no record was saved.",
+    "Direct passalong mutation endpoint supports PATCH only. It does not send, route, execute, or approve passalongs.",
     "createPullRequest",
     "octokit",
     "migrate deploy",
@@ -321,6 +335,7 @@ function testRouteAndRepositorySourceBoundaries() {
     "DROP TABLE",
     "DELETE FROM",
   ]);
+  assertIncludesAll(repository, ["PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS"]);
   assertExcludesAll(repository, ["DROP TABLE", "DELETE FROM"]);
 }
 

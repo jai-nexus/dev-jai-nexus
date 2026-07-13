@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS } from "@/lib/controlPlane/threadMemory";
+import type { PassalongWriteResult } from "@/lib/controlPlane/routeContracts/adapters/passalong";
+import {
+  decidePassalongDetailMethodNotAllowed,
+  decidePassalongDetailPatch,
+} from "@/lib/controlPlane/routeDecisions/passalongRouteDecisions";
 import { updatePersistedPassalongRecord } from "@/lib/controlPlane/threadMemory/passalong-persistence";
+import type { PersistedPassalongRecord } from "@/lib/controlPlane/threadMemory/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,21 +17,40 @@ export async function PATCH(
 ) {
   const { passalongId } = await context.params;
   const body = await parseBody(request);
-  const result = await updatePersistedPassalongRecord(passalongId, body);
+  const writeResult = await updatePersistedPassalongRecord(passalongId, body);
+  const normalizedWriteResult = normalizePassalongWriteResult(writeResult);
+  const decision = decidePassalongDetailPatch(normalizedWriteResult);
 
-  return NextResponse.json(
-    {
-      ok: result.available && Boolean(result.record),
-      record: result.record,
-      errors: result.errors,
-      persistence: {
-        available: result.available,
-        safeMessage: result.safeMessage,
-      },
-      nonAuthorizations: result.nonAuthorizations,
-    },
-    { status: result.record ? 200 : 400 },
-  );
+  return NextResponse.json(decision.body, { status: decision.status });
+}
+
+function normalizePassalongWriteResult(
+  writeResult: Awaited<ReturnType<typeof updatePersistedPassalongRecord>>,
+): PassalongWriteResult<PersistedPassalongRecord> {
+  if (writeResult.record) {
+    return {
+      kind: "succeeded",
+      record: writeResult.record,
+      errors: [],
+      safeMessage: writeResult.safeMessage,
+    } satisfies PassalongWriteResult<PersistedPassalongRecord>;
+  }
+
+  if (writeResult.available) {
+    return {
+      kind: "failed",
+      record: null,
+      errors: writeResult.errors,
+      safeMessage: writeResult.safeMessage,
+    } satisfies PassalongWriteResult<PersistedPassalongRecord>;
+  }
+
+  return {
+    kind: "unavailable",
+    record: null,
+    errors: writeResult.errors,
+    safeMessage: writeResult.safeMessage,
+  } satisfies PassalongWriteResult<PersistedPassalongRecord>;
 }
 
 async function parseBody(request: Request): Promise<unknown> {
@@ -38,13 +62,6 @@ async function parseBody(request: Request): Promise<unknown> {
 }
 
 export function GET() {
-  return NextResponse.json(
-    {
-      ok: false,
-      error:
-        "Direct passalong mutation endpoint supports PATCH only. It does not send, route, execute, or approve passalongs.",
-      nonAuthorizations: [...PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS],
-    },
-    { status: 405 },
-  );
+  const decision = decidePassalongDetailMethodNotAllowed();
+  return NextResponse.json(decision.body, { status: decision.status });
 }
