@@ -69,15 +69,21 @@ const providerConfig = readSource("./motionKernel/server-provider-config.ts");
 const passalongPersistenceBoundary = readSource(
   "./threadMemory/passalong-persistence-boundary.ts",
 );
+const passalongResponseContract = readSource(
+  "./routeContracts/passalongResponses.ts",
+);
 
 function testPassalongPersistenceRouteBoundary() {
   assertIncludesAll(passalongCollectionRoute, [
     "export async function GET()",
     "export async function POST(request: Request)",
+    "@/lib/controlPlane/routeDecisions/passalongRouteDecisions",
+    "decidePassalongCollectionList",
+    "decidePassalongCollectionCreate",
     "buildPersistedPassalongInput",
-    "Passalong field boundary validation blocked persistence; no record was saved.",
-    "nonAuthorizations: [...PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS]",
+    "if (!candidate.ok || !candidate.value)",
     "persistPassalongRecord(candidate.value)",
+    "NextResponse.json(decision.body, { status: decision.status })",
   ]);
   assertOrdered(
     passalongCollectionRoute,
@@ -87,12 +93,36 @@ function testPassalongPersistenceRouteBoundary() {
   assertIncludesAll(passalongDetailRoute, [
     "export async function PATCH",
     "export function GET()",
-    "supports PATCH only",
-    "It does not send, route, execute, or approve passalongs.",
-    "nonAuthorizations: [...PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS]",
-    "{ status: 405 }",
+    "@/lib/controlPlane/routeDecisions/passalongRouteDecisions",
+    "decidePassalongDetailMethodNotAllowed",
+    "decidePassalongDetailPatch",
+    "updatePersistedPassalongRecord(passalongId, body)",
+    "NextResponse.json(decision.body, { status: decision.status })",
   ]);
+  assert.equal(passalongDetailRoute.includes("export async function GET()"), false);
+  assert.equal(
+    passalongCollectionRoute.includes(
+      "Passalong field boundary validation blocked persistence; no record was saved.",
+    ),
+    false,
+  );
+  assert.equal(
+    passalongDetailRoute.includes(
+      "Direct passalong mutation endpoint supports PATCH only. It does not send, route, execute, or approve passalongs.",
+    ),
+    false,
+  );
+  assert.equal(
+    `${passalongCollectionRoute}\n${passalongDetailRoute}`.includes(
+      "PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS",
+    ),
+    false,
+  );
   assertIncludesAll(passalongPersistenceBoundary, [
+    'import { PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS } from "../routeContracts/passalongResponses";',
+    'export { PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS } from "../routeContracts/passalongResponses";',
+  ]);
+  assertIncludesAll(passalongResponseContract, [
     "Persisted passalong record is app-local and non-authoritative.",
     "Persisted passalong record is not source of truth.",
     "Persisted route status is not route authority.",

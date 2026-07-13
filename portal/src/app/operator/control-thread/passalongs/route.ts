@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 
+import type {
+  PassalongListResult,
+  PassalongWriteResult,
+} from "@/lib/controlPlane/routeContracts/adapters/passalong";
 import {
-  buildPersistedPassalongInput,
-  PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS,
-} from "@/lib/controlPlane/threadMemory";
+  decidePassalongCollectionCreate,
+  decidePassalongCollectionList,
+} from "@/lib/controlPlane/routeDecisions/passalongRouteDecisions";
+import { buildPersistedPassalongInput } from "@/lib/controlPlane/threadMemory/passalong-persistence-boundary";
 import {
   listPersistedPassalongRecords,
   persistPassalongRecord,
 } from "@/lib/controlPlane/threadMemory/passalong-persistence";
-import type { PassalongRecord } from "@/lib/controlPlane/threadMemory";
+import type {
+  PassalongRecord,
+  PersistedPassalongRecord,
+} from "@/lib/controlPlane/threadMemory/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,16 +27,22 @@ interface PassalongPersistenceRequestBody {
 }
 
 export async function GET() {
-  const result = await listPersistedPassalongRecords(50);
-  return NextResponse.json({
-    ok: result.available,
-    records: result.records,
-    persistence: {
-      available: result.available,
-      safeMessage: result.safeMessage,
-    },
-    nonAuthorizations: result.nonAuthorizations,
-  });
+  const listResult = await listPersistedPassalongRecords(50);
+  const normalizedListResult = listResult.available
+    ? ({
+        kind: "available",
+        records: listResult.records,
+        safeMessage: listResult.safeMessage,
+      } satisfies PassalongListResult<PersistedPassalongRecord>)
+    : ({
+        kind: "unavailable",
+        records: [],
+        safeMessage: listResult.safeMessage,
+        errors: [],
+      } satisfies PassalongListResult<PersistedPassalongRecord>);
+  const decision = decidePassalongCollectionList(normalizedListResult);
+
+  return NextResponse.json(decision.body, { status: decision.status });
 }
 
 export async function POST(request: Request) {
@@ -38,32 +52,47 @@ export async function POST(request: Request) {
     : { ok: true, value: body.input, errors: [] };
 
   if (!candidate.ok || !candidate.value) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error:
-          "Passalong field boundary validation blocked persistence; no record was saved.",
-        errors: candidate.errors,
-        nonAuthorizations: [...PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS],
-      },
-      { status: 400 },
-    );
+    const decision = decidePassalongCollectionCreate({ candidate });
+    return NextResponse.json(decision.body, { status: decision.status });
   }
 
-  const result = await persistPassalongRecord(candidate.value);
-  return NextResponse.json(
-    {
-      ok: result.available && Boolean(result.record),
-      record: result.record,
-      errors: result.errors,
-      persistence: {
-        available: result.available,
-        safeMessage: result.safeMessage,
-      },
-      nonAuthorizations: result.nonAuthorizations,
-    },
-    { status: result.record ? 200 : 400 },
-  );
+  const writeResult = await persistPassalongRecord(candidate.value);
+  const normalizedWriteResult = normalizePassalongWriteResult(writeResult);
+  const decision = decidePassalongCollectionCreate({
+    candidate,
+    persistenceResult: normalizedWriteResult,
+  });
+
+  return NextResponse.json(decision.body, { status: decision.status });
+}
+
+function normalizePassalongWriteResult(
+  writeResult: Awaited<ReturnType<typeof persistPassalongRecord>>,
+): PassalongWriteResult<PersistedPassalongRecord> {
+  if (writeResult.record) {
+    return {
+      kind: "succeeded",
+      record: writeResult.record,
+      errors: [],
+      safeMessage: writeResult.safeMessage,
+    } satisfies PassalongWriteResult<PersistedPassalongRecord>;
+  }
+
+  if (writeResult.available) {
+    return {
+      kind: "failed",
+      record: null,
+      errors: writeResult.errors,
+      safeMessage: writeResult.safeMessage,
+    } satisfies PassalongWriteResult<PersistedPassalongRecord>;
+  }
+
+  return {
+    kind: "unavailable",
+    record: null,
+    errors: writeResult.errors,
+    safeMessage: writeResult.safeMessage,
+  } satisfies PassalongWriteResult<PersistedPassalongRecord>;
 }
 
 async function parseBody(
