@@ -103,7 +103,7 @@ function mapPassalongWriteResult<RecordValue>(
       record: null,
       errors: result.errors,
       persistence: {
-        available: false,
+        available: result.kind === "failed",
         safeMessage: result.safeMessage,
       },
       nonAuthorizations: passalongNonAuthorizations(),

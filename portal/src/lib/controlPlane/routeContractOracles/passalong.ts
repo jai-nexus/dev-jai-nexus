@@ -6,6 +6,11 @@ export const PASSALONG_ORACLE = {
     writeFailed: 400,
     detailMethodNotAllowed: 405,
   },
+  availability: {
+    succeeded: true,
+    failed: true,
+    unavailable: false,
+  },
   keys: {
     list: ["ok", "records", "persistence", "nonAuthorizations"],
     invalidCreate: ["ok", "error", "errors", "nonAuthorizations"],

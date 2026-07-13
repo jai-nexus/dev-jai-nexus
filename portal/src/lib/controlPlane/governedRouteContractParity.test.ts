@@ -291,10 +291,10 @@ function assertPassalongParity() {
       candidate: { ok: true, value: { id: "input" }, errors: [] },
       persistenceResult: passalongWriteSucceeded,
     }),
-    200,
+    PASSALONG_ORACLE.statuses.writeSucceeded,
     passalongRecord,
     [],
-    true,
+    PASSALONG_ORACLE.availability.succeeded,
     passalongWriteSucceeded.safeMessage,
   );
   assertPassalongWriteDecision(
@@ -302,10 +302,10 @@ function assertPassalongParity() {
       candidate: { ok: true, value: { id: "input" }, errors: [] },
       persistenceResult: passalongWriteFailed,
     }),
-    400,
+    PASSALONG_ORACLE.statuses.writeFailed,
     null,
     passalongWriteFailed.errors,
-    false,
+    PASSALONG_ORACLE.availability.failed,
     passalongWriteFailed.safeMessage,
   );
   assertPassalongWriteDecision(
@@ -313,10 +313,10 @@ function assertPassalongParity() {
       candidate: { ok: true, value: { id: "input" }, errors: [] },
       persistenceResult: passalongWriteUnavailable,
     }),
-    400,
+    PASSALONG_ORACLE.statuses.writeFailed,
     null,
     passalongWriteUnavailable.errors,
-    false,
+    PASSALONG_ORACLE.availability.unavailable,
     passalongWriteUnavailable.safeMessage,
   );
 
@@ -337,26 +337,26 @@ function assertPassalongParity() {
 
   assertPassalongWriteDecision(
     decidePassalongDetailPatch(passalongWriteSucceeded),
-    200,
+    PASSALONG_ORACLE.statuses.writeSucceeded,
     passalongRecord,
     [],
-    true,
+    PASSALONG_ORACLE.availability.succeeded,
     passalongWriteSucceeded.safeMessage,
   );
   assertPassalongWriteDecision(
     decidePassalongDetailPatch(passalongWriteFailed),
-    400,
+    PASSALONG_ORACLE.statuses.writeFailed,
     null,
     passalongWriteFailed.errors,
-    false,
+    PASSALONG_ORACLE.availability.failed,
     passalongWriteFailed.safeMessage,
   );
   assertPassalongWriteDecision(
     decidePassalongDetailPatch(passalongWriteUnavailable),
-    400,
+    PASSALONG_ORACLE.statuses.writeFailed,
     null,
     passalongWriteUnavailable.errors,
-    false,
+    PASSALONG_ORACLE.availability.unavailable,
     passalongWriteUnavailable.safeMessage,
   );
 }
