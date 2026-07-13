@@ -294,8 +294,8 @@ Do not route direct A43 wiring implementation from A42. Sol 5.6 Ultra review is 
 | `corepack pnpm -C portal typecheck` | Passed. |
 | `corepack pnpm -C portal exec tsx src/lib/controlPlane/governedRouteDecisionSeam.test.ts` | Exit 0 after explicit user approval for outside-sandbox IPC execution. |
 | `corepack pnpm -C portal exec tsx src/lib/controlPlane/governedRouteHandlerBoundary.test.ts` | Exit 0 after explicit user approval for outside-sandbox IPC execution. |
-| `git diff --check` | Passed before pre-push update; rerun required after update. |
-| `git diff --cached --check` | Required after staging; result recorded in closeout. |
+| `git diff --check` | Passed after the required pre-push update against origin/main. |
+| `git diff --cached --check` | Passed after staging the A42 review artifact. |
 
 No general test suite, build, dev server, route handler, route export, route-export integration, browser/e2e, provider, or database command ran.
 
@@ -310,11 +310,11 @@ No general test suite, build, dev server, route handler, route export, route-exp
 
 ## 28. Import-safety scan
 
-The required grep scan completed. All hits were copied negative contract strings in `routeDecisionNonAuthorizations.ts`: Linear temporary-mirror language, no target-repo import, no deployment, and no production-gate language. They are classified as non-authorization contract copies. No executable prohibited import or behavior was found. The scan is rerun after the required pre-push update.
+The required grep scan completed. All hits were copied negative contract strings in `routeDecisionNonAuthorizations.ts`: Linear temporary-mirror language, no target-repo import, no deployment, and no production-gate language. They are classified as non-authorization contract copies. No executable prohibited import or behavior was found. The scan was rerun after the required pre-push update with the same classification. No executable prohibited import or behavior was found, and no blocker remained.
 
 ## 29. Non-authorization scan
 
-The required grep scan completed. Hits were classified as negative assertions, non-authorization contract copies, safe helper/test assertions, accepted A35 reuse, review references, evidence limitations, and stop conditions. No positive authority grant or blocker was found. The scan is rerun after the required pre-push update.
+The required grep scan completed. Hits were classified as negative assertions, non-authorization contract copies, safe helper/test assertions, accepted A35 reuse, review references, evidence limitations, and stop conditions. No positive authority grant or blocker was found. The scan was rerun after the required pre-push update with the same classification. No positive authority grant or blocker was found.
 
 ## 30. Authority boundary
 
@@ -328,6 +328,7 @@ A42 reviews and recommends only. It does not accept A41 or A42, authorize A43, i
 - A41 finding: import-safe and response-contract-correct as isolated helper/test evidence.
 - Material limitation: copied contracts and self-referential expected arrays do not provide independent drift detection.
 - Wiring posture: `safe-to-plan-route-file-wiring`, `requires-parity-mechanism-design`, and `route-file-wiring-not-authorized`.
+- Final validation: lint passed; typecheck passed; the A41 focused seam test and A35 boundary regression each exited 0; both diff checks passed; final import-safety and non-authorization scans had no blocker.
 - Recommended route: A43 shared response-contract / parity mechanism design v0.
 - No PR is created by this lane.
 - ZERO GATES GRANTED.
