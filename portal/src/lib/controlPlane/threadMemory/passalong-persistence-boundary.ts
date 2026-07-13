@@ -1,3 +1,4 @@
+import { PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS } from "../routeContracts/passalongResponses";
 import { THREAD_MEMORY_NON_AUTHORIZATIONS, THREAD_MEMORY_RECORDS } from "./sample-data";
 import type {
   ControlThreadId,
@@ -17,33 +18,7 @@ import {
 
 export const PASSALONG_PERSISTENCE_SCHEMA_VERSION = "v0" as const;
 
-export const PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS = [
-  "Persisted passalong record is app-local and non-authoritative.",
-  "Persisted passalong record is not source of truth.",
-  "Persisted passalong record is not CONTROL_THREAD acceptance.",
-  "Persisted route status is descriptive metadata only.",
-  "Persisted route status is not route authority.",
-  "Persisted lifecycle state does not alter CONTROL_THREAD decisions.",
-  "Evidence pointer references are not validation approval.",
-  "Manual notes are not route authority.",
-  "CONTROL_THREAD remains authority.",
-  "Linear remains temporary mirror only.",
-  "No automatic passalong sending.",
-  "No automatic route execution.",
-  "No JAI Agent activation.",
-  "No Agent PR Factory activation.",
-  "No sandbox runtime activation.",
-  "No sandbox task execution.",
-  "No target-repo import.",
-  "No GitHub mutation.",
-  "No PR creation.",
-  "No branch mutation.",
-  "No merge action.",
-  "No branch deletion.",
-  "No deployment.",
-  "No production gate opening.",
-  "No source-of-truth transfer.",
-] as const;
+export { PASSALONG_PERSISTENCE_NON_AUTHORIZATIONS } from "../routeContracts/passalongResponses";
 
 const FIELD_LIMITS = {
   passalongId: 120,
