@@ -7,6 +7,35 @@
   "decision_route": "HUMAN_OPERATOR_DIRECTED / DELIBERATION_BYPASSED / JAI_NOT_ACTIVATED",
   "deliberation_status": "BYPASSED",
   "result": "NOT_APPLICABLE_NO_VOTE",
+  "alignment_status": "STAGED_ALIGNED_PENDING_PR",
+  "recognized_active_program_count": 0,
+  "active_program_invariant": "active_program_count <= 1",
+  "ratified_program_sequence": [
+    {
+      "order": 1,
+      "program_id": "jai-governance-intelligence-main-state-operating-loop-v0",
+      "program_name": "Main-State Reconciliation and Minimum Viable Operating Loop v0",
+      "initial_state": "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+    },
+    {
+      "order": 2,
+      "program_id": "jai-five-slot-compounded-reasoning-shadow-kernel-v0",
+      "program_name": "Five-Slot Compounded Reasoning Shadow Kernel v0",
+      "initial_state": "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+    },
+    {
+      "order": 3,
+      "program_id": "jai-founder-developer-workflow-pilot-v0",
+      "program_name": "Founder Developer Workflow Pilot v0",
+      "initial_state": "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+    },
+    {
+      "order": 4,
+      "program_id": "jai-agent-council-bounded-activation-pilot-v0",
+      "program_name": "Bounded JAI Agent and Council Activation Pilot v0",
+      "initial_state": "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+    }
+  ],
   "votes": [],
   "synthetic_votes_created": false,
   "jai_participated": false,
@@ -14,6 +43,7 @@
   "jai_council_participated": false,
   "notes": [
     "The human operator ratified the motion directly; no vote produced the decision.",
+    "The fixed four-Program sequence and one-active-Program invariant come from the human operator steer, not from a vote.",
     "This compatibility artifact records the absence of deliberation and must not be interpreted as a unanimous, agent, council, or CONTROL_THREAD vote.",
     "No JAI, JAI Agent, JAI Council, Codex, CONTROL_THREAD, or sub-agent analysis is represented as a voter."
   ]

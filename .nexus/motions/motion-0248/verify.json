@@ -1,6 +1,7 @@
 {
   "motion_id": "motion-0248",
-  "status": "validated_with_external_agency_registry_limitation",
+  "status": "aligned_snapshot_verified_with_external_agency_registry_limitation",
+  "alignment_lane": "M0248-A2",
   "validation_role": "JAI::DEV::BUILDER",
   "authority_origin": "HUMAN_OPERATOR",
   "council_run": false,
@@ -8,24 +9,31 @@
   "jai_participation": false,
   "jai_agent_participation": false,
   "jai_council_participation": false,
+  "recognized_active_program_count": 0,
+  "active_program_invariant": "active_program_count <= 1",
+  "program_1_state": "NOT_OPEN",
+  "program_opening_authorized": false,
+  "summary": {
+    "required_ok": false,
+    "limitation": "validate_agency unavailable because the external agency registry is absent"
+  },
   "checks": [
     {
       "id": "validate_motion",
       "status": "PASS",
       "exit_code": 0,
-      "note": "Schema passed; validator emitted the allowed unknown-gate warning for validate_sandbox_fixtures."
+      "note": "Schema passed with the allowed unknown-gate warning for validate_sandbox_fixtures."
     },
     {
       "id": "validate_agency",
       "status": "UNAVAILABLE_EXTERNAL_REGISTRY",
       "exit_code": 1,
-      "note": "Validator stopped before agency checks because agents.index.json and adjacent agents.generated.yaml are absent from the local workspace."
+      "note": "Validator stopped before agency checks because agents.index.json and adjacent agents.generated.yaml are absent."
     },
     {
       "id": "validate_sandbox_fixtures",
       "status": "PASS",
-      "exit_code": 0,
-      "note": "All four sandbox fixture checks passed."
+      "exit_code": 0
     },
     {
       "id": "typecheck",
@@ -35,19 +43,47 @@
     {
       "id": "json_yaml_parse",
       "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "ratified_four_program_alignment",
+      "status": "PASS",
       "exit_code": 0,
-      "note": "motion.yaml, policy.yaml, decision.yaml, vote.json, and verify.json parsed."
+      "note": "Exact IDs, names, order, initial states, zero-active state, invariant, resulting state, and empty votes match."
+    },
+    {
+      "id": "sequential_program_opening_rules",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "15 general prerequisites, 11 MAIN_STATE_RECEIPT fields, all Program-specific gates, and failure/amendment rules are present."
+    },
+    {
+      "id": "rejected_substitute_sequence_absent",
+      "status": "PASS",
+      "exit_code": 0
     },
     {
       "id": "package_shape_and_scope",
       "status": "PASS",
       "exit_code": 0,
-      "note": "Eight expected files, consistent IDs, empty votes, no decision.md, and seven unrouted stages."
+      "note": "Eight package files plus the generated repository snapshot; no decision.md."
     },
     {
       "id": "non_authorization_scan",
       "status": "PASS",
       "exit_code": 0
+    },
+    {
+      "id": "motion_snapshot_write",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "Snapshot count advanced from 246 to 247 and motion-0248 became latest."
+    },
+    {
+      "id": "motion_snapshot_check",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "Generated snapshot reported current with no missing motion-0248 core files or attention flags."
     },
     {
       "id": "git_diff_check",
@@ -56,8 +92,9 @@
     }
   ],
   "notes": [
-    "Builder validation completed; validate_agency remains explicitly unavailable because its external registry input is absent.",
+    "Alignment and snapshot validation completed with the external agency-registry limitation preserved.",
     "No registry was fabricated and no reduced agency check was substituted.",
+    "MOTION_0248: STAGED_ALIGNED_PENDING_PR; ACTIVE_PROGRAM_COUNT: 0; PROGRAM_1: NOT_OPEN.",
     "No focused runtime, provider, database, Council, Agent, deployment, or production behavior is authorized or tested.",
     "ZERO GATES GRANTED."
   ]
