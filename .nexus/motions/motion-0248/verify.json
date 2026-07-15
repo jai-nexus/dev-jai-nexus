@@ -1,0 +1,64 @@
+{
+  "motion_id": "motion-0248",
+  "status": "validated_with_external_agency_registry_limitation",
+  "validation_role": "JAI::DEV::BUILDER",
+  "authority_origin": "HUMAN_OPERATOR",
+  "council_run": false,
+  "motion_factory_run": false,
+  "jai_participation": false,
+  "jai_agent_participation": false,
+  "jai_council_participation": false,
+  "checks": [
+    {
+      "id": "validate_motion",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "Schema passed; validator emitted the allowed unknown-gate warning for validate_sandbox_fixtures."
+    },
+    {
+      "id": "validate_agency",
+      "status": "UNAVAILABLE_EXTERNAL_REGISTRY",
+      "exit_code": 1,
+      "note": "Validator stopped before agency checks because agents.index.json and adjacent agents.generated.yaml are absent from the local workspace."
+    },
+    {
+      "id": "validate_sandbox_fixtures",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "All four sandbox fixture checks passed."
+    },
+    {
+      "id": "typecheck",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "json_yaml_parse",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "motion.yaml, policy.yaml, decision.yaml, vote.json, and verify.json parsed."
+    },
+    {
+      "id": "package_shape_and_scope",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "Eight expected files, consistent IDs, empty votes, no decision.md, and seven unrouted stages."
+    },
+    {
+      "id": "non_authorization_scan",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "git_diff_check",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "notes": [
+    "Builder validation completed; validate_agency remains explicitly unavailable because its external registry input is absent.",
+    "No registry was fabricated and no reduced agency check was substituted.",
+    "No focused runtime, provider, database, Council, Agent, deployment, or production behavior is authorized or tested.",
+    "ZERO GATES GRANTED."
+  ]
+}

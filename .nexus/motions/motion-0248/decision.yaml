@@ -1,0 +1,47 @@
+motion_id: motion-0248
+decision_id: decision-motion-0248
+decided_at: "2026-07-15T22:40:43.000Z"
+last_updated: "2026-07-15T22:40:43.000Z"
+status: RATIFIED
+ratified_by: "HUMAN_OPERATOR"
+authority_origin: "HUMAN_OPERATOR"
+decision: "RATIFY_SEQUENTIAL_ACTIVATION_PORTFOLIO_MOTION"
+decision_route: "HUMAN_OPERATOR_DIRECTED / DELIBERATION_BYPASSED / JAI_NOT_ACTIVATED"
+decision_summary: >
+  Ratified the JAI Governance Intelligence Sequential Activation Portfolio
+  Motion v0 as a reserved ordering and governance boundary. No Program is
+  opened, no stage is routed, and no JAI, Agent, Council, provider, runtime,
+  deployment, or production authority is activated.
+deliberation_receipt:
+  status: "BYPASSED"
+  jai_participated: false
+  jai_agents_participated: false
+  jai_council_participated: false
+  control_thread_analysis_is_jai_participation: false
+  codex_analysis_is_jai_participation: false
+  subagent_analysis_is_jai_participation: false
+  synthetic_votes_created: false
+program_effect:
+  program_opened: false
+  program_executed: false
+  batch_opened: false
+  activation_lane_opened: false
+  portfolio_reserved: true
+  portfolio_stage_routed: false
+authority_effect:
+  authority_transferred: false
+  acceptance_transferred: false
+  gates_opened: false
+  nhid_assigned: false
+rationale:
+  - "The human operator directly ratified a sequential portfolio posture and explicitly bypassed deliberation while JAI remains inactive."
+  - "A durable package can preserve activation order and prerequisites without treating historical Agent, Program, model-slot, or Linear claims as current authority."
+  - "Sequential reservation prevents later stages from being implied by earlier architecture or readiness evidence."
+consequences:
+  - "Future CONTROL_THREAD intake may reference the reserved sequence when deciding whether to propose a separately bounded Program."
+  - "Every stage remains NOT_ROUTED and requires fresh human authority, main-state grounding, explicit scope, evidence gates, and a separately accepted execution route."
+  - "Static Agent surfaces, model-slot manifests, legacy program graphs, motion artifacts, and temporary mirrors remain evidence only."
+limitations:
+  - "This decision does not define the required five-slot architecture; it reserves that definition as an earlier prerequisite stage."
+  - "This decision does not assign NHIDs or convert human labels into identities."
+  - "This decision does not authorize provider/model/API calls, API spend, database access, migrations, runtime, deployment, production gates, PR creation, merge, or cross-repo mutation."

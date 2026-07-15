@@ -1,0 +1,64 @@
+motion_id: motion-0248
+version: "0.1"
+protocol_version: "0.3.8"
+title: "JAI Governance Intelligence Sequential Activation Portfolio Motion v0"
+subtitle: "reserve an ordered, human-governed activation portfolio without opening or executing a Program"
+kind: portfolio-motion
+program: null
+portfolio_motion: jai-governance-intelligence-sequential-activation-portfolio-v0
+portfolio_posture: "SEQUENTIAL_ACTIVATION_PORTFOLIO_RESERVED"
+basis: "HUMAN_OPERATOR_RATIFICATION"
+main_baseline: "04aa546d395c6c46b358c6b09f0e40b6f469717f"
+status: ratified
+created_at: "2026-07-15T22:40:43.000Z"
+decided_at: "2026-07-15T22:40:43.000Z"
+authority_origin: HUMAN_OPERATOR
+decision: RATIFY_SEQUENTIAL_ACTIVATION_PORTFOLIO_MOTION
+decision_route: "HUMAN_OPERATOR_DIRECTED / DELIBERATION_BYPASSED / JAI_NOT_ACTIVATED"
+workflow_role: CONTROL_THREAD
+execution_role: "JAI::DEV::BUILDER"
+thread: Codex_control_thread
+batch: PRE-PROGRAM
+wave: MOTION-0248-STAGING
+lane: M0248-A1
+nhid: "NOT_ASSIGNED / COORDINATION ONLY"
+human_labels_are_aliases: true
+program_state: "NONE_OPEN / SEQUENTIAL_ACTIVATION_PORTFOLIO_RESERVED"
+deliberation:
+  status: BYPASSED
+  jai_participated: false
+  jai_agents_participated: false
+  jai_council_participated: false
+  synthetic_votes_created: false
+activation_state:
+  jai: NOT_ACTIVATED
+  jai_agents: NOT_ACTIVATED
+  jai_council: NOT_ACTIVATED
+  provider_dispatch: NOT_AUTHORIZED
+  runtime: NOT_AUTHORIZED
+portfolio_sequence:
+  - stage: current-state-and-authority-reconciliation
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: required-five-slot-governance-architecture
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: jai-core-activation-readiness
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: jai-agent-activation-readiness
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: jai-council-activation-readiness
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: controlled-runtime-and-provider-pilot-readiness
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+  - stage: portfolio-acceptance-and-scale-review
+    posture: "RESERVED / NOT_ROUTED / NOT_OPEN"
+target:
+  domain: "dev.jai.nexus"
+  repo: "dev-jai-nexus"
+auto_ratify:
+  enabled: false
+checks_required:
+  - validate_motion
+  - validate_agency
+  - validate_sandbox_fixtures
+  - typecheck
+checks_optional: []
