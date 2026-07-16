@@ -3,8 +3,9 @@ version: "0.1"
 protocol_version: "0.3.8"
 title: "JAI Governance Intelligence Sequential Activation Portfolio Motion v0"
 subtitle: "reserve the fixed four-Program sequence without opening or executing a Program"
-kind: portfolio-motion
-program: null
+kind: governance-policy
+program: jai-governance-intelligence-sequential-activation-portfolio-v0
+portfolio_relation: governance_envelope_only
 portfolio_motion: jai-governance-intelligence-sequential-activation-portfolio-v0
 portfolio_posture: "SEQUENTIAL_ACTIVATION_PORTFOLIO_RESERVED"
 basis: "HUMAN_OPERATOR_RATIFICATION"
@@ -91,7 +92,7 @@ auto_ratify:
   enabled: false
 checks_required:
   - validate_motion
-  - validate_agency
   - validate_sandbox_fixtures
   - typecheck
-checks_optional: []
+checks_optional:
+  - validate_agency

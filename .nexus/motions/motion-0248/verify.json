@@ -1,6 +1,6 @@
 {
   "motion_id": "motion-0248",
-  "status": "aligned_snapshot_verified_with_external_agency_registry_limitation",
+  "status": "aligned_snapshot_verified_with_optional_agency_registry_limitation",
   "alignment_lane": "M0248-A2",
   "validation_role": "JAI::DEV::BUILDER",
   "authority_origin": "HUMAN_OPERATOR",
@@ -14,31 +14,36 @@
   "program_1_state": "NOT_OPEN",
   "program_opening_authorized": false,
   "summary": {
-    "required_ok": false,
-    "limitation": "validate_agency unavailable because the external agency registry is absent"
+    "required_ok": true,
+    "optional_ok": false,
+    "optional_limitation": "validate_agency unavailable because the external agency registry is absent"
   },
   "checks": [
     {
       "id": "validate_motion",
       "status": "PASS",
       "exit_code": 0,
+      "required": true,
       "note": "Schema passed with the allowed unknown-gate warning for validate_sandbox_fixtures."
     },
     {
       "id": "validate_agency",
       "status": "UNAVAILABLE_EXTERNAL_REGISTRY",
       "exit_code": 1,
+      "required": false,
       "note": "Validator stopped before agency checks because agents.index.json and adjacent agents.generated.yaml are absent."
     },
     {
       "id": "validate_sandbox_fixtures",
       "status": "PASS",
-      "exit_code": 0
+      "exit_code": 0,
+      "required": true
     },
     {
       "id": "typecheck",
       "status": "PASS",
-      "exit_code": 0
+      "exit_code": 0,
+      "required": true
     },
     {
       "id": "json_yaml_parse",
@@ -92,7 +97,7 @@
     }
   ],
   "notes": [
-    "Alignment and snapshot validation completed with the external agency-registry limitation preserved.",
+    "Alignment and snapshot validation completed with the optional external agency-registry limitation preserved.",
     "No registry was fabricated and no reduced agency check was substituted.",
     "MOTION_0248: STAGED_ALIGNED_PENDING_PR; ACTIVE_PROGRAM_COUNT: 0; PROGRAM_1: NOT_OPEN.",
     "No focused runtime, provider, database, Council, Agent, deployment, or production behavior is authorized or tested.",
