@@ -137,15 +137,20 @@ input limitation:
 - motion snapshot check: passed with status `current`, no missing core files,
   and no motion-0248 attention flags.
 
-The agency result remains `UNAVAILABLE_EXTERNAL_REGISTRY`, not a passed gate.
-The machine-readable receipt therefore records `required_ok: false`; human
-ratification and snapshot presence do not convert that limitation into agency,
-Agent, or Council readiness.
+The agency result remains `UNAVAILABLE_EXTERNAL_REGISTRY`, exit `1`, and is not
+a passed optional check. The machine-readable receipt records
+`required_ok: true` for the required checks and `optional_ok: false` for the
+unavailable external agency registry. Human ratification and snapshot presence
+do not convert that optional limitation into agency, Agent, or Council
+readiness.
 
 Validation does not constitute JAI, Agent, or Council participation, does not
 open Program 1, and opens no gate.
 
-Required resulting state:
+Historical pre-merge resulting state:
+
+The following state records the original staging and alignment lane before PR
+`376` merged. It is not the current post-merge governance state.
 
 - `MOTION_0248: STAGED_ALIGNED_PENDING_PR`
 - `ACTIVE_PROGRAM_COUNT: 0`
@@ -153,3 +158,27 @@ Required resulting state:
 - `ZERO GATES GRANTED`
 
 `ZERO GATES GRANTED`
+
+## Post-merge receipt coherence
+
+- PR `376` squash-merged as
+  `291e2006f1a7af9711d1b7c822ac46abc9569557` into `main`.
+- The source branch
+  `motion/motion-0248-sequential-activation-portfolio-v0` was deleted after
+  merge.
+- CONTROL_THREAD identified a post-merge contradiction between this execution
+  receipt's stale `required_ok: false` statement and canonical `verify.json`,
+  which records passing required checks and an unavailable optional agency
+  registry.
+- Lane `M0248-A4` corrects only that receipt contradiction and records the
+  merged governance state without accepting Motion 0248.
+- Current state:
+  `MOTION_0248: MERGED_PENDING_RECEIPT_REPAIR_AND_CONTROL_THREAD_ACCEPTANCE`.
+- Intended state only after this correction is manually merged and
+  independently verified:
+  `MOTION_0248: MERGED_RECEIPT_COHERENT_PENDING_CONTROL_THREAD_ACCEPTANCE`.
+- Motion 0248 remains pending explicit CONTROL_THREAD acceptance.
+- Recognized active Program count remains `0`; Program 1 remains `NOT_OPEN`.
+- Linear was not mutated, no Program was opened, and Batch planning did not
+  begin.
+- `ZERO GATES GRANTED`.
