@@ -1,0 +1,90 @@
+motion_id: motion-0248
+decision_id: decision-motion-0248
+decided_at: "2026-07-15T22:40:43.000Z"
+last_updated: "2026-07-15T23:14:32.000Z"
+status: RATIFIED
+ratified_by: "HUMAN_OPERATOR"
+result: PASS
+recorded_by: PRIMARY_CONTROL_THREAD
+ratification_token: RATIFY_SEQUENTIAL_ACTIVATION_PORTFOLIO_MOTION
+next_authorized_action: PREPARE_PROGRAM_1_OPENING_PACKET_AFTER_MOTION_0248_ACCEPTED_ON_MAIN
+authority_origin: "HUMAN_OPERATOR"
+decision: "RATIFY_SEQUENTIAL_ACTIVATION_PORTFOLIO_MOTION"
+decision_route: "HUMAN_OPERATOR_DIRECTED / DELIBERATION_BYPASSED / JAI_NOT_ACTIVATED"
+decision_summary: >
+  Ratified the JAI Governance Intelligence Sequential Activation Portfolio
+  Motion v0 as a fixed four-Program ordering and governance boundary. All four
+  Programs remain RESERVED_NOT_OPENED with NO_EXECUTION_AUTHORITY. No Program
+  is opened, active_program_count remains zero, and no JAI, Agent, Council,
+  provider, runtime, deployment, or production authority is activated.
+alignment_receipt:
+  status: "STAGED_ALIGNED_PENDING_PR"
+  aligned_at: "2026-07-15T23:14:32.000Z"
+  disposition_repaired: "HOLD_PENDING_MOTION_PACKAGE_ALIGNMENT"
+  rejected_substitute_sequence_removed: true
+deliberation_receipt:
+  status: "BYPASSED"
+  jai_participated: false
+  jai_agents_participated: false
+  jai_council_participated: false
+  control_thread_analysis_is_jai_participation: false
+  codex_analysis_is_jai_participation: false
+  subagent_analysis_is_jai_participation: false
+  synthetic_votes_created: false
+program_effect:
+  program_opened: false
+  program_executed: false
+  batch_opened: false
+  activation_lane_opened: false
+  portfolio_reserved: true
+  program_routed: false
+  recognized_active_program_count: 0
+  active_program_invariant: "active_program_count <= 1"
+  program_1_state: "NOT_OPEN"
+authority_effect:
+  authority_transferred: false
+  acceptance_transferred: false
+  gates_opened: false
+  nhid_assigned: false
+ratified_program_sequence:
+  - order: 1
+    program_id: "jai-governance-intelligence-main-state-operating-loop-v0"
+    program_name: "Main-State Reconciliation and Minimum Viable Operating Loop v0"
+    initial_state: "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+  - order: 2
+    program_id: "jai-five-slot-compounded-reasoning-shadow-kernel-v0"
+    program_name: "Five-Slot Compounded Reasoning Shadow Kernel v0"
+    initial_state: "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+  - order: 3
+    program_id: "jai-founder-developer-workflow-pilot-v0"
+    program_name: "Founder Developer Workflow Pilot v0"
+    initial_state: "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+  - order: 4
+    program_id: "jai-agent-council-bounded-activation-pilot-v0"
+    program_name: "Bounded JAI Agent and Council Activation Pilot v0"
+    initial_state: "RESERVED_NOT_OPENED / NO_EXECUTION_AUTHORITY"
+opening_rules:
+  - "motion-0248 must be accepted on origin/main before any Program opening."
+  - "Every opening requires a fresh MAIN_STATE_RECEIPT and a named CONTROL_THREAD PROGRAM_OPENING_RECEIPT citing evidence and a fresh origin/main SHA."
+  - "Acceptance criteria, exit conditions, authorized boundaries, budgets, spend and credential posture, rollback, hold, cancellation, NO_GO, and non-authorizations must be explicit."
+  - "No unresolved blocker, stale or stacked work, unrelated active work, or conflicting Program ledger entry may create ambiguity."
+  - "Reserved status grants no execution authority; opening authorizes Batch planning only."
+  - "Every Batch and Lane execution requires a separate exact CONTROL_THREAD repo-execution route."
+  - "Programs 2, 3, and 4 require their immediate predecessor to be CLOSED_ACCEPTED and require a fresh main-state receipt confirming predecessor capabilities remain accepted."
+failure_and_amendment_rules:
+  - "CLOSED_NO_GO, cancellation, failure, or unresolved hold freezes every downstream Program."
+  - "CONTROL_THREAD cannot silently skip, reorder, substitute, or rename a Program."
+  - "Material changes require an explicit human-operator amendment or superseding motion."
+  - "No new motion is required between Programs when order, scope, authority envelope, and intended outcome remain unchanged and every gate passes."
+rationale:
+  - "The human operator directly ratified a sequential portfolio posture and explicitly bypassed deliberation while JAI remains inactive."
+  - "A durable package can preserve the exact four-Program order and prerequisites without treating historical Agent, Program, model-slot, or Linear claims as current authority."
+  - "Sequential reservation prevents later Programs from being implied by earlier architecture or readiness evidence."
+consequences:
+  - "Future CONTROL_THREAD intake may evaluate Program 1 only after motion-0248 is accepted on origin/main and all opening prerequisites are satisfied."
+  - "Each Program remains reserved and unopened until its named opening receipt; Program opening permits Batch planning, not execution."
+  - "Static Agent surfaces, model-slot manifests, legacy program graphs, motion artifacts, and temporary mirrors remain evidence only."
+limitations:
+  - "This decision does not implement the five-slot shadow kernel, founder workflow pilot, or bounded Agent/Council pilot."
+  - "This decision does not assign NHIDs or convert human labels into identities."
+  - "This decision does not authorize provider/model/API calls, API spend, database access, migrations, runtime, deployment, production gates, PR creation, merge, or cross-repo mutation."
