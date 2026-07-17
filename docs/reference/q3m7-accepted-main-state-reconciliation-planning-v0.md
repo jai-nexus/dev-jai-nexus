@@ -1,6 +1,6 @@
 # Q3M7 Accepted Main-State Reconciliation Planning v0
 
-Role: JAI::DEV::ARCHITECT
+Role: JAI::DEV::BUILDER
 
 Observed at: `2026-07-17T09:45:12Z`
 
@@ -38,7 +38,7 @@ CONTROL_THREAD decides.
 | Wave | `A-A — DEFINED_FOR_A1 / NO_EXECUTION_AUTHORITY` |
 | Lane | `A1 — Accepted Main-State Reconciliation Planning v0` |
 | Thread | `2026-07-17_control_thread` |
-| Executor-role interface | `JAI::DEV::ARCHITECT` |
+| Executor-role interface | `JAI::DEV::BUILDER` |
 | Normalized authorization | `AUTHORIZE_ROUTE_PROGRAM_1_BATCH_A_WAVE_A_A_LANE_A1_PLANNING` |
 | Route effect | Defines Wave A-A and routes Lane A1 planning only |
 | A2 posture | `NOT_ROUTED` |
@@ -50,6 +50,25 @@ route A2 or grant execution authority.
 The executor-role interface is filled by Codex_Control_Thread for this bounded
 Work Packet. That classification does not create, activate, dispatch, or
 persist a JAI Agent.
+
+### A1 routing-correction receipt
+
+| Field | Receipt |
+| --- | --- |
+| Original role | `JAI::DEV::ARCHITECT` |
+| Corrected role | `JAI::DEV::BUILDER` |
+| Correction authority | `CONTROL_THREAD` |
+| Correction token | `CORRECT_A1_EXECUTOR_ROLE_TO_JAI_DEV_BUILDER_FOR_DOCS_REFERENCE_DELIVERY` |
+| Correction timing | `2026-07-17T10:15:30Z`, before PR creation or acceptance |
+| Reason | Current enforced `docs/reference` delivery path |
+| Evidence | `roles/rolemap.json`, `.github/workflows/role-guardrails.yml`, PR 378, and PR 379 |
+| Effect | Role-path coherence for A1 delivery and PR review only |
+| Unchanged | No rolemap, workflow, Program, Motion, Agent, or authority change |
+
+The original Architect assignment was a CONTROL_THREAD routing error. This
+receipt preserves that provenance while applying the corrected Builder
+delivery-role interface. It does not alter the architectural character of the
+planning content or assign a persistent JAI Agent.
 
 ## 3. Accepted baseline
 
@@ -161,8 +180,8 @@ The current executor-role interfaces are exactly:
 | Executor role | Planning interpretation | Activation posture |
 | --- | --- | --- |
 | `JAI::DEV::OPERATOR` | Triage, handoffs, and task packets | Interface only; not activated or persistently assigned. |
-| `JAI::DEV::ARCHITECT` | Specs, contracts, design decisions, and acceptance criteria | Interface only; fills A1 under the fresh route. |
-| `JAI::DEV::BUILDER` | Approved implementation diffs | Interface only; no implementation is authorized in A1. |
+| `JAI::DEV::ARCHITECT` | Specs, contracts, design decisions, and acceptance criteria | Interface only; remains the planning/specification classification and does not fill A1 delivery under the corrected route. |
+| `JAI::DEV::BUILDER` | Approved, bounded, PR-ready repository diffs | Interface only; fills A1 for `docs/reference` delivery under the corrected route, with no runtime implementation authority. |
 | `JAI::DEV::VERIFIER` | Reproducible checks and evidence | Interface only; no independent Agent is activated. |
 | `JAI::DEV::LIBRARIAN` | Durable documentation and knowledge | Interface only; distinct from the Council voting-role label `librarian`. |
 
@@ -328,12 +347,23 @@ Preflight observed:
 
 - default branch: `main`;
 - default SHA: `6f9dea1904066c45a75f3789377d32c2b0b16106`;
+- PR 378: closed and merged;
+- PR 378 title: `docs(reference): add Program 1 opening packet`;
+- PR 378 role: `JAI::DEV::BUILDER`;
 - PR 379: closed and merged;
 - PR 379 title: `docs(reference): record Program 1 opening receipt`;
+- PR 379 role: `JAI::DEV::BUILDER`;
 - PR 379 squash: `6f9dea1904066c45a75f3789377d32c2b0b16106`;
 - receipt artifact: present on `main`;
 - open PR count: `0`; and
 - target A1 branch: absent before local creation.
+
+Correction preflight confirmed that the existing A1 branch remained at
+`3956fb1ae2513708ed989ee27bce1e5158fe2c92`, was synchronized with its
+upstream, and still had no PR. The rolemap has no explicit `docs/reference`
+rule, so the role guard applies `defaultAllowedRoles`, which permits Builder
+and Verifier. The explicit CONTROL_THREAD correction selects Builder,
+consistent with PRs 378 and 379.
 
 Four older Q3M7 remote branches remain, each one commit ahead of an old merge
 base and substantially behind current `main`:
@@ -402,7 +432,7 @@ an accepted machine ledger.
 | `CONTROL-001` | Control thread | HUMAN_OPERATOR governs; ChatGPT routes/accepts; Codex executes/evidences; JAI_Control_Thread is inactive. | Fresh A1 route plus accepted opening receipt | `ACCEPTED_CURRENT` | Older static architecture may use broader control-thread language. | Governing classification for A1. | Future native activation requires separate Program authority. | No JAI participation inferred. |
 | `EXECUTOR-001` | Executor roles | Five `JAI::DEV::*` names are portable executor-role interfaces. | `roles/README.md`; `roles/rolemap.json` | `STATIC_CONFIGURATION` | "Agent" terminology can be mistaken for activation. | Use as role interfaces only. | Future registry work must separate identity, role, and runtime. | Exactly five current dev roles. |
 | `EXECUTOR-002` | Executor roles | MASTER_ROLEMAP is a complete current Agent registry. | `jai-agents/MASTER_ROLEMAP.json` | `LEGACY` | Generated `2026-01-27`; scans only two repos and proves no runtime. | Partial static inventory. | Refresh only through a separate registry route. | External agency registry remains unavailable. |
-| `ROLE-GUARD-001` | Role guard | A1 uses `JAI::DEV::ARCHITECT` for a `docs/reference` planning artifact. | Fresh A1 route; `roles/rolemap.json`; `.github/workflows/role-guardrails.yml` | `UNRESOLVED` | `docs/reference` matches no explicit rule, and default allowed roles omit Architect; a future PR is expected to fail the mechanical role guard. | CONTROL_THREAD hold for acceptance-path reconciliation. | Separate decision must authorize a rolemap/path correction or another explicit compliant acceptance path. | A1 does not modify guardrails or change the required role. |
+| `ROLE-GUARD-001` | Role guard | The original A1 route assigned `JAI::DEV::ARCHITECT`; CONTROL_THREAD corrected current A1 delivery to `JAI::DEV::BUILDER` before PR creation or acceptance. | Original A1 route; correction token; `roles/rolemap.json`; `.github/workflows/role-guardrails.yml`; PRs 378 and 379 | `ACCEPTED_CURRENT` | `docs/reference` still has no explicit path rule and falls through to Builder/Verifier defaults. | Resolved for A1 by explicit CONTROL_THREAD route correction to Builder. | A future explicit `docs/reference` rule is non-blocking factory-hardening candidate work requiring a separate route. | The historical mismatch is preserved; the rolemap and workflow were not repaired or changed. |
 | `VOTING-001` | Voting roles | Motion 0046 says Arbiter makes final governance calls. | `.nexus/motions/motion-0046/proposal.md`; `.nexus/model-slots-phase1.yaml` | `CONTRADICTORY` | Current direction limits Arbiter to internal voting posture under HUMAN_OPERATOR and CONTROL_THREAD. | Motion 0046 remains ratified within phase scope; current authority is human-supervised. | Possible future Motion vocabulary reconciliation; no A1 amendment. | Arbiter cannot supersede human authority. |
 | `VOTING-002` | Voting roles | Council optional `librarian` is the executor `JAI::DEV::LIBRARIAN`. | `.nexus/council.config.yaml`; `roles/README.md` | `UNRESOLVED` | Same word names different namespaces and duties. | Treat as distinct labels. | Future schema should add explicit namespace/type fields. | No identity merge. |
 | `MODEL-LEGACY-001` | Model slots | Thirty all-OpenAI candidate slots and five selectors represent current staffing. | `.nexus/model-slots.yaml` | `PLACEHOLDER` | Superseded for Phase 1 by Motion 0046, but file remains present. | Legacy fallback/config evidence only. | Future reconciliation may deprecate through a separate Motion. | Same model in every slot is not independence. |
@@ -539,8 +569,8 @@ Before later Batch A work may be routed:
 
 1. A1 must be reviewed and accepted through a separate CONTROL_THREAD
    disposition.
-2. The `JAI::DEV::ARCHITECT` versus `docs/reference` role-guard mismatch must
-   receive an explicit compliant resolution.
+2. The corrected `JAI::DEV::BUILDER` delivery-role receipt must remain
+   explicit in the A1 artifact and PR description.
 3. The A1 artifact must be the only changed path in its branch.
 4. `origin/main` and GitHub default `main` must be freshly reverified.
 5. No conflicting open PR or current lane may cover the same scope.
@@ -566,7 +596,8 @@ A separately authorized A2 could:
   artifact;
 - pin every current repository claim to a fresh accepted SHA;
 - assign explicit disposition owners and follow-up classes;
-- reconcile the Architect/docs-reference acceptance-path mismatch;
+- identify a future explicit `docs/reference` role rule as non-blocking
+  PR Factory hardening, without applying it;
 - propose, without applying, a Motion 0046 Arbiter vocabulary reconciliation;
 - define namespace-safe executor, voting, and Council role fields; and
 - identify which claims require later Batch B lifecycle or receipt work.
@@ -581,8 +612,10 @@ A2 may not, unless separately and expressly authorized:
   or
 - route A3, another Wave, another Batch, or a Work Packet.
 
-The A2 candidate remains blocked behind independent A1 acceptance and the
-named role-guard disposition.
+The A2 candidate remains blocked behind independent A1 acceptance and a
+separate explicit route. The corrected A1 role path is no longer an A2
+prerequisite, and a future explicit `docs/reference` role rule is not an A2
+acceptance dependency.
 
 ## 23. A1 acceptance and exit evidence
 
@@ -590,7 +623,7 @@ A1 may be considered for acceptance only when the external lane closeout
 records:
 
 - starting and ending `origin/main`;
-- exact branch and one commit;
+- exact branch, original A1 commit, and one role-correction commit;
 - exact one-file scope;
 - artifact line count;
 - required section, ledger-column, vocabulary, role, boundary, and
@@ -606,11 +639,11 @@ records:
 - independent CONTROL_THREAD disposition.
 
 The artifact cannot accept itself. A branch, commit, push, or future PR does
-not resolve the role-guard hold or route A2.
+not accept A1 or route A2.
 
 A1 exit posture before independent acceptance is:
 
-`STAGED_PENDING_PR / CONTROL_THREAD_REVIEW_REQUIRED`
+`STAGED_PENDING_PR`
 
 ## 24. Non-authorized behaviors
 
@@ -647,7 +680,8 @@ A1 does not authorize:
 
 | Risk | Severity | Current disposition |
 | --- | --- | --- |
-| Required Architect role is not allowed by the default rolemap path for `docs/reference`. | High acceptance-path risk | Named CONTROL_THREAD hold; no silent role change or guardrail edit. |
+| Original A1 route assigned Architect to a `docs/reference` delivery path that does not permit Architect by default. | Resolved routing error | CONTROL_THREAD corrected A1 delivery to Builder before PR creation; original mismatch remains recorded. |
+| `docs/reference` has no explicit path-specific role rule. | Low, non-blocking factory-hardening observation | Builder/Verifier defaults remain enforced; any explicit rule requires separately routed future work. |
 | Motion 0046 calls Arbiter final decision authority. | Medium governance-language risk | Preserve Motion; current human-supervised boundary controls; future explicit reconciliation candidate. |
 | Program graph and Corpus documents contain open/active claims that conflict across time and scope. | Medium ledger risk | Preserve and classify; current receipt controls Program count. |
 | Phase 1 files use `live` and `active` labels without runtime/provider evidence. | High interpretation risk | Static configuration only. |
@@ -656,10 +690,12 @@ A1 does not authorize:
 | Several sibling checkouts are stale, gone-branch, behind, or dirty. | Medium cross-repo freshness risk | Advisory only; fresh per-repo routes required. |
 | Linear mirrors can appear operational because they are In Progress. | Low authority-confusion risk | Mirror-only labels and repository receipt links remain controlling. |
 
-The acceptance-path risk is procedural but concrete: the current workflow
-would evaluate `docs/reference/q3m7-accepted-main-state-reconciliation-planning-v0.md`
-under `defaultAllowedRoles`, which lists Builder and Verifier but not
-Architect. A1 neither conceals nor repairs that mismatch.
+The original acceptance-path mismatch was concrete and is preserved as
+historical evidence. CONTROL_THREAD resolved it for current A1 delivery by
+correcting the role to Builder before PR creation or acceptance. The rolemap
+and workflow were not repaired or changed. Their lack of an explicit
+`docs/reference` rule remains a low, non-blocking factory-hardening
+observation.
 
 ## 26. Verification notes
 
@@ -678,6 +714,21 @@ Pre-authoring verification:
 - external agency-registry filenames absent from the local workspace; and
 - no conflicting A1 artifact observed.
 
+Role-correction preflight:
+
+- worktree clean;
+- `origin/main` remained
+  `6f9dea1904066c45a75f3789377d32c2b0b16106`;
+- existing branch HEAD was exactly
+  `3956fb1ae2513708ed989ee27bce1e5158fe2c92`;
+- branch upstream synchronization was `0 / 0`;
+- branch versus `origin/main` was `0 / 1`;
+- no PR existed for the branch;
+- `docs/reference` matched no explicit rolemap rule;
+- `defaultAllowedRoles` contained Builder and Verifier;
+- PR 378 declared `Role: JAI::DEV::BUILDER`; and
+- PR 379 declared `Role: JAI::DEV::BUILDER`.
+
 Read-only repository evidence included:
 
 - the Program opening packet and receipt;
@@ -692,7 +743,7 @@ Read-only repository evidence included:
 - current Linear Program mirror; and
 - locally available sibling-repository HEAD and status observations.
 
-Final pre-staging validation against the completed artifact:
+Final role-correction validation against the completed artifact:
 
 - required section and order scan: exit `0`; 28/28 sections;
 - contradiction-ledger shape scan: exit `0`; required columns and 25
@@ -702,9 +753,9 @@ Final pre-staging validation against the completed artifact:
   recommendation scans: exit `0`;
 - unresolved template-marker scan: exit `0`;
 - positive execution-authority scan: no match;
-- one-file untracked scope scan: exact authorized artifact only;
+- one-file correction scope scan: exact authorized artifact only;
 - `git diff --check`: exit `0`;
-- untracked artifact whitespace check: no diagnostic;
+- modified artifact whitespace check: no diagnostic;
 - `corepack pnpm -C portal lint`: exit `0`; and
 - `corepack pnpm -C portal typecheck`: exit `0`.
 
@@ -716,18 +767,19 @@ browser, deployment, or production command was required or run.
 
 ## 27. Decision recommendation
 
-`HOLD_FOR_CONTROL_THREAD_RECONCILIATION`
+`PASS_FOR_SEPARATELY_ROUTED_A2`
 
 Reason:
 
-The evidence domains are sufficiently classified for planning, but the
-required `JAI::DEV::ARCHITECT` PR role conflicts with the repository's
-mechanical default role allowance for the only changed `docs/reference` path.
-That acceptance-path mismatch must receive an explicit CONTROL_THREAD
-resolution before A1 can be accepted or A2 can be separately considered.
+The evidence domains are sufficiently classified for A1 PR review, and the
+original role-path mismatch is resolved for current delivery by the explicit
+CONTROL_THREAD correction to `JAI::DEV::BUILDER`. The absence of an explicit
+`docs/reference` role rule remains a non-blocking future factory-hardening
+candidate.
 
-This hold does not reject Motion 0046, change Program state, route A2, or grant
-permission to edit role guardrails.
+This recommendation supports A1 PR review. It does not accept A1, route A2,
+open an execution gate, change Program state, or grant permission to edit role
+guardrails.
 
 ## 28. ZERO GATES GRANTED
 
@@ -736,7 +788,7 @@ PROGRAM: Q3M7Y26-P1
 PROGRAM_1: OPEN_FOR_BATCH_PLANNING_ONLY
 BATCH_A: PLANNING_AUTHORIZED / A1_ROUTED
 WAVE_A_A: DEFINED_FOR_A1 / NO_EXECUTION_AUTHORITY
-LANE_A1: PLANNING_ONLY / STAGED_PENDING_PR
+LANE_A1: STAGED_PENDING_PR
 A2: NOT_ROUTED
 BATCHES_B_F: CANDIDATE / NOT_ROUTED
 PROGRAMS_2_4: DOWNSTREAM_FROZEN
