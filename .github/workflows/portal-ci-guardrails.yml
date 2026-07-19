@@ -106,6 +106,84 @@ jobs:
           set -euo pipefail
           pnpm exec tsc --noEmit
 
+      - name: Guardrail - bounded control-plane behavioral tests
+        shell: bash
+        working-directory: portal
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const { spawnSync } = require("node:child_process");
+
+          const testRoot = path.join("src", "lib", "controlPlane");
+          const loopSource = path.join(
+            testRoot,
+            "motionKernel",
+            "local-operating-loop.ts",
+          );
+          const loopTest = path.join(
+            testRoot,
+            "motionKernel",
+            "local-operating-loop.test.ts",
+          );
+
+          function discoverTests(directory) {
+            return fs
+              .readdirSync(directory, { withFileTypes: true })
+              .flatMap((entry) => {
+                const entryPath = path.join(directory, entry.name);
+                if (entry.isDirectory()) {
+                  return discoverTests(entryPath);
+                }
+                return entry.isFile() && entry.name.endsWith(".test.ts")
+                  ? [entryPath]
+                  : [];
+              });
+          }
+
+          if (fs.existsSync(loopSource) && !fs.existsSync(loopTest)) {
+            console.error(
+              `Required test missing: ${loopSource} exists but ${loopTest} does not.`,
+            );
+            process.exit(1);
+          }
+
+          const testFiles = discoverTests(testRoot).sort((left, right) =>
+            Buffer.compare(Buffer.from(left), Buffer.from(right)),
+          );
+
+          if (testFiles.length === 0) {
+            console.error(
+              `No bounded control-plane tests discovered beneath ${testRoot}.`,
+            );
+            process.exit(1);
+          }
+
+          if (fs.existsSync(loopSource) && !testFiles.includes(loopTest)) {
+            console.error(`Required test was not discovered: ${loopTest}`);
+            process.exit(1);
+          }
+
+          console.log(
+            `Discovered ${testFiles.length} control-plane behavioral tests.`,
+          );
+          for (const testFile of testFiles) {
+            console.log(`Running ${JSON.stringify(testFile)}`);
+            const result = spawnSync(
+              "corepack",
+              ["pnpm", "exec", "tsx", testFile],
+              { stdio: "inherit" },
+            );
+            if (result.error) {
+              throw result.error;
+            }
+            if (result.status !== 0) {
+              process.exit(result.status ?? 1);
+            }
+          }
+          NODE
+
       - name: Build portal
         shell: bash
         working-directory: portal
