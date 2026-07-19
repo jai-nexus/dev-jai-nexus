@@ -9,6 +9,7 @@ import {
   OperatorPanel,
   OperatorSectionHeader,
 } from "@/components/operator/slate";
+import { LocalOperatingLoopPanel } from "./LocalOperatingLoopPanel";
 import { ManualDeliberationAction } from "./ManualDeliberationAction";
 import { MotionApprovalDraftSurface } from "./MotionApprovalDraftSurface";
 import {
@@ -432,6 +433,8 @@ export function NativeMotionIntakeComposer({
           </div>
         </OperatorGateCard>
       </OperatorPanel>
+
+      <LocalOperatingLoopPanel selectedMotion={selectedMotion} />
 
       <ManualDeliberationAction
         motions={motions}
