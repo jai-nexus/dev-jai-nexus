@@ -1059,6 +1059,153 @@ const localOperatingLoopDecisionConfirmationNonAuthorizations = [
   "No JAI activation.",
 ] as const;
 
+function isLocalOperatingLoopDecision(
+  value: unknown,
+): value is LocalOperatingLoopDecision {
+  return (
+    value === "ACCEPT" || value === "HOLD" || value === "REJECT"
+  );
+}
+
+function isStructurallyValidLocalOperatingLoopInput(
+  value: unknown,
+): value is LocalOperatingLoopInput {
+  return (
+    isRecord(value) && localOperatingLoopInputSchema.safeParse(value).success
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationUiState(
+  value: unknown,
+): value is LocalOperatingLoopUiState {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "activeRequestId",
+      "artifact",
+      "deliberationProof",
+      "findingCodes",
+      "projectionKey",
+      "recommendation",
+      "state",
+      "validationProof",
+      "workPacket",
+    ]) &&
+    typeof value.projectionKey === "string" &&
+    value.state === "AWAITING_DECISION" &&
+    isLocalOperatingLoopValidationProof(value.validationProof) &&
+    isLocalOperatingLoopDeliberationProof(value.deliberationProof) &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+    value.workPacket === null &&
+    value.artifact === null &&
+    (value.activeRequestId === null ||
+      (typeof value.activeRequestId === "number" &&
+        Number.isSafeInteger(value.activeRequestId) &&
+        value.activeRequestId > 0))
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationContext(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationContext {
+  if (
+    !isRecord(value) ||
+    (!hasExactKeys(value, [
+      "currentProjectionKey",
+      "motion",
+      "state",
+    ]) &&
+      !hasExactKeys(value, [
+        "currentProjectionKey",
+        "motion",
+        "requiresFreshValidation",
+        "state",
+      ]))
+  ) {
+    return false;
+  }
+  return (
+    typeof value.currentProjectionKey === "string" &&
+    isStructurallyValidLocalOperatingLoopInput(value.motion) &&
+    isLocalOperatingLoopDecisionConfirmationUiState(value.state) &&
+    (!("requiresFreshValidation" in value) ||
+      typeof value.requiresFreshValidation === "boolean")
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationBasis(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationBasis {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "decision",
+      "deliberationProof",
+      "findingCodes",
+      "projectionKey",
+      "recommendation",
+      "validationProof",
+    ]) &&
+    typeof value.projectionKey === "string" &&
+    isLocalOperatingLoopValidationProof(value.validationProof) &&
+    isLocalOperatingLoopDeliberationProof(value.deliberationProof) &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+    isLocalOperatingLoopDecision(value.decision)
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationState(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationState {
+  if (!isRecord(value)) {
+    return false;
+  }
+  if (value.phase === "IDLE") {
+    return hasExactKeys(value, ["basis", "phase"]) && value.basis === null;
+  }
+  if (value.phase !== "REVIEWING" && value.phase !== "CLAIMED") {
+    return false;
+  }
+  return (
+    hasExactKeys(value, ["basis", "decision", "phase"]) &&
+    isLocalOperatingLoopDecision(value.decision) &&
+    isLocalOperatingLoopDecisionConfirmationBasis(value.basis) &&
+    value.decision === value.basis.decision
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationBeginInput(
+  value: unknown,
+): value is {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+  decision: LocalOperatingLoopDecision;
+} {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["confirmation", "context", "decision"]) &&
+    isLocalOperatingLoopDecisionConfirmationState(value.confirmation) &&
+    isLocalOperatingLoopDecisionConfirmationContext(value.context) &&
+    isLocalOperatingLoopDecision(value.decision)
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationOperationInput(
+  value: unknown,
+): value is {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+} {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["confirmation", "context"]) &&
+    isLocalOperatingLoopDecisionConfirmationState(value.confirmation) &&
+    isLocalOperatingLoopDecisionConfirmationContext(value.context)
+  );
+}
+
 export function clearLocalOperatingLoopDecisionConfirmation(): LocalOperatingLoopDecisionConfirmationState {
   return { phase: "IDLE", basis: null };
 }
@@ -1071,6 +1218,9 @@ export function beginLocalOperatingLoopDecisionConfirmation(input: {
   LocalOperatingLoopDecisionConfirmationState,
   { phase: "REVIEWING" }
 > | null {
+  if (!isLocalOperatingLoopDecisionConfirmationBeginInput(input)) {
+    return null;
+  }
   if (input.confirmation.phase !== "IDLE") {
     return null;
   }
@@ -1091,6 +1241,9 @@ export function claimLocalOperatingLoopDecisionConfirmation(input: {
   LocalOperatingLoopDecisionConfirmationState,
   { phase: "CLAIMED" }
 > | null {
+  if (!isLocalOperatingLoopDecisionConfirmationOperationInput(input)) {
+    return null;
+  }
   if (input.confirmation.phase !== "REVIEWING") {
     return null;
   }
@@ -1121,6 +1274,9 @@ export function claimLocalOperatingLoopDecisionConfirmation(input: {
 export function cancelLocalOperatingLoopDecisionConfirmation(
   confirmation: LocalOperatingLoopDecisionConfirmationState,
 ): LocalOperatingLoopDecisionConfirmationState {
+  if (!isLocalOperatingLoopDecisionConfirmationState(confirmation)) {
+    return clearLocalOperatingLoopDecisionConfirmation();
+  }
   return confirmation.phase === "REVIEWING"
     ? clearLocalOperatingLoopDecisionConfirmation()
     : confirmation;
@@ -1130,6 +1286,9 @@ export function isLocalOperatingLoopDecisionConfirmationCurrent(input: {
   confirmation: LocalOperatingLoopDecisionConfirmationState;
   context: LocalOperatingLoopDecisionConfirmationContext;
 }): boolean {
+  if (!isLocalOperatingLoopDecisionConfirmationOperationInput(input)) {
+    return false;
+  }
   if (input.confirmation.phase === "IDLE") {
     return true;
   }
@@ -1155,12 +1314,16 @@ export function createLocalOperatingLoopDecisionConfirmationPresentation(input: 
   context: LocalOperatingLoopDecisionConfirmationContext;
 }): LocalOperatingLoopDecisionConfirmationPresentation | null {
   if (
+    !isLocalOperatingLoopDecisionConfirmationOperationInput(input) ||
     input.confirmation.phase === "IDLE" ||
     !isLocalOperatingLoopDecisionConfirmationCurrent(input)
   ) {
     return null;
   }
   const { phase, basis } = input.confirmation;
+  if (!isLocalOperatingLoopDecision(basis.decision)) {
+    return null;
+  }
   const copy = localOperatingLoopDecisionConfirmationCopy[basis.decision];
   return {
     phase,

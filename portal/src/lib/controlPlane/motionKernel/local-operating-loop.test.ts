@@ -262,6 +262,14 @@ function decisionConfirmationContext(
   };
 }
 
+function callWithoutThrow<T>(operation: () => T): T {
+  let result: T | undefined;
+  assert.doesNotThrow(() => {
+    result = operation();
+  });
+  return result as T;
+}
+
 async function testStrictStructuralValidationAndNormalization() {
   const parsed = parseLocalOperatingLoopAction({
     action: "VALIDATE",
@@ -1414,6 +1422,13 @@ async function testDecisionConfirmationInvalidatesOnEveryBasisChange() {
     },
     {
       ...reviewing,
+      basis: {
+        ...reviewing.basis,
+        findingCodes: [...reviewing.basis.findingCodes].reverse(),
+      },
+    },
+    {
+      ...reviewing,
       basis: { ...reviewing.basis, decision: "REJECT" },
     },
   ];
@@ -2026,6 +2041,491 @@ async function testD5D6FrozenContractsAndProductionIsolationRemainIntact() {
   );
   assert.match(handlerSource, /timingSafeEqual\(/);
   assert.match(routeSource, /getToken/);
+}
+
+async function testMalformedDecisionConfirmationStatesFailClosedWithoutThrowing() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const idle = clearLocalOperatingLoopDecisionConfirmation();
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: idle,
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+  const claimed = claimLocalOperatingLoopDecisionConfirmation({
+    confirmation: reviewing,
+    context,
+  });
+  assert.ok(claimed);
+  const basis = reviewing.basis;
+  const unknownDecision = "UNKNOWN_DECISION_PRIVATE_VALUE";
+  const unknownFinding = "UNKNOWN_FINDING_PRIVATE_VALUE";
+  const missingBasisKey = {
+    decision: basis.decision,
+    deliberationProof: basis.deliberationProof,
+    findingCodes: basis.findingCodes,
+    recommendation: basis.recommendation,
+    validationProof: basis.validationProof,
+  };
+
+  const malformedFixtures: Array<{
+    label: string;
+    value: unknown;
+    privateMarker?: string;
+  }> = [
+    { label: "undefined", value: undefined },
+    { label: "null", value: null },
+    { label: "boolean", value: true },
+    { label: "number", value: 17 },
+    {
+      label: "string",
+      value: "MALFORMED_CONFIRMATION_PRIVATE_VALUE",
+      privateMarker: "MALFORMED_CONFIRMATION_PRIVATE_VALUE",
+    },
+    { label: "array", value: [] },
+    { label: "empty record", value: {} },
+    {
+      label: "unknown phase",
+      value: { phase: "UNKNOWN", basis: null },
+    },
+    { label: "missing phase", value: { basis: null } },
+    { label: "missing basis", value: { phase: "IDLE" } },
+    {
+      label: "unexpected IDLE key",
+      value: { phase: "IDLE", basis: null, extra: true },
+    },
+    {
+      label: "IDLE non-null basis",
+      value: { phase: "IDLE", basis: {} },
+    },
+    {
+      label: "REVIEWING null basis",
+      value: { phase: "REVIEWING", decision: "HOLD", basis: null },
+    },
+    {
+      label: "REVIEWING primitive basis",
+      value: { phase: "REVIEWING", decision: "HOLD", basis: 3 },
+    },
+    {
+      label: "CLAIMED array basis",
+      value: { phase: "CLAIMED", decision: "HOLD", basis: [] },
+    },
+    {
+      label: "unknown decision",
+      value: {
+        phase: "REVIEWING",
+        decision: unknownDecision,
+        basis: { ...basis, decision: unknownDecision },
+      },
+      privateMarker: unknownDecision,
+    },
+    {
+      label: "mismatched decision",
+      value: { ...reviewing, decision: "REJECT" },
+    },
+    {
+      label: "missing basis key",
+      value: { ...reviewing, basis: missingBasisKey },
+    },
+    {
+      label: "extra basis key",
+      value: { ...reviewing, basis: { ...basis, extra: true } },
+    },
+    {
+      label: "non-string projection key",
+      value: { ...reviewing, basis: { ...basis, projectionKey: 42 } },
+    },
+    {
+      label: "malformed validation proof",
+      value: {
+        ...reviewing,
+        basis: { ...basis, validationProof: "malformed-validation" },
+      },
+    },
+    {
+      label: "malformed deliberation proof",
+      value: {
+        ...reviewing,
+        basis: { ...basis, deliberationProof: "malformed-deliberation" },
+      },
+    },
+    {
+      label: "unknown recommendation",
+      value: {
+        ...reviewing,
+        basis: { ...basis, recommendation: "EXECUTE" },
+      },
+    },
+    {
+      label: "non-array finding codes",
+      value: { ...reviewing, basis: { ...basis, findingCodes: "TITLE" } },
+    },
+    {
+      label: "duplicate finding codes",
+      value: {
+        ...reviewing,
+        basis: {
+          ...basis,
+          findingCodes: ["TITLE_TOO_SHORT", "TITLE_TOO_SHORT"],
+        },
+      },
+    },
+    {
+      label: "unknown finding code",
+      value: {
+        ...reviewing,
+        basis: { ...basis, findingCodes: [unknownFinding] },
+      },
+      privateMarker: unknownFinding,
+    },
+    {
+      label: "unexpected REVIEWING key",
+      value: { ...reviewing, extra: true },
+    },
+    {
+      label: "missing CLAIMED decision",
+      value: { phase: "CLAIMED", basis: claimed.basis },
+    },
+  ];
+
+  for (const fixture of malformedFixtures) {
+    const malformed =
+      fixture.value as LocalOperatingLoopDecisionConfirmationState;
+    assert.deepEqual(
+      callWithoutThrow(() =>
+        cancelLocalOperatingLoopDecisionConfirmation(malformed),
+      ),
+      idle,
+      fixture.label,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        beginLocalOperatingLoopDecisionConfirmation({
+          confirmation: malformed,
+          context,
+          decision: "HOLD",
+        }),
+      ),
+      null,
+      fixture.label,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        claimLocalOperatingLoopDecisionConfirmation({
+          confirmation: malformed,
+          context,
+        }),
+      ),
+      null,
+      fixture.label,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        isLocalOperatingLoopDecisionConfirmationCurrent({
+          confirmation: malformed,
+          context,
+        }),
+      ),
+      false,
+      fixture.label,
+    );
+    const presentation = callWithoutThrow(() =>
+      createLocalOperatingLoopDecisionConfirmationPresentation({
+        confirmation: malformed,
+        context,
+      }),
+    );
+    assert.equal(presentation, null, fixture.label);
+    if (fixture.privateMarker) {
+      assert.equal(
+        JSON.stringify(presentation).includes(fixture.privateMarker),
+        false,
+        fixture.label,
+      );
+    }
+  }
+
+  assert.deepEqual(
+    callWithoutThrow(clearLocalOperatingLoopDecisionConfirmation),
+    idle,
+  );
+  assert.equal(
+    isLocalOperatingLoopDecisionConfirmationCurrent({
+      confirmation: idle,
+      context,
+    }),
+    true,
+  );
+  assert.deepEqual(
+    cancelLocalOperatingLoopDecisionConfirmation(reviewing),
+    idle,
+  );
+  assert.equal(
+    cancelLocalOperatingLoopDecisionConfirmation(claimed),
+    claimed,
+  );
+}
+
+async function testMalformedDecisionConfirmationContextsAndEnvelopesFailClosed() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const idle = clearLocalOperatingLoopDecisionConfirmation();
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: idle,
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+  const state = context.state;
+  const stateWithoutValidationProof = {
+    activeRequestId: state.activeRequestId,
+    artifact: state.artifact,
+    deliberationProof: state.deliberationProof,
+    findingCodes: state.findingCodes,
+    projectionKey: state.projectionKey,
+    recommendation: state.recommendation,
+    state: state.state,
+    workPacket: state.workPacket,
+  };
+  const privateContextMarker = "MALFORMED_CONTEXT_PRIVATE_VALUE";
+
+  const malformedContexts: Array<{ label: string; value: unknown }> = [
+    { label: "undefined context", value: undefined },
+    { label: "null context", value: null },
+    { label: "boolean context", value: false },
+    { label: "number context", value: 9 },
+    { label: "string context", value: privateContextMarker },
+    { label: "array context", value: [] },
+    { label: "empty context", value: {} },
+    {
+      label: "missing current projection",
+      value: { motion: context.motion, state },
+    },
+    {
+      label: "unexpected context key",
+      value: { ...context, extra: true },
+    },
+    {
+      label: "non-string current projection",
+      value: { ...context, currentProjectionKey: 11 },
+    },
+    { label: "null motion", value: { ...context, motion: null } },
+    { label: "array motion", value: { ...context, motion: [] } },
+    {
+      label: "motion with extra key",
+      value: { ...context, motion: { ...context.motion, extra: true } },
+    },
+    {
+      label: "motion requiring normalization",
+      value: {
+        ...context,
+        motion: { ...context.motion, title: `  ${context.motion.title}  ` },
+      },
+    },
+    { label: "null state", value: { ...context, state: null } },
+    { label: "array state", value: { ...context, state: [] } },
+    {
+      label: "state missing key",
+      value: { ...context, state: stateWithoutValidationProof },
+    },
+    {
+      label: "state with extra key",
+      value: { ...context, state: { ...state, extra: true } },
+    },
+    {
+      label: "state non-string projection",
+      value: { ...context, state: { ...state, projectionKey: 22 } },
+    },
+    {
+      label: "state wrong phase",
+      value: { ...context, state: { ...state, state: "DRAFT" } },
+    },
+    {
+      label: "state malformed validation proof",
+      value: {
+        ...context,
+        state: { ...state, validationProof: "bad-validation" },
+      },
+    },
+    {
+      label: "state malformed deliberation proof",
+      value: {
+        ...context,
+        state: { ...state, deliberationProof: "bad-deliberation" },
+      },
+    },
+    {
+      label: "state unknown recommendation",
+      value: { ...context, state: { ...state, recommendation: "EXECUTE" } },
+    },
+    {
+      label: "state non-array findings",
+      value: { ...context, state: { ...state, findingCodes: "TITLE" } },
+    },
+    {
+      label: "state duplicate findings",
+      value: {
+        ...context,
+        state: {
+          ...state,
+          findingCodes: ["TITLE_TOO_SHORT", "TITLE_TOO_SHORT"],
+        },
+      },
+    },
+    {
+      label: "state unknown finding",
+      value: {
+        ...context,
+        state: { ...state, findingCodes: [privateContextMarker] },
+      },
+    },
+    {
+      label: "state populated Work Packet",
+      value: { ...context, state: { ...state, workPacket: {} } },
+    },
+    {
+      label: "state populated artifact",
+      value: { ...context, state: { ...state, artifact: {} } },
+    },
+    {
+      label: "state malformed request ID",
+      value: { ...context, state: { ...state, activeRequestId: "7" } },
+    },
+    {
+      label: "state non-positive request ID",
+      value: { ...context, state: { ...state, activeRequestId: 0 } },
+    },
+    {
+      label: "malformed freshness flag",
+      value: { ...context, requiresFreshValidation: "yes" },
+    },
+  ];
+
+  for (const fixture of malformedContexts) {
+    const malformed =
+      fixture.value as LocalOperatingLoopDecisionConfirmationContext;
+    assert.equal(
+      callWithoutThrow(() =>
+        beginLocalOperatingLoopDecisionConfirmation({
+          confirmation: idle,
+          context: malformed,
+          decision: "HOLD",
+        }),
+      ),
+      null,
+      fixture.label,
+    );
+    assert.equal(
+      callWithoutThrow<
+        ReturnType<typeof claimLocalOperatingLoopDecisionConfirmation>
+      >(
+        (): ReturnType<
+          typeof claimLocalOperatingLoopDecisionConfirmation
+        > =>
+          claimLocalOperatingLoopDecisionConfirmation({
+            confirmation: reviewing,
+            context: malformed,
+          }),
+      ),
+      null,
+      fixture.label,
+    );
+    assert.equal(
+      callWithoutThrow<boolean>(() =>
+        isLocalOperatingLoopDecisionConfirmationCurrent({
+          confirmation: reviewing,
+          context: malformed,
+        }),
+      ),
+      false,
+      fixture.label,
+    );
+    const presentation: ReturnType<
+      typeof createLocalOperatingLoopDecisionConfirmationPresentation
+    > = callWithoutThrow(
+      (): ReturnType<
+        typeof createLocalOperatingLoopDecisionConfirmationPresentation
+      > =>
+        createLocalOperatingLoopDecisionConfirmationPresentation({
+          confirmation: reviewing,
+          context: malformed,
+        }),
+    );
+    assert.equal(presentation, null, fixture.label);
+    assert.equal(
+      JSON.stringify(presentation).includes(privateContextMarker),
+      false,
+      fixture.label,
+    );
+  }
+
+  const malformedBeginEnvelopes: unknown[] = [
+    undefined,
+    null,
+    true,
+    23,
+    "MALFORMED_BEGIN_ENVELOPE",
+    [],
+    {},
+    { confirmation: idle, context },
+    { confirmation: idle, context, decision: "EXECUTE" },
+    { confirmation: idle, context, decision: "HOLD", extra: true },
+  ];
+  for (const malformed of malformedBeginEnvelopes) {
+    assert.equal(
+      callWithoutThrow(() =>
+        beginLocalOperatingLoopDecisionConfirmation(malformed as never),
+      ),
+      null,
+    );
+  }
+
+  const malformedOperationEnvelopes: unknown[] = [
+    undefined,
+    null,
+    false,
+    29,
+    "MALFORMED_OPERATION_ENVELOPE",
+    [],
+    {},
+    { confirmation: reviewing },
+    { context },
+    { confirmation: reviewing, context, extra: true },
+  ];
+  for (const malformed of malformedOperationEnvelopes) {
+    assert.equal(
+      callWithoutThrow(() =>
+        claimLocalOperatingLoopDecisionConfirmation(malformed as never),
+      ),
+      null,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        isLocalOperatingLoopDecisionConfirmationCurrent(malformed as never),
+      ),
+      false,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        createLocalOperatingLoopDecisionConfirmationPresentation(
+          malformed as never,
+        ),
+      ),
+      null,
+    );
+  }
+
+  const serverNormalizableContext = decisionConfirmationContext({
+    ...genuineGoInput,
+    title: `  ${genuineGoInput.title}  `,
+    summary: `${genuineGoInput.summary}\r\n`,
+  });
+  assert.ok(
+    beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: idle,
+      context: serverNormalizableContext,
+      decision: "HOLD",
+    }),
+  );
 }
 
 async function testCanonicalChangeClearsExplainabilityAndProofStatus() {
@@ -4986,6 +5486,8 @@ await testResetRecoveryLifecycleAndUnmountClearConfirmation();
 await testDecisionConfirmationAccessibleStaticWiring();
 await testExistingServerNonGoAcceptanceAndRecoveryRemainFailClosed();
 await testD5D6FrozenContractsAndProductionIsolationRemainIntact();
+await testMalformedDecisionConfirmationStatesFailClosedWithoutThrowing();
+await testMalformedDecisionConfirmationContextsAndEnvelopesFailClosed();
 await testCanonicalChangeClearsExplainabilityAndProofStatus();
 await testRecommendationExplanationRemainsServerDerived();
 await testStructuralRemediationRemainsDistinctFromSemanticGuidance();
