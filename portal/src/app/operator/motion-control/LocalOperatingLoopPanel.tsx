@@ -17,6 +17,8 @@ import {
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
   classifyLocalOperatingLoopClientResponse,
+  createLocalOperatingLoopProofStatus,
+  createLocalOperatingLoopRecommendationExplanation,
   createLocalOperatingLoopRecoveryNotice,
   createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopProjectionKey,
@@ -298,6 +300,26 @@ function LocalOperatingLoopProjectionPanel({
   }
 
   const pending = uiState.activeRequestId !== null;
+  const proofStatus = createLocalOperatingLoopProofStatus({
+    state: uiState,
+    currentProjectionKey: projectionKey,
+    requiresFreshValidation:
+      structuralRemediations.length > 0 ||
+      recoveryNotice !== null ||
+      statusMessage === LOCAL_OPERATING_LOOP_PAGEHIDE_COPY ||
+      statusMessage === LOCAL_OPERATING_LOOP_RESTORED_COPY,
+  });
+  const recommendationExplanation = projectedInput
+    ? createLocalOperatingLoopRecommendationExplanation({
+        motion: projectedInput,
+        recommendation:
+          proofStatus.code === "DELIBERATION_CURRENT" ||
+          proofStatus.code === "DECISION_CURRENT"
+            ? uiState.recommendation
+            : null,
+        findingCodes: uiState.findingCodes,
+      })
+    : null;
 
   return (
     <OperatorPanel className="space-y-5 p-4">
@@ -505,15 +527,72 @@ function LocalOperatingLoopProjectionPanel({
               {uiState.recommendation ?? "not deliberated"}
             </OperatorBadge>
           </div>
-          <ul className="mt-3 space-y-1 text-xs text-slate-400">
-            {uiState.findingCodes.length === 0 ? (
-              <li>no findings</li>
-            ) : (
-              uiState.findingCodes.map((finding) => (
-                <li key={finding}>- {finding}</li>
-              ))
-            )}
-          </ul>
+          <section
+            aria-labelledby="local-operating-loop-recommendation-explanation-heading"
+            className="mt-4 border-t border-slate-800 pt-4"
+          >
+            <h3
+              id="local-operating-loop-recommendation-explanation-heading"
+              className="text-sm font-semibold text-slate-100"
+            >
+              Why this recommendation
+            </h3>
+            <p className="mt-2 text-xs leading-5 text-slate-300">
+              {recommendationExplanation?.summary ??
+                "No active canonical motion projection is available."}
+            </p>
+            {recommendationExplanation?.findings.length ? (
+              <ol
+                aria-label="Deterministic semantic findings"
+                className="mt-3 space-y-3"
+              >
+                {recommendationExplanation.findings.map((finding, index) => (
+                  <li
+                    key={finding.code ?? `fail-closed-${index}`}
+                    className="border-l-2 border-slate-700 pl-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-100">
+                        {finding.label}
+                      </span>
+                      {finding.code ? (
+                        <span className="font-mono text-xs text-slate-500">
+                          {finding.code}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-slate-400">
+                      {finding.sourceFact}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-cyan-200">
+                      <span className="font-semibold">Remediation:</span>{" "}
+                      {finding.remediation}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </section>
+          <section
+            aria-labelledby="local-operating-loop-proof-status-heading"
+            className="mt-4 border-t border-slate-800 pt-4"
+          >
+            <h3
+              id="local-operating-loop-proof-status-heading"
+              className="text-sm font-semibold text-slate-100"
+            >
+              Proof-chain status
+            </h3>
+            <div className="mt-2 font-mono text-xs uppercase text-cyan-200">
+              {proofStatus.label}
+            </div>
+            <p className="mt-2 text-xs leading-5 text-slate-300">
+              {proofStatus.message}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-amber-200">
+              {proofStatus.verificationBoundary}
+            </p>
+          </section>
           <p className="mt-3 text-xs text-red-200">
             Recommendation and proof are recomputed server-side. This panel does
             not persist, route, execute, or call a provider.

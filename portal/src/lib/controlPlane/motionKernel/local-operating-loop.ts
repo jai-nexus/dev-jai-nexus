@@ -196,6 +196,37 @@ export type LocalOperatingLoopUiState = {
   activeRequestId: number | null;
 };
 
+export type LocalOperatingLoopSemanticFindingExplanation = {
+  code: LocalOperatingLoopFindingCode | null;
+  label: string;
+  sourceFact: string;
+  remediation: string;
+  severity: "BLOCKER" | "REVISION" | "FAIL_CLOSED";
+};
+
+export type LocalOperatingLoopRecommendationExplanation = {
+  status: "CURRENT" | "NOT_ESTABLISHED" | "NOT_CURRENT";
+  summary: string;
+  findings: LocalOperatingLoopSemanticFindingExplanation[];
+};
+
+export type LocalOperatingLoopProofStatusCode =
+  | "NOT_ESTABLISHED"
+  | "STRUCTURE_CURRENT"
+  | "DELIBERATION_CURRENT"
+  | "DECISION_CURRENT"
+  | "NOT_CURRENT";
+
+export type LocalOperatingLoopProofStatus = {
+  code: LocalOperatingLoopProofStatusCode;
+  label: string;
+  message: string;
+  verificationBoundary: string;
+};
+
+export const LOCAL_OPERATING_LOOP_PROOF_VERIFICATION_BOUNDARY =
+  "The browser validates deterministic response coherence. HMAC authenticity remains server-bound; the browser does not possess NEXTAUTH_SECRET and does not independently authenticate HMAC proof material." as const;
+
 export type LocalOperatingLoopPresentationPhase =
   | LocalOperatingLoopState
   | "VALIDATING"
@@ -539,6 +570,292 @@ export function deriveLocalOperatingLoopRecommendation(
     findingCodes,
     advisoryOnly: true,
   };
+}
+
+export const LOCAL_OPERATING_LOOP_FINDING_ORDER = [
+  "TARGET_REPO_OUT_OF_SCOPE",
+  "CONTROL_THREAD_REQUIRED",
+  "TITLE_TOO_SHORT",
+  "SUMMARY_TOO_SHORT",
+  "EVIDENCE_REQUIRED",
+] as const satisfies readonly LocalOperatingLoopFindingCode[];
+
+const localOperatingLoopRecommendationSummaries = {
+  GO: "The server-derived recommendation found no semantic blocker or revision requirement. An explicit ADMIN local-shadow decision is still required.",
+  NEEDS_REVISION:
+    "The server-derived recommendation found no blocker, but one or more bounded fields require revision before an ADMIN local-shadow acceptance decision.",
+  BLOCKED:
+    "The server-derived recommendation found an authority or repository-scope blocker that must be resolved before an ADMIN local-shadow acceptance decision.",
+} as const satisfies Readonly<
+  Record<LocalOperatingLoopRecommendation, string>
+>;
+
+type LocalOperatingLoopSemanticFindingRule = {
+  code: LocalOperatingLoopFindingCode;
+  label: string;
+  severity: "BLOCKER" | "REVISION";
+  applies: (input: LocalOperatingLoopInput) => boolean;
+  sourceFact: (input: LocalOperatingLoopInput) => string;
+  remediation: string;
+};
+
+const localOperatingLoopSemanticFindingRules = [
+  {
+    code: "TARGET_REPO_OUT_OF_SCOPE",
+    label: "Target repository is outside the authorized scope",
+    severity: "BLOCKER",
+    applies: (input) => input.targetRepo !== "dev-jai-nexus",
+    sourceFact: (input) =>
+      `Target repository is within dev-jai-nexus scope: ${input.targetRepo === "dev-jai-nexus" ? "yes" : "no"}.`,
+    remediation: "Select dev-jai-nexus.",
+  },
+  {
+    code: "CONTROL_THREAD_REQUIRED",
+    label: "CONTROL_THREAD participation is required",
+    severity: "BLOCKER",
+    applies: (input) =>
+      !input.targetThreads.includes("JAI_CONTROL_THREAD"),
+    sourceFact: (input) =>
+      `JAI_CONTROL_THREAD is included: ${input.targetThreads.includes("JAI_CONTROL_THREAD") ? "yes" : "no"}.`,
+    remediation: "Include JAI_CONTROL_THREAD.",
+  },
+  {
+    code: "TITLE_TOO_SHORT",
+    label: "Title needs more detail",
+    severity: "REVISION",
+    applies: (input) => characterLength(input.title) < 8,
+    sourceFact: (input) =>
+      `Title length: ${characterLength(input.title)} Unicode code points; required minimum: 8.`,
+    remediation: "Provide at least 8 Unicode code points.",
+  },
+  {
+    code: "SUMMARY_TOO_SHORT",
+    label: "Purpose and summary need more detail",
+    severity: "REVISION",
+    applies: (input) => characterLength(input.summary) < 40,
+    sourceFact: (input) =>
+      `Purpose and summary length: ${characterLength(input.summary)} Unicode code points; required minimum: 40.`,
+    remediation: "Provide at least 40 Unicode code points.",
+  },
+  {
+    code: "EVIDENCE_REQUIRED",
+    label: "Evidence is required",
+    severity: "REVISION",
+    applies: (input) => input.evidencePointers.length === 0,
+    sourceFact: (input) =>
+      `Evidence-pointer count: ${input.evidencePointers.length}; required minimum: 1.`,
+    remediation: "Provide at least one evidence pointer.",
+  },
+] as const satisfies readonly LocalOperatingLoopSemanticFindingRule[];
+
+const localOperatingLoopGenericSemanticFinding = {
+  code: null,
+  label: "Semantic guidance is not current",
+  sourceFact:
+    "The current semantic findings could not be matched safely to the active canonical projection.",
+  remediation: "Validate and deliberate the active motion again.",
+  severity: "FAIL_CLOSED",
+} as const satisfies LocalOperatingLoopSemanticFindingExplanation;
+
+export function createLocalOperatingLoopRecommendationExplanation(input: {
+  motion: LocalOperatingLoopInput;
+  recommendation: LocalOperatingLoopRecommendation | null;
+  findingCodes: readonly unknown[];
+}): LocalOperatingLoopRecommendationExplanation {
+  if (input.recommendation === null) {
+    return {
+      status: "NOT_ESTABLISHED",
+      summary:
+        "No current server-derived recommendation is available. Validate and deliberate the active motion.",
+      findings: [],
+    };
+  }
+
+  const suppliedCodes = new Set(input.findingCodes);
+  const hasUnknownFinding = [...suppliedCodes].some(
+    (code) =>
+      typeof code !== "string" ||
+      !LOCAL_OPERATING_LOOP_FINDING_ORDER.includes(
+        code as LocalOperatingLoopFindingCode,
+      ),
+  );
+  const orderedRules = localOperatingLoopSemanticFindingRules.filter(
+    (rule) => suppliedCodes.has(rule.code),
+  );
+  const hasInconsistentFinding = orderedRules.some(
+    (rule) => !rule.applies(input.motion),
+  );
+  const expectedRecommendation = orderedRules.some(
+    (rule) => rule.severity === "BLOCKER",
+  )
+    ? "BLOCKED"
+    : orderedRules.length > 0
+      ? "NEEDS_REVISION"
+      : "GO";
+
+  if (
+    hasUnknownFinding ||
+    hasInconsistentFinding ||
+    expectedRecommendation !== input.recommendation
+  ) {
+    return {
+      status: "NOT_CURRENT",
+      summary:
+        "The semantic explanation is not current. Validate and deliberate the active motion again.",
+      findings: [{ ...localOperatingLoopGenericSemanticFinding }],
+    };
+  }
+
+  return {
+    status: "CURRENT",
+    summary: localOperatingLoopRecommendationSummaries[input.recommendation],
+    findings: orderedRules.map((rule) => ({
+      code: rule.code,
+      label: rule.label,
+      sourceFact: rule.sourceFact(input.motion),
+      remediation: rule.remediation,
+      severity: rule.severity,
+    })),
+  };
+}
+
+const localOperatingLoopProofStatusCopy = {
+  NOT_ESTABLISHED: {
+    label: "Not established",
+    message:
+      "No proof chain is current. Validate the active canonical projection to begin.",
+  },
+  STRUCTURE_CURRENT: {
+    label: "Structure current",
+    message:
+      "Structural validation was returned for the active canonical projection. Semantic deliberation has not completed.",
+  },
+  DELIBERATION_CURRENT: {
+    label: "Deliberation current",
+    message:
+      "A server-issued deliberation transition for the active canonical projection passed deterministic browser coherence checks.",
+  },
+  DECISION_CURRENT: {
+    label: "Decision current",
+    message:
+      "The server accepted the decision transition for the active canonical projection, and the terminal response passed deterministic browser coherence checks.",
+  },
+  NOT_CURRENT: {
+    label: "Not current",
+    message:
+      "Proof status is incomplete, inconsistent, invalidated, or requires fresh structural validation.",
+  },
+} as const satisfies Readonly<
+  Record<
+    LocalOperatingLoopProofStatusCode,
+    { label: string; message: string }
+  >
+>;
+
+export function createLocalOperatingLoopProofStatus(input: {
+  state: LocalOperatingLoopUiState;
+  currentProjectionKey: string;
+  requiresFreshValidation?: boolean;
+}): LocalOperatingLoopProofStatus {
+  const code = resolveLocalOperatingLoopProofStatus(input);
+  return {
+    code,
+    ...localOperatingLoopProofStatusCopy[code],
+    verificationBoundary: LOCAL_OPERATING_LOOP_PROOF_VERIFICATION_BOUNDARY,
+  };
+}
+
+function resolveLocalOperatingLoopProofStatus(input: {
+  state: LocalOperatingLoopUiState;
+  currentProjectionKey: string;
+  requiresFreshValidation?: boolean;
+}): LocalOperatingLoopProofStatusCode {
+  const { state } = input;
+  if (
+    input.requiresFreshValidation ||
+    state.projectionKey !== input.currentProjectionKey
+  ) {
+    return "NOT_CURRENT";
+  }
+
+  if (state.state === "DRAFT") {
+    return state.validationProof === null &&
+      state.deliberationProof === null &&
+      state.recommendation === null &&
+      state.findingCodes.length === 0 &&
+      state.workPacket === null &&
+      state.artifact === null
+      ? "NOT_ESTABLISHED"
+      : "NOT_CURRENT";
+  }
+
+  if (state.state === "VALIDATED") {
+    return isLocalOperatingLoopValidationProof(state.validationProof) &&
+      state.deliberationProof === null &&
+      state.recommendation === null &&
+      state.findingCodes.length === 0 &&
+      state.workPacket === null &&
+      state.artifact === null &&
+      state.activeRequestId === null
+      ? "STRUCTURE_CURRENT"
+      : "NOT_CURRENT";
+  }
+
+  if (state.state === "AWAITING_DECISION") {
+    return isCurrentLocalOperatingLoopDeliberationState(state)
+      ? "DELIBERATION_CURRENT"
+      : "NOT_CURRENT";
+  }
+
+  return isCurrentLocalOperatingLoopDecisionState(state)
+    ? "DECISION_CURRENT"
+    : "NOT_CURRENT";
+}
+
+function isCurrentLocalOperatingLoopDeliberationState(
+  state: LocalOperatingLoopUiState,
+): boolean {
+  return (
+    isLocalOperatingLoopValidationProof(state.validationProof) &&
+    isLocalOperatingLoopDeliberationProof(state.deliberationProof) &&
+    isLocalOperatingLoopRecommendation(state.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(state.findingCodes) &&
+    state.workPacket === null &&
+    state.artifact === null &&
+    state.activeRequestId === null
+  );
+}
+
+function isCurrentLocalOperatingLoopDecisionState(
+  state: LocalOperatingLoopUiState,
+): boolean {
+  if (
+    !isLocalOperatingLoopValidationProof(state.validationProof) ||
+    !isLocalOperatingLoopDeliberationProof(state.deliberationProof) ||
+    !isLocalOperatingLoopRecommendation(state.recommendation) ||
+    !isLocalOperatingLoopFindingCodeArray(state.findingCodes) ||
+    state.artifact === null ||
+    state.activeRequestId !== null ||
+    state.artifact.recommendation !== state.recommendation ||
+    !hasExactArrayValues(
+      state.artifact.finding_codes,
+      state.findingCodes,
+    )
+  ) {
+    return false;
+  }
+
+  if (state.state === "ACCEPTED") {
+    return state.artifact.decision === "ACCEPT" && state.workPacket !== null;
+  }
+  if (state.state === "HELD") {
+    return state.artifact.decision === "HOLD" && state.workPacket === null;
+  }
+  return (
+    state.state === "REJECTED" &&
+    state.artifact.decision === "REJECT" &&
+    state.workPacket === null
+  );
 }
 
 export function buildLocalOperatingLoopPacketMaterial(input: {
