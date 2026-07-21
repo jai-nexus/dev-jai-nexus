@@ -461,6 +461,79 @@ async function testExplainableRecommendationSnapshotsForGoNeedsRevisionAndBlocke
   );
 }
 
+async function testRecommendationExplanationRequiresCompleteApplicableFindingGraph() {
+  const incompleteCases = [
+    {
+      motion: needsRevisionInput,
+      recommendation: "GO" as const,
+      findingCodes: [],
+    },
+    {
+      motion: blockedInput,
+      recommendation: "BLOCKED" as const,
+      findingCodes: ["TARGET_REPO_OUT_OF_SCOPE"],
+    },
+    {
+      motion: needsRevisionInput,
+      recommendation: "NEEDS_REVISION" as const,
+      findingCodes: ["TITLE_TOO_SHORT"],
+    },
+  ];
+
+  for (const input of incompleteCases) {
+    const explanation =
+      createLocalOperatingLoopRecommendationExplanation(input);
+    assert.equal(explanation.status, "NOT_CURRENT");
+    assert.deepEqual(
+      explanation.findings.map((finding) => finding.code),
+      [null],
+    );
+  }
+
+  const complete = createLocalOperatingLoopRecommendationExplanation({
+    motion: blockedInput,
+    recommendation: "BLOCKED",
+    findingCodes: [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  });
+  assert.equal(complete.status, "CURRENT");
+  assert.deepEqual(
+    complete.findings.map((finding) => finding.code),
+    [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  );
+
+  const duplicateComplete =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: blockedInput,
+      recommendation: "BLOCKED",
+      findingCodes: [
+        ...LOCAL_OPERATING_LOOP_FINDING_ORDER,
+        "CONTROL_THREAD_REQUIRED",
+        "EVIDENCE_REQUIRED",
+      ],
+    });
+  assert.equal(duplicateComplete.status, "CURRENT");
+  assert.deepEqual(
+    duplicateComplete.findings.map((finding) => finding.code),
+    [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  );
+
+  const findingsWithoutRecommendation =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: needsRevisionInput,
+      recommendation: null,
+      findingCodes: [
+        "TITLE_TOO_SHORT",
+        "SUMMARY_TOO_SHORT",
+        "EVIDENCE_REQUIRED",
+      ],
+    });
+  assert.equal(findingsWithoutRecommendation.status, "NOT_CURRENT");
+  assert.deepEqual(
+    findingsWithoutRecommendation.findings.map((finding) => finding.code),
+    [null],
+  );
+}
+
 async function testFindingExplanationsBindToCanonicalSourceAndPrecedence() {
   const precedenceInput: LocalOperatingLoopInput = {
     ...genuineGoInput,
@@ -642,6 +715,86 @@ async function testProofStatusIsProjectionBoundFounderReadableAndRedacted() {
   );
   assert.match(founderCopy, /HMAC authenticity remains server-bound/);
   assert.doesNotMatch(founderCopy, /browser verified/i);
+}
+
+async function testPendingRequestsPreserveCurrentPriorTransition() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const pendingValidation: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    activeRequestId: 101,
+  };
+  const pendingDeliberation: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    state: "VALIDATED",
+    validationProof: SYNTHETIC_VALIDATION_PROOF,
+    activeRequestId: 102,
+  };
+  const awaitingDecision: LocalOperatingLoopUiState = {
+    ...pendingDeliberation,
+    state: "AWAITING_DECISION",
+    deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+    recommendation: "GO",
+  };
+
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: pendingValidation,
+      currentProjectionKey: projectionKey,
+    }).code,
+    "NOT_ESTABLISHED",
+  );
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: pendingDeliberation,
+      currentProjectionKey: projectionKey,
+    }).code,
+    "STRUCTURE_CURRENT",
+  );
+
+  for (const [index, decision] of [
+    "ACCEPT",
+    "HOLD",
+    "REJECT",
+  ].entries()) {
+    const pendingDecision: LocalOperatingLoopUiState = {
+      ...awaitingDecision,
+      activeRequestId: 103 + index,
+    };
+    const proofStatus = createLocalOperatingLoopProofStatus({
+      state: pendingDecision,
+      currentProjectionKey: projectionKey,
+    });
+    assert.equal(
+      proofStatus.code,
+      "DELIBERATION_CURRENT",
+      `${decision} must preserve the current deliberation proof`,
+    );
+
+    const explanation =
+      createLocalOperatingLoopRecommendationExplanation({
+        motion: genuineGoInput,
+        recommendation:
+          proofStatus.code === "DELIBERATION_CURRENT" ||
+          proofStatus.code === "DECISION_CURRENT"
+            ? pendingDecision.recommendation
+            : null,
+        findingCodes: pendingDecision.findingCodes,
+      });
+    assert.equal(
+      explanation.status,
+      "CURRENT",
+      `${decision} must preserve the current recommendation explanation`,
+    );
+  }
+
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: acceptedUiState(projectionKey),
+      currentProjectionKey: projectionKey,
+    }).code,
+    "NOT_CURRENT",
+  );
 }
 
 async function testProofStatusReturnsNotCurrentForInconsistentState() {
@@ -3594,10 +3747,12 @@ await testStrictStructuralValidationAndNormalization();
 await testRejectsEveryAuthorityBearingOrUnknownFieldClass();
 await testExactDeterministicRecommendationMapping();
 await testExplainableRecommendationSnapshotsForGoNeedsRevisionAndBlocked();
+await testRecommendationExplanationRequiresCompleteApplicableFindingGraph();
 await testFindingExplanationsBindToCanonicalSourceAndPrecedence();
 await testSemanticRemediationIsAllowlistedOrderedAndDeduplicated();
 await testUnknownFindingFailsClosedToGenericSemanticGuidance();
 await testProofStatusIsProjectionBoundFounderReadableAndRedacted();
+await testPendingRequestsPreserveCurrentPriorTransition();
 await testProofStatusReturnsNotCurrentForInconsistentState();
 await testCanonicalChangeClearsExplainabilityAndProofStatus();
 await testRecommendationExplanationRemainsServerDerived();

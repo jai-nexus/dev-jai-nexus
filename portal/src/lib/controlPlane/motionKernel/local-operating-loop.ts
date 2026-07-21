@@ -657,12 +657,26 @@ const localOperatingLoopGenericSemanticFinding = {
   severity: "FAIL_CLOSED",
 } as const satisfies LocalOperatingLoopSemanticFindingExplanation;
 
+function createNotCurrentRecommendationExplanation():
+  LocalOperatingLoopRecommendationExplanation {
+  return {
+    status: "NOT_CURRENT",
+    summary:
+      "The semantic explanation is not current. Validate and deliberate the active motion again.",
+    findings: [{ ...localOperatingLoopGenericSemanticFinding }],
+  };
+}
+
 export function createLocalOperatingLoopRecommendationExplanation(input: {
   motion: LocalOperatingLoopInput;
   recommendation: LocalOperatingLoopRecommendation | null;
   findingCodes: readonly unknown[];
 }): LocalOperatingLoopRecommendationExplanation {
   if (input.recommendation === null) {
+    if (input.findingCodes.length > 0) {
+      return createNotCurrentRecommendationExplanation();
+    }
+
     return {
       status: "NOT_ESTABLISHED",
       summary:
@@ -679,37 +693,38 @@ export function createLocalOperatingLoopRecommendationExplanation(input: {
         code as LocalOperatingLoopFindingCode,
       ),
   );
+  const applicableRules = localOperatingLoopSemanticFindingRules.filter(
+    (rule) => rule.applies(input.motion),
+  );
   const orderedRules = localOperatingLoopSemanticFindingRules.filter(
     (rule) => suppliedCodes.has(rule.code),
   );
-  const hasInconsistentFinding = orderedRules.some(
-    (rule) => !rule.applies(input.motion),
-  );
-  const expectedRecommendation = orderedRules.some(
+  const hasCompleteApplicableFindingGraph =
+    orderedRules.length === applicableRules.length &&
+    orderedRules.every(
+      (rule, index) => rule.code === applicableRules[index]?.code,
+    );
+  const hasApplicableBlocker = applicableRules.some(
     (rule) => rule.severity === "BLOCKER",
-  )
+  );
+  const expectedRecommendation = hasApplicableBlocker
     ? "BLOCKED"
-    : orderedRules.length > 0
+    : applicableRules.length > 0
       ? "NEEDS_REVISION"
       : "GO";
 
   if (
     hasUnknownFinding ||
-    hasInconsistentFinding ||
+    !hasCompleteApplicableFindingGraph ||
     expectedRecommendation !== input.recommendation
   ) {
-    return {
-      status: "NOT_CURRENT",
-      summary:
-        "The semantic explanation is not current. Validate and deliberate the active motion again.",
-      findings: [{ ...localOperatingLoopGenericSemanticFinding }],
-    };
+    return createNotCurrentRecommendationExplanation();
   }
 
   return {
     status: "CURRENT",
     summary: localOperatingLoopRecommendationSummaries[input.recommendation],
-    findings: orderedRules.map((rule) => ({
+    findings: applicableRules.map((rule) => ({
       code: rule.code,
       label: rule.label,
       sourceFact: rule.sourceFact(input.motion),
@@ -795,8 +810,7 @@ function resolveLocalOperatingLoopProofStatus(input: {
       state.recommendation === null &&
       state.findingCodes.length === 0 &&
       state.workPacket === null &&
-      state.artifact === null &&
-      state.activeRequestId === null
+      state.artifact === null
       ? "STRUCTURE_CURRENT"
       : "NOT_CURRENT";
   }
@@ -821,8 +835,7 @@ function isCurrentLocalOperatingLoopDeliberationState(
     isLocalOperatingLoopRecommendation(state.recommendation) &&
     isLocalOperatingLoopFindingCodeArray(state.findingCodes) &&
     state.workPacket === null &&
-    state.artifact === null &&
-    state.activeRequestId === null
+    state.artifact === null
   );
 }
 
