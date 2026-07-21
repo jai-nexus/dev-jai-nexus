@@ -4,20 +4,31 @@ import { encode, getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 import {
+  LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS,
+  LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
   LOCAL_OPERATING_LOOP_PHASE_COPY,
+  LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
+  LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL,
+  LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+  LOCAL_OPERATING_LOOP_RESTORED_COPY,
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  applyLocalOperatingLoopBrowserLifecycle,
   canonicalizeLocalOperatingLoopValue,
+  classifyLocalOperatingLoopClientResponse,
   createLocalOperatingLoopProjectionKey,
+  createLocalOperatingLoopRecoveryNotice,
   createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopUiState,
   deriveLocalOperatingLoopRecommendation,
   invalidateLocalOperatingLoopUiState,
   parseLocalOperatingLoopAction,
+  recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopInput,
   type LocalOperatingLoopResponse,
   type LocalOperatingLoopSuccessResponse,
+  type LocalOperatingLoopUiState,
 } from "./local-operating-loop";
 import { createLocalOperatingLoopHandler } from "./local-operating-loop-handler";
 
@@ -38,6 +49,55 @@ const genuineGoInput: LocalOperatingLoopInput = {
     "portal/src/lib/controlPlane/motionKernel/local-operating-loop.test.ts",
   ],
 };
+
+function acceptedUiState(projectionKey: string): LocalOperatingLoopUiState {
+  const motionFingerprint = "a".repeat(64);
+  const candidatePacketHash = "b".repeat(64);
+  return {
+    projectionKey,
+    state: "ACCEPTED",
+    validationProof: `local-loop.validation.v1.${"c".repeat(64)}`,
+    deliberationProof: `local-loop.deliberation.v1.${"d".repeat(64)}`,
+    recommendation: "GO",
+    findingCodes: [],
+    workPacket: {
+      packet_id: `local-shadow-work-packet-${candidatePacketHash.slice(0, 24)}`,
+      packet_version: "local-shadow-work-packet.v1",
+      status: "PROPOSED_ONLY",
+      base_sha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+      motion_id: genuineGoInput.motionId,
+      motion_fingerprint: motionFingerprint,
+      title: genuineGoInput.title,
+      summary: genuineGoInput.summary,
+      target_repo: genuineGoInput.targetRepo,
+      target_threads: [...genuineGoInput.targetThreads],
+      evidence_pointers: [...genuineGoInput.evidencePointers],
+      proposed_by: ADMIN_EMAIL,
+      decision_scope: "GENERATE_WORK_PACKET_ONLY",
+      execution_authority_granted: false,
+      non_authorizations: [...LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS],
+    },
+    artifact: {
+      artifact_id: `local-shadow-decision-artifact-${candidatePacketHash.slice(0, 24)}`,
+      artifact_version: "local-shadow-decision-artifact.v1",
+      base_sha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+      motion_id: genuineGoInput.motionId,
+      motion_fingerprint: motionFingerprint,
+      recommendation: "GO",
+      finding_codes: [],
+      decision: "ACCEPT",
+      actor: ADMIN_EMAIL,
+      candidate_packet_hash: candidatePacketHash,
+      receipt_authority: "DEMONSTRATION_ONLY",
+      persistence: "NONE",
+      program_effect: "NONE",
+      not_a_control_thread_acceptance_receipt: true,
+      decision_scope: "GENERATE_WORK_PACKET_ONLY",
+      execution_authority_granted: false,
+    },
+    activeRequestId: 41,
+  };
+}
 
 async function testStrictStructuralValidationAndNormalization() {
   const parsed = parseLocalOperatingLoopAction({
@@ -351,6 +411,464 @@ async function testStructuralFailureRecoversDraftPresentationState() {
   );
   assert.equal(populatedState.state, "AWAITING_DECISION");
   assert.equal(populatedState.projectionKey, projectionKey);
+}
+
+async function testAuthenticationIdentityFailuresClearDerivedStateAndExposeFixedReauthControl() {
+  const projectionKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const populatedState = acceptedUiState(projectionKey);
+  const expected = [
+    ["UNAUTHENTICATED", "authentication-expired"],
+    ["ADMIN_REQUIRED", "admin-identity-required"],
+    ["ACTOR_EMAIL_REQUIRED", "actor-identity-required"],
+  ] as const;
+  const messages = new Set<string>();
+
+  for (const [code, id] of expected) {
+    const notice = createLocalOperatingLoopRecoveryNotice(code);
+    assert.equal(notice.id, id);
+    assert.equal(notice.requiresReauthentication, true);
+    messages.add(notice.message);
+    assert.deepEqual(
+      recoverLocalOperatingLoopClientFailure(populatedState),
+      createLocalOperatingLoopUiState(projectionKey),
+    );
+  }
+
+  assert.equal(messages.size, expected.length);
+  assert.equal(
+    LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
+    "/login?next=%2Foperator%2Fmotion-control",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL,
+    "Sign in again",
+  );
+}
+
+async function testSecretRotationInvalidProofForcesRevalidation() {
+  const handler = createAdminHandler();
+  const proofChain = await buildProofChain(handler, genuineGoInput);
+  const rotatedSecretHandler = createAdminHandler({
+    secret: `${SYNTHETIC_SECRET}-rotated`,
+  });
+  const result = await decide(
+    rotatedSecretHandler,
+    genuineGoInput,
+    "ACCEPT",
+    proofChain.deliberationProof,
+  );
+  assert.equal(result.status, 409);
+  const classification = classifyLocalOperatingLoopClientResponse(result.body);
+  assert.equal(classification.kind, "RECOVERY");
+  if (classification.kind !== "RECOVERY") {
+    throw new Error("Expected INVALID_PROOF recovery classification.");
+  }
+  assert.equal(classification.code, "INVALID_PROOF");
+  assert.equal(
+    createLocalOperatingLoopRecoveryNotice(classification.code).id,
+    "proof-invalid",
+  );
+
+  const projectionKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  assert.deepEqual(
+    recoverLocalOperatingLoopClientFailure(acceptedUiState(projectionKey)),
+    createLocalOperatingLoopUiState(projectionKey),
+  );
+}
+
+async function testUnavailableProofServiceClearsStaleProofAndOutputs() {
+  const handler = createLocalOperatingLoopHandler({
+    readSecret: () => " ",
+    authenticate: async () => ({
+      authenticated: true,
+      role: "ADMIN",
+      email: ADMIN_EMAIL,
+    }),
+  });
+  const result = await readResponse(
+    await handler(jsonRequest({ action: "VALIDATE", input: genuineGoInput })),
+  );
+  assert.equal(result.status, 503);
+  const classification = classifyLocalOperatingLoopClientResponse(result.body);
+  assert.equal(classification.kind, "RECOVERY");
+  if (classification.kind !== "RECOVERY") {
+    throw new Error("Expected proof-service recovery classification.");
+  }
+  assert.equal(classification.code, "SERVER_SECRET_UNAVAILABLE");
+  assert.equal(
+    createLocalOperatingLoopRecoveryNotice(classification.code).id,
+    "proof-service-unavailable",
+  );
+
+  const projectionKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const recovered = recoverLocalOperatingLoopClientFailure(
+    acceptedUiState(projectionKey),
+  );
+  assert.deepEqual(recovered, createLocalOperatingLoopUiState(projectionKey));
+  assert.equal(recovered.validationProof, null);
+  assert.equal(recovered.deliberationProof, null);
+  assert.equal(recovered.workPacket, null);
+  assert.equal(recovered.artifact, null);
+}
+
+async function testAbortAndLateResponseSuppressionRemainDeterministic() {
+  const firstKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const secondKey = createLocalOperatingLoopProjectionKey({
+    ...genuineGoInput,
+    summary: `${genuineGoInput.summary} Changed safely.`,
+  });
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: firstKey,
+      responseProjectionKey: firstKey,
+      currentRequestId: null,
+      responseRequestId: 10,
+    }),
+    false,
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: firstKey,
+      responseProjectionKey: firstKey,
+      currentRequestId: 11,
+      responseRequestId: 10,
+    }),
+    false,
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: secondKey,
+      responseProjectionKey: firstKey,
+      currentRequestId: 10,
+      responseRequestId: 10,
+    }),
+    false,
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: firstKey,
+      responseProjectionKey: firstKey,
+      currentRequestId: 10,
+      responseRequestId: 10,
+    }),
+    true,
+  );
+}
+
+async function testBrowserRestoreForcesFreshDraftState() {
+  const projectionKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const populatedState = acceptedUiState(projectionKey);
+  assert.deepEqual(
+    applyLocalOperatingLoopBrowserLifecycle(populatedState, {
+      type: "PAGEHIDE",
+    }),
+    createLocalOperatingLoopUiState(projectionKey),
+  );
+  assert.deepEqual(
+    applyLocalOperatingLoopBrowserLifecycle(populatedState, {
+      type: "PAGESHOW",
+      persisted: true,
+    }),
+    createLocalOperatingLoopUiState(projectionKey),
+  );
+  assert.equal(
+    applyLocalOperatingLoopBrowserLifecycle(populatedState, {
+      type: "PAGESHOW",
+      persisted: false,
+    }),
+    populatedState,
+  );
+  assert.match(LOCAL_OPERATING_LOOP_PAGEHIDE_COPY, /Fresh structural validation/);
+  assert.match(LOCAL_OPERATING_LOOP_RESTORED_COPY, /Fresh structural validation/);
+}
+
+async function testPageHideAndPersistedPageShowResetLifecycleIsWired() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /window\.addEventListener\("pagehide", handlePageHide\)/,
+  );
+  assert.match(
+    panelSource,
+    /window\.addEventListener\("pageshow", handlePageShow\)/,
+  );
+  assert.match(panelSource, /if \(!event\.persisted\) \{\s+return;/);
+  assert.match(
+    panelSource,
+    /window\.removeEventListener\("pagehide", handlePageHide\)/,
+  );
+  assert.match(
+    panelSource,
+    /window\.removeEventListener\("pageshow", handlePageShow\)/,
+  );
+  assert.match(panelSource, /controller\?\.abort\(\)/);
+  assert.match(panelSource, /activeRequestId\.current = null/);
+}
+
+async function testEveryCanonicalFieldInvalidatesAllDerivedState() {
+  const originalKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const populatedState = acceptedUiState(originalKey);
+  const changedInputs: LocalOperatingLoopInput[] = [
+    { ...genuineGoInput, motionId: `${genuineGoInput.motionId}-changed` },
+    { ...genuineGoInput, title: `${genuineGoInput.title} changed` },
+    { ...genuineGoInput, summary: `${genuineGoInput.summary} Changed.` },
+    { ...genuineGoInput, targetRepo: "other-repository" },
+    {
+      ...genuineGoInput,
+      targetThreads: [
+        ...genuineGoInput.targetThreads,
+        "JAI_AUDIT_NEXUS",
+      ],
+    },
+    {
+      ...genuineGoInput,
+      evidencePointers: [
+        ...genuineGoInput.evidencePointers,
+        "second-evidence-pointer",
+      ],
+    },
+  ];
+
+  for (const changedInput of changedInputs) {
+    const changedKey = createLocalOperatingLoopProjectionKey(changedInput);
+    assert.notEqual(changedKey, originalKey);
+    assert.deepEqual(
+      invalidateLocalOperatingLoopUiState(populatedState, changedKey),
+      createLocalOperatingLoopUiState(changedKey),
+    );
+  }
+  assert.equal(
+    new Set(changedInputs.map(createLocalOperatingLoopProjectionKey)).size,
+    changedInputs.length,
+  );
+}
+
+async function testAcceptedPacketAndArtifactDoNotSurviveInvalidation() {
+  const originalKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const accepted = acceptedUiState(originalKey);
+  assert.ok(accepted.workPacket);
+  assert.ok(accepted.artifact);
+
+  const recovered = recoverLocalOperatingLoopClientFailure(accepted);
+  assert.equal(recovered.state, "DRAFT");
+  assert.equal(recovered.workPacket, null);
+  assert.equal(recovered.artifact, null);
+  assert.equal(recovered.recommendation, null);
+  assert.deepEqual(recovered.findingCodes, []);
+
+  const changedKey = createLocalOperatingLoopProjectionKey({
+    ...genuineGoInput,
+    title: `${genuineGoInput.title} changed`,
+  });
+  const invalidated = invalidateLocalOperatingLoopUiState(
+    accepted,
+    changedKey,
+  );
+  assert.equal(invalidated.state, "DRAFT");
+  assert.equal(invalidated.workPacket, null);
+  assert.equal(invalidated.artifact, null);
+}
+
+async function testHoldAndRejectNeverProduceWorkPacket() {
+  const handler = createAdminHandler();
+  const proofChain = await buildProofChain(handler, genuineGoInput);
+  for (const decision of ["HOLD", "REJECT"] as const) {
+    const result = await decide(
+      handler,
+      genuineGoInput,
+      decision,
+      proofChain.deliberationProof,
+    );
+    assert.equal(result.status, 200);
+    const body = successBody(result.body);
+    assert.equal("workPacket" in body ? body.workPacket : undefined, null);
+    const classification = classifyLocalOperatingLoopClientResponse(
+      result.body,
+    );
+    assert.equal(classification.kind, "SUCCESS");
+    if (classification.kind !== "SUCCESS") {
+      throw new Error(`Expected ${decision} client response.`);
+    }
+    assert.equal(
+      classification.response.state,
+      decision === "HOLD" ? "HELD" : "REJECTED",
+    );
+  }
+}
+
+async function testNoProofStateUsesBrowserStorage() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const pureSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  assert.doesNotMatch(
+    `${panelSource}\n${pureSource}`,
+    /localStorage|sessionStorage|indexedDB|document\.cookie|cookieStore/,
+  );
+  assert.doesNotMatch(
+    panelSource,
+    /[?&](?:proof|recommendation|packet|artifact)=/i,
+  );
+}
+
+async function testRecoveryControlsAreAccessibleAndPhaseSpecific() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.equal((panelSource.match(/<a\b/g) ?? []).length, 1);
+  assert.match(
+    panelSource,
+    /href=\{LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF\}/,
+  );
+  assert.match(
+    panelSource,
+    /\{LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL\}/,
+  );
+  assert.match(
+    panelSource,
+    /aria-labelledby="local-operating-loop-recovery-heading"/,
+  );
+  assert.match(panelSource, /role="alert"/);
+  assert.doesNotMatch(panelSource, /window\.location|router\.push|signIn\(/);
+
+  const notices = [
+    "UNAUTHENTICATED",
+    "ADMIN_REQUIRED",
+    "ACTOR_EMAIL_REQUIRED",
+    "SERVER_SECRET_UNAVAILABLE",
+    "INVALID_PROOF",
+  ].map(createLocalOperatingLoopRecoveryNotice);
+  assert.equal(new Set(notices.map((notice) => notice.id)).size, notices.length);
+  assert.equal(
+    new Set(notices.map((notice) => notice.heading)).size,
+    notices.length,
+  );
+
+  const rawServerText = "raw server secret should never be displayed";
+  const unknown = classifyLocalOperatingLoopClientResponse({
+    ok: false,
+    error: {
+      code: "UNKNOWN_SERVER_CODE",
+      message: rawServerText,
+    },
+    nonAuthorizations: [...LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS],
+  });
+  assert.equal(unknown.kind, "RECOVERY");
+  if (unknown.kind !== "RECOVERY") {
+    throw new Error("Expected generic recovery classification.");
+  }
+  const genericCopy = JSON.stringify(
+    createLocalOperatingLoopRecoveryNotice(unknown.code),
+  );
+  assert.doesNotMatch(genericCopy, /raw server secret|UNKNOWN_SERVER_CODE/);
+  assert.equal(
+    createLocalOperatingLoopRecoveryNotice("INVALID_JSON").id,
+    "generic-fail-closed",
+  );
+  assert.equal(
+    classifyLocalOperatingLoopClientResponse({
+      ok: true,
+      state: "UNKNOWN",
+      secret: "must-not-render",
+    }).kind,
+    "RECOVERY",
+  );
+}
+
+async function testD4ValidationAndDeliberationUxContractRemainsIntact() {
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.VALIDATED,
+    "Structure validated. No semantic recommendation has been produced.",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+    "Structural validation found fields that need correction. The selected motion remains available and the local shadow returned to DRAFT.",
+  );
+  assert.deepEqual(
+    createLocalOperatingLoopStructuralRemediations([
+      { path: "input.title", code: "too_small" },
+      { path: "unknown.path", code: "custom" },
+    ]),
+    [
+      {
+        id: "title",
+        field: "Title",
+        message: "Provide a single-line motion title within 240 characters.",
+      },
+      {
+        id: "request",
+        field: "Motion request",
+        message:
+          "Review the motion structure and remove unsupported fields before retrying.",
+      },
+    ],
+  );
+
+  const handler = createAdminHandler();
+  const validation = await readResponse(
+    await handler(jsonRequest({ action: "VALIDATE", input: genuineGoInput })),
+  );
+  const classification = classifyLocalOperatingLoopClientResponse(
+    validation.body,
+  );
+  assert.equal(classification.kind, "SUCCESS");
+  if (classification.kind !== "SUCCESS") {
+    throw new Error("Expected validated client response.");
+  }
+  assert.equal(classification.response.state, "VALIDATED");
+  if (classification.response.state !== "VALIDATED") {
+    throw new Error("Expected VALIDATED client response.");
+  }
+
+  const deliberation = await readResponse(
+    await handler(
+      jsonRequest({
+        action: "DELIBERATE",
+        input: genuineGoInput,
+        validationProof: classification.response.validationProof,
+      }),
+    ),
+  );
+  const deliberationClassification =
+    classifyLocalOperatingLoopClientResponse(deliberation.body);
+  assert.equal(deliberationClassification.kind, "SUCCESS");
+  if (
+    deliberationClassification.kind !== "SUCCESS" ||
+    deliberationClassification.response.state !== "AWAITING_DECISION"
+  ) {
+    throw new Error("Expected AWAITING_DECISION client response.");
+  }
+
+  const accepted = await decide(
+    handler,
+    genuineGoInput,
+    "ACCEPT",
+    deliberationClassification.response.deliberationProof,
+  );
+  const acceptedClassification = classifyLocalOperatingLoopClientResponse(
+    accepted.body,
+  );
+  assert.equal(acceptedClassification.kind, "SUCCESS");
+  if (acceptedClassification.kind !== "SUCCESS") {
+    throw new Error("Expected ACCEPTED client response.");
+  }
+  assert.equal(acceptedClassification.response.state, "ACCEPTED");
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /remediationHeadingRef\.current\?\.focus\(\)/,
+  );
+  assert.match(
+    panelSource,
+    /createLocalOperatingLoopStructuralRemediations\(/,
+  );
 }
 
 async function testAuthenticationAndSecretPrecedeBodyParsing() {
@@ -815,7 +1333,10 @@ async function testProductionSourceAndImportIsolation() {
   assert.match(panelSource, /createLocalOperatingLoopProjectionKey/);
   assert.match(panelSource, /shouldApplyLocalOperatingLoopResponse/);
   assert.match(panelSource, /key=\{projectionKey\}/);
-  assert.match(panelSource, /activeAbortController\.current\?\.abort\(\)/);
+  assert.match(panelSource, /abortAndReleaseActiveRequest/);
+  assert.match(panelSource, /controller\?\.abort\(\)/);
+  assert.match(panelSource, /classifyLocalOperatingLoopClientResponse/);
+  assert.match(panelSource, /recoverLocalOperatingLoopClientFailure/);
   assert.match(
     panelSource,
     /createLocalOperatingLoopStructuralRemediations\(/,
@@ -836,6 +1357,7 @@ async function testProductionSourceAndImportIsolation() {
     panelSource,
     /deriveLocalOperatingLoopRecommendation/,
   );
+  assert.doesNotMatch(panelSource, /error\.message|console\.|responseText\}/);
 
   assert.match(
     composerSource,
@@ -1001,6 +1523,18 @@ await testStructuralValidationPrecedesSemanticDeliberation();
 await testPhaseCopyDistinguishesStructureFromSemantics();
 await testSafeDeterministicStructuralRemediation();
 await testStructuralFailureRecoversDraftPresentationState();
+await testAuthenticationIdentityFailuresClearDerivedStateAndExposeFixedReauthControl();
+await testSecretRotationInvalidProofForcesRevalidation();
+await testUnavailableProofServiceClearsStaleProofAndOutputs();
+await testAbortAndLateResponseSuppressionRemainDeterministic();
+await testBrowserRestoreForcesFreshDraftState();
+await testPageHideAndPersistedPageShowResetLifecycleIsWired();
+await testEveryCanonicalFieldInvalidatesAllDerivedState();
+await testAcceptedPacketAndArtifactDoNotSurviveInvalidation();
+await testHoldAndRejectNeverProduceWorkPacket();
+await testNoProofStateUsesBrowserStorage();
+await testRecoveryControlsAreAccessibleAndPhaseSpecific();
+await testD4ValidationAndDeliberationUxContractRemainsIntact();
 await testAuthenticationAndSecretPrecedeBodyParsing();
 await testActualNextAuthJwtIntegration();
 await testClientIdentitySpoofResistance();
