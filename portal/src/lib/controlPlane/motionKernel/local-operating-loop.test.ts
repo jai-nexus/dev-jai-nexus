@@ -14,9 +14,11 @@ import {
   LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
   LOCAL_OPERATING_LOOP_RESTORED_COPY,
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
   canonicalizeLocalOperatingLoopValue,
   classifyLocalOperatingLoopClientResponse,
+  createFounderSafeLocalOperatingLoopTerminalPresentation,
   createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopProjectionKey,
   createLocalOperatingLoopRecommendationExplanation,
@@ -30,6 +32,7 @@ import {
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
+  shouldSuspendLocalOperatingLoopForUnstagedDraft,
   type LocalOperatingLoopAction,
   type LocalOperatingLoopContentHasher,
   type LocalOperatingLoopInput,
@@ -206,6 +209,28 @@ function acceptedUiState(projectionKey: string): LocalOperatingLoopUiState {
       execution_authority_granted: false,
     },
     activeRequestId: 41,
+  };
+}
+
+function terminalUiState(
+  decision: "ACCEPT" | "HOLD" | "REJECT",
+): LocalOperatingLoopUiState {
+  const state = acceptedUiState(`terminal-${decision.toLowerCase()}`);
+  assert.ok(state.artifact);
+  return {
+    ...state,
+    state:
+      decision === "ACCEPT"
+        ? "ACCEPTED"
+        : decision === "HOLD"
+          ? "HELD"
+          : "REJECTED",
+    workPacket: decision === "ACCEPT" ? state.workPacket : null,
+    artifact: {
+      ...state.artifact,
+      decision,
+    },
+    activeRequestId: null,
   };
 }
 
@@ -829,6 +854,360 @@ async function testProofStatusReturnsNotCurrentForInconsistentState() {
   ];
   assert.ok(cases.every((status) => status.code === "NOT_CURRENT"));
   assert.ok(cases.every((status) => status.label === "Not current"));
+}
+
+async function testFounderSafeTerminalPresentationSnapshots() {
+  const common = {
+    recommendation: "GO",
+    findingCount: 0,
+    workPacketExecutionAuthority: false,
+    artifactCount: 1,
+    receiptAuthority: "DEMONSTRATION_ONLY",
+    persistence: "NONE",
+    programEffect: "NONE",
+    notAControlThreadAcceptanceReceipt: true,
+    decisionScope: "GENERATE_WORK_PACKET_ONLY",
+    artifactExecutionAuthority: false,
+  } as const;
+
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("ACCEPT"),
+    ),
+    {
+      terminalState: "ACCEPTED",
+      decision: "ACCEPT",
+      ...common,
+      workPacketCount: 1,
+      workPacketStatus: "PROPOSED_ONLY",
+    },
+  );
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("HOLD"),
+    ),
+    {
+      terminalState: "HELD",
+      decision: "HOLD",
+      ...common,
+      workPacketCount: 0,
+      workPacketStatus: "NONE",
+    },
+  );
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("REJECT"),
+    ),
+    {
+      terminalState: "REJECTED",
+      decision: "REJECT",
+      ...common,
+      workPacketCount: 0,
+      workPacketStatus: "NONE",
+    },
+  );
+}
+
+async function testFounderSafeTerminalPresentationRejectsIncoherentState() {
+  const accepted = terminalUiState("ACCEPT");
+  const held = terminalUiState("HOLD");
+  assert.ok(accepted.artifact);
+  const malformedStates: LocalOperatingLoopUiState[] = [
+    { ...accepted, workPacket: null },
+    { ...held, workPacket: accepted.workPacket },
+    { ...accepted, artifact: null },
+    {
+      ...accepted,
+      artifact: { ...accepted.artifact, decision: "HOLD" },
+    },
+    {
+      ...accepted,
+      artifact: {
+        ...accepted.artifact,
+        persistence: "DURABLE",
+      } as unknown as LocalOperatingLoopUiState["artifact"],
+    },
+  ];
+
+  for (const state of malformedStates) {
+    assert.equal(
+      createFounderSafeLocalOperatingLoopTerminalPresentation(state),
+      null,
+    );
+  }
+  assert.equal(
+    LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
+    "The terminal local-shadow summary is unavailable because its state is not coherent. Reset and complete the active motion again.",
+  );
+}
+
+async function testFounderSafeTerminalPresentationExcludesSensitiveKeys() {
+  const sourceState = terminalUiState("ACCEPT");
+  assert.ok(sourceState.workPacket);
+  assert.ok(sourceState.artifact);
+  const presentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(sourceState);
+  assert.ok(presentation);
+
+  const keys = collectNestedKeys(presentation);
+  const forbiddenKeys = new Set([
+    "actor",
+    "proposer",
+    "proposed_by",
+    "packetId",
+    "packet_id",
+    "id",
+    "artifactId",
+    "artifact_id",
+    "motionId",
+    "motion_id",
+    "otherId",
+    "other_id",
+    "baseSha",
+    "base_sha",
+    "commitSha",
+    "fingerprint",
+    "motionFingerprint",
+    "motion_fingerprint",
+    "candidatePacketHash",
+    "candidate_packet_hash",
+    "validationProof",
+    "deliberationProof",
+    "projectionKey",
+    "title",
+    "summary",
+    "motion",
+    "evidencePointers",
+    "evidence_pointers",
+    "targetThreads",
+    "target_threads",
+    "targetRepo",
+    "target_repo",
+    "nonAuthorizations",
+    "non_authorizations",
+    "request",
+    "response",
+    "cookies",
+    "cookie",
+    "tokens",
+    "token",
+    "secrets",
+    "secret",
+    "credentials",
+    "credential",
+  ]);
+  assert.deepEqual(
+    keys.filter((key) => forbiddenKeys.has(key)),
+    [],
+  );
+
+  const serialized = JSON.stringify(presentation);
+  const sensitiveValues = [
+    ADMIN_EMAIL,
+    sourceState.workPacket.packet_id,
+    sourceState.artifact.artifact_id,
+    LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+    sourceState.artifact.motion_id,
+    sourceState.artifact.motion_fingerprint,
+    sourceState.artifact.candidate_packet_hash,
+    sourceState.validationProof,
+    sourceState.deliberationProof,
+    sourceState.workPacket.title,
+    sourceState.workPacket.summary,
+    sourceState.workPacket.target_repo,
+    ...sourceState.workPacket.target_threads,
+    ...sourceState.workPacket.evidence_pointers,
+    ...sourceState.workPacket.non_authorizations,
+  ].filter((value): value is string => typeof value === "string");
+  for (const value of sensitiveValues) {
+    assert.equal(serialized.includes(value), false, value);
+  }
+}
+
+async function testTerminalUiContainsNoRawJsonSink() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /createFounderSafeLocalOperatingLoopTerminalPresentation\(uiState\)/,
+  );
+  assert.match(panelSource, /function TerminalPresentation/);
+  assert.match(panelSource, /<dl/);
+  assert.match(panelSource, />\s*Terminal local-shadow summary\s*</);
+  assert.doesNotMatch(panelSource, /JsonOutput/);
+  assert.doesNotMatch(panelSource, /<pre/);
+  assert.doesNotMatch(panelSource, /value=\{projectionKey\}/);
+  assert.doesNotMatch(
+    panelSource,
+    /JSON\.stringify\((?:value|uiState\.(?:workPacket|artifact))/,
+  );
+  assert.match(
+    panelSource,
+    /Current canonical projection is internally bound; raw key withheld\./,
+  );
+}
+
+async function testUnstagedDraftChangesSuspendOnlySelectedComposedProjection() {
+  const composedMotionId = "local-composed-motion-20260721123456";
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId,
+      composedMotionHasUnstagedChanges: true,
+    }),
+    true,
+  );
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId,
+      composedMotionHasUnstagedChanges: false,
+    }),
+    false,
+  );
+  for (const selectedMotionId of [
+    "motion-sample-go",
+    "persisted-motion-intake-example",
+  ]) {
+    assert.equal(
+      shouldSuspendLocalOperatingLoopForUnstagedDraft({
+        selectedMotionId,
+        composedMotionId,
+        composedMotionHasUnstagedChanges: true,
+      }),
+      false,
+    );
+  }
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId: null,
+      composedMotionHasUnstagedChanges: true,
+    }),
+    false,
+  );
+}
+
+async function testComposerEditsNeverAutoStage() {
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  const updateStart = composerSource.indexOf("function updateDraft");
+  const stageStart = composerSource.indexOf(
+    "function stageComposedMotion",
+    updateStart,
+  );
+  assert.ok(updateStart >= 0);
+  assert.ok(stageStart > updateStart);
+  const updateSource = composerSource.slice(updateStart, stageStart);
+  assert.match(updateSource, /setDraft\(/);
+  assert.match(updateSource, /if \(composedMotion\)/);
+  assert.match(
+    updateSource,
+    /setComposedMotionHasUnstagedChanges\(true\)/,
+  );
+  assert.doesNotMatch(
+    updateSource,
+    /buildComposedMotionBasis|setComposedMotion\(|setSelectedMotionId\(|fetch\(|persistMotionDraft|stageComposedMotion\(/,
+  );
+}
+
+async function testUnstagedComposerGateUnmountsLoopAndIsAccessible() {
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    composerSource,
+    /shouldSuspendLocalOperatingLoopForUnstagedDraft\(\{/,
+  );
+  assert.match(composerSource, /\{suspendLocalOperatingLoop \? \(/);
+  assert.match(
+    composerSource,
+    /aria-labelledby="unstaged-draft-changes-heading"/,
+  );
+  assert.match(composerSource, /role="alert"/);
+  assert.match(composerSource, />\s*Unstaged draft changes\s*</);
+  assert.match(
+    composerSource,
+    /visible composer no longer matches the previously staged\s+canonical projection/,
+  );
+  assert.match(
+    composerSource,
+    /Prior local-shadow output was cleared from\s+view/,
+  );
+  assert.match(
+    composerSource,
+    /Stage composed motion locally before validation can resume/,
+  );
+  assert.match(
+    composerSource,
+    /full manual text revert still requires explicit restaging/,
+  );
+  assert.equal(
+    (composerSource.match(/<LocalOperatingLoopPanel/g) ?? []).length,
+    1,
+  );
+  assert.match(
+    composerSource,
+    /\) : \(\s*<LocalOperatingLoopPanel selectedMotion=\{selectedMotion\} \/>/,
+  );
+
+  const stageStart = composerSource.indexOf("function stageComposedMotion");
+  const persistStart = composerSource.indexOf(
+    "async function persistMotionDraft",
+    stageStart,
+  );
+  const stageSource = composerSource.slice(stageStart, persistStart);
+  assert.match(stageSource, /buildComposedMotionBasis\(\{ draft \}\)/);
+  assert.match(
+    stageSource,
+    /setComposedMotionHasUnstagedChanges\(false\)/,
+  );
+  assert.match(
+    composerSource,
+    /setComposedMotion\(null\);\s+setComposedMotionHasUnstagedChanges\(false\)/,
+  );
+  assert.match(panelSource, /key=\{projectionKey\}/);
+}
+
+async function testExistingAbortInvalidationAndRecoveryContractsRemainIntact() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const terminal = terminalUiState("ACCEPT");
+  assert.deepEqual(
+    recoverLocalOperatingLoopClientFailure(terminal),
+    createLocalOperatingLoopUiState(terminal.projectionKey),
+  );
+  assert.deepEqual(
+    invalidateLocalOperatingLoopUiState(
+      terminal,
+      `${projectionKey}-changed`,
+    ),
+    createLocalOperatingLoopUiState(`${projectionKey}-changed`),
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: `${projectionKey}-changed`,
+      responseProjectionKey: projectionKey,
+      currentRequestId: 8,
+      responseRequestId: 8,
+    }),
+    false,
+  );
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(panelSource, /abortAndReleaseActiveRequest/);
+  assert.match(panelSource, /controller\?\.abort\(\)/);
+  assert.match(panelSource, /applyLocalOperatingLoopBrowserLifecycle/);
+  assert.match(panelSource, /recoverLocalOperatingLoopClientFailure/);
+  assert.match(panelSource, /recoverLocalOperatingLoopStructuralFailure/);
+  assert.match(panelSource, /shouldApplyLocalOperatingLoopResponse/);
 }
 
 async function testCanonicalChangeClearsExplainabilityAndProofStatus() {
@@ -3733,6 +4112,18 @@ function source(path: string): string {
   return readFileSync(path, "utf8");
 }
 
+function collectNestedKeys(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectNestedKeys(item));
+  }
+  if (typeof value !== "object" || value === null) {
+    return [];
+  }
+  return Object.entries(value as Record<string, unknown>).flatMap(
+    ([key, nested]) => [key, ...collectNestedKeys(nested)],
+  );
+}
+
 function importSpecifiers(value: string): string[] {
   return [...value.matchAll(/from\s+["']([^"']+)["']/g)].map(
     (match) => match[1],
@@ -3754,6 +4145,14 @@ await testUnknownFindingFailsClosedToGenericSemanticGuidance();
 await testProofStatusIsProjectionBoundFounderReadableAndRedacted();
 await testPendingRequestsPreserveCurrentPriorTransition();
 await testProofStatusReturnsNotCurrentForInconsistentState();
+await testFounderSafeTerminalPresentationSnapshots();
+await testFounderSafeTerminalPresentationRejectsIncoherentState();
+await testFounderSafeTerminalPresentationExcludesSensitiveKeys();
+await testTerminalUiContainsNoRawJsonSink();
+await testUnstagedDraftChangesSuspendOnlySelectedComposedProjection();
+await testComposerEditsNeverAutoStage();
+await testUnstagedComposerGateUnmountsLoopAndIsAccessible();
+await testExistingAbortInvalidationAndRecoveryContractsRemainIntact();
 await testCanonicalChangeClearsExplainabilityAndProofStatus();
 await testRecommendationExplanationRemainsServerDerived();
 await testStructuralRemediationRemainsDistinctFromSemanticGuidance();

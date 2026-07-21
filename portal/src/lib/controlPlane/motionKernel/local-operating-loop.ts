@@ -196,6 +196,23 @@ export type LocalOperatingLoopUiState = {
   activeRequestId: number | null;
 };
 
+export type LocalOperatingLoopTerminalPresentation = {
+  terminalState: "ACCEPTED" | "HELD" | "REJECTED";
+  decision: LocalOperatingLoopDecision;
+  recommendation: LocalOperatingLoopRecommendation;
+  findingCount: number;
+  workPacketCount: 0 | 1;
+  workPacketStatus: "PROPOSED_ONLY" | "NONE";
+  workPacketExecutionAuthority: false;
+  artifactCount: 1;
+  receiptAuthority: "DEMONSTRATION_ONLY";
+  persistence: "NONE";
+  programEffect: "NONE";
+  notAControlThreadAcceptanceReceipt: true;
+  decisionScope: "GENERATE_WORK_PACKET_ONLY";
+  artifactExecutionAuthority: false;
+};
+
 export type LocalOperatingLoopSemanticFindingExplanation = {
   code: LocalOperatingLoopFindingCode | null;
   label: string;
@@ -226,6 +243,9 @@ export type LocalOperatingLoopProofStatus = {
 
 export const LOCAL_OPERATING_LOOP_PROOF_VERIFICATION_BOUNDARY =
   "The browser validates deterministic response coherence. HMAC authenticity remains server-bound; the browser does not possess NEXTAUTH_SECRET and does not independently authenticate HMAC proof material." as const;
+
+export const LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY =
+  "The terminal local-shadow summary is unavailable because its state is not coherent. Reset and complete the active motion again." as const;
 
 export type LocalOperatingLoopPresentationPhase =
   | LocalOperatingLoopState
@@ -871,6 +891,82 @@ function isCurrentLocalOperatingLoopDecisionState(
   );
 }
 
+const localOperatingLoopDecisionByTerminalState = {
+  ACCEPTED: "ACCEPT",
+  HELD: "HOLD",
+  REJECTED: "REJECT",
+} as const satisfies Readonly<
+  Record<
+    LocalOperatingLoopTerminalPresentation["terminalState"],
+    LocalOperatingLoopDecision
+  >
+>;
+
+export function createFounderSafeLocalOperatingLoopTerminalPresentation(
+  state: LocalOperatingLoopUiState,
+): LocalOperatingLoopTerminalPresentation | null {
+  if (
+    state.state !== "ACCEPTED" &&
+    state.state !== "HELD" &&
+    state.state !== "REJECTED"
+  ) {
+    return null;
+  }
+
+  if (
+    !isCurrentLocalOperatingLoopDecisionState(state) ||
+    state.recommendation === null ||
+    state.artifact === null
+  ) {
+    return null;
+  }
+
+  const terminalState = state.state;
+  const decision = localOperatingLoopDecisionByTerminalState[terminalState];
+  const artifact = state.artifact;
+  const accepted = terminalState === "ACCEPTED";
+  if (
+    artifact.artifact_version !==
+      "local-shadow-decision-artifact.v1" ||
+    artifact.decision !== decision ||
+    artifact.receipt_authority !== "DEMONSTRATION_ONLY" ||
+    artifact.persistence !== "NONE" ||
+    artifact.program_effect !== "NONE" ||
+    artifact.not_a_control_thread_acceptance_receipt !== true ||
+    artifact.decision_scope !== "GENERATE_WORK_PACKET_ONLY" ||
+    artifact.execution_authority_granted !== false ||
+    (accepted &&
+      (state.recommendation !== "GO" ||
+        state.workPacket === null ||
+        state.workPacket.packet_version !==
+          "local-shadow-work-packet.v1" ||
+        state.workPacket.status !== "PROPOSED_ONLY" ||
+        state.workPacket.decision_scope !==
+          "GENERATE_WORK_PACKET_ONLY" ||
+        state.workPacket.execution_authority_granted !== false)) ||
+    (!accepted && state.workPacket !== null)
+  ) {
+    return null;
+  }
+
+  return {
+    terminalState,
+    decision,
+    recommendation: state.recommendation,
+    findingCount: state.findingCodes.length,
+    workPacketCount: accepted ? 1 : 0,
+    workPacketStatus: accepted ? "PROPOSED_ONLY" : "NONE",
+    workPacketExecutionAuthority: false,
+    artifactCount: 1,
+    receiptAuthority: "DEMONSTRATION_ONLY",
+    persistence: "NONE",
+    programEffect: "NONE",
+    notAControlThreadAcceptanceReceipt: true,
+    decisionScope: "GENERATE_WORK_PACKET_ONLY",
+    artifactExecutionAuthority: false,
+  };
+}
+
 export function buildLocalOperatingLoopPacketMaterial(input: {
   motion: LocalOperatingLoopInput;
   actor: string;
@@ -908,6 +1004,18 @@ export function createLocalOperatingLoopProjectionKey(
   input: LocalOperatingLoopInput,
 ): string {
   return canonicalizeLocalOperatingLoopValue(input);
+}
+
+export function shouldSuspendLocalOperatingLoopForUnstagedDraft(input: {
+  selectedMotionId: string | undefined;
+  composedMotionId: string | null;
+  composedMotionHasUnstagedChanges: boolean;
+}): boolean {
+  return (
+    input.composedMotionHasUnstagedChanges &&
+    input.composedMotionId !== null &&
+    input.selectedMotionId === input.composedMotionId
+  );
 }
 
 export function createLocalOperatingLoopUiState(
