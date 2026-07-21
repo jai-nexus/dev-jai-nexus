@@ -376,6 +376,12 @@ export type LocalOperatingLoopClientResponseClassification =
       code: unknown;
     };
 
+export type LocalOperatingLoopClientResponseExpectation = {
+  requestInput: LocalOperatingLoopInput;
+  requestProjectionKey: string;
+  currentProjectionKey: string;
+};
+
 export type LocalOperatingLoopBrowserLifecycleEvent =
   | { type: "PAGEHIDE" }
   | { type: "PAGESHOW"; persisted: boolean };
@@ -621,7 +627,10 @@ export function createLocalOperatingLoopRecoveryNotice(
 ): LocalOperatingLoopRecoveryNotice {
   if (
     typeof code === "string" &&
-    code in localOperatingLoopRecoveryNotices
+    Object.prototype.hasOwnProperty.call(
+      localOperatingLoopRecoveryNotices,
+      code,
+    )
   ) {
     return localOperatingLoopRecoveryNotices[
       code as keyof typeof localOperatingLoopRecoveryNotices
@@ -648,6 +657,7 @@ export function applyLocalOperatingLoopBrowserLifecycle(
 
 export function classifyLocalOperatingLoopClientResponse(
   value: unknown,
+  expectation: LocalOperatingLoopClientResponseExpectation,
 ): LocalOperatingLoopClientResponseClassification {
   if (!isRecord(value)) {
     return { kind: "RECOVERY", code: null };
@@ -680,7 +690,10 @@ export function classifyLocalOperatingLoopClientResponse(
     return { kind: "RECOVERY", code: value.error.code };
   }
 
-  if (value.ok === true && isSafeLocalOperatingLoopSuccessResponse(value)) {
+  if (
+    value.ok === true &&
+    isSafeLocalOperatingLoopSuccessResponse(value, expectation)
+  ) {
     return {
       kind: "SUCCESS",
       response: value as LocalOperatingLoopSuccessResponse,
@@ -713,6 +726,7 @@ export function shouldApplyLocalOperatingLoopResponse(input: {
 
 function isSafeLocalOperatingLoopSuccessResponse(
   value: Record<string, unknown>,
+  expectation: LocalOperatingLoopClientResponseExpectation,
 ): boolean {
   if (
     value.contractVersion !== LOCAL_OPERATING_LOOP_CONTRACT_VERSION ||
@@ -720,7 +734,11 @@ function isSafeLocalOperatingLoopSuccessResponse(
     typeof value.actor !== "string" ||
     normalizeLocalOperatingLoopActorEmail(value.actor) !== value.actor ||
     !isSafeLocalOperatingLoopInput(value.input) ||
-    !isSafeLocalOperatingLoopToken(value.motionFingerprint) ||
+    !matchesLocalOperatingLoopResponseProjection(
+      value.input,
+      expectation,
+    ) ||
+    !isLocalOperatingLoopSha256(value.motionFingerprint) ||
     !hasExactNonAuthorizations(value.nonAuthorizations)
   ) {
     return false;
@@ -738,7 +756,7 @@ function isSafeLocalOperatingLoopSuccessResponse(
         "ok",
         "state",
         "validationProof",
-      ]) && isSafeLocalOperatingLoopToken(value.validationProof)
+      ]) && isLocalOperatingLoopValidationProof(value.validationProof)
     );
   }
 
@@ -761,10 +779,12 @@ function isSafeLocalOperatingLoopSuccessResponse(
       ]) &&
       isLocalOperatingLoopRecommendation(value.recommendation) &&
       isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
-      isSafeLocalOperatingLoopToken(value.recommendationFingerprint) &&
-      (value.candidatePacketHash === null ||
-        isSafeLocalOperatingLoopToken(value.candidatePacketHash)) &&
-      isSafeLocalOperatingLoopToken(value.deliberationProof)
+      isLocalOperatingLoopSha256(value.recommendationFingerprint) &&
+      hasCoherentLocalOperatingLoopCandidateHash(
+        value.recommendation,
+        value.candidatePacketHash,
+      ) &&
+      isLocalOperatingLoopDeliberationProof(value.deliberationProof)
     );
   }
 
@@ -777,8 +797,8 @@ function isSafeLocalOperatingLoopSuccessResponse(
       : value.state === "HELD"
         ? "HOLD"
         : "REJECT";
-  return (
-    hasExactKeys(value, [
+  if (
+    !hasExactKeys(value, [
       "actor",
       "artifact",
       "baseSha",
@@ -793,15 +813,62 @@ function isSafeLocalOperatingLoopSuccessResponse(
       "recommendationFingerprint",
       "state",
       "workPacket",
-    ]) &&
-    value.decision === expectedDecision &&
-    isLocalOperatingLoopRecommendation(value.recommendation) &&
-    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
-    isSafeLocalOperatingLoopToken(value.recommendationFingerprint) &&
-    (value.state === "ACCEPTED"
-      ? isSafeLocalOperatingLoopWorkPacket(value.workPacket)
-      : value.workPacket === null) &&
-    isSafeLocalOperatingLoopArtifact(value.artifact, expectedDecision)
+    ]) ||
+    value.decision !== expectedDecision ||
+    !isLocalOperatingLoopRecommendation(value.recommendation) ||
+    !isLocalOperatingLoopFindingCodeArray(value.findingCodes) ||
+    !isLocalOperatingLoopSha256(value.recommendationFingerprint)
+  ) {
+    return false;
+  }
+
+  const artifact = value.artifact;
+  if (
+    !isSafeLocalOperatingLoopArtifact(artifact, {
+      input: value.input,
+      actor: value.actor,
+      motionFingerprint: value.motionFingerprint,
+      recommendation: value.recommendation,
+      findingCodes: value.findingCodes,
+      decision: expectedDecision,
+    })
+  ) {
+    return false;
+  }
+
+  if (value.state === "ACCEPTED") {
+    return (
+      value.recommendation === "GO" &&
+      isLocalOperatingLoopSha256(artifact.candidate_packet_hash) &&
+      isSafeLocalOperatingLoopWorkPacket(value.workPacket, {
+        input: value.input,
+        actor: value.actor,
+        motionFingerprint: value.motionFingerprint,
+        candidatePacketHash: artifact.candidate_packet_hash,
+      })
+    );
+  }
+
+  return value.workPacket === null;
+}
+
+function matchesLocalOperatingLoopResponseProjection(
+  responseInput: LocalOperatingLoopInput,
+  expectation: LocalOperatingLoopClientResponseExpectation,
+): boolean {
+  if (!isSafeLocalOperatingLoopInput(expectation.requestInput)) {
+    return false;
+  }
+  const expectedProjectionKey = createLocalOperatingLoopProjectionKey(
+    expectation.requestInput,
+  );
+  return (
+    expectation.currentProjectionKey === expectation.requestProjectionKey &&
+    expectation.requestProjectionKey === expectedProjectionKey &&
+    createLocalOperatingLoopProjectionKey(responseInput) ===
+      expectedProjectionKey &&
+    canonicalizeLocalOperatingLoopValue(responseInput) ===
+      canonicalizeLocalOperatingLoopValue(expectation.requestInput)
   );
 }
 
@@ -819,7 +886,15 @@ function isSafeLocalOperatingLoopInput(
   );
 }
 
-function isSafeLocalOperatingLoopWorkPacket(value: unknown): boolean {
+function isSafeLocalOperatingLoopWorkPacket(
+  value: unknown,
+  expected: {
+    input: LocalOperatingLoopInput;
+    actor: string;
+    motionFingerprint: string;
+    candidatePacketHash: string;
+  },
+): value is LocalOperatingLoopWorkPacket {
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
@@ -843,20 +918,25 @@ function isSafeLocalOperatingLoopWorkPacket(value: unknown): boolean {
     return false;
   }
   return (
-    isSafeLocalOperatingLoopToken(value.packet_id) &&
+    value.packet_id ===
+      `local-shadow-work-packet-${expected.candidatePacketHash.slice(0, 24)}` &&
+    isLocalOperatingLoopPacketId(value.packet_id) &&
     value.packet_version === "local-shadow-work-packet.v1" &&
     value.status === "PROPOSED_ONLY" &&
     value.base_sha === LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA &&
-    isSafeLocalOperatingLoopText(value.motion_id, 160) &&
-    isSafeLocalOperatingLoopToken(value.motion_fingerprint) &&
-    isSafeLocalOperatingLoopText(value.title, 240) &&
-    isSafeLocalOperatingLoopText(value.summary, 4000) &&
-    isSafeLocalOperatingLoopText(value.target_repo, 200) &&
+    value.motion_id === expected.input.motionId &&
+    value.motion_fingerprint === expected.motionFingerprint &&
+    value.title === expected.input.title &&
+    value.summary === expected.input.summary &&
+    value.target_repo === expected.input.targetRepo &&
     isLocalOperatingLoopTargetThreadArray(value.target_threads) &&
+    hasExactArrayValues(value.target_threads, expected.input.targetThreads) &&
     isSafeLocalOperatingLoopTextArray(value.evidence_pointers, 20, 500) &&
-    typeof value.proposed_by === "string" &&
-    normalizeLocalOperatingLoopActorEmail(value.proposed_by) ===
-      value.proposed_by &&
+    hasExactArrayValues(
+      value.evidence_pointers,
+      expected.input.evidencePointers,
+    ) &&
+    value.proposed_by === expected.actor &&
     value.decision_scope === "GENERATE_WORK_PACKET_ONLY" &&
     value.execution_authority_granted === false &&
     hasExactNonAuthorizations(value.non_authorizations)
@@ -865,8 +945,15 @@ function isSafeLocalOperatingLoopWorkPacket(value: unknown): boolean {
 
 function isSafeLocalOperatingLoopArtifact(
   value: unknown,
-  decision: LocalOperatingLoopDecision,
-): boolean {
+  expected: {
+    input: LocalOperatingLoopInput;
+    actor: string;
+    motionFingerprint: string;
+    recommendation: LocalOperatingLoopRecommendation;
+    findingCodes: LocalOperatingLoopFindingCode[];
+    decision: LocalOperatingLoopDecision;
+  },
+): value is LocalOperatingLoopArtifact {
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
@@ -891,18 +978,20 @@ function isSafeLocalOperatingLoopArtifact(
     return false;
   }
   return (
-    isSafeLocalOperatingLoopToken(value.artifact_id) &&
+    isLocalOperatingLoopArtifactId(value.artifact_id) &&
     value.artifact_version === "local-shadow-decision-artifact.v1" &&
     value.base_sha === LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA &&
-    isSafeLocalOperatingLoopText(value.motion_id, 160) &&
-    isSafeLocalOperatingLoopToken(value.motion_fingerprint) &&
-    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    value.motion_id === expected.input.motionId &&
+    value.motion_fingerprint === expected.motionFingerprint &&
+    value.recommendation === expected.recommendation &&
     isLocalOperatingLoopFindingCodeArray(value.finding_codes) &&
-    value.decision === decision &&
-    typeof value.actor === "string" &&
-    normalizeLocalOperatingLoopActorEmail(value.actor) === value.actor &&
-    (value.candidate_packet_hash === null ||
-      isSafeLocalOperatingLoopToken(value.candidate_packet_hash)) &&
+    hasExactArrayValues(value.finding_codes, expected.findingCodes) &&
+    value.decision === expected.decision &&
+    value.actor === expected.actor &&
+    hasCoherentLocalOperatingLoopCandidateHash(
+      expected.recommendation,
+      value.candidate_packet_hash,
+    ) &&
     value.receipt_authority === "DEMONSTRATION_ONLY" &&
     value.persistence === "NONE" &&
     value.program_effect === "NONE" &&
@@ -930,7 +1019,10 @@ function isLocalOperatingLoopIssueArray(
 function isLocalOperatingLoopRecommendation(
   value: unknown,
 ): value is LocalOperatingLoopRecommendation {
-  return ["GO", "NEEDS_REVISION", "BLOCKED"].includes(String(value));
+  return (
+    typeof value === "string" &&
+    ["GO", "NEEDS_REVISION", "BLOCKED"].includes(value)
+  );
 }
 
 function isLocalOperatingLoopFindingCodeArray(
@@ -945,6 +1037,7 @@ function isLocalOperatingLoopFindingCodeArray(
   ]);
   return (
     Array.isArray(value) &&
+    new Set(value).size === value.length &&
     value.every(
       (finding): finding is LocalOperatingLoopFindingCode =>
         typeof finding === "string" &&
@@ -969,7 +1062,10 @@ function isLocalOperatingLoopTargetThreadArray(
 function isLocalOperatingLoopTerminalState(
   value: unknown,
 ): value is "ACCEPTED" | "HELD" | "REJECTED" {
-  return ["ACCEPTED", "HELD", "REJECTED"].includes(String(value));
+  return (
+    typeof value === "string" &&
+    ["ACCEPTED", "HELD", "REJECTED"].includes(value)
+  );
 }
 
 function isSafeLocalOperatingLoopText(
@@ -978,8 +1074,8 @@ function isSafeLocalOperatingLoopText(
 ): value is string {
   return (
     typeof value === "string" &&
-    value.length > 0 &&
-    value.length <= maximum &&
+    characterLength(value) > 0 &&
+    characterLength(value) <= maximum &&
     normalizeLocalOperatingLoopString(value) === value
   );
 }
@@ -999,12 +1095,59 @@ function isSafeLocalOperatingLoopTextArray(
   );
 }
 
-function isSafeLocalOperatingLoopToken(value: unknown): value is string {
+function isLocalOperatingLoopSha256(value: unknown): value is string {
   return (
     typeof value === "string" &&
-    value.length > 0 &&
-    value.length <= 500 &&
-    /^[a-z0-9.-]+$/.test(value)
+    /^[a-f0-9]{64}$/.test(value)
+  );
+}
+
+function isLocalOperatingLoopValidationProof(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^local-loop\.validation\.v1\.[a-f0-9]{64}$/.test(value)
+  );
+}
+
+function isLocalOperatingLoopDeliberationProof(
+  value: unknown,
+): value is string {
+  return (
+    typeof value === "string" &&
+    /^local-loop\.deliberation\.v1\.[a-f0-9]{64}$/.test(value)
+  );
+}
+
+function isLocalOperatingLoopPacketId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^local-shadow-work-packet-[a-f0-9]{24}$/.test(value)
+  );
+}
+
+function isLocalOperatingLoopArtifactId(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^local-shadow-decision-[a-f0-9]{24}$/.test(value)
+  );
+}
+
+function hasCoherentLocalOperatingLoopCandidateHash(
+  recommendation: LocalOperatingLoopRecommendation,
+  candidatePacketHash: unknown,
+): candidatePacketHash is string | null {
+  return recommendation === "GO"
+    ? isLocalOperatingLoopSha256(candidatePacketHash)
+    : candidatePacketHash === null;
+}
+
+function hasExactArrayValues(
+  value: readonly unknown[],
+  expected: readonly unknown[],
+): boolean {
+  return (
+    value.length === expected.length &&
+    value.every((item, index) => item === expected[index])
   );
 }
 

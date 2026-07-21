@@ -50,6 +50,51 @@ const genuineGoInput: LocalOperatingLoopInput = {
   ],
 };
 
+function clientResponseExpectation(
+  requestInput: LocalOperatingLoopInput,
+  currentInput: LocalOperatingLoopInput = requestInput,
+) {
+  return {
+    requestInput,
+    requestProjectionKey:
+      createLocalOperatingLoopProjectionKey(requestInput),
+    currentProjectionKey:
+      createLocalOperatingLoopProjectionKey(currentInput),
+  };
+}
+
+function classifyClientResponse(
+  value: unknown,
+  requestInput: LocalOperatingLoopInput = genuineGoInput,
+) {
+  return classifyLocalOperatingLoopClientResponse(
+    value,
+    clientResponseExpectation(requestInput),
+  );
+}
+
+function mutableClone(value: unknown): Record<string, unknown> {
+  return structuredClone(value) as Record<string, unknown>;
+}
+
+function nestedRecord(
+  value: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const nested = value[key];
+  assert.equal(typeof nested, "object");
+  assert.notEqual(nested, null);
+  assert.equal(Array.isArray(nested), false);
+  return nested as Record<string, unknown>;
+}
+
+function differentSha256(value: unknown): string {
+  assert.equal(typeof value, "string");
+  assert.match(value as string, /^[a-f0-9]{64}$/);
+  const text = value as string;
+  return `${text.startsWith("0") ? "1" : "0"}${text.slice(1)}`;
+}
+
 function acceptedUiState(projectionKey: string): LocalOperatingLoopUiState {
   const motionFingerprint = "a".repeat(64);
   const candidatePacketHash = "b".repeat(64);
@@ -434,6 +479,57 @@ async function testAuthenticationIdentityFailuresClearDerivedStateAndExposeFixed
     );
   }
 
+  const actualFailureHandlers = [
+    {
+      code: "UNAUTHENTICATED",
+      handler: createLocalOperatingLoopHandler({
+        readSecret: () => SYNTHETIC_SECRET,
+        authenticate: async () => ({ authenticated: false }),
+      }),
+    },
+    {
+      code: "ADMIN_REQUIRED",
+      handler: createLocalOperatingLoopHandler({
+        readSecret: () => SYNTHETIC_SECRET,
+        authenticate: async () => ({
+          authenticated: true,
+          role: "AGENT",
+          email: "agent@example.com",
+        }),
+      }),
+    },
+    {
+      code: "ACTOR_EMAIL_REQUIRED",
+      handler: createLocalOperatingLoopHandler({
+        readSecret: () => SYNTHETIC_SECRET,
+        authenticate: async () => ({
+          authenticated: true,
+          role: "ADMIN",
+          email: " \r\n ",
+        }),
+      }),
+    },
+  ] as const;
+
+  for (const { code, handler } of actualFailureHandlers) {
+    const result = await readResponse(
+      await handler(
+        jsonRequest({ action: "VALIDATE", input: genuineGoInput }),
+      ),
+    );
+    const classification = classifyClientResponse(result.body);
+    assert.equal(classification.kind, "RECOVERY", code);
+    if (classification.kind !== "RECOVERY") {
+      throw new Error(`Expected ${code} recovery classification.`);
+    }
+    assert.equal(classification.code, code);
+    assert.equal(
+      createLocalOperatingLoopRecoveryNotice(classification.code)
+        .requiresReauthentication,
+      true,
+    );
+  }
+
   assert.equal(messages.size, expected.length);
   assert.equal(
     LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
@@ -458,7 +554,7 @@ async function testSecretRotationInvalidProofForcesRevalidation() {
     proofChain.deliberationProof,
   );
   assert.equal(result.status, 409);
-  const classification = classifyLocalOperatingLoopClientResponse(result.body);
+  const classification = classifyClientResponse(result.body);
   assert.equal(classification.kind, "RECOVERY");
   if (classification.kind !== "RECOVERY") {
     throw new Error("Expected INVALID_PROOF recovery classification.");
@@ -489,7 +585,7 @@ async function testUnavailableProofServiceClearsStaleProofAndOutputs() {
     await handler(jsonRequest({ action: "VALIDATE", input: genuineGoInput })),
   );
   assert.equal(result.status, 503);
-  const classification = classifyLocalOperatingLoopClientResponse(result.body);
+  const classification = classifyClientResponse(result.body);
   assert.equal(classification.kind, "RECOVERY");
   if (classification.kind !== "RECOVERY") {
     throw new Error("Expected proof-service recovery classification.");
@@ -684,9 +780,7 @@ async function testHoldAndRejectNeverProduceWorkPacket() {
     assert.equal(result.status, 200);
     const body = successBody(result.body);
     assert.equal("workPacket" in body ? body.workPacket : undefined, null);
-    const classification = classifyLocalOperatingLoopClientResponse(
-      result.body,
-    );
+    const classification = classifyClientResponse(result.body);
     assert.equal(classification.kind, "SUCCESS");
     if (classification.kind !== "SUCCESS") {
       throw new Error(`Expected ${decision} client response.`);
@@ -749,7 +843,7 @@ async function testRecoveryControlsAreAccessibleAndPhaseSpecific() {
   );
 
   const rawServerText = "raw server secret should never be displayed";
-  const unknown = classifyLocalOperatingLoopClientResponse({
+  const unknown = classifyClientResponse({
     ok: false,
     error: {
       code: "UNKNOWN_SERVER_CODE",
@@ -770,7 +864,7 @@ async function testRecoveryControlsAreAccessibleAndPhaseSpecific() {
     "generic-fail-closed",
   );
   assert.equal(
-    classifyLocalOperatingLoopClientResponse({
+    classifyClientResponse({
       ok: true,
       state: "UNKNOWN",
       secret: "must-not-render",
@@ -812,9 +906,7 @@ async function testD4ValidationAndDeliberationUxContractRemainsIntact() {
   const validation = await readResponse(
     await handler(jsonRequest({ action: "VALIDATE", input: genuineGoInput })),
   );
-  const classification = classifyLocalOperatingLoopClientResponse(
-    validation.body,
-  );
+  const classification = classifyClientResponse(validation.body);
   assert.equal(classification.kind, "SUCCESS");
   if (classification.kind !== "SUCCESS") {
     throw new Error("Expected validated client response.");
@@ -833,8 +925,9 @@ async function testD4ValidationAndDeliberationUxContractRemainsIntact() {
       }),
     ),
   );
-  const deliberationClassification =
-    classifyLocalOperatingLoopClientResponse(deliberation.body);
+  const deliberationClassification = classifyClientResponse(
+    deliberation.body,
+  );
   assert.equal(deliberationClassification.kind, "SUCCESS");
   if (
     deliberationClassification.kind !== "SUCCESS" ||
@@ -849,9 +942,7 @@ async function testD4ValidationAndDeliberationUxContractRemainsIntact() {
     "ACCEPT",
     deliberationClassification.response.deliberationProof,
   );
-  const acceptedClassification = classifyLocalOperatingLoopClientResponse(
-    accepted.body,
-  );
+  const acceptedClassification = classifyClientResponse(accepted.body);
   assert.equal(acceptedClassification.kind, "SUCCESS");
   if (acceptedClassification.kind !== "SUCCESS") {
     throw new Error("Expected ACCEPTED client response.");
@@ -1221,6 +1312,643 @@ async function testTerminalDecisionSemanticsAndDeterministicReplay() {
   assertArtifactBoundary(accepted.artifact);
 }
 
+async function buildSuccessResponseFixtures(
+  input: LocalOperatingLoopInput,
+) {
+  const handler = createAdminHandler();
+  const validationResult = await readResponse(
+    await handler(jsonRequest({ action: "VALIDATE", input })),
+  );
+  assert.equal(validationResult.status, 200);
+  const validated = successBody(validationResult.body);
+  if (validated.state !== "VALIDATED") {
+    throw new Error("Expected VALIDATED response fixture.");
+  }
+
+  const deliberationResult = await readResponse(
+    await handler(
+      jsonRequest({
+        action: "DELIBERATE",
+        input,
+        validationProof: validated.validationProof,
+      }),
+    ),
+  );
+  assert.equal(deliberationResult.status, 200);
+  const awaitingDecision = successBody(deliberationResult.body);
+  if (awaitingDecision.state !== "AWAITING_DECISION") {
+    throw new Error("Expected AWAITING_DECISION response fixture.");
+  }
+
+  const acceptedResult = await decide(
+    handler,
+    input,
+    "ACCEPT",
+    awaitingDecision.deliberationProof,
+  );
+  assert.equal(acceptedResult.status, 200);
+  const accepted = successBody(acceptedResult.body);
+  if (accepted.state !== "ACCEPTED") {
+    throw new Error("Expected ACCEPTED response fixture.");
+  }
+
+  const heldResult = await decide(
+    handler,
+    input,
+    "HOLD",
+    awaitingDecision.deliberationProof,
+  );
+  assert.equal(heldResult.status, 200);
+  const held = successBody(heldResult.body);
+  if (held.state !== "HELD") {
+    throw new Error("Expected HELD response fixture.");
+  }
+
+  const rejectedResult = await decide(
+    handler,
+    input,
+    "REJECT",
+    awaitingDecision.deliberationProof,
+  );
+  assert.equal(rejectedResult.status, 200);
+  const rejected = successBody(rejectedResult.body);
+  if (rejected.state !== "REJECTED") {
+    throw new Error("Expected REJECTED response fixture.");
+  }
+
+  return { validated, awaitingDecision, accepted, held, rejected };
+}
+
+async function testRejectsSemanticallyIncoherentSuccessPayloads() {
+  const fixtures = await buildSuccessResponseFixtures(genuineGoInput);
+  for (const [name, response] of Object.entries(fixtures)) {
+    assert.equal(
+      classifyClientResponse(response).kind,
+      "SUCCESS",
+      `valid ${name}`,
+    );
+  }
+
+  const changedInput = {
+    ...genuineGoInput,
+    title: `${genuineGoInput.title} changed`,
+  };
+  assert.equal(
+    classifyLocalOperatingLoopClientResponse(
+      fixtures.validated,
+      clientResponseExpectation(genuineGoInput, changedInput),
+    ).kind,
+    "RECOVERY",
+    "current projection mismatch",
+  );
+  assert.equal(
+    classifyLocalOperatingLoopClientResponse(fixtures.validated, {
+      ...clientResponseExpectation(genuineGoInput),
+      requestProjectionKey:
+        createLocalOperatingLoopProjectionKey(changedInput),
+    }).kind,
+    "RECOVERY",
+    "request projection mismatch",
+  );
+
+  const mutations: Array<{
+    name: string;
+    source: LocalOperatingLoopSuccessResponse;
+    mutate: (response: Record<string, unknown>) => void;
+  }> = [
+    {
+      name: "response input",
+      source: fixtures.validated,
+      mutate: (response) => {
+        nestedRecord(response, "input").title = changedInput.title;
+      },
+    },
+    {
+      name: "response repository",
+      source: fixtures.validated,
+      mutate: (response) => {
+        nestedRecord(response, "input").targetRepo = "other-repo";
+      },
+    },
+    {
+      name: "top actor",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.actor = "other-founder@example.com";
+      },
+    },
+    {
+      name: "top motion fingerprint",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.motionFingerprint = differentSha256(
+          response.motionFingerprint,
+        );
+      },
+    },
+    {
+      name: "validation proof format",
+      source: fixtures.validated,
+      mutate: (response) => {
+        response.validationProof = "validation-proof";
+      },
+    },
+    {
+      name: "deliberation proof format",
+      source: fixtures.awaitingDecision,
+      mutate: (response) => {
+        response.deliberationProof = "deliberation-proof";
+      },
+    },
+    {
+      name: "recommendation fingerprint format",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.recommendationFingerprint = "recommendation-fingerprint";
+      },
+    },
+    {
+      name: "accepted non-GO recommendation",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.recommendation = "NEEDS_REVISION";
+      },
+    },
+    {
+      name: "top finding codes",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.findingCodes = ["EVIDENCE_REQUIRED"];
+      },
+    },
+    {
+      name: "terminal decision",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.decision = "HOLD";
+      },
+    },
+    {
+      name: "accepted packet missing",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        response.workPacket = null;
+      },
+    },
+    {
+      name: "held packet present",
+      source: fixtures.held,
+      mutate: (response) => {
+        response.workPacket = structuredClone(fixtures.accepted.workPacket);
+      },
+    },
+    {
+      name: "packet motion id",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").motion_id = "other-motion";
+      },
+    },
+    {
+      name: "packet motion fingerprint",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        const packet = nestedRecord(response, "workPacket");
+        packet.motion_fingerprint = differentSha256(
+          packet.motion_fingerprint,
+        );
+      },
+    },
+    {
+      name: "packet title",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").title = "Other title";
+      },
+    },
+    {
+      name: "packet summary",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").summary = "Other summary";
+      },
+    },
+    {
+      name: "packet repository",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").target_repo = "other-repo";
+      },
+    },
+    {
+      name: "packet target threads",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").target_threads = [
+          "JAI_CONTROL_THREAD",
+        ];
+      },
+    },
+    {
+      name: "packet evidence pointers",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").evidence_pointers = [];
+      },
+    },
+    {
+      name: "packet actor",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "workPacket").proposed_by =
+          "other-founder@example.com";
+      },
+    },
+    {
+      name: "packet id",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        const packet = nestedRecord(response, "workPacket");
+        const artifact = nestedRecord(response, "artifact");
+        packet.packet_id = `local-shadow-work-packet-${differentSha256(
+          artifact.candidate_packet_hash,
+        ).slice(0, 24)}`;
+      },
+    },
+    {
+      name: "artifact id format",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").artifact_id =
+          `local-shadow-decision-artifact-${"a".repeat(24)}`;
+      },
+    },
+    {
+      name: "artifact motion id",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").motion_id = "other-motion";
+      },
+    },
+    {
+      name: "artifact motion fingerprint",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        const artifact = nestedRecord(response, "artifact");
+        artifact.motion_fingerprint = differentSha256(
+          artifact.motion_fingerprint,
+        );
+      },
+    },
+    {
+      name: "artifact recommendation",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").recommendation =
+          "NEEDS_REVISION";
+      },
+    },
+    {
+      name: "artifact findings",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").finding_codes = [
+          "EVIDENCE_REQUIRED",
+        ];
+      },
+    },
+    {
+      name: "artifact decision",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").decision = "HOLD";
+      },
+    },
+    {
+      name: "artifact actor",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        nestedRecord(response, "artifact").actor =
+          "other-founder@example.com";
+      },
+    },
+    {
+      name: "candidate packet hash",
+      source: fixtures.accepted,
+      mutate: (response) => {
+        const artifact = nestedRecord(response, "artifact");
+        artifact.candidate_packet_hash = differentSha256(
+          artifact.candidate_packet_hash,
+        );
+      },
+    },
+  ];
+
+  for (const { name, source: response, mutate } of mutations) {
+    const candidate = mutableClone(response);
+    mutate(candidate);
+    assert.equal(
+      classifyClientResponse(candidate).kind,
+      "RECOVERY",
+      name,
+    );
+  }
+}
+
+async function testRejectsNonStringResponseEnums() {
+  const fixtures = await buildSuccessResponseFixtures(genuineGoInput);
+  const targets: Array<{
+    name: string;
+    source: LocalOperatingLoopSuccessResponse;
+    expected: string;
+    set: (response: Record<string, unknown>, value: unknown) => void;
+  }> = [
+    {
+      name: "validated state",
+      source: fixtures.validated,
+      expected: "VALIDATED",
+      set: (response, value) => {
+        response.state = value;
+      },
+    },
+    {
+      name: "awaiting state",
+      source: fixtures.awaitingDecision,
+      expected: "AWAITING_DECISION",
+      set: (response, value) => {
+        response.state = value;
+      },
+    },
+    {
+      name: "recommendation",
+      source: fixtures.accepted,
+      expected: "GO",
+      set: (response, value) => {
+        response.recommendation = value;
+      },
+    },
+    {
+      name: "terminal state",
+      source: fixtures.accepted,
+      expected: "ACCEPTED",
+      set: (response, value) => {
+        response.state = value;
+      },
+    },
+    {
+      name: "decision",
+      source: fixtures.accepted,
+      expected: "ACCEPT",
+      set: (response, value) => {
+        response.decision = value;
+      },
+    },
+    {
+      name: "packet version",
+      source: fixtures.accepted,
+      expected: "local-shadow-work-packet.v1",
+      set: (response, value) => {
+        nestedRecord(response, "workPacket").packet_version = value;
+      },
+    },
+    {
+      name: "packet status",
+      source: fixtures.accepted,
+      expected: "PROPOSED_ONLY",
+      set: (response, value) => {
+        nestedRecord(response, "workPacket").status = value;
+      },
+    },
+    {
+      name: "packet decision scope",
+      source: fixtures.accepted,
+      expected: "GENERATE_WORK_PACKET_ONLY",
+      set: (response, value) => {
+        nestedRecord(response, "workPacket").decision_scope = value;
+      },
+    },
+    {
+      name: "artifact version",
+      source: fixtures.accepted,
+      expected: "local-shadow-decision-artifact.v1",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").artifact_version = value;
+      },
+    },
+    {
+      name: "artifact recommendation",
+      source: fixtures.accepted,
+      expected: "GO",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").recommendation = value;
+      },
+    },
+    {
+      name: "artifact decision",
+      source: fixtures.accepted,
+      expected: "ACCEPT",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").decision = value;
+      },
+    },
+    {
+      name: "artifact receipt authority",
+      source: fixtures.accepted,
+      expected: "DEMONSTRATION_ONLY",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").receipt_authority = value;
+      },
+    },
+    {
+      name: "artifact persistence",
+      source: fixtures.accepted,
+      expected: "NONE",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").persistence = value;
+      },
+    },
+    {
+      name: "artifact program effect",
+      source: fixtures.accepted,
+      expected: "NONE",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").program_effect = value;
+      },
+    },
+    {
+      name: "artifact decision scope",
+      source: fixtures.accepted,
+      expected: "GENERATE_WORK_PACKET_ONLY",
+      set: (response, value) => {
+        nestedRecord(response, "artifact").decision_scope = value;
+      },
+    },
+  ];
+
+  for (const target of targets) {
+    const invalidValues: unknown[] = [
+      [target.expected],
+      [[target.expected]],
+      { value: target.expected },
+      1,
+      true,
+      null,
+    ];
+    for (const invalidValue of invalidValues) {
+      const candidate = mutableClone(target.source);
+      target.set(candidate, invalidValue);
+      assert.equal(
+        classifyClientResponse(candidate).kind,
+        "RECOVERY",
+        `${target.name}: ${JSON.stringify(invalidValue)}`,
+      );
+    }
+  }
+}
+
+async function testAstralUnicodeLimitsMatchDtoAndClientClassifier() {
+  const astral = "\u{1F680}";
+  const exactInputs: Array<{
+    name: string;
+    exact: LocalOperatingLoopInput;
+    over: LocalOperatingLoopInput;
+  }> = [
+    {
+      name: "motion id",
+      exact: { ...genuineGoInput, motionId: `m${astral.repeat(159)}` },
+      over: { ...genuineGoInput, motionId: `m${astral.repeat(160)}` },
+    },
+    {
+      name: "title",
+      exact: { ...genuineGoInput, title: `t${astral.repeat(239)}` },
+      over: { ...genuineGoInput, title: `t${astral.repeat(240)}` },
+    },
+    {
+      name: "summary",
+      exact: { ...genuineGoInput, summary: `s${astral.repeat(3999)}` },
+      over: { ...genuineGoInput, summary: `s${astral.repeat(4000)}` },
+    },
+    {
+      name: "target repository",
+      exact: { ...genuineGoInput, targetRepo: `r${astral.repeat(199)}` },
+      over: { ...genuineGoInput, targetRepo: `r${astral.repeat(200)}` },
+    },
+    {
+      name: "evidence pointer",
+      exact: {
+        ...genuineGoInput,
+        evidencePointers: [`e${astral.repeat(499)}`],
+      },
+      over: {
+        ...genuineGoInput,
+        evidencePointers: [`e${astral.repeat(500)}`],
+      },
+    },
+  ];
+
+  for (const boundary of exactInputs) {
+    assert.equal(
+      parseLocalOperatingLoopAction({
+        action: "VALIDATE",
+        input: boundary.exact,
+      }).ok,
+      true,
+      `${boundary.name} exact DTO limit`,
+    );
+    assert.equal(
+      parseLocalOperatingLoopAction({
+        action: "VALIDATE",
+        input: boundary.over,
+      }).ok,
+      false,
+      `${boundary.name} over DTO limit`,
+    );
+  }
+
+  const unicodeGoInput: LocalOperatingLoopInput = {
+    ...genuineGoInput,
+    motionId: `m${astral.repeat(159)}`,
+    title: `t${astral.repeat(239)}`,
+    summary: `s${astral.repeat(3999)}`,
+    evidencePointers: [`e${astral.repeat(499)}`],
+  };
+  const fixtures = await buildSuccessResponseFixtures(unicodeGoInput);
+  for (const [name, response] of Object.entries(fixtures)) {
+    assert.equal(
+      classifyClientResponse(response, unicodeGoInput).kind,
+      "SUCCESS",
+      `valid Unicode ${name}`,
+    );
+  }
+  for (const state of ["ACCEPTED", "HELD", "REJECTED"] as const) {
+    const response =
+      state === "ACCEPTED"
+        ? fixtures.accepted
+        : state === "HELD"
+          ? fixtures.held
+          : fixtures.rejected;
+    assert.equal(
+      classifyClientResponse(response, unicodeGoInput).kind,
+      "SUCCESS",
+      `valid Unicode ${state}`,
+    );
+  }
+
+  for (const boundary of exactInputs) {
+    const overResponse = mutableClone(fixtures.validated);
+    overResponse.input = structuredClone(boundary.over);
+    assert.equal(
+      classifyLocalOperatingLoopClientResponse(
+        overResponse,
+        clientResponseExpectation(boundary.over),
+      ).kind,
+      "RECOVERY",
+      `${boundary.name} over client limit`,
+    );
+  }
+}
+
+async function testUnknownRecoveryCodesUseOwnPropertyFallback() {
+  const generic = createLocalOperatingLoopRecoveryNotice(
+    "UNKNOWN_RECOVERY_CODE",
+  );
+  const prototypeNames = [
+    "__proto__",
+    "constructor",
+    "prototype",
+    "toString",
+    "valueOf",
+    "hasOwnProperty",
+  ];
+
+  for (const code of prototypeNames) {
+    assert.deepEqual(
+      createLocalOperatingLoopRecoveryNotice(code),
+      generic,
+      code,
+    );
+    const classification = classifyClientResponse({
+      ok: false,
+      error: { code, message: "must never reach founder-visible copy" },
+      nonAuthorizations: [...LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS],
+    });
+    assert.equal(classification.kind, "RECOVERY", code);
+    if (classification.kind !== "RECOVERY") {
+      throw new Error(`Expected ${code} recovery classification.`);
+    }
+    assert.deepEqual(
+      createLocalOperatingLoopRecoveryNotice(classification.code),
+      generic,
+      code,
+    );
+  }
+
+  assert.equal(
+    createLocalOperatingLoopRecoveryNotice("UNAUTHENTICATED").id,
+    "authentication-expired",
+  );
+}
+
 async function testFullCanonicalKeyInvalidationAndStaleSuppression() {
   const firstKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
   const titleChangedKey = createLocalOperatingLoopProjectionKey({
@@ -1300,6 +2028,8 @@ async function testProductionSourceAndImportIsolation() {
 
   assert.deepEqual(importSpecifiers(pureSource), ["zod"]);
   assert.doesNotMatch(pureSource, /node:|process\.env|next-auth|@\/auth/);
+  assert.doesNotMatch(pureSource, /\bString\(value\)/);
+  assert.match(pureSource, /Object\.prototype\.hasOwnProperty\.call\(/);
 
   assert.deepEqual(importSpecifiers(handlerSource), [
     "node:crypto",
@@ -1336,6 +2066,9 @@ async function testProductionSourceAndImportIsolation() {
   assert.match(panelSource, /abortAndReleaseActiveRequest/);
   assert.match(panelSource, /controller\?\.abort\(\)/);
   assert.match(panelSource, /classifyLocalOperatingLoopClientResponse/);
+  assert.match(panelSource, /requestInput: requestBody\.input/);
+  assert.match(panelSource, /requestProjectionKey,/);
+  assert.match(panelSource, /currentProjectionKey: projectionKey/);
   assert.match(panelSource, /recoverLocalOperatingLoopClientFailure/);
   assert.match(
     panelSource,
@@ -1541,6 +2274,10 @@ await testClientIdentitySpoofResistance();
 await testProofProgressionAndInvalidProofClasses();
 await testRejectsNonGoAcceptance();
 await testTerminalDecisionSemanticsAndDeterministicReplay();
+await testRejectsSemanticallyIncoherentSuccessPayloads();
+await testRejectsNonStringResponseEnums();
+await testAstralUnicodeLimitsMatchDtoAndClientClassifier();
+await testUnknownRecoveryCodesUseOwnPropertyFallback();
 await testFullCanonicalKeyInvalidationAndStaleSuppression();
 await testProductionSourceAndImportIsolation();
 

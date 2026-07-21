@@ -230,7 +230,11 @@ function LocalOperatingLoopProjectionPanel({
         return;
       }
       const classification =
-        classifyLocalOperatingLoopClientResponse(value);
+        classifyLocalOperatingLoopClientResponse(value, {
+          requestInput: requestBody.input,
+          requestProjectionKey,
+          currentProjectionKey: projectionKey,
+        });
 
       if (!response.ok && classification.kind === "SUCCESS") {
         failClosed(null);
