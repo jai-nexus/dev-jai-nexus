@@ -9,12 +9,17 @@ import {
   OperatorSectionHeader,
 } from "@/components/operator/slate";
 import {
+  LOCAL_OPERATING_LOOP_PHASE_COPY,
+  LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopProjectionKey,
   createLocalOperatingLoopUiState,
+  recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopAction,
   type LocalOperatingLoopInput,
   type LocalOperatingLoopResponse,
+  type LocalOperatingLoopStructuralRemediation,
   type LocalOperatingLoopSuccessResponse,
   type LocalOperatingLoopUiState,
 } from "@/lib/controlPlane/motionKernel/local-operating-loop";
@@ -60,13 +65,23 @@ function LocalOperatingLoopProjectionPanel({
     "Select a motion, then validate the local-shadow input.",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [structuralRemediations, setStructuralRemediations] = useState<
+    LocalOperatingLoopStructuralRemediation[]
+  >([]);
   const requestSequence = useRef(0);
   const activeAbortController = useRef<AbortController | null>(null);
   const activeRequestId = useRef<number | null>(null);
+  const remediationHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     return () => activeAbortController.current?.abort();
   }, []);
+
+  useEffect(() => {
+    if (structuralRemediations.length > 0) {
+      remediationHeadingRef.current?.focus();
+    }
+  }, [structuralRemediations]);
 
   async function submitAction(
     action:
@@ -93,7 +108,14 @@ function LocalOperatingLoopProjectionPanel({
     const requestProjectionKey = projectionKey;
     activeRequestId.current = requestId;
     setErrorMessage(null);
-    setStatusMessage(`Submitting ${requestBody.action.toLowerCase()} request...`);
+    setStructuralRemediations([]);
+    setStatusMessage(
+      action === "VALIDATE"
+        ? LOCAL_OPERATING_LOOP_PHASE_COPY.VALIDATING
+        : action === "DELIBERATE"
+          ? LOCAL_OPERATING_LOOP_PHASE_COPY.DELIBERATING
+          : `Submitting ${requestBody.action.toLowerCase()} request...`,
+    );
     setUiState((current) => ({
       ...current,
       activeRequestId: requestId,
@@ -127,12 +149,24 @@ function LocalOperatingLoopProjectionPanel({
         return;
       }
       activeRequestId.current = null;
-      setUiState((current) =>
-        value.ok
-          ? applySuccessResponse(current, value)
-          : { ...current, activeRequestId: null },
-      );
       if (!response.ok || !value.ok) {
+        if (!value.ok && value.error.code === "INVALID_REQUEST") {
+          setUiState((current) =>
+            recoverLocalOperatingLoopStructuralFailure(current),
+          );
+          setErrorMessage(null);
+          setStructuralRemediations(
+            createLocalOperatingLoopStructuralRemediations(
+              value.error.issues,
+            ),
+          );
+          setStatusMessage(LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY);
+          return;
+        }
+        setUiState((current) => ({
+          ...current,
+          activeRequestId: null,
+        }));
         setErrorMessage(
           value.ok
             ? "The local operating-loop request failed safely."
@@ -141,11 +175,9 @@ function LocalOperatingLoopProjectionPanel({
         setStatusMessage("No downstream local-shadow output was produced.");
         return;
       }
-      setStatusMessage(
-        value.state === "ACCEPTED"
-          ? "Accepted locally for proposed Work Packet generation only."
-          : `Local-shadow state advanced to ${value.state}.`,
-      );
+      setUiState((current) => applySuccessResponse(current, value));
+      setStructuralRemediations([]);
+      setStatusMessage(LOCAL_OPERATING_LOOP_PHASE_COPY[value.state]);
     } catch (error) {
       if (
         error instanceof DOMException &&
@@ -261,7 +293,8 @@ function LocalOperatingLoopProjectionPanel({
                 activeRequestId.current = null;
                 setUiState(createLocalOperatingLoopUiState(projectionKey));
                 setErrorMessage(null);
-                setStatusMessage("Local-shadow state reset to DRAFT.");
+                setStructuralRemediations([]);
+                setStatusMessage(LOCAL_OPERATING_LOOP_PHASE_COPY.DRAFT);
               }}
               disabled={pending}
               className="rounded border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200 disabled:cursor-not-allowed disabled:text-slate-600"
@@ -309,6 +342,38 @@ function LocalOperatingLoopProjectionPanel({
               <p className="text-sm text-slate-300">{statusMessage}</p>
             </OperatorGateCard>
           </div>
+          {structuralRemediations.length > 0 ? (
+            <div
+              aria-labelledby="local-operating-loop-remediation-heading"
+              aria-live="assertive"
+              role="alert"
+            >
+              <OperatorGateCard>
+                <h3
+                  id="local-operating-loop-remediation-heading"
+                  ref={remediationHeadingRef}
+                  tabIndex={-1}
+                  className="text-sm font-semibold text-red-100 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                >
+                  Request structure needs attention
+                </h3>
+                <p className="mt-2 text-sm text-slate-300">
+                  Structural validation checks request shape only. Correct the
+                  listed fields, then validate again.
+                </p>
+                <ul className="mt-3 space-y-2 text-sm text-red-200">
+                  {structuralRemediations.map((remediation) => (
+                    <li key={remediation.id}>
+                      <span className="font-semibold">
+                        {remediation.field}:
+                      </span>{" "}
+                      {remediation.message}
+                    </li>
+                  ))}
+                </ul>
+              </OperatorGateCard>
+            </div>
+          ) : null}
           {errorMessage ? (
             <div aria-live="assertive" role="alert">
               <OperatorGateCard>

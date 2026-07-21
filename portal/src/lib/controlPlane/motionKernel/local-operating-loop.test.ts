@@ -4,12 +4,16 @@ import { encode, getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 import {
+  LOCAL_OPERATING_LOOP_PHASE_COPY,
+  LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
   canonicalizeLocalOperatingLoopValue,
   createLocalOperatingLoopProjectionKey,
+  createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopUiState,
   deriveLocalOperatingLoopRecommendation,
   invalidateLocalOperatingLoopUiState,
   parseLocalOperatingLoopAction,
+  recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopInput,
   type LocalOperatingLoopResponse,
@@ -172,6 +176,181 @@ async function testExactDeterministicRecommendationMapping() {
       advisoryOnly: true,
     },
   );
+}
+
+async function testStructuralValidationPrecedesSemanticDeliberation() {
+  const structurallyValidButSemanticallyIncompleteInput = {
+    ...genuineGoInput,
+    title: "Short",
+    summary: "Too short.",
+    evidencePointers: [],
+  };
+  const handler = createAdminHandler();
+  const validation = await readResponse(
+    await handler(
+      jsonRequest({
+        action: "VALIDATE",
+        input: structurallyValidButSemanticallyIncompleteInput,
+      }),
+    ),
+  );
+  assert.equal(validation.status, 200);
+  const validationBody = successBody(validation.body);
+  assert.equal(validationBody.state, "VALIDATED");
+  assert.equal("recommendation" in validationBody, false);
+  assert.equal("findingCodes" in validationBody, false);
+  assert.equal("candidatePacketHash" in validationBody, false);
+  if (validationBody.state !== "VALIDATED") {
+    throw new Error("Expected structurally VALIDATED response.");
+  }
+
+  const deliberation = await readResponse(
+    await handler(
+      jsonRequest({
+        action: "DELIBERATE",
+        input: structurallyValidButSemanticallyIncompleteInput,
+        validationProof: validationBody.validationProof,
+      }),
+    ),
+  );
+  assert.equal(deliberation.status, 200);
+  const deliberationBody = successBody(deliberation.body);
+  assert.equal(deliberationBody.state, "AWAITING_DECISION");
+  if (deliberationBody.state !== "AWAITING_DECISION") {
+    throw new Error("Expected semantic deliberation response.");
+  }
+  assert.equal(deliberationBody.recommendation, "NEEDS_REVISION");
+  assert.deepEqual(deliberationBody.findingCodes, [
+    "TITLE_TOO_SHORT",
+    "SUMMARY_TOO_SHORT",
+    "EVIDENCE_REQUIRED",
+  ]);
+}
+
+async function testPhaseCopyDistinguishesStructureFromSemantics() {
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.DRAFT,
+    "Ready for structural validation. This checks request shape only.",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.VALIDATING,
+    "Checking request structure only.",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.VALIDATED,
+    "Structure validated. No semantic recommendation has been produced.",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.DELIBERATING,
+    "Running server-side semantic deliberation to derive a recommendation.",
+  );
+  assert.match(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.AWAITING_DECISION,
+    /server-derived recommendation before an ADMIN decision/,
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_PHASE_COPY.ACCEPTED,
+    "Accepted locally for proposed Work Packet generation only.",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+    "Structural validation found fields that need correction. The selected motion remains available and the local shadow returned to DRAFT.",
+  );
+}
+
+async function testSafeDeterministicStructuralRemediation() {
+  const issues = [
+    { path: "input.evidencePointers.1", code: "custom" },
+    { path: "input.title", code: "too_small" },
+    { path: "input.motionId", code: "invalid_type" },
+    { path: "input.summary", code: "too_big" },
+    { path: "input.targetRepo", code: "custom" },
+    { path: "input.targetThreads.2", code: "invalid_enum_value" },
+    { path: "action", code: "invalid_union_discriminator" },
+    { path: "secret.token", code: "raw-sensitive-code" },
+    { path: "input.title", code: "custom" },
+  ];
+  const expected = [
+    {
+      id: "motion-id",
+      field: "Motion identifier",
+      message: "Provide a single-line motion identifier.",
+    },
+    {
+      id: "title",
+      field: "Title",
+      message: "Provide a single-line motion title within 240 characters.",
+    },
+    {
+      id: "summary",
+      field: "Summary",
+      message: "Provide a motion summary between 1 and 4,000 characters.",
+    },
+    {
+      id: "target-repository",
+      field: "Target repository",
+      message: "Provide a single-line target repository within 200 characters.",
+    },
+    {
+      id: "target-threads",
+      field: "Target threads",
+      message:
+        "Choose one to six unique target threads from the available options.",
+    },
+    {
+      id: "evidence-pointers",
+      field: "Evidence pointers",
+      message: "Use no more than 20 unique, non-empty evidence pointers.",
+    },
+    {
+      id: "action",
+      field: "Action",
+      message: "Choose validation, deliberation, or an ADMIN decision.",
+    },
+    {
+      id: "request",
+      field: "Motion request",
+      message:
+        "Review the motion structure and remove unsupported fields before retrying.",
+    },
+  ];
+
+  const remediations =
+    createLocalOperatingLoopStructuralRemediations(issues);
+  assert.deepEqual(remediations, expected);
+  assert.deepEqual(
+    createLocalOperatingLoopStructuralRemediations([...issues].reverse()),
+    expected,
+  );
+  assert.deepEqual(
+    createLocalOperatingLoopStructuralRemediations(undefined),
+    [expected.at(-1)],
+  );
+  const founderCopy = JSON.stringify(remediations);
+  assert.doesNotMatch(
+    founderCopy,
+    /input\.|secret|too_small|invalid_type|raw-sensitive-code/,
+  );
+}
+
+async function testStructuralFailureRecoversDraftPresentationState() {
+  const projectionKey = createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const populatedState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    state: "AWAITING_DECISION" as const,
+    validationProof: "validation-proof",
+    deliberationProof: "deliberation-proof",
+    recommendation: "GO" as const,
+    findingCodes: ["EVIDENCE_REQUIRED" as const],
+    activeRequestId: 41,
+  };
+
+  assert.deepEqual(
+    recoverLocalOperatingLoopStructuralFailure(populatedState),
+    createLocalOperatingLoopUiState(projectionKey),
+  );
+  assert.equal(populatedState.state, "AWAITING_DECISION");
+  assert.equal(populatedState.projectionKey, projectionKey);
 }
 
 async function testAuthenticationAndSecretPrecedeBodyParsing() {
@@ -637,6 +816,26 @@ async function testProductionSourceAndImportIsolation() {
   assert.match(panelSource, /shouldApplyLocalOperatingLoopResponse/);
   assert.match(panelSource, /key=\{projectionKey\}/);
   assert.match(panelSource, /activeAbortController\.current\?\.abort\(\)/);
+  assert.match(
+    panelSource,
+    /createLocalOperatingLoopStructuralRemediations\(/,
+  );
+  assert.match(
+    panelSource,
+    /recoverLocalOperatingLoopStructuralFailure\(/,
+  );
+  assert.match(panelSource, /role="alert"/);
+  assert.match(panelSource, /aria-live="assertive"/);
+  assert.match(panelSource, /tabIndex=\{-1\}/);
+  assert.match(
+    panelSource,
+    /remediationHeadingRef\.current\?\.focus\(\)/,
+  );
+  assert.doesNotMatch(panelSource, /issue\.(?:path|code)/);
+  assert.doesNotMatch(
+    panelSource,
+    /deriveLocalOperatingLoopRecommendation/,
+  );
 
   assert.match(
     composerSource,
@@ -798,6 +997,10 @@ assert.equal(
 await testStrictStructuralValidationAndNormalization();
 await testRejectsEveryAuthorityBearingOrUnknownFieldClass();
 await testExactDeterministicRecommendationMapping();
+await testStructuralValidationPrecedesSemanticDeliberation();
+await testPhaseCopyDistinguishesStructureFromSemantics();
+await testSafeDeterministicStructuralRemediation();
+await testStructuralFailureRecoversDraftPresentationState();
 await testAuthenticationAndSecretPrecedeBodyParsing();
 await testActualNextAuthJwtIntegration();
 await testClientIdentitySpoofResistance();
