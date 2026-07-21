@@ -9,16 +9,24 @@ import {
   OperatorSectionHeader,
 } from "@/components/operator/slate";
 import {
+  LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
   LOCAL_OPERATING_LOOP_PHASE_COPY,
+  LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
+  LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL,
+  LOCAL_OPERATING_LOOP_RESTORED_COPY,
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  applyLocalOperatingLoopBrowserLifecycle,
+  classifyLocalOperatingLoopClientResponse,
+  createLocalOperatingLoopRecoveryNotice,
   createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopProjectionKey,
   createLocalOperatingLoopUiState,
+  recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopAction,
   type LocalOperatingLoopInput,
-  type LocalOperatingLoopResponse,
+  type LocalOperatingLoopRecoveryNotice,
   type LocalOperatingLoopStructuralRemediation,
   type LocalOperatingLoopSuccessResponse,
   type LocalOperatingLoopUiState,
@@ -64,7 +72,8 @@ function LocalOperatingLoopProjectionPanel({
   const [statusMessage, setStatusMessage] = useState(
     "Select a motion, then validate the local-shadow input.",
   );
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [recoveryNotice, setRecoveryNotice] =
+    useState<LocalOperatingLoopRecoveryNotice | null>(null);
   const [structuralRemediations, setStructuralRemediations] = useState<
     LocalOperatingLoopStructuralRemediation[]
   >([]);
@@ -73,8 +82,80 @@ function LocalOperatingLoopProjectionPanel({
   const activeRequestId = useRef<number | null>(null);
   const remediationHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
+  function abortAndReleaseActiveRequest() {
+    const controller = activeAbortController.current;
+    activeAbortController.current = null;
+    activeRequestId.current = null;
+    controller?.abort();
+  }
+
+  function releaseRequestOwnership(
+    controller: AbortController,
+    requestId: number,
+  ) {
+    if (activeAbortController.current === controller) {
+      activeAbortController.current = null;
+    }
+    if (activeRequestId.current === requestId) {
+      activeRequestId.current = null;
+    }
+  }
+
+  function failClosed(code: unknown) {
+    abortAndReleaseActiveRequest();
+    const notice = createLocalOperatingLoopRecoveryNotice(code);
+    setUiState((current) =>
+      recoverLocalOperatingLoopClientFailure(current),
+    );
+    setStructuralRemediations([]);
+    setRecoveryNotice(notice);
+    setStatusMessage(notice.statusMessage);
+  }
+
   useEffect(() => {
-    return () => activeAbortController.current?.abort();
+    const resetForBrowserLifecycle = (
+      event:
+        | { type: "PAGEHIDE" }
+        | { type: "PAGESHOW"; persisted: boolean },
+      message: string,
+    ) => {
+      const controller = activeAbortController.current;
+      activeAbortController.current = null;
+      activeRequestId.current = null;
+      controller?.abort();
+      setUiState((current) =>
+        applyLocalOperatingLoopBrowserLifecycle(current, event),
+      );
+      setStructuralRemediations([]);
+      setRecoveryNotice(null);
+      setStatusMessage(message);
+    };
+    const handlePageHide = () => {
+      resetForBrowserLifecycle(
+        { type: "PAGEHIDE" },
+        LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
+      );
+    };
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) {
+        return;
+      }
+      resetForBrowserLifecycle(
+        { type: "PAGESHOW", persisted: true },
+        LOCAL_OPERATING_LOOP_RESTORED_COPY,
+      );
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      const controller = activeAbortController.current;
+      activeAbortController.current = null;
+      activeRequestId.current = null;
+      controller?.abort();
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
   }, []);
 
   useEffect(() => {
@@ -97,17 +178,17 @@ function LocalOperatingLoopProjectionPanel({
 
     const requestBody = buildRequestBody(action, projectedInput, uiState);
     if (!requestBody) {
-      setErrorMessage("The required prior proof is not available.");
+      failClosed("INVALID_PROOF");
       return;
     }
 
-    activeAbortController.current?.abort();
+    abortAndReleaseActiveRequest();
     const controller = new AbortController();
     activeAbortController.current = controller;
     const requestId = ++requestSequence.current;
     const requestProjectionKey = projectionKey;
     activeRequestId.current = requestId;
-    setErrorMessage(null);
+    setRecoveryNotice(null);
     setStructuralRemediations([]);
     setStatusMessage(
       action === "VALIDATE"
@@ -135,7 +216,7 @@ function LocalOperatingLoopProjectionPanel({
         },
       );
       const responseText = await response.text();
-      const value = JSON.parse(responseText) as LocalOperatingLoopResponse;
+      const value: unknown = JSON.parse(responseText);
 
       if (
         controller.signal.aborted ||
@@ -148,36 +229,43 @@ function LocalOperatingLoopProjectionPanel({
       ) {
         return;
       }
-      activeRequestId.current = null;
-      if (!response.ok || !value.ok) {
-        if (!value.ok && value.error.code === "INVALID_REQUEST") {
-          setUiState((current) =>
-            recoverLocalOperatingLoopStructuralFailure(current),
-          );
-          setErrorMessage(null);
-          setStructuralRemediations(
-            createLocalOperatingLoopStructuralRemediations(
-              value.error.issues,
-            ),
-          );
-          setStatusMessage(LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY);
-          return;
-        }
-        setUiState((current) => ({
-          ...current,
-          activeRequestId: null,
-        }));
-        setErrorMessage(
-          value.ok
-            ? "The local operating-loop request failed safely."
-            : value.error.message,
-        );
-        setStatusMessage("No downstream local-shadow output was produced.");
+      const classification =
+        classifyLocalOperatingLoopClientResponse(value);
+
+      if (!response.ok && classification.kind === "SUCCESS") {
+        failClosed(null);
         return;
       }
-      setUiState((current) => applySuccessResponse(current, value));
+
+      if (classification.kind === "STRUCTURAL_FAILURE") {
+        releaseRequestOwnership(controller, requestId);
+        setUiState((current) =>
+          recoverLocalOperatingLoopStructuralFailure(current),
+        );
+        setRecoveryNotice(null);
+        setStructuralRemediations(
+          createLocalOperatingLoopStructuralRemediations(
+            classification.issues,
+          ),
+        );
+        setStatusMessage(LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY);
+        return;
+      }
+
+      if (classification.kind === "RECOVERY") {
+        failClosed(classification.code);
+        return;
+      }
+
+      releaseRequestOwnership(controller, requestId);
+      setUiState((current) =>
+        applySuccessResponse(current, classification.response),
+      );
       setStructuralRemediations([]);
-      setStatusMessage(LOCAL_OPERATING_LOOP_PHASE_COPY[value.state]);
+      setRecoveryNotice(null);
+      setStatusMessage(
+        LOCAL_OPERATING_LOOP_PHASE_COPY[classification.response.state],
+      );
     } catch (error) {
       if (
         error instanceof DOMException &&
@@ -196,12 +284,7 @@ function LocalOperatingLoopProjectionPanel({
       ) {
         return;
       }
-      activeRequestId.current = null;
-      setUiState((current) => ({ ...current, activeRequestId: null }));
-      setErrorMessage(
-        "The request failed safely. No packet, persistence, routing, or execution occurred.",
-      );
-      setStatusMessage("Local-shadow state did not advance.");
+      failClosed(null);
     }
   }
 
@@ -289,10 +372,9 @@ function LocalOperatingLoopProjectionPanel({
             <button
               type="button"
               onClick={() => {
-                activeAbortController.current?.abort();
-                activeRequestId.current = null;
+                abortAndReleaseActiveRequest();
                 setUiState(createLocalOperatingLoopUiState(projectionKey));
-                setErrorMessage(null);
+                setRecoveryNotice(null);
                 setStructuralRemediations([]);
                 setStatusMessage(LOCAL_OPERATING_LOOP_PHASE_COPY.DRAFT);
               }}
@@ -374,10 +456,30 @@ function LocalOperatingLoopProjectionPanel({
               </OperatorGateCard>
             </div>
           ) : null}
-          {errorMessage ? (
-            <div aria-live="assertive" role="alert">
+          {recoveryNotice ? (
+            <div
+              aria-labelledby="local-operating-loop-recovery-heading"
+              aria-live="assertive"
+              role="alert"
+            >
               <OperatorGateCard>
-                <p className="text-sm text-red-200">{errorMessage}</p>
+                <h3
+                  id="local-operating-loop-recovery-heading"
+                  className="text-sm font-semibold text-red-100"
+                >
+                  {recoveryNotice.heading}
+                </h3>
+                <p className="mt-2 text-sm text-red-200">
+                  {recoveryNotice.message}
+                </p>
+                {recoveryNotice.requiresReauthentication ? (
+                  <a
+                    href={LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF}
+                    className="mt-3 inline-flex rounded border border-cyan-500 bg-cyan-950 px-3 py-2 text-sm font-semibold text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                  >
+                    {LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL}
+                  </a>
+                ) : null}
               </OperatorGateCard>
             </div>
           ) : null}

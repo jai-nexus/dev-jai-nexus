@@ -279,6 +279,107 @@ const localOperatingLoopGenericRemediation = {
     "Review the motion structure and remove unsupported fields before retrying.",
 } as const;
 
+export const LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF =
+  "/login?next=%2Foperator%2Fmotion-control" as const;
+export const LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL =
+  "Sign in again" as const;
+export const LOCAL_OPERATING_LOOP_PAGEHIDE_COPY =
+  "Navigation cleared the local shadow. Fresh structural validation is required." as const;
+export const LOCAL_OPERATING_LOOP_RESTORED_COPY =
+  "Restored browser state was cleared. Fresh structural validation is required." as const;
+
+export type LocalOperatingLoopRecoveryNotice = {
+  id: string;
+  heading: string;
+  message: string;
+  statusMessage: string;
+  requiresReauthentication: boolean;
+};
+
+const localOperatingLoopGenericRecoveryNotice = {
+  id: "generic-fail-closed",
+  heading: "Fresh validation required",
+  message:
+    "The local shadow could not continue safely. Review the selected motion and validate it again.",
+  statusMessage:
+    "Local shadow returned to DRAFT. Fresh structural validation is required.",
+  requiresReauthentication: false,
+} as const satisfies LocalOperatingLoopRecoveryNotice;
+
+const localOperatingLoopRecoveryNotices = {
+  UNAUTHENTICATED: {
+    id: "authentication-expired",
+    heading: "Authentication required",
+    message:
+      "Your session is missing or expired. Reauthenticate, then validate the selected motion again.",
+    statusMessage:
+      "Local shadow returned to DRAFT because authentication is required.",
+    requiresReauthentication: true,
+  },
+  ADMIN_REQUIRED: {
+    id: "admin-identity-required",
+    heading: "ADMIN identity required",
+    message:
+      "This session does not have the required ADMIN identity. Reauthenticate with an ADMIN account, then validate again.",
+    statusMessage:
+      "Local shadow returned to DRAFT because an ADMIN identity is required.",
+    requiresReauthentication: true,
+  },
+  ACTOR_EMAIL_REQUIRED: {
+    id: "actor-identity-required",
+    heading: "Usable actor identity required",
+    message:
+      "This ADMIN session has no usable actor identity. Reauthenticate, then validate the selected motion again.",
+    statusMessage:
+      "Local shadow returned to DRAFT because a usable actor identity is required.",
+    requiresReauthentication: true,
+  },
+  SERVER_SECRET_UNAVAILABLE: {
+    id: "proof-service-unavailable",
+    heading: "Proof service unavailable",
+    message:
+      "The local proof service is unavailable. Validate again after the service is restored.",
+    statusMessage:
+      "Local shadow returned to DRAFT because the proof service is unavailable.",
+    requiresReauthentication: false,
+  },
+  INVALID_PROOF: {
+    id: "proof-invalid",
+    heading: "Proof no longer valid",
+    message:
+      "The proof is stale, expired, rotated, or does not match this motion. Validate again from DRAFT.",
+    statusMessage:
+      "Local shadow returned to DRAFT because the proof is no longer valid.",
+    requiresReauthentication: false,
+  },
+  INVALID_JSON: localOperatingLoopGenericRecoveryNotice,
+  ACCEPT_REQUIRES_GO: localOperatingLoopGenericRecoveryNotice,
+} as const satisfies Record<
+  Exclude<
+    LocalOperatingLoopErrorResponse["error"]["code"],
+    "INVALID_REQUEST"
+  >,
+  LocalOperatingLoopRecoveryNotice
+>;
+
+export type LocalOperatingLoopClientResponseClassification =
+  | {
+      kind: "SUCCESS";
+      response: LocalOperatingLoopSuccessResponse;
+    }
+  | {
+      kind: "STRUCTURAL_FAILURE";
+      issues: LocalOperatingLoopErrorResponse["error"]["issues"];
+    }
+  | {
+      kind: "RECOVERY";
+      code: unknown;
+    };
+
+export type LocalOperatingLoopBrowserLifecycleEvent =
+  | { type: "PAGEHIDE" }
+  | { type: "PAGESHOW"; persisted: boolean };
+
 const targetThreadSchema = z.enum(LOCAL_OPERATING_LOOP_TARGET_THREADS);
 const proofSchema = z.string().min(1).max(200).regex(/^[a-z0-9.-]+$/);
 
@@ -515,6 +616,80 @@ export function createLocalOperatingLoopStructuralRemediations(
   return remediations;
 }
 
+export function createLocalOperatingLoopRecoveryNotice(
+  code: unknown,
+): LocalOperatingLoopRecoveryNotice {
+  if (
+    typeof code === "string" &&
+    code in localOperatingLoopRecoveryNotices
+  ) {
+    return localOperatingLoopRecoveryNotices[
+      code as keyof typeof localOperatingLoopRecoveryNotices
+    ];
+  }
+  return localOperatingLoopGenericRecoveryNotice;
+}
+
+export function recoverLocalOperatingLoopClientFailure(
+  state: LocalOperatingLoopUiState,
+): LocalOperatingLoopUiState {
+  return createLocalOperatingLoopUiState(state.projectionKey);
+}
+
+export function applyLocalOperatingLoopBrowserLifecycle(
+  state: LocalOperatingLoopUiState,
+  event: LocalOperatingLoopBrowserLifecycleEvent,
+): LocalOperatingLoopUiState {
+  if (event.type === "PAGEHIDE" || event.persisted) {
+    return createLocalOperatingLoopUiState(state.projectionKey);
+  }
+  return state;
+}
+
+export function classifyLocalOperatingLoopClientResponse(
+  value: unknown,
+): LocalOperatingLoopClientResponseClassification {
+  if (!isRecord(value)) {
+    return { kind: "RECOVERY", code: null };
+  }
+
+  if (value.ok === false) {
+    if (
+      !hasExactKeys(value, ["error", "nonAuthorizations", "ok"]) ||
+      !hasExactNonAuthorizations(value.nonAuthorizations) ||
+      !isRecord(value.error) ||
+      typeof value.error.code !== "string" ||
+      typeof value.error.message !== "string" ||
+      !hasOnlyKeys(value.error, ["code", "issues", "message"])
+    ) {
+      return { kind: "RECOVERY", code: null };
+    }
+
+    if (value.error.code === "INVALID_REQUEST") {
+      if (
+        value.error.issues !== undefined &&
+        !isLocalOperatingLoopIssueArray(value.error.issues)
+      ) {
+        return { kind: "RECOVERY", code: null };
+      }
+      return {
+        kind: "STRUCTURAL_FAILURE",
+        issues: value.error.issues,
+      };
+    }
+    return { kind: "RECOVERY", code: value.error.code };
+  }
+
+  if (value.ok === true && isSafeLocalOperatingLoopSuccessResponse(value)) {
+    return {
+      kind: "SUCCESS",
+      response: value as LocalOperatingLoopSuccessResponse,
+    };
+  }
+
+  return { kind: "RECOVERY", code: null };
+}
+
 export function invalidateLocalOperatingLoopUiState(
   state: LocalOperatingLoopUiState,
   projectionKey: string,
@@ -534,6 +709,335 @@ export function shouldApplyLocalOperatingLoopResponse(input: {
     input.currentProjectionKey === input.responseProjectionKey &&
     input.currentRequestId === input.responseRequestId
   );
+}
+
+function isSafeLocalOperatingLoopSuccessResponse(
+  value: Record<string, unknown>,
+): boolean {
+  if (
+    value.contractVersion !== LOCAL_OPERATING_LOOP_CONTRACT_VERSION ||
+    value.baseSha !== LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA ||
+    typeof value.actor !== "string" ||
+    normalizeLocalOperatingLoopActorEmail(value.actor) !== value.actor ||
+    !isSafeLocalOperatingLoopInput(value.input) ||
+    !isSafeLocalOperatingLoopToken(value.motionFingerprint) ||
+    !hasExactNonAuthorizations(value.nonAuthorizations)
+  ) {
+    return false;
+  }
+
+  if (value.state === "VALIDATED") {
+    return (
+      hasExactKeys(value, [
+        "actor",
+        "baseSha",
+        "contractVersion",
+        "input",
+        "motionFingerprint",
+        "nonAuthorizations",
+        "ok",
+        "state",
+        "validationProof",
+      ]) && isSafeLocalOperatingLoopToken(value.validationProof)
+    );
+  }
+
+  if (value.state === "AWAITING_DECISION") {
+    return (
+      hasExactKeys(value, [
+        "actor",
+        "baseSha",
+        "candidatePacketHash",
+        "contractVersion",
+        "deliberationProof",
+        "findingCodes",
+        "input",
+        "motionFingerprint",
+        "nonAuthorizations",
+        "ok",
+        "recommendation",
+        "recommendationFingerprint",
+        "state",
+      ]) &&
+      isLocalOperatingLoopRecommendation(value.recommendation) &&
+      isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+      isSafeLocalOperatingLoopToken(value.recommendationFingerprint) &&
+      (value.candidatePacketHash === null ||
+        isSafeLocalOperatingLoopToken(value.candidatePacketHash)) &&
+      isSafeLocalOperatingLoopToken(value.deliberationProof)
+    );
+  }
+
+  if (!isLocalOperatingLoopTerminalState(value.state)) {
+    return false;
+  }
+  const expectedDecision =
+    value.state === "ACCEPTED"
+      ? "ACCEPT"
+      : value.state === "HELD"
+        ? "HOLD"
+        : "REJECT";
+  return (
+    hasExactKeys(value, [
+      "actor",
+      "artifact",
+      "baseSha",
+      "contractVersion",
+      "decision",
+      "findingCodes",
+      "input",
+      "motionFingerprint",
+      "nonAuthorizations",
+      "ok",
+      "recommendation",
+      "recommendationFingerprint",
+      "state",
+      "workPacket",
+    ]) &&
+    value.decision === expectedDecision &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+    isSafeLocalOperatingLoopToken(value.recommendationFingerprint) &&
+    (value.state === "ACCEPTED"
+      ? isSafeLocalOperatingLoopWorkPacket(value.workPacket)
+      : value.workPacket === null) &&
+    isSafeLocalOperatingLoopArtifact(value.artifact, expectedDecision)
+  );
+}
+
+function isSafeLocalOperatingLoopInput(
+  value: unknown,
+): value is LocalOperatingLoopInput {
+  const parsed = parseLocalOperatingLoopAction({
+    action: "VALIDATE",
+    input: value,
+  });
+  return (
+    parsed.ok &&
+    canonicalizeLocalOperatingLoopValue(parsed.value.input) ===
+      canonicalizeLocalOperatingLoopValue(value)
+  );
+}
+
+function isSafeLocalOperatingLoopWorkPacket(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "base_sha",
+      "decision_scope",
+      "evidence_pointers",
+      "execution_authority_granted",
+      "motion_fingerprint",
+      "motion_id",
+      "non_authorizations",
+      "packet_id",
+      "packet_version",
+      "proposed_by",
+      "status",
+      "summary",
+      "target_repo",
+      "target_threads",
+      "title",
+    ])
+  ) {
+    return false;
+  }
+  return (
+    isSafeLocalOperatingLoopToken(value.packet_id) &&
+    value.packet_version === "local-shadow-work-packet.v1" &&
+    value.status === "PROPOSED_ONLY" &&
+    value.base_sha === LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA &&
+    isSafeLocalOperatingLoopText(value.motion_id, 160) &&
+    isSafeLocalOperatingLoopToken(value.motion_fingerprint) &&
+    isSafeLocalOperatingLoopText(value.title, 240) &&
+    isSafeLocalOperatingLoopText(value.summary, 4000) &&
+    isSafeLocalOperatingLoopText(value.target_repo, 200) &&
+    isLocalOperatingLoopTargetThreadArray(value.target_threads) &&
+    isSafeLocalOperatingLoopTextArray(value.evidence_pointers, 20, 500) &&
+    typeof value.proposed_by === "string" &&
+    normalizeLocalOperatingLoopActorEmail(value.proposed_by) ===
+      value.proposed_by &&
+    value.decision_scope === "GENERATE_WORK_PACKET_ONLY" &&
+    value.execution_authority_granted === false &&
+    hasExactNonAuthorizations(value.non_authorizations)
+  );
+}
+
+function isSafeLocalOperatingLoopArtifact(
+  value: unknown,
+  decision: LocalOperatingLoopDecision,
+): boolean {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "actor",
+      "artifact_id",
+      "artifact_version",
+      "base_sha",
+      "candidate_packet_hash",
+      "decision",
+      "decision_scope",
+      "execution_authority_granted",
+      "finding_codes",
+      "motion_fingerprint",
+      "motion_id",
+      "not_a_control_thread_acceptance_receipt",
+      "persistence",
+      "program_effect",
+      "receipt_authority",
+      "recommendation",
+    ])
+  ) {
+    return false;
+  }
+  return (
+    isSafeLocalOperatingLoopToken(value.artifact_id) &&
+    value.artifact_version === "local-shadow-decision-artifact.v1" &&
+    value.base_sha === LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA &&
+    isSafeLocalOperatingLoopText(value.motion_id, 160) &&
+    isSafeLocalOperatingLoopToken(value.motion_fingerprint) &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.finding_codes) &&
+    value.decision === decision &&
+    typeof value.actor === "string" &&
+    normalizeLocalOperatingLoopActorEmail(value.actor) === value.actor &&
+    (value.candidate_packet_hash === null ||
+      isSafeLocalOperatingLoopToken(value.candidate_packet_hash)) &&
+    value.receipt_authority === "DEMONSTRATION_ONLY" &&
+    value.persistence === "NONE" &&
+    value.program_effect === "NONE" &&
+    value.not_a_control_thread_acceptance_receipt === true &&
+    value.decision_scope === "GENERATE_WORK_PACKET_ONLY" &&
+    value.execution_authority_granted === false
+  );
+}
+
+function isLocalOperatingLoopIssueArray(
+  value: unknown,
+): value is Array<{ path: string; code: string }> {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (issue) =>
+        isRecord(issue) &&
+        hasExactKeys(issue, ["code", "path"]) &&
+        typeof issue.path === "string" &&
+        typeof issue.code === "string",
+    )
+  );
+}
+
+function isLocalOperatingLoopRecommendation(
+  value: unknown,
+): value is LocalOperatingLoopRecommendation {
+  return ["GO", "NEEDS_REVISION", "BLOCKED"].includes(String(value));
+}
+
+function isLocalOperatingLoopFindingCodeArray(
+  value: unknown,
+): value is LocalOperatingLoopFindingCode[] {
+  const allowed = new Set<LocalOperatingLoopFindingCode>([
+    "TARGET_REPO_OUT_OF_SCOPE",
+    "CONTROL_THREAD_REQUIRED",
+    "TITLE_TOO_SHORT",
+    "SUMMARY_TOO_SHORT",
+    "EVIDENCE_REQUIRED",
+  ]);
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (finding): finding is LocalOperatingLoopFindingCode =>
+        typeof finding === "string" &&
+        allowed.has(finding as LocalOperatingLoopFindingCode),
+    )
+  );
+}
+
+function isLocalOperatingLoopTargetThreadArray(
+  value: unknown,
+): value is LocalOperatingLoopTargetThread[] {
+  const allowed = new Set<string>(LOCAL_OPERATING_LOOP_TARGET_THREADS);
+  return (
+    Array.isArray(value) &&
+    value.length >= 1 &&
+    value.length <= 6 &&
+    new Set(value).size === value.length &&
+    value.every((thread) => typeof thread === "string" && allowed.has(thread))
+  );
+}
+
+function isLocalOperatingLoopTerminalState(
+  value: unknown,
+): value is "ACCEPTED" | "HELD" | "REJECTED" {
+  return ["ACCEPTED", "HELD", "REJECTED"].includes(String(value));
+}
+
+function isSafeLocalOperatingLoopText(
+  value: unknown,
+  maximum: number,
+): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= maximum &&
+    normalizeLocalOperatingLoopString(value) === value
+  );
+}
+
+function isSafeLocalOperatingLoopTextArray(
+  value: unknown,
+  maximumItems: number,
+  maximumLength: number,
+): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= maximumItems &&
+    new Set(value).size === value.length &&
+    value.every((item) =>
+      isSafeLocalOperatingLoopText(item, maximumLength),
+    )
+  );
+}
+
+function isSafeLocalOperatingLoopToken(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    value.length <= 500 &&
+    /^[a-z0-9.-]+$/.test(value)
+  );
+}
+
+function hasExactNonAuthorizations(value: unknown): boolean {
+  return (
+    Array.isArray(value) &&
+    value.length === LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS.length &&
+    value.every(
+      (item, index) => item === LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS[index],
+    )
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: string[],
+): boolean {
+  return (
+    Object.keys(value).sort().join("\n") ===
+    [...expected].sort().join("\n")
+  );
+}
+
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowed: string[],
+): boolean {
+  const allowedKeys = new Set(allowed);
+  return Object.keys(value).every((key) => allowedKeys.has(key));
 }
 
 function normalizedTextSchema(input: {
