@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   OperatorBadge,
@@ -17,8 +17,13 @@ import {
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
   LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
+  beginLocalOperatingLoopDecisionConfirmation,
+  cancelLocalOperatingLoopDecisionConfirmation,
   classifyLocalOperatingLoopClientResponse,
+  claimLocalOperatingLoopDecisionConfirmation,
+  clearLocalOperatingLoopDecisionConfirmation,
   createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopDecisionConfirmationPresentation,
   createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopRecommendationExplanation,
   createLocalOperatingLoopRecoveryNotice,
@@ -27,8 +32,12 @@ import {
   createLocalOperatingLoopUiState,
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
+  isLocalOperatingLoopDecisionConfirmationCurrent,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopAction,
+  type LocalOperatingLoopDecision,
+  type LocalOperatingLoopDecisionConfirmationContext,
+  type LocalOperatingLoopDecisionConfirmationState,
   type LocalOperatingLoopInput,
   type LocalOperatingLoopRecoveryNotice,
   type LocalOperatingLoopStructuralRemediation,
@@ -82,10 +91,56 @@ function LocalOperatingLoopProjectionPanel({
   const [structuralRemediations, setStructuralRemediations] = useState<
     LocalOperatingLoopStructuralRemediation[]
   >([]);
+  const [decisionConfirmation, setDecisionConfirmation] =
+    useState<LocalOperatingLoopDecisionConfirmationState>(() =>
+      clearLocalOperatingLoopDecisionConfirmation(),
+    );
   const requestSequence = useRef(0);
   const activeAbortController = useRef<AbortController | null>(null);
   const activeRequestId = useRef<number | null>(null);
   const remediationHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const decisionConfirmationRef =
+    useRef<LocalOperatingLoopDecisionConfirmationState>(
+      clearLocalOperatingLoopDecisionConfirmation(),
+    );
+  const confirmationHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const confirmationOriginDecisionRef =
+    useRef<LocalOperatingLoopDecision | null>(null);
+  const reviewButtonRefs = useRef<
+    Record<LocalOperatingLoopDecision, HTMLButtonElement | null>
+  >({ ACCEPT: null, HOLD: null, REJECT: null });
+
+  const writeDecisionConfirmation = useCallback(
+    (next: LocalOperatingLoopDecisionConfirmationState) => {
+      decisionConfirmationRef.current = next;
+      setDecisionConfirmation(next);
+    },
+    [],
+  );
+
+  const clearDecisionConfirmation = useCallback(() => {
+    decisionConfirmationRef.current =
+      clearLocalOperatingLoopDecisionConfirmation();
+    confirmationOriginDecisionRef.current = null;
+    setDecisionConfirmation(decisionConfirmationRef.current);
+  }, []);
+
+  const cancelDecisionConfirmationAndRestoreFocus = useCallback(() => {
+    const current = decisionConfirmationRef.current;
+    const next = cancelLocalOperatingLoopDecisionConfirmation(current);
+    if (next === current) {
+      return;
+    }
+    const originDecision = confirmationOriginDecisionRef.current;
+    confirmationOriginDecisionRef.current = null;
+    decisionConfirmationRef.current = next;
+    setDecisionConfirmation(next);
+    if (originDecision) {
+      window.requestAnimationFrame(() => {
+        reviewButtonRefs.current[originDecision]?.focus();
+      });
+    }
+  }, []);
 
   function abortAndReleaseActiveRequest() {
     const controller = activeAbortController.current;
@@ -108,6 +163,7 @@ function LocalOperatingLoopProjectionPanel({
 
   function failClosed(code: unknown) {
     abortAndReleaseActiveRequest();
+    clearDecisionConfirmation();
     const notice = createLocalOperatingLoopRecoveryNotice(code);
     setUiState((current) =>
       recoverLocalOperatingLoopClientFailure(current),
@@ -128,6 +184,7 @@ function LocalOperatingLoopProjectionPanel({
       activeAbortController.current = null;
       activeRequestId.current = null;
       controller?.abort();
+      clearDecisionConfirmation();
       setUiState((current) =>
         applyLocalOperatingLoopBrowserLifecycle(current, event),
       );
@@ -158,10 +215,37 @@ function LocalOperatingLoopProjectionPanel({
       activeAbortController.current = null;
       activeRequestId.current = null;
       controller?.abort();
+      decisionConfirmationRef.current =
+        clearLocalOperatingLoopDecisionConfirmation();
+      confirmationOriginDecisionRef.current = null;
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("pageshow", handlePageShow);
     };
-  }, []);
+  }, [clearDecisionConfirmation]);
+
+  useEffect(() => {
+    if (decisionConfirmation.phase !== "REVIEWING") {
+      return;
+    }
+    confirmationHeadingRef.current?.focus();
+  }, [decisionConfirmation.phase]);
+
+  useEffect(() => {
+    if (decisionConfirmation.phase !== "REVIEWING") {
+      return;
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        cancelDecisionConfirmationAndRestoreFocus();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [
+    cancelDecisionConfirmationAndRestoreFocus,
+    decisionConfirmation.phase,
+  ]);
 
   useEffect(() => {
     if (structuralRemediations.length > 0) {
@@ -255,6 +339,7 @@ function LocalOperatingLoopProjectionPanel({
           return;
         }
         releaseRequestOwnership(controller, requestId);
+        clearDecisionConfirmation();
         setUiState((current) =>
           recoverLocalOperatingLoopStructuralFailure(current),
         );
@@ -280,6 +365,13 @@ function LocalOperatingLoopProjectionPanel({
         return;
       }
       releaseRequestOwnership(controller, requestId);
+      if (
+        classification.response.state === "ACCEPTED" ||
+        classification.response.state === "HELD" ||
+        classification.response.state === "REJECTED"
+      ) {
+        clearDecisionConfirmation();
+      }
       setUiState((current) =>
         applySuccessResponse(current, classification.response),
       );
@@ -303,14 +395,15 @@ function LocalOperatingLoopProjectionPanel({
   }
 
   const pending = uiState.activeRequestId !== null;
+  const requiresFreshValidation =
+    structuralRemediations.length > 0 ||
+    recoveryNotice !== null ||
+    statusMessage === LOCAL_OPERATING_LOOP_PAGEHIDE_COPY ||
+    statusMessage === LOCAL_OPERATING_LOOP_RESTORED_COPY;
   const proofStatus = createLocalOperatingLoopProofStatus({
     state: uiState,
     currentProjectionKey: projectionKey,
-    requiresFreshValidation:
-      structuralRemediations.length > 0 ||
-      recoveryNotice !== null ||
-      statusMessage === LOCAL_OPERATING_LOOP_PAGEHIDE_COPY ||
-      statusMessage === LOCAL_OPERATING_LOOP_RESTORED_COPY,
+    requiresFreshValidation,
   });
   const recommendationExplanation = projectedInput
     ? createLocalOperatingLoopRecommendationExplanation({
@@ -329,6 +422,82 @@ function LocalOperatingLoopProjectionPanel({
     uiState.state === "REJECTED";
   const terminalPresentation =
     createFounderSafeLocalOperatingLoopTerminalPresentation(uiState);
+  const confirmationContext =
+    useMemo<LocalOperatingLoopDecisionConfirmationContext | null>(
+      () =>
+        projectedInput
+          ? {
+              motion: projectedInput,
+              state: uiState,
+              currentProjectionKey: projectionKey,
+              requiresFreshValidation,
+            }
+          : null,
+      [projectedInput, projectionKey, requiresFreshValidation, uiState],
+    );
+  const confirmationPresentation = confirmationContext
+    ? createLocalOperatingLoopDecisionConfirmationPresentation({
+        confirmation: decisionConfirmation,
+        context: confirmationContext,
+      })
+    : null;
+
+  useEffect(() => {
+    if (decisionConfirmationRef.current.phase === "IDLE") {
+      return;
+    }
+    if (
+      !confirmationContext ||
+      !isLocalOperatingLoopDecisionConfirmationCurrent({
+        confirmation: decisionConfirmationRef.current,
+        context: confirmationContext,
+      })
+    ) {
+      clearDecisionConfirmation();
+    }
+  }, [confirmationContext, clearDecisionConfirmation]);
+
+  function beginDecisionReview(decision: LocalOperatingLoopDecision) {
+    if (decisionConfirmationRef.current.phase !== "IDLE") {
+      return;
+    }
+    if (!confirmationContext) {
+      failClosed(null);
+      return;
+    }
+    const next = beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: decisionConfirmationRef.current,
+      context: confirmationContext,
+      decision,
+    });
+    if (!next) {
+      failClosed(null);
+      return;
+    }
+    confirmationOriginDecisionRef.current = decision;
+    writeDecisionConfirmation(next);
+  }
+
+  function confirmReviewedDecision() {
+    if (decisionConfirmationRef.current.phase !== "REVIEWING") {
+      return;
+    }
+    if (!confirmationContext) {
+      failClosed(null);
+      return;
+    }
+    const claimed = claimLocalOperatingLoopDecisionConfirmation({
+      confirmation: decisionConfirmationRef.current,
+      context: confirmationContext,
+    });
+    if (!claimed) {
+      failClosed(null);
+      return;
+    }
+    decisionConfirmationRef.current = claimed;
+    setDecisionConfirmation(claimed);
+    void submitAction(claimed.basis.decision);
+  }
 
   return (
     <OperatorPanel className="space-y-5 p-4">
@@ -412,6 +581,7 @@ function LocalOperatingLoopProjectionPanel({
               type="button"
               onClick={() => {
                 abortAndReleaseActiveRequest();
+                clearDecisionConfirmation();
                 setUiState(createLocalOperatingLoopUiState(projectionKey));
                 setRecoveryNotice(null);
                 setStructuralRemediations([]);
@@ -431,30 +601,141 @@ function LocalOperatingLoopProjectionPanel({
               </div>
               <div className="mt-3 flex flex-wrap gap-3">
                 <button
+                  ref={(node) => {
+                    reviewButtonRefs.current.ACCEPT = node;
+                  }}
                   type="button"
-                  onClick={() => submitAction("ACCEPT")}
-                  disabled={pending || uiState.recommendation !== "GO"}
+                  aria-controls="local-operating-loop-decision-confirmation"
+                  onClick={() => beginDecisionReview("ACCEPT")}
+                  disabled={
+                    pending ||
+                    decisionConfirmation.phase !== "IDLE" ||
+                    uiState.recommendation !== "GO"
+                  }
                   className="rounded border border-emerald-500 bg-emerald-950 px-4 py-2 text-sm font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
                 >
-                  Accept for packet proposal
+                  Review ACCEPT
                 </button>
                 <button
+                  ref={(node) => {
+                    reviewButtonRefs.current.HOLD = node;
+                  }}
                   type="button"
-                  onClick={() => submitAction("HOLD")}
-                  disabled={pending}
+                  aria-controls="local-operating-loop-decision-confirmation"
+                  onClick={() => beginDecisionReview("HOLD")}
+                  disabled={
+                    pending || decisionConfirmation.phase !== "IDLE"
+                  }
                   className="rounded border border-amber-500 bg-amber-950 px-4 py-2 text-sm font-semibold text-amber-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
                 >
-                  Hold
+                  Review HOLD
                 </button>
                 <button
+                  ref={(node) => {
+                    reviewButtonRefs.current.REJECT = node;
+                  }}
                   type="button"
-                  onClick={() => submitAction("REJECT")}
-                  disabled={pending}
+                  aria-controls="local-operating-loop-decision-confirmation"
+                  onClick={() => beginDecisionReview("REJECT")}
+                  disabled={
+                    pending || decisionConfirmation.phase !== "IDLE"
+                  }
                   className="rounded border border-red-700 bg-red-950 px-4 py-2 text-sm font-semibold text-red-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
                 >
-                  Reject
+                  Review REJECT
                 </button>
               </div>
+              {confirmationPresentation ? (
+                <section
+                  id="local-operating-loop-decision-confirmation"
+                  aria-labelledby="local-operating-loop-decision-confirmation-heading"
+                  aria-describedby="local-operating-loop-decision-confirmation-description"
+                  aria-busy={confirmationPresentation.phase === "CLAIMED"}
+                  className="mt-4 border-t border-slate-800 pt-4"
+                >
+                  <h3
+                    id="local-operating-loop-decision-confirmation-heading"
+                    ref={confirmationHeadingRef}
+                    tabIndex={-1}
+                    className="text-sm font-semibold text-slate-100 outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                  >
+                    {confirmationPresentation.heading}
+                  </h3>
+                  <p
+                    id="local-operating-loop-decision-confirmation-description"
+                    className="mt-2 text-sm text-slate-300"
+                  >
+                    {confirmationPresentation.description}
+                  </p>
+                  <dl className="mt-3 grid gap-3 sm:grid-cols-3">
+                    <ProjectionField
+                      label="selected decision"
+                      value={confirmationPresentation.decision}
+                    />
+                    <ProjectionField
+                      label="server-derived recommendation"
+                      value={confirmationPresentation.recommendation}
+                    />
+                    <ProjectionField
+                      label="proof status"
+                      value={confirmationPresentation.proofStatus}
+                    />
+                  </dl>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-slate-400">
+                        Decision effects
+                      </h4>
+                      <ul className="mt-2 space-y-2 text-xs leading-5 text-slate-300">
+                        {confirmationPresentation.consequences.map(
+                          (consequence) => (
+                            <li key={consequence}>{consequence}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-slate-400">
+                        Authority boundary
+                      </h4>
+                      <ul className="mt-2 grid gap-2 text-xs leading-5 text-red-200 sm:grid-cols-2">
+                        {confirmationPresentation.nonAuthorizations.map(
+                          (boundary) => (
+                            <li key={boundary}>{boundary}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                  {confirmationPresentation.submittingCopy ? (
+                    <p
+                      aria-live="polite"
+                      role="status"
+                      className="mt-4 text-sm font-semibold text-cyan-200"
+                    >
+                      {confirmationPresentation.submittingCopy}
+                    </p>
+                  ) : null}
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={confirmReviewedDecision}
+                      disabled={confirmationPresentation.phase === "CLAIMED"}
+                      className="rounded border border-cyan-500 bg-cyan-950 px-4 py-2 text-sm font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
+                    >
+                      {confirmationPresentation.confirmLabel}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelDecisionConfirmationAndRestoreFocus}
+                      disabled={confirmationPresentation.phase === "CLAIMED"}
+                      className="rounded border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200 disabled:cursor-not-allowed disabled:text-slate-600"
+                    >
+                      Cancel decision
+                    </button>
+                  </div>
+                </section>
+              ) : null}
             </OperatorGateCard>
           ) : null}
 

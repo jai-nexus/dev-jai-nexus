@@ -4,6 +4,7 @@ import { encode, getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 import {
+  LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
   LOCAL_OPERATING_LOOP_FINDING_ORDER,
   LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS,
   LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
@@ -16,9 +17,14 @@ import {
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
   LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
+  beginLocalOperatingLoopDecisionConfirmation,
   canonicalizeLocalOperatingLoopValue,
+  cancelLocalOperatingLoopDecisionConfirmation,
   classifyLocalOperatingLoopClientResponse,
+  claimLocalOperatingLoopDecisionConfirmation,
+  clearLocalOperatingLoopDecisionConfirmation,
   createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopDecisionConfirmationPresentation,
   createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopProjectionKey,
   createLocalOperatingLoopRecommendationExplanation,
@@ -28,6 +34,7 @@ import {
   deriveLocalOperatingLoopRecommendation,
   hashLocalOperatingLoopCanonicalValue,
   invalidateLocalOperatingLoopUiState,
+  isLocalOperatingLoopDecisionConfirmationCurrent,
   parseLocalOperatingLoopAction,
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
@@ -35,6 +42,8 @@ import {
   shouldSuspendLocalOperatingLoopForUnstagedDraft,
   type LocalOperatingLoopAction,
   type LocalOperatingLoopContentHasher,
+  type LocalOperatingLoopDecisionConfirmationContext,
+  type LocalOperatingLoopDecisionConfirmationState,
   type LocalOperatingLoopInput,
   type LocalOperatingLoopResponse,
   type LocalOperatingLoopSuccessResponse,
@@ -231,6 +240,25 @@ function terminalUiState(
       decision,
     },
     activeRequestId: null,
+  };
+}
+
+function decisionConfirmationContext(
+  motion: LocalOperatingLoopInput = genuineGoInput,
+): LocalOperatingLoopDecisionConfirmationContext {
+  const projectionKey = createLocalOperatingLoopProjectionKey(motion);
+  const recommendation = deriveLocalOperatingLoopRecommendation(motion);
+  return {
+    motion,
+    currentProjectionKey: projectionKey,
+    state: {
+      ...createLocalOperatingLoopUiState(projectionKey),
+      state: "AWAITING_DECISION",
+      validationProof: SYNTHETIC_VALIDATION_PROOF,
+      deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+      recommendation: recommendation.recommendation,
+      findingCodes: recommendation.findingCodes,
+    },
   };
 }
 
@@ -1208,6 +1236,796 @@ async function testExistingAbortInvalidationAndRecoveryContractsRemainIntact() {
   assert.match(panelSource, /recoverLocalOperatingLoopClientFailure/);
   assert.match(panelSource, /recoverLocalOperatingLoopStructuralFailure/);
   assert.match(panelSource, /shouldApplyLocalOperatingLoopResponse/);
+}
+
+async function testDecisionConfirmationRequiresCurrentDeliberationAndProjection() {
+  const context = decisionConfirmationContext();
+  const idle = clearLocalOperatingLoopDecisionConfirmation();
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: idle,
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+  assert.equal(reviewing.phase, "REVIEWING");
+
+  const ineligibleContexts: LocalOperatingLoopDecisionConfirmationContext[] = [
+    {
+      ...context,
+      currentProjectionKey: `${context.currentProjectionKey}-changed`,
+    },
+    {
+      ...context,
+      state: {
+        ...context.state,
+        state: "VALIDATED",
+        deliberationProof: null,
+        recommendation: null,
+        findingCodes: [],
+      },
+    },
+    {
+      ...context,
+      state: { ...context.state, activeRequestId: 41 },
+    },
+    {
+      ...context,
+      state: { ...context.state, validationProof: "malformed-proof" },
+    },
+    { ...context, requiresFreshValidation: true },
+    {
+      ...context,
+      state: {
+        ...context.state,
+        workPacket: acceptedUiState("populated-output").workPacket,
+      },
+    },
+    {
+      ...context,
+      state: {
+        ...context.state,
+        artifact: acceptedUiState("populated-output").artifact,
+      },
+    },
+  ];
+
+  for (const ineligibleContext of ineligibleContexts) {
+    assert.equal(
+      beginLocalOperatingLoopDecisionConfirmation({
+        confirmation: idle,
+        context: ineligibleContext,
+        decision: "HOLD",
+      }),
+      null,
+    );
+  }
+  assert.equal(
+    beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: reviewing,
+      context,
+      decision: "REJECT",
+    }),
+    null,
+  );
+}
+
+async function testAcceptConfirmationRequiresExactGo() {
+  const idle = clearLocalOperatingLoopDecisionConfirmation();
+  const go = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: idle,
+    context: decisionConfirmationContext(genuineGoInput),
+    decision: "ACCEPT",
+  });
+  assert.ok(go);
+  assert.equal(go.basis.recommendation, "GO");
+
+  for (const motion of [needsRevisionInput, blockedInput]) {
+    assert.equal(
+      beginLocalOperatingLoopDecisionConfirmation({
+        confirmation: idle,
+        context: decisionConfirmationContext(motion),
+        decision: "ACCEPT",
+      }),
+      null,
+    );
+  }
+}
+
+async function testHoldAndRejectConfirmationRemainEligibleForNonGo() {
+  for (const motion of [genuineGoInput, needsRevisionInput, blockedInput]) {
+    const context = decisionConfirmationContext(motion);
+    for (const decision of ["HOLD", "REJECT"] as const) {
+      const confirmation = beginLocalOperatingLoopDecisionConfirmation({
+        confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+        context,
+        decision,
+      });
+      assert.ok(confirmation);
+      assert.equal(confirmation.phase, "REVIEWING");
+      assert.equal(confirmation.basis.decision, decision);
+      assert.equal(confirmation.basis.recommendation, context.state.recommendation);
+    }
+  }
+}
+
+async function testDecisionConfirmationBindsProjectionProofRecommendationAndFindings() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const confirmation = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(confirmation);
+  assert.deepEqual(confirmation.basis, {
+    projectionKey: context.currentProjectionKey,
+    validationProof: SYNTHETIC_VALIDATION_PROOF,
+    deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+    recommendation: "NEEDS_REVISION",
+    findingCodes: [
+      "TITLE_TOO_SHORT",
+      "SUMMARY_TOO_SHORT",
+      "EVIDENCE_REQUIRED",
+    ],
+    decision: "HOLD",
+  });
+}
+
+async function testDecisionConfirmationInvalidatesOnEveryBasisChange() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+
+  const changedConfirmations: LocalOperatingLoopDecisionConfirmationState[] = [
+    {
+      ...reviewing,
+      basis: {
+        ...reviewing.basis,
+        projectionKey: `${reviewing.basis.projectionKey}-changed`,
+      },
+    },
+    {
+      ...reviewing,
+      basis: {
+        ...reviewing.basis,
+        validationProof: `local-loop.validation.v1.${"e".repeat(64)}`,
+      },
+    },
+    {
+      ...reviewing,
+      basis: {
+        ...reviewing.basis,
+        deliberationProof: `local-loop.deliberation.v1.${"f".repeat(64)}`,
+      },
+    },
+    {
+      ...reviewing,
+      basis: { ...reviewing.basis, recommendation: "BLOCKED" },
+    },
+    {
+      ...reviewing,
+      basis: {
+        ...reviewing.basis,
+        findingCodes: reviewing.basis.findingCodes.slice(1),
+      },
+    },
+    {
+      ...reviewing,
+      basis: { ...reviewing.basis, decision: "REJECT" },
+    },
+  ];
+
+  for (const changed of changedConfirmations) {
+    assert.equal(
+      isLocalOperatingLoopDecisionConfirmationCurrent({
+        confirmation: changed,
+        context,
+      }),
+      false,
+    );
+    assert.equal(
+      claimLocalOperatingLoopDecisionConfirmation({
+        confirmation: changed,
+        context,
+      }),
+      null,
+    );
+  }
+}
+
+async function testDecisionConfirmationPresentationSnapshotsForAcceptHoldAndReject() {
+  const cases = [
+    {
+      decision: "ACCEPT" as const,
+      motion: genuineGoInput,
+      recommendation: "GO" as const,
+      confirmLabel: "Confirm ACCEPT — propose packet only",
+      consequences: [
+        "Server recomputation must remain GO.",
+        "One PROPOSED_ONLY, non-executable Work Packet and one demonstration-only, non-persistent artifact may be returned.",
+        "Neither creates Control-Thread acceptance or execution authority.",
+      ],
+      submittingCopy: "Submitting ACCEPT local-shadow decision...",
+    },
+    {
+      decision: "HOLD" as const,
+      motion: needsRevisionInput,
+      recommendation: "NEEDS_REVISION" as const,
+      confirmLabel: "Confirm HOLD — no packet",
+      consequences: [
+        "Zero Work Packets and one demonstration-only, non-persistent artifact may be returned.",
+        "HOLD does not pause or mutate external work.",
+      ],
+      submittingCopy: "Submitting HOLD local-shadow decision...",
+    },
+    {
+      decision: "REJECT" as const,
+      motion: blockedInput,
+      recommendation: "BLOCKED" as const,
+      confirmLabel: "Confirm REJECT — no packet",
+      consequences: [
+        "Zero Work Packets and one demonstration-only, non-persistent artifact may be returned.",
+        "REJECT does not cancel or mutate external work.",
+      ],
+      submittingCopy: "Submitting REJECT local-shadow decision...",
+    },
+  ];
+  const nonAuthorizations = [
+    "Local shadow only.",
+    "Not Control-Thread acceptance.",
+    "Not a durable receipt.",
+    "No persistence.",
+    "No routing or execution.",
+    "No deployment or customer effect.",
+    "No provider authority.",
+    "No Agent or Council authority.",
+    "No Batch or Program exit.",
+    "No JAI activation.",
+  ];
+
+  for (const testCase of cases) {
+    const context = decisionConfirmationContext(testCase.motion);
+    const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+      context,
+      decision: testCase.decision,
+    });
+    assert.ok(reviewing);
+    assert.deepEqual(
+      createLocalOperatingLoopDecisionConfirmationPresentation({
+        confirmation: reviewing,
+        context,
+      }),
+      {
+        phase: "REVIEWING",
+        heading: `Review ${testCase.decision} decision`,
+        description:
+          "Review the intended local-shadow decision and its bounded effects before confirming.",
+        decision: testCase.decision,
+        recommendation: testCase.recommendation,
+        proofStatus: "Deliberation current",
+        confirmLabel: testCase.confirmLabel,
+        consequences: testCase.consequences,
+        nonAuthorizations,
+        submittingCopy: null,
+      },
+    );
+
+    const claimed = claimLocalOperatingLoopDecisionConfirmation({
+      confirmation: reviewing,
+      context,
+    });
+    assert.ok(claimed);
+    assert.equal(
+      createLocalOperatingLoopDecisionConfirmationPresentation({
+        confirmation: claimed,
+        context,
+      })?.submittingCopy,
+      testCase.submittingCopy,
+    );
+  }
+}
+
+async function testDecisionConfirmationPresentationIsRedactedAndNonAuthoritative() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+  const presentation =
+    createLocalOperatingLoopDecisionConfirmationPresentation({
+      confirmation: reviewing,
+      context,
+    });
+  assert.ok(presentation);
+  assert.deepEqual(
+    collectNestedKeys(presentation).filter((key) =>
+      [
+        "basis",
+        "projectionKey",
+        "validationProof",
+        "deliberationProof",
+        "findingCodes",
+        "motion",
+        "request",
+        "response",
+        "workPacket",
+        "artifact",
+      ].includes(key),
+    ),
+    [],
+  );
+
+  const serialized = JSON.stringify(presentation);
+  for (const sensitiveValue of [
+    context.currentProjectionKey,
+    SYNTHETIC_VALIDATION_PROOF,
+    SYNTHETIC_DELIBERATION_PROOF,
+    context.motion.motionId,
+    context.motion.title,
+    context.motion.summary,
+    context.motion.targetRepo,
+    ...context.motion.targetThreads,
+    ...context.motion.evidencePointers,
+    ...context.state.findingCodes,
+  ]) {
+    assert.equal(serialized.includes(sensitiveValue), false, sensitiveValue);
+  }
+  assert.match(serialized, /Not Control-Thread acceptance/);
+  assert.match(serialized, /No routing or execution/);
+  assert.match(serialized, /No JAI activation/);
+
+  const unknownFindingContext: LocalOperatingLoopDecisionConfirmationContext = {
+    ...context,
+    state: {
+      ...context.state,
+      findingCodes: [
+        "RAW_UNKNOWN_FINDING_WITH_PRIVATE_VALUE",
+      ] as unknown as LocalOperatingLoopUiState["findingCodes"],
+    },
+  };
+  assert.equal(
+    beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+      context: unknownFindingContext,
+      decision: "HOLD",
+    }),
+    null,
+  );
+}
+
+async function testDecisionConfirmationClaimIsSingleUse() {
+  const context = decisionConfirmationContext();
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "ACCEPT",
+  });
+  assert.ok(reviewing);
+  const claimed = claimLocalOperatingLoopDecisionConfirmation({
+    confirmation: reviewing,
+    context,
+  });
+  assert.ok(claimed);
+  assert.equal(claimed.phase, "CLAIMED");
+  assert.equal(
+    claimLocalOperatingLoopDecisionConfirmation({
+      confirmation: claimed,
+      context,
+    }),
+    null,
+  );
+  assert.equal(
+    cancelLocalOperatingLoopDecisionConfirmation(claimed),
+    claimed,
+  );
+  assert.deepEqual(clearLocalOperatingLoopDecisionConfirmation(), {
+    phase: "IDLE",
+    basis: null,
+  });
+
+  const changedContext = {
+    ...context,
+    state: {
+      ...context.state,
+      deliberationProof: `local-loop.deliberation.v1.${"e".repeat(64)}`,
+    },
+  };
+  assert.equal(
+    isLocalOperatingLoopDecisionConfirmationCurrent({
+      confirmation: claimed,
+      context: changedContext,
+    }),
+    false,
+  );
+
+  const pendingContext = {
+    ...context,
+    state: { ...context.state, activeRequestId: 77 },
+  };
+  assert.equal(
+    isLocalOperatingLoopDecisionConfirmationCurrent({
+      confirmation: claimed,
+      context: pendingContext,
+    }),
+    true,
+  );
+  assert.deepEqual(
+    createLocalOperatingLoopDecisionConfirmationPresentation({
+      confirmation: claimed,
+      context: pendingContext,
+    }),
+    {
+      phase: "CLAIMED",
+      heading: "Review ACCEPT decision",
+      description:
+        "Review the intended local-shadow decision and its bounded effects before confirming.",
+      decision: "ACCEPT",
+      recommendation: "GO",
+      proofStatus: "Deliberation current",
+      confirmLabel: "Confirm ACCEPT — propose packet only",
+      consequences: [
+        "Server recomputation must remain GO.",
+        "One PROPOSED_ONLY, non-executable Work Packet and one demonstration-only, non-persistent artifact may be returned.",
+        "Neither creates Control-Thread acceptance or execution authority.",
+      ],
+      nonAuthorizations: [
+        "Local shadow only.",
+        "Not Control-Thread acceptance.",
+        "Not a durable receipt.",
+        "No persistence.",
+        "No routing or execution.",
+        "No deployment or customer effect.",
+        "No provider authority.",
+        "No Agent or Council authority.",
+        "No Batch or Program exit.",
+        "No JAI activation.",
+      ],
+      submittingCopy: "Submitting ACCEPT local-shadow decision...",
+    },
+  );
+}
+
+async function testReviewButtonsNeverDirectlySubmitDecision() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const controlsStart = panelSource.indexOf(
+    '{uiState.state === "AWAITING_DECISION"',
+  );
+  const confirmationStart = panelSource.indexOf(
+    "{confirmationPresentation ? (",
+    controlsStart,
+  );
+  assert.ok(controlsStart >= 0);
+  assert.ok(confirmationStart > controlsStart);
+  const reviewControlsSource = panelSource.slice(
+    controlsStart,
+    confirmationStart,
+  );
+
+  for (const decision of ["ACCEPT", "HOLD", "REJECT"] as const) {
+    assert.match(reviewControlsSource, new RegExp(`Review ${decision}`));
+    assert.match(
+      reviewControlsSource,
+      new RegExp(`beginDecisionReview\\("${decision}"\\)`),
+    );
+  }
+  assert.equal(
+    (reviewControlsSource.match(/beginDecisionReview\(/g) ?? []).length,
+    3,
+  );
+  assert.doesNotMatch(reviewControlsSource, /submitAction\(/);
+  assert.doesNotMatch(
+    panelSource,
+    /onClick=\{\(\) => submitAction\("(?:ACCEPT|HOLD|REJECT)"\)\}/,
+  );
+}
+
+async function testConfirmedPathSubmitsOnlyTheMatchingExistingDecision() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const confirmStart = panelSource.indexOf(
+    "function confirmReviewedDecision()",
+  );
+  const renderStart = panelSource.indexOf("\n  return (", confirmStart);
+  assert.ok(confirmStart >= 0);
+  assert.ok(renderStart > confirmStart);
+  const confirmSource = panelSource.slice(confirmStart, renderStart);
+  assert.match(
+    confirmSource,
+    /decisionConfirmationRef\.current\.phase !== "REVIEWING"/,
+  );
+  const refClaimIndex = confirmSource.indexOf(
+    "decisionConfirmationRef.current = claimed",
+  );
+  const stateClaimIndex = confirmSource.indexOf(
+    "setDecisionConfirmation(claimed)",
+  );
+  const submitIndex = confirmSource.indexOf(
+    "void submitAction(claimed.basis.decision)",
+  );
+  assert.ok(refClaimIndex >= 0);
+  assert.ok(stateClaimIndex > refClaimIndex);
+  assert.ok(submitIndex > stateClaimIndex);
+  assert.equal(
+    (panelSource.match(/submitAction\(claimed\.basis\.decision\)/g) ?? [])
+      .length,
+    1,
+  );
+
+  const requestBuilderStart = panelSource.indexOf(
+    "function buildRequestBody(",
+  );
+  assert.ok(requestBuilderStart >= 0);
+  const requestBuilderSource = panelSource.slice(requestBuilderStart);
+  assert.match(requestBuilderSource, /action: "DECIDE"/);
+  assert.match(requestBuilderSource, /decision: action/);
+
+  for (const decision of ["ACCEPT", "HOLD", "REJECT"] as const) {
+    const context = decisionConfirmationContext();
+    const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+      confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+      context,
+      decision,
+    });
+    assert.ok(reviewing);
+    const claimed = claimLocalOperatingLoopDecisionConfirmation({
+      confirmation: reviewing,
+      context,
+    });
+    assert.ok(claimed);
+    assert.equal(claimed.basis.decision, decision);
+  }
+}
+
+async function testCancelAndEscapeDoNotSubmitOrMutateLoop() {
+  const context = decisionConfirmationContext(needsRevisionInput);
+  const stateSnapshot = structuredClone(context.state);
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "HOLD",
+  });
+  assert.ok(reviewing);
+  assert.deepEqual(cancelLocalOperatingLoopDecisionConfirmation(reviewing), {
+    phase: "IDLE",
+    basis: null,
+  });
+  assert.deepEqual(context.state, stateSnapshot);
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const cancelStart = panelSource.indexOf(
+    "const cancelDecisionConfirmationAndRestoreFocus",
+  );
+  const abortStart = panelSource.indexOf(
+    "function abortAndReleaseActiveRequest()",
+    cancelStart,
+  );
+  assert.ok(cancelStart >= 0);
+  assert.ok(abortStart > cancelStart);
+  const cancelSource = panelSource.slice(cancelStart, abortStart);
+  assert.match(
+    cancelSource,
+    /cancelLocalOperatingLoopDecisionConfirmation\(current\)/,
+  );
+  assert.match(cancelSource, /window\.requestAnimationFrame/);
+  assert.match(
+    cancelSource,
+    /reviewButtonRefs\.current\[originDecision\]\?\.focus\(\)/,
+  );
+  assert.doesNotMatch(
+    cancelSource,
+    /submitAction\(|fetch\(|setUiState\(|setStatusMessage\(/,
+  );
+
+  const escapeStart = panelSource.indexOf(
+    "const handleEscape = (event: KeyboardEvent)",
+  );
+  const escapeEnd = panelSource.indexOf(
+    "useEffect(() => {\n    if (structuralRemediations.length",
+    escapeStart,
+  );
+  assert.ok(escapeStart >= 0);
+  assert.ok(escapeEnd > escapeStart);
+  const escapeSource = panelSource.slice(escapeStart, escapeEnd);
+  assert.match(escapeSource, /event\.key === "Escape"/);
+  assert.match(escapeSource, /event\.preventDefault\(\)/);
+  assert.match(
+    escapeSource,
+    /cancelDecisionConfirmationAndRestoreFocus\(\)/,
+  );
+  assert.doesNotMatch(escapeSource, /submitAction\(|fetch\(/);
+}
+
+async function testResetRecoveryLifecycleAndUnmountClearConfirmation() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  assert.ok(
+    (panelSource.match(/clearDecisionConfirmation\(\);/g) ?? []).length >= 5,
+  );
+  assert.match(
+    panelSource,
+    /function failClosed[\s\S]*?clearDecisionConfirmation\(\)/,
+  );
+  assert.match(
+    panelSource,
+    /classification\.kind === "STRUCTURAL_FAILURE"[\s\S]*?clearDecisionConfirmation\(\)/,
+  );
+  assert.match(
+    panelSource,
+    /classification\.response\.state === "ACCEPTED"[\s\S]*?clearDecisionConfirmation\(\)/,
+  );
+  assert.match(panelSource, /type: "PAGEHIDE"/);
+  assert.match(panelSource, /type: "PAGESHOW"; persisted: boolean/);
+  assert.match(
+    panelSource,
+    /decisionConfirmationRef\.current =\s*clearLocalOperatingLoopDecisionConfirmation\(\)/,
+  );
+  assert.match(
+    composerSource,
+    /\{suspendLocalOperatingLoop \? \([\s\S]*?\) : \(\s*<LocalOperatingLoopPanel/,
+  );
+  assert.match(panelSource, /key=\{projectionKey\}/);
+  assert.deepEqual(clearLocalOperatingLoopDecisionConfirmation(), {
+    phase: "IDLE",
+    basis: null,
+  });
+
+  const current = decisionConfirmationContext().state;
+  assert.deepEqual(
+    recoverLocalOperatingLoopClientFailure(current),
+    createLocalOperatingLoopUiState(current.projectionKey),
+  );
+}
+
+async function testDecisionConfirmationAccessibleStaticWiring() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /aria-labelledby="local-operating-loop-decision-confirmation-heading"/,
+  );
+  assert.match(
+    panelSource,
+    /aria-describedby="local-operating-loop-decision-confirmation-description"/,
+  );
+  assert.match(
+    panelSource,
+    /aria-busy=\{confirmationPresentation\.phase === "CLAIMED"\}/,
+  );
+  assert.match(panelSource, /ref=\{confirmationHeadingRef\}/);
+  assert.match(panelSource, /confirmationHeadingRef\.current\?\.focus\(\)/);
+  assert.match(panelSource, /tabIndex=\{-1\}/);
+  assert.match(panelSource, /aria-live="polite"/);
+  assert.match(panelSource, /role="status"/);
+  assert.match(
+    panelSource,
+    /disabled=\{confirmationPresentation\.phase === "CLAIMED"\}/,
+  );
+  assert.match(panelSource, /Review ACCEPT/);
+  assert.match(panelSource, /Review HOLD/);
+  assert.match(panelSource, /Review REJECT/);
+  assert.match(panelSource, /\{confirmationPresentation\.confirmLabel\}/);
+  assert.match(panelSource, />\s*Cancel decision\s*</);
+  assert.doesNotMatch(panelSource, /aria-modal/);
+  assert.doesNotMatch(panelSource, /role="dialog"/);
+}
+
+async function testExistingServerNonGoAcceptanceAndRecoveryRemainFailClosed() {
+  const handler = createAdminHandler();
+  for (const motion of [needsRevisionInput, blockedInput]) {
+    const proofChain = await buildProofChain(handler, motion);
+    assert.notEqual(proofChain.recommendation, "GO");
+    const result = await decide(
+      handler,
+      motion,
+      "ACCEPT",
+      proofChain.deliberationProof,
+    );
+    assert.equal(result.status, 409);
+
+    const context = decisionConfirmationContext(motion);
+    assert.deepEqual(
+      recoverLocalOperatingLoopClientFailure(context.state),
+      createLocalOperatingLoopUiState(context.currentProjectionKey),
+    );
+  }
+}
+
+async function testD5D6FrozenContractsAndProductionIsolationRemainIntact() {
+  assert.equal(
+    LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
+    "jai-local-operating-loop.v1",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+    "a0e7b76af02899659529355773bf293d58269897",
+  );
+
+  const pureSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const handlerSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop-handler.ts",
+  );
+  const routeSource = source(
+    "src/app/api/operator/motion-control/local-operating-loop/route.ts",
+  );
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  assert.deepEqual(importSpecifiers(pureSource), ["zod"]);
+  assert.doesNotMatch(
+    `${pureSource}\n${panelSource}`,
+    /from\s+["'][^"']*(provider|prisma|github|linear|agent|council|registry)/i,
+  );
+  assert.doesNotMatch(
+    panelSource,
+    /local-operating-loop-handler|\/route|node:|process\.env|next-auth|prisma/i,
+  );
+
+  const confirmationStart = pureSource.indexOf(
+    "const localOperatingLoopDecisionConfirmationCopy",
+  );
+  const packetStart = pureSource.indexOf(
+    "export function buildLocalOperatingLoopPacketMaterial",
+    confirmationStart,
+  );
+  assert.ok(confirmationStart >= 0);
+  assert.ok(packetStart > confirmationStart);
+  const confirmationSource = pureSource.slice(
+    confirmationStart,
+    packetStart,
+  );
+  assert.doesNotMatch(
+    confirmationSource,
+    /deriveLocalOperatingLoopRecommendation|createHmac|crypto\.subtle|fetch\(/,
+  );
+  assert.doesNotMatch(
+    `${confirmationSource}\n${panelSource.slice(
+      panelSource.indexOf("function beginDecisionReview"),
+      panelSource.indexOf("\n  return ("),
+    )}`,
+    /clipboard|download|copy\/export|serialized packet|boundary receipt/i,
+  );
+  assert.doesNotMatch(
+    `${confirmationSource}\n${panelSource.slice(
+      panelSource.indexOf("function beginDecisionReview"),
+      panelSource.indexOf("\n  return ("),
+    )}`,
+    /navigator\.clipboard|document\.execCommand|new Blob|createObjectURL|localStorage|sessionStorage|indexedDB|sendBeacon|window\.open|dispatchProvider|invokeProvider|providerClient|persistMotion|registryMutation/i,
+  );
+  assert.match(
+    pureSource,
+    /HMAC authenticity remains server-bound/,
+  );
+  assert.match(
+    panelSource,
+    /await classifyLocalOperatingLoopClientResponse/,
+  );
+  assert.match(
+    composerSource,
+    /shouldSuspendLocalOperatingLoopForUnstagedDraft/,
+  );
+  assert.match(handlerSource, /timingSafeEqual\(/);
+  assert.match(routeSource, /getToken/);
 }
 
 async function testCanonicalChangeClearsExplainabilityAndProofStatus() {
@@ -4153,6 +4971,21 @@ await testUnstagedDraftChangesSuspendOnlySelectedComposedProjection();
 await testComposerEditsNeverAutoStage();
 await testUnstagedComposerGateUnmountsLoopAndIsAccessible();
 await testExistingAbortInvalidationAndRecoveryContractsRemainIntact();
+await testDecisionConfirmationRequiresCurrentDeliberationAndProjection();
+await testAcceptConfirmationRequiresExactGo();
+await testHoldAndRejectConfirmationRemainEligibleForNonGo();
+await testDecisionConfirmationBindsProjectionProofRecommendationAndFindings();
+await testDecisionConfirmationInvalidatesOnEveryBasisChange();
+await testDecisionConfirmationPresentationSnapshotsForAcceptHoldAndReject();
+await testDecisionConfirmationPresentationIsRedactedAndNonAuthoritative();
+await testDecisionConfirmationClaimIsSingleUse();
+await testReviewButtonsNeverDirectlySubmitDecision();
+await testConfirmedPathSubmitsOnlyTheMatchingExistingDecision();
+await testCancelAndEscapeDoNotSubmitOrMutateLoop();
+await testResetRecoveryLifecycleAndUnmountClearConfirmation();
+await testDecisionConfirmationAccessibleStaticWiring();
+await testExistingServerNonGoAcceptanceAndRecoveryRemainFailClosed();
+await testD5D6FrozenContractsAndProductionIsolationRemainIntact();
 await testCanonicalChangeClearsExplainabilityAndProofStatus();
 await testRecommendationExplanationRemainsServerDerived();
 await testStructuralRemediationRemainsDistinctFromSemanticGuidance();
