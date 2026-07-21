@@ -202,6 +202,15 @@ function LocalOperatingLoopProjectionPanel({
       activeRequestId: requestId,
     }));
 
+    const responseStillOwned = () =>
+      !controller.signal.aborted &&
+      shouldApplyLocalOperatingLoopResponse({
+        currentProjectionKey: projectionKey,
+        responseProjectionKey: requestProjectionKey,
+        currentRequestId: activeRequestId.current,
+        responseRequestId: requestId,
+      });
+
     try {
       const response = await fetch(
         "/api/operator/motion-control/local-operating-loop",
@@ -218,19 +227,18 @@ function LocalOperatingLoopProjectionPanel({
       const responseText = await response.text();
       const value: unknown = JSON.parse(responseText);
 
-      if (
-        controller.signal.aborted ||
-        !shouldApplyLocalOperatingLoopResponse({
-          currentProjectionKey: projectionKey,
-          responseProjectionKey: requestProjectionKey,
-          currentRequestId: activeRequestId.current,
-          responseRequestId: requestId,
-        })
-      ) {
+      if (!responseStillOwned()) {
         return;
       }
       const classification =
-        classifyLocalOperatingLoopClientResponse(value);
+        await classifyLocalOperatingLoopClientResponse(value, {
+          request: requestBody,
+          requestProjectionKey,
+          currentProjectionKey: projectionKey,
+        });
+      if (!responseStillOwned()) {
+        return;
+      }
 
       if (!response.ok && classification.kind === "SUCCESS") {
         failClosed(null);
@@ -238,6 +246,9 @@ function LocalOperatingLoopProjectionPanel({
       }
 
       if (classification.kind === "STRUCTURAL_FAILURE") {
+        if (!responseStillOwned()) {
+          return;
+        }
         releaseRequestOwnership(controller, requestId);
         setUiState((current) =>
           recoverLocalOperatingLoopStructuralFailure(current),
@@ -253,10 +264,16 @@ function LocalOperatingLoopProjectionPanel({
       }
 
       if (classification.kind === "RECOVERY") {
+        if (!responseStillOwned()) {
+          return;
+        }
         failClosed(classification.code);
         return;
       }
 
+      if (!responseStillOwned()) {
+        return;
+      }
       releaseRequestOwnership(controller, requestId);
       setUiState((current) =>
         applySuccessResponse(current, classification.response),
@@ -273,15 +290,7 @@ function LocalOperatingLoopProjectionPanel({
       ) {
         return;
       }
-      if (
-        controller.signal.aborted ||
-        !shouldApplyLocalOperatingLoopResponse({
-          currentProjectionKey: projectionKey,
-          responseProjectionKey: requestProjectionKey,
-          currentRequestId: activeRequestId.current,
-          responseRequestId: requestId,
-        })
-      ) {
+      if (!responseStillOwned()) {
         return;
       }
       failClosed(null);
