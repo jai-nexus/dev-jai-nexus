@@ -4,18 +4,24 @@ import { encode, getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 import {
+  LOCAL_OPERATING_LOOP_FINDING_ORDER,
   LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS,
   LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
   LOCAL_OPERATING_LOOP_PHASE_COPY,
+  LOCAL_OPERATING_LOOP_PROOF_VERIFICATION_BOUNDARY,
   LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
   LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL,
   LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
   LOCAL_OPERATING_LOOP_RESTORED_COPY,
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
   canonicalizeLocalOperatingLoopValue,
   classifyLocalOperatingLoopClientResponse,
+  createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopProjectionKey,
+  createLocalOperatingLoopRecommendationExplanation,
   createLocalOperatingLoopRecoveryNotice,
   createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopUiState,
@@ -26,6 +32,7 @@ import {
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   shouldApplyLocalOperatingLoopResponse,
+  shouldSuspendLocalOperatingLoopForUnstagedDraft,
   type LocalOperatingLoopAction,
   type LocalOperatingLoopContentHasher,
   type LocalOperatingLoopInput,
@@ -55,6 +62,19 @@ const genuineGoInput: LocalOperatingLoopInput = {
   evidencePointers: [
     "portal/src/lib/controlPlane/motionKernel/local-operating-loop.test.ts",
   ],
+};
+
+const needsRevisionInput: LocalOperatingLoopInput = {
+  ...genuineGoInput,
+  title: "Short",
+  summary: "Too short.",
+  evidencePointers: [],
+};
+
+const blockedInput: LocalOperatingLoopInput = {
+  ...needsRevisionInput,
+  targetRepo: "other-repo",
+  targetThreads: ["JAI_DEV_JAI_NEXUS"],
 };
 
 function clientResponseExpectation(
@@ -189,6 +209,28 @@ function acceptedUiState(projectionKey: string): LocalOperatingLoopUiState {
       execution_authority_granted: false,
     },
     activeRequestId: 41,
+  };
+}
+
+function terminalUiState(
+  decision: "ACCEPT" | "HOLD" | "REJECT",
+): LocalOperatingLoopUiState {
+  const state = acceptedUiState(`terminal-${decision.toLowerCase()}`);
+  assert.ok(state.artifact);
+  return {
+    ...state,
+    state:
+      decision === "ACCEPT"
+        ? "ACCEPTED"
+        : decision === "HOLD"
+          ? "HELD"
+          : "REJECTED",
+    workPacket: decision === "ACCEPT" ? state.workPacket : null,
+    artifact: {
+      ...state.artifact,
+      decision,
+    },
+    activeRequestId: null,
   };
 }
 
@@ -328,6 +370,1035 @@ async function testExactDeterministicRecommendationMapping() {
       ],
       advisoryOnly: true,
     },
+  );
+}
+
+async function testExplainableRecommendationSnapshotsForGoNeedsRevisionAndBlocked() {
+  assert.deepEqual(
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: genuineGoInput,
+      recommendation: "GO",
+      findingCodes: [],
+    }),
+    {
+      status: "CURRENT",
+      summary:
+        "The server-derived recommendation found no semantic blocker or revision requirement. An explicit ADMIN local-shadow decision is still required.",
+      findings: [],
+    },
+  );
+
+  assert.deepEqual(
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: needsRevisionInput,
+      recommendation: "NEEDS_REVISION",
+      findingCodes: [
+        "TITLE_TOO_SHORT",
+        "SUMMARY_TOO_SHORT",
+        "EVIDENCE_REQUIRED",
+      ],
+    }),
+    {
+      status: "CURRENT",
+      summary:
+        "The server-derived recommendation found no blocker, but one or more bounded fields require revision before an ADMIN local-shadow acceptance decision.",
+      findings: [
+        {
+          code: "TITLE_TOO_SHORT",
+          label: "Title needs more detail",
+          sourceFact:
+            "Title length: 5 Unicode code points; required minimum: 8.",
+          remediation: "Provide at least 8 Unicode code points.",
+          severity: "REVISION",
+        },
+        {
+          code: "SUMMARY_TOO_SHORT",
+          label: "Purpose and summary need more detail",
+          sourceFact:
+            "Purpose and summary length: 10 Unicode code points; required minimum: 40.",
+          remediation: "Provide at least 40 Unicode code points.",
+          severity: "REVISION",
+        },
+        {
+          code: "EVIDENCE_REQUIRED",
+          label: "Evidence is required",
+          sourceFact:
+            "Evidence-pointer count: 0; required minimum: 1.",
+          remediation: "Provide at least one evidence pointer.",
+          severity: "REVISION",
+        },
+      ],
+    },
+  );
+
+  assert.deepEqual(
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: blockedInput,
+      recommendation: "BLOCKED",
+      findingCodes: [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+    }),
+    {
+      status: "CURRENT",
+      summary:
+        "The server-derived recommendation found an authority or repository-scope blocker that must be resolved before an ADMIN local-shadow acceptance decision.",
+      findings: [
+        {
+          code: "TARGET_REPO_OUT_OF_SCOPE",
+          label: "Target repository is outside the authorized scope",
+          sourceFact:
+            "Target repository is within dev-jai-nexus scope: no.",
+          remediation: "Select dev-jai-nexus.",
+          severity: "BLOCKER",
+        },
+        {
+          code: "CONTROL_THREAD_REQUIRED",
+          label: "CONTROL_THREAD participation is required",
+          sourceFact: "JAI_CONTROL_THREAD is included: no.",
+          remediation: "Include JAI_CONTROL_THREAD.",
+          severity: "BLOCKER",
+        },
+        {
+          code: "TITLE_TOO_SHORT",
+          label: "Title needs more detail",
+          sourceFact:
+            "Title length: 5 Unicode code points; required minimum: 8.",
+          remediation: "Provide at least 8 Unicode code points.",
+          severity: "REVISION",
+        },
+        {
+          code: "SUMMARY_TOO_SHORT",
+          label: "Purpose and summary need more detail",
+          sourceFact:
+            "Purpose and summary length: 10 Unicode code points; required minimum: 40.",
+          remediation: "Provide at least 40 Unicode code points.",
+          severity: "REVISION",
+        },
+        {
+          code: "EVIDENCE_REQUIRED",
+          label: "Evidence is required",
+          sourceFact:
+            "Evidence-pointer count: 0; required minimum: 1.",
+          remediation: "Provide at least one evidence pointer.",
+          severity: "REVISION",
+        },
+      ],
+    },
+  );
+}
+
+async function testRecommendationExplanationRequiresCompleteApplicableFindingGraph() {
+  const incompleteCases = [
+    {
+      motion: needsRevisionInput,
+      recommendation: "GO" as const,
+      findingCodes: [],
+    },
+    {
+      motion: blockedInput,
+      recommendation: "BLOCKED" as const,
+      findingCodes: ["TARGET_REPO_OUT_OF_SCOPE"],
+    },
+    {
+      motion: needsRevisionInput,
+      recommendation: "NEEDS_REVISION" as const,
+      findingCodes: ["TITLE_TOO_SHORT"],
+    },
+  ];
+
+  for (const input of incompleteCases) {
+    const explanation =
+      createLocalOperatingLoopRecommendationExplanation(input);
+    assert.equal(explanation.status, "NOT_CURRENT");
+    assert.deepEqual(
+      explanation.findings.map((finding) => finding.code),
+      [null],
+    );
+  }
+
+  const complete = createLocalOperatingLoopRecommendationExplanation({
+    motion: blockedInput,
+    recommendation: "BLOCKED",
+    findingCodes: [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  });
+  assert.equal(complete.status, "CURRENT");
+  assert.deepEqual(
+    complete.findings.map((finding) => finding.code),
+    [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  );
+
+  const duplicateComplete =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: blockedInput,
+      recommendation: "BLOCKED",
+      findingCodes: [
+        ...LOCAL_OPERATING_LOOP_FINDING_ORDER,
+        "CONTROL_THREAD_REQUIRED",
+        "EVIDENCE_REQUIRED",
+      ],
+    });
+  assert.equal(duplicateComplete.status, "CURRENT");
+  assert.deepEqual(
+    duplicateComplete.findings.map((finding) => finding.code),
+    [...LOCAL_OPERATING_LOOP_FINDING_ORDER],
+  );
+
+  const findingsWithoutRecommendation =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: needsRevisionInput,
+      recommendation: null,
+      findingCodes: [
+        "TITLE_TOO_SHORT",
+        "SUMMARY_TOO_SHORT",
+        "EVIDENCE_REQUIRED",
+      ],
+    });
+  assert.equal(findingsWithoutRecommendation.status, "NOT_CURRENT");
+  assert.deepEqual(
+    findingsWithoutRecommendation.findings.map((finding) => finding.code),
+    [null],
+  );
+}
+
+async function testFindingExplanationsBindToCanonicalSourceAndPrecedence() {
+  const precedenceInput: LocalOperatingLoopInput = {
+    ...genuineGoInput,
+    targetThreads: ["JAI_DEV_JAI_NEXUS"],
+    evidencePointers: [],
+  };
+  const explanation =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: precedenceInput,
+      recommendation: "BLOCKED",
+      findingCodes: [
+        "EVIDENCE_REQUIRED",
+        "CONTROL_THREAD_REQUIRED",
+      ],
+    });
+  assert.equal(explanation.status, "CURRENT");
+  assert.deepEqual(
+    explanation.findings.map((finding) => finding.code),
+    ["CONTROL_THREAD_REQUIRED", "EVIDENCE_REQUIRED"],
+  );
+  assert.deepEqual(
+    explanation.findings.map((finding) => finding.severity),
+    ["BLOCKER", "REVISION"],
+  );
+  assert.deepEqual(
+    explanation.findings.map((finding) => finding.sourceFact),
+    [
+      "JAI_CONTROL_THREAD is included: no.",
+      "Evidence-pointer count: 0; required minimum: 1.",
+    ],
+  );
+
+  const inconsistent =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: genuineGoInput,
+      recommendation: "NEEDS_REVISION",
+      findingCodes: ["TITLE_TOO_SHORT"],
+    });
+  assert.equal(inconsistent.status, "NOT_CURRENT");
+  assert.equal(inconsistent.findings[0]?.code, null);
+}
+
+async function testSemanticRemediationIsAllowlistedOrderedAndDeduplicated() {
+  const explanation =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: needsRevisionInput,
+      recommendation: "NEEDS_REVISION",
+      findingCodes: [
+        "EVIDENCE_REQUIRED",
+        "TITLE_TOO_SHORT",
+        "SUMMARY_TOO_SHORT",
+        "TITLE_TOO_SHORT",
+        "EVIDENCE_REQUIRED",
+      ],
+    });
+  assert.deepEqual(
+    explanation.findings.map((finding) => finding.code),
+    ["TITLE_TOO_SHORT", "SUMMARY_TOO_SHORT", "EVIDENCE_REQUIRED"],
+  );
+  assert.deepEqual(
+    explanation.findings.map((finding) => finding.remediation),
+    [
+      "Provide at least 8 Unicode code points.",
+      "Provide at least 40 Unicode code points.",
+      "Provide at least one evidence pointer.",
+    ],
+  );
+  assert.equal(
+    new Set(explanation.findings.map((finding) => finding.code)).size,
+    explanation.findings.length,
+  );
+}
+
+async function testUnknownFindingFailsClosedToGenericSemanticGuidance() {
+  const unknownCode = "UNKNOWN_RAW_FINDING_WITH_PRIVATE_VALUE";
+  const explanation =
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: genuineGoInput,
+      recommendation: "GO",
+      findingCodes: [unknownCode, { raw: "private-motion-value" }],
+    });
+  assert.deepEqual(explanation, {
+    status: "NOT_CURRENT",
+    summary:
+      "The semantic explanation is not current. Validate and deliberate the active motion again.",
+    findings: [
+      {
+        code: null,
+        label: "Semantic guidance is not current",
+        sourceFact:
+          "The current semantic findings could not be matched safely to the active canonical projection.",
+        remediation: "Validate and deliberate the active motion again.",
+        severity: "FAIL_CLOSED",
+      },
+    ],
+  });
+  assert.doesNotMatch(
+    JSON.stringify(explanation),
+    /UNKNOWN_RAW_FINDING_WITH_PRIVATE_VALUE|private-motion-value/,
+  );
+}
+
+async function testProofStatusIsProjectionBoundFounderReadableAndRedacted() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const draft = createLocalOperatingLoopUiState(projectionKey);
+  const validated: LocalOperatingLoopUiState = {
+    ...draft,
+    state: "VALIDATED",
+    validationProof: SYNTHETIC_VALIDATION_PROOF,
+  };
+  const awaiting: LocalOperatingLoopUiState = {
+    ...validated,
+    state: "AWAITING_DECISION",
+    deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+    recommendation: "GO",
+  };
+  const accepted: LocalOperatingLoopUiState = {
+    ...acceptedUiState(projectionKey),
+    activeRequestId: null,
+  };
+  const statuses = [
+    createLocalOperatingLoopProofStatus({
+      state: draft,
+      currentProjectionKey: projectionKey,
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: validated,
+      currentProjectionKey: projectionKey,
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: awaiting,
+      currentProjectionKey: projectionKey,
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: accepted,
+      currentProjectionKey: projectionKey,
+    }),
+  ];
+
+  assert.deepEqual(
+    statuses.map((status) => status.code),
+    [
+      "NOT_ESTABLISHED",
+      "STRUCTURE_CURRENT",
+      "DELIBERATION_CURRENT",
+      "DECISION_CURRENT",
+    ],
+  );
+  assert.deepEqual(
+    statuses.map((status) => status.label),
+    [
+      "Not established",
+      "Structure current",
+      "Deliberation current",
+      "Decision current",
+    ],
+  );
+  assert.ok(
+    statuses.every(
+      (status) =>
+        status.verificationBoundary ===
+        LOCAL_OPERATING_LOOP_PROOF_VERIFICATION_BOUNDARY,
+    ),
+  );
+  const founderCopy = JSON.stringify(statuses);
+  assert.doesNotMatch(
+    founderCopy,
+    new RegExp(
+      [
+        SYNTHETIC_VALIDATION_PROOF,
+        SYNTHETIC_DELIBERATION_PROOF,
+        ADMIN_EMAIL,
+        "a".repeat(64),
+        "b".repeat(64),
+        genuineGoInput.motionId,
+      ].join("|"),
+    ),
+  );
+  assert.match(founderCopy, /HMAC authenticity remains server-bound/);
+  assert.doesNotMatch(founderCopy, /browser verified/i);
+}
+
+async function testPendingRequestsPreserveCurrentPriorTransition() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const pendingValidation: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    activeRequestId: 101,
+  };
+  const pendingDeliberation: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    state: "VALIDATED",
+    validationProof: SYNTHETIC_VALIDATION_PROOF,
+    activeRequestId: 102,
+  };
+  const awaitingDecision: LocalOperatingLoopUiState = {
+    ...pendingDeliberation,
+    state: "AWAITING_DECISION",
+    deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+    recommendation: "GO",
+  };
+
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: pendingValidation,
+      currentProjectionKey: projectionKey,
+    }).code,
+    "NOT_ESTABLISHED",
+  );
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: pendingDeliberation,
+      currentProjectionKey: projectionKey,
+    }).code,
+    "STRUCTURE_CURRENT",
+  );
+
+  for (const [index, decision] of [
+    "ACCEPT",
+    "HOLD",
+    "REJECT",
+  ].entries()) {
+    const pendingDecision: LocalOperatingLoopUiState = {
+      ...awaitingDecision,
+      activeRequestId: 103 + index,
+    };
+    const proofStatus = createLocalOperatingLoopProofStatus({
+      state: pendingDecision,
+      currentProjectionKey: projectionKey,
+    });
+    assert.equal(
+      proofStatus.code,
+      "DELIBERATION_CURRENT",
+      `${decision} must preserve the current deliberation proof`,
+    );
+
+    const explanation =
+      createLocalOperatingLoopRecommendationExplanation({
+        motion: genuineGoInput,
+        recommendation:
+          proofStatus.code === "DELIBERATION_CURRENT" ||
+          proofStatus.code === "DECISION_CURRENT"
+            ? pendingDecision.recommendation
+            : null,
+        findingCodes: pendingDecision.findingCodes,
+      });
+    assert.equal(
+      explanation.status,
+      "CURRENT",
+      `${decision} must preserve the current recommendation explanation`,
+    );
+  }
+
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: acceptedUiState(projectionKey),
+      currentProjectionKey: projectionKey,
+    }).code,
+    "NOT_CURRENT",
+  );
+}
+
+async function testProofStatusReturnsNotCurrentForInconsistentState() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const incomplete: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    state: "VALIDATED",
+  };
+  const staleDraft: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    recommendation: "GO",
+  };
+  const cases = [
+    createLocalOperatingLoopProofStatus({
+      state: incomplete,
+      currentProjectionKey: projectionKey,
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: staleDraft,
+      currentProjectionKey: projectionKey,
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: createLocalOperatingLoopUiState(projectionKey),
+      currentProjectionKey: "different-projection",
+    }),
+    createLocalOperatingLoopProofStatus({
+      state: createLocalOperatingLoopUiState(projectionKey),
+      currentProjectionKey: projectionKey,
+      requiresFreshValidation: true,
+    }),
+  ];
+  assert.ok(cases.every((status) => status.code === "NOT_CURRENT"));
+  assert.ok(cases.every((status) => status.label === "Not current"));
+}
+
+async function testFounderSafeTerminalPresentationSnapshots() {
+  const common = {
+    recommendation: "GO",
+    findingCount: 0,
+    workPacketExecutionAuthority: false,
+    artifactCount: 1,
+    receiptAuthority: "DEMONSTRATION_ONLY",
+    persistence: "NONE",
+    programEffect: "NONE",
+    notAControlThreadAcceptanceReceipt: true,
+    decisionScope: "GENERATE_WORK_PACKET_ONLY",
+    artifactExecutionAuthority: false,
+  } as const;
+
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("ACCEPT"),
+    ),
+    {
+      terminalState: "ACCEPTED",
+      decision: "ACCEPT",
+      ...common,
+      workPacketCount: 1,
+      workPacketStatus: "PROPOSED_ONLY",
+    },
+  );
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("HOLD"),
+    ),
+    {
+      terminalState: "HELD",
+      decision: "HOLD",
+      ...common,
+      workPacketCount: 0,
+      workPacketStatus: "NONE",
+    },
+  );
+  assert.deepEqual(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState("REJECT"),
+    ),
+    {
+      terminalState: "REJECTED",
+      decision: "REJECT",
+      ...common,
+      workPacketCount: 0,
+      workPacketStatus: "NONE",
+    },
+  );
+}
+
+async function testFounderSafeTerminalPresentationRejectsIncoherentState() {
+  const accepted = terminalUiState("ACCEPT");
+  const held = terminalUiState("HOLD");
+  assert.ok(accepted.artifact);
+  const malformedStates: LocalOperatingLoopUiState[] = [
+    { ...accepted, workPacket: null },
+    { ...held, workPacket: accepted.workPacket },
+    { ...accepted, artifact: null },
+    {
+      ...accepted,
+      artifact: { ...accepted.artifact, decision: "HOLD" },
+    },
+    {
+      ...accepted,
+      artifact: {
+        ...accepted.artifact,
+        persistence: "DURABLE",
+      } as unknown as LocalOperatingLoopUiState["artifact"],
+    },
+  ];
+
+  for (const state of malformedStates) {
+    assert.equal(
+      createFounderSafeLocalOperatingLoopTerminalPresentation(state),
+      null,
+    );
+  }
+  assert.equal(
+    LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
+    "The terminal local-shadow summary is unavailable because its state is not coherent. Reset and complete the active motion again.",
+  );
+}
+
+async function testFounderSafeTerminalPresentationExcludesSensitiveKeys() {
+  const sourceState = terminalUiState("ACCEPT");
+  assert.ok(sourceState.workPacket);
+  assert.ok(sourceState.artifact);
+  const presentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(sourceState);
+  assert.ok(presentation);
+
+  const keys = collectNestedKeys(presentation);
+  const forbiddenKeys = new Set([
+    "actor",
+    "proposer",
+    "proposed_by",
+    "packetId",
+    "packet_id",
+    "id",
+    "artifactId",
+    "artifact_id",
+    "motionId",
+    "motion_id",
+    "otherId",
+    "other_id",
+    "baseSha",
+    "base_sha",
+    "commitSha",
+    "fingerprint",
+    "motionFingerprint",
+    "motion_fingerprint",
+    "candidatePacketHash",
+    "candidate_packet_hash",
+    "validationProof",
+    "deliberationProof",
+    "projectionKey",
+    "title",
+    "summary",
+    "motion",
+    "evidencePointers",
+    "evidence_pointers",
+    "targetThreads",
+    "target_threads",
+    "targetRepo",
+    "target_repo",
+    "nonAuthorizations",
+    "non_authorizations",
+    "request",
+    "response",
+    "cookies",
+    "cookie",
+    "tokens",
+    "token",
+    "secrets",
+    "secret",
+    "credentials",
+    "credential",
+  ]);
+  assert.deepEqual(
+    keys.filter((key) => forbiddenKeys.has(key)),
+    [],
+  );
+
+  const serialized = JSON.stringify(presentation);
+  const sensitiveValues = [
+    ADMIN_EMAIL,
+    sourceState.workPacket.packet_id,
+    sourceState.artifact.artifact_id,
+    LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+    sourceState.artifact.motion_id,
+    sourceState.artifact.motion_fingerprint,
+    sourceState.artifact.candidate_packet_hash,
+    sourceState.validationProof,
+    sourceState.deliberationProof,
+    sourceState.workPacket.title,
+    sourceState.workPacket.summary,
+    sourceState.workPacket.target_repo,
+    ...sourceState.workPacket.target_threads,
+    ...sourceState.workPacket.evidence_pointers,
+    ...sourceState.workPacket.non_authorizations,
+  ].filter((value): value is string => typeof value === "string");
+  for (const value of sensitiveValues) {
+    assert.equal(serialized.includes(value), false, value);
+  }
+}
+
+async function testTerminalUiContainsNoRawJsonSink() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /createFounderSafeLocalOperatingLoopTerminalPresentation\(uiState\)/,
+  );
+  assert.match(panelSource, /function TerminalPresentation/);
+  assert.match(panelSource, /<dl/);
+  assert.match(panelSource, />\s*Terminal local-shadow summary\s*</);
+  assert.doesNotMatch(panelSource, /JsonOutput/);
+  assert.doesNotMatch(panelSource, /<pre/);
+  assert.doesNotMatch(panelSource, /value=\{projectionKey\}/);
+  assert.doesNotMatch(
+    panelSource,
+    /JSON\.stringify\((?:value|uiState\.(?:workPacket|artifact))/,
+  );
+  assert.match(
+    panelSource,
+    /Current canonical projection is internally bound; raw key withheld\./,
+  );
+}
+
+async function testUnstagedDraftChangesSuspendOnlySelectedComposedProjection() {
+  const composedMotionId = "local-composed-motion-20260721123456";
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId,
+      composedMotionHasUnstagedChanges: true,
+    }),
+    true,
+  );
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId,
+      composedMotionHasUnstagedChanges: false,
+    }),
+    false,
+  );
+  for (const selectedMotionId of [
+    "motion-sample-go",
+    "persisted-motion-intake-example",
+  ]) {
+    assert.equal(
+      shouldSuspendLocalOperatingLoopForUnstagedDraft({
+        selectedMotionId,
+        composedMotionId,
+        composedMotionHasUnstagedChanges: true,
+      }),
+      false,
+    );
+  }
+  assert.equal(
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: composedMotionId,
+      composedMotionId: null,
+      composedMotionHasUnstagedChanges: true,
+    }),
+    false,
+  );
+}
+
+async function testComposerEditsNeverAutoStage() {
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  const updateStart = composerSource.indexOf("function updateDraft");
+  const stageStart = composerSource.indexOf(
+    "function stageComposedMotion",
+    updateStart,
+  );
+  assert.ok(updateStart >= 0);
+  assert.ok(stageStart > updateStart);
+  const updateSource = composerSource.slice(updateStart, stageStart);
+  assert.match(updateSource, /setDraft\(/);
+  assert.match(updateSource, /if \(composedMotion\)/);
+  assert.match(
+    updateSource,
+    /setComposedMotionHasUnstagedChanges\(true\)/,
+  );
+  assert.doesNotMatch(
+    updateSource,
+    /buildComposedMotionBasis|setComposedMotion\(|setSelectedMotionId\(|fetch\(|persistMotionDraft|stageComposedMotion\(/,
+  );
+}
+
+async function testUnstagedComposerGateUnmountsLoopAndIsAccessible() {
+  const composerSource = source(
+    "src/app/operator/motion-control/NativeMotionIntakeComposer.tsx",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    composerSource,
+    /shouldSuspendLocalOperatingLoopForUnstagedDraft\(\{/,
+  );
+  assert.match(composerSource, /\{suspendLocalOperatingLoop \? \(/);
+  assert.match(
+    composerSource,
+    /aria-labelledby="unstaged-draft-changes-heading"/,
+  );
+  assert.match(composerSource, /role="alert"/);
+  assert.match(composerSource, />\s*Unstaged draft changes\s*</);
+  assert.match(
+    composerSource,
+    /visible composer no longer matches the previously staged\s+canonical projection/,
+  );
+  assert.match(
+    composerSource,
+    /Prior local-shadow output was cleared from\s+view/,
+  );
+  assert.match(
+    composerSource,
+    /Stage composed motion locally before validation can resume/,
+  );
+  assert.match(
+    composerSource,
+    /full manual text revert still requires explicit restaging/,
+  );
+  assert.equal(
+    (composerSource.match(/<LocalOperatingLoopPanel/g) ?? []).length,
+    1,
+  );
+  assert.match(
+    composerSource,
+    /\) : \(\s*<LocalOperatingLoopPanel selectedMotion=\{selectedMotion\} \/>/,
+  );
+
+  const stageStart = composerSource.indexOf("function stageComposedMotion");
+  const persistStart = composerSource.indexOf(
+    "async function persistMotionDraft",
+    stageStart,
+  );
+  const stageSource = composerSource.slice(stageStart, persistStart);
+  assert.match(stageSource, /buildComposedMotionBasis\(\{ draft \}\)/);
+  assert.match(
+    stageSource,
+    /setComposedMotionHasUnstagedChanges\(false\)/,
+  );
+  assert.match(
+    composerSource,
+    /setComposedMotion\(null\);\s+setComposedMotionHasUnstagedChanges\(false\)/,
+  );
+  assert.match(panelSource, /key=\{projectionKey\}/);
+}
+
+async function testExistingAbortInvalidationAndRecoveryContractsRemainIntact() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const terminal = terminalUiState("ACCEPT");
+  assert.deepEqual(
+    recoverLocalOperatingLoopClientFailure(terminal),
+    createLocalOperatingLoopUiState(terminal.projectionKey),
+  );
+  assert.deepEqual(
+    invalidateLocalOperatingLoopUiState(
+      terminal,
+      `${projectionKey}-changed`,
+    ),
+    createLocalOperatingLoopUiState(`${projectionKey}-changed`),
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: `${projectionKey}-changed`,
+      responseProjectionKey: projectionKey,
+      currentRequestId: 8,
+      responseRequestId: 8,
+    }),
+    false,
+  );
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(panelSource, /abortAndReleaseActiveRequest/);
+  assert.match(panelSource, /controller\?\.abort\(\)/);
+  assert.match(panelSource, /applyLocalOperatingLoopBrowserLifecycle/);
+  assert.match(panelSource, /recoverLocalOperatingLoopClientFailure/);
+  assert.match(panelSource, /recoverLocalOperatingLoopStructuralFailure/);
+  assert.match(panelSource, /shouldApplyLocalOperatingLoopResponse/);
+}
+
+async function testCanonicalChangeClearsExplainabilityAndProofStatus() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  const changedInput = {
+    ...genuineGoInput,
+    title: `${genuineGoInput.title} changed`,
+  };
+  const changedProjectionKey =
+    createLocalOperatingLoopProjectionKey(changedInput);
+  const populated: LocalOperatingLoopUiState = {
+    ...createLocalOperatingLoopUiState(projectionKey),
+    state: "AWAITING_DECISION",
+    validationProof: SYNTHETIC_VALIDATION_PROOF,
+    deliberationProof: SYNTHETIC_DELIBERATION_PROOF,
+    recommendation: "GO",
+  };
+  const reset = invalidateLocalOperatingLoopUiState(
+    populated,
+    changedProjectionKey,
+  );
+  assert.deepEqual(
+    reset,
+    createLocalOperatingLoopUiState(changedProjectionKey),
+  );
+  assert.deepEqual(
+    createLocalOperatingLoopRecommendationExplanation({
+      motion: changedInput,
+      recommendation: reset.recommendation,
+      findingCodes: reset.findingCodes,
+    }),
+    {
+      status: "NOT_ESTABLISHED",
+      summary:
+        "No current server-derived recommendation is available. Validate and deliberate the active motion.",
+      findings: [],
+    },
+  );
+  assert.equal(
+    createLocalOperatingLoopProofStatus({
+      state: reset,
+      currentProjectionKey: changedProjectionKey,
+    }).code,
+    "NOT_ESTABLISHED",
+  );
+}
+
+async function testRecommendationExplanationRemainsServerDerived() {
+  const pureSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const explanationStart = pureSource.indexOf(
+    "export function createLocalOperatingLoopRecommendationExplanation",
+  );
+  const explanationEnd = pureSource.indexOf(
+    "const localOperatingLoopProofStatusCopy",
+    explanationStart,
+  );
+  assert.ok(explanationStart >= 0);
+  assert.ok(explanationEnd > explanationStart);
+  assert.doesNotMatch(
+    pureSource.slice(explanationStart, explanationEnd),
+    /deriveLocalOperatingLoopRecommendation/,
+  );
+  assert.doesNotMatch(
+    panelSource,
+    /deriveLocalOperatingLoopRecommendation/,
+  );
+  assert.match(
+    panelSource,
+    /\{uiState\.recommendation \?\? "not deliberated"\}/,
+  );
+  assert.match(
+    panelSource,
+    /createLocalOperatingLoopRecommendationExplanation\(\{/,
+  );
+}
+
+async function testStructuralRemediationRemainsDistinctFromSemanticGuidance() {
+  const structural = createLocalOperatingLoopStructuralRemediations([
+    { path: "input.title", code: "too_small" },
+  ]);
+  const semanticInput = {
+    ...genuineGoInput,
+    title: "Short",
+  };
+  const semantic = createLocalOperatingLoopRecommendationExplanation({
+    motion: semanticInput,
+    recommendation: "NEEDS_REVISION",
+    findingCodes: ["TITLE_TOO_SHORT"],
+  });
+  assert.deepEqual(structural, [
+    {
+      id: "title",
+      field: "Title",
+      message: "Provide a single-line motion title within 240 characters.",
+    },
+  ]);
+  assert.equal(
+    semantic.findings[0]?.remediation,
+    "Provide at least 8 Unicode code points.",
+  );
+  assert.notEqual(
+    structural[0]?.message,
+    semantic.findings[0]?.remediation,
+  );
+}
+
+async function testD5FailClosedCoherenceRemainsIntact() {
+  const projectionKey =
+    createLocalOperatingLoopProjectionKey(genuineGoInput);
+  assert.deepEqual(
+    recoverLocalOperatingLoopClientFailure(acceptedUiState(projectionKey)),
+    createLocalOperatingLoopUiState(projectionKey),
+  );
+  assert.equal(
+    shouldApplyLocalOperatingLoopResponse({
+      currentProjectionKey: "changed-projection",
+      responseProjectionKey: projectionKey,
+      currentRequestId: 17,
+      responseRequestId: 17,
+    }),
+    false,
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(panelSource, /abortAndReleaseActiveRequest/);
+  assert.match(
+    panelSource,
+    /await classifyLocalOperatingLoopClientResponse/,
+  );
+  assert.ok(
+    (panelSource.match(/if \(!responseStillOwned\(\)\)/g) ?? [])
+      .length >= 5,
+  );
+}
+
+async function testExplainabilityPanelAccessibleStaticWiring() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(panelSource, />\s*Why this recommendation\s*</);
+  assert.match(panelSource, />\s*Proof-chain status\s*</);
+  assert.match(
+    panelSource,
+    /aria-labelledby="local-operating-loop-recommendation-explanation-heading"/,
+  );
+  assert.match(
+    panelSource,
+    /aria-labelledby="local-operating-loop-proof-status-heading"/,
+  );
+  assert.match(
+    panelSource,
+    /aria-label="Deterministic semantic findings"/,
+  );
+  assert.match(panelSource, /<ol/);
+  assert.match(panelSource, /\{finding\.sourceFact\}/);
+  assert.match(panelSource, /\{finding\.remediation\}/);
+  assert.match(panelSource, /\{proofStatus\.verificationBoundary\}/);
+  assert.doesNotMatch(
+    panelSource,
+    /Copy explanation|Export explanation|Download receipt/,
+  );
+}
+
+async function testProductionDependencyIsolation() {
+  const pureSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.deepEqual(importSpecifiers(pureSource), ["zod"]);
+  assert.doesNotMatch(
+    pureSource,
+    /from\s+["'][^"']*(node:|next-auth|prisma|github|linear|agent|council)/i,
+  );
+  assert.doesNotMatch(pureSource, /process\.env/);
+  assert.doesNotMatch(
+    panelSource,
+    /local-operating-loop-handler|\/route|node:|process\.env|next-auth|prisma/i,
+  );
+  assert.doesNotMatch(panelSource, /crypto\.subtle|createHmac|timingSafeEqual/);
+  assert.match(
+    pureSource,
+    /HMAC authenticity remains server-bound/,
   );
 }
 
@@ -3041,6 +4112,18 @@ function source(path: string): string {
   return readFileSync(path, "utf8");
 }
 
+function collectNestedKeys(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectNestedKeys(item));
+  }
+  if (typeof value !== "object" || value === null) {
+    return [];
+  }
+  return Object.entries(value as Record<string, unknown>).flatMap(
+    ([key, nested]) => [key, ...collectNestedKeys(nested)],
+  );
+}
+
 function importSpecifiers(value: string): string[] {
   return [...value.matchAll(/from\s+["']([^"']+)["']/g)].map(
     (match) => match[1],
@@ -3054,6 +4137,28 @@ assert.equal(
 await testStrictStructuralValidationAndNormalization();
 await testRejectsEveryAuthorityBearingOrUnknownFieldClass();
 await testExactDeterministicRecommendationMapping();
+await testExplainableRecommendationSnapshotsForGoNeedsRevisionAndBlocked();
+await testRecommendationExplanationRequiresCompleteApplicableFindingGraph();
+await testFindingExplanationsBindToCanonicalSourceAndPrecedence();
+await testSemanticRemediationIsAllowlistedOrderedAndDeduplicated();
+await testUnknownFindingFailsClosedToGenericSemanticGuidance();
+await testProofStatusIsProjectionBoundFounderReadableAndRedacted();
+await testPendingRequestsPreserveCurrentPriorTransition();
+await testProofStatusReturnsNotCurrentForInconsistentState();
+await testFounderSafeTerminalPresentationSnapshots();
+await testFounderSafeTerminalPresentationRejectsIncoherentState();
+await testFounderSafeTerminalPresentationExcludesSensitiveKeys();
+await testTerminalUiContainsNoRawJsonSink();
+await testUnstagedDraftChangesSuspendOnlySelectedComposedProjection();
+await testComposerEditsNeverAutoStage();
+await testUnstagedComposerGateUnmountsLoopAndIsAccessible();
+await testExistingAbortInvalidationAndRecoveryContractsRemainIntact();
+await testCanonicalChangeClearsExplainabilityAndProofStatus();
+await testRecommendationExplanationRemainsServerDerived();
+await testStructuralRemediationRemainsDistinctFromSemanticGuidance();
+await testD5FailClosedCoherenceRemainsIntact();
+await testExplainabilityPanelAccessibleStaticWiring();
+await testProductionDependencyIsolation();
 await testStructuralValidationPrecedesSemanticDeliberation();
 await testPhaseCopyDistinguishesStructureFromSemantics();
 await testSafeDeterministicStructuralRemediation();

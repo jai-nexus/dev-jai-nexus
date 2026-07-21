@@ -15,8 +15,12 @@ import {
   LOCAL_OPERATING_LOOP_REAUTHENTICATION_LABEL,
   LOCAL_OPERATING_LOOP_RESTORED_COPY,
   LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY,
+  LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY,
   applyLocalOperatingLoopBrowserLifecycle,
   classifyLocalOperatingLoopClientResponse,
+  createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopProofStatus,
+  createLocalOperatingLoopRecommendationExplanation,
   createLocalOperatingLoopRecoveryNotice,
   createLocalOperatingLoopStructuralRemediations,
   createLocalOperatingLoopProjectionKey,
@@ -29,6 +33,7 @@ import {
   type LocalOperatingLoopRecoveryNotice,
   type LocalOperatingLoopStructuralRemediation,
   type LocalOperatingLoopSuccessResponse,
+  type LocalOperatingLoopTerminalPresentation,
   type LocalOperatingLoopUiState,
 } from "@/lib/controlPlane/motionKernel/local-operating-loop";
 import type { Motion } from "@/lib/controlPlane/motionKernel/types";
@@ -298,6 +303,32 @@ function LocalOperatingLoopProjectionPanel({
   }
 
   const pending = uiState.activeRequestId !== null;
+  const proofStatus = createLocalOperatingLoopProofStatus({
+    state: uiState,
+    currentProjectionKey: projectionKey,
+    requiresFreshValidation:
+      structuralRemediations.length > 0 ||
+      recoveryNotice !== null ||
+      statusMessage === LOCAL_OPERATING_LOOP_PAGEHIDE_COPY ||
+      statusMessage === LOCAL_OPERATING_LOOP_RESTORED_COPY,
+  });
+  const recommendationExplanation = projectedInput
+    ? createLocalOperatingLoopRecommendationExplanation({
+        motion: projectedInput,
+        recommendation:
+          proofStatus.code === "DELIBERATION_CURRENT" ||
+          proofStatus.code === "DECISION_CURRENT"
+            ? uiState.recommendation
+            : null,
+        findingCodes: uiState.findingCodes,
+      })
+    : null;
+  const hasTerminalState =
+    uiState.state === "ACCEPTED" ||
+    uiState.state === "HELD" ||
+    uiState.state === "REJECTED";
+  const terminalPresentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(uiState);
 
   return (
     <OperatorPanel className="space-y-5 p-4">
@@ -349,9 +380,8 @@ function LocalOperatingLoopProjectionPanel({
                   value={String(projectedInput.evidencePointers.length)}
                 />
                 <ProjectionField
-                  label="projection key"
-                  value={projectionKey}
-                  compact
+                  label="projection binding"
+                  value="Current canonical projection is internally bound; raw key withheld."
                 />
               </dl>
             ) : (
@@ -505,15 +535,72 @@ function LocalOperatingLoopProjectionPanel({
               {uiState.recommendation ?? "not deliberated"}
             </OperatorBadge>
           </div>
-          <ul className="mt-3 space-y-1 text-xs text-slate-400">
-            {uiState.findingCodes.length === 0 ? (
-              <li>no findings</li>
-            ) : (
-              uiState.findingCodes.map((finding) => (
-                <li key={finding}>- {finding}</li>
-              ))
-            )}
-          </ul>
+          <section
+            aria-labelledby="local-operating-loop-recommendation-explanation-heading"
+            className="mt-4 border-t border-slate-800 pt-4"
+          >
+            <h3
+              id="local-operating-loop-recommendation-explanation-heading"
+              className="text-sm font-semibold text-slate-100"
+            >
+              Why this recommendation
+            </h3>
+            <p className="mt-2 text-xs leading-5 text-slate-300">
+              {recommendationExplanation?.summary ??
+                "No active canonical motion projection is available."}
+            </p>
+            {recommendationExplanation?.findings.length ? (
+              <ol
+                aria-label="Deterministic semantic findings"
+                className="mt-3 space-y-3"
+              >
+                {recommendationExplanation.findings.map((finding, index) => (
+                  <li
+                    key={finding.code ?? `fail-closed-${index}`}
+                    className="border-l-2 border-slate-700 pl-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold text-slate-100">
+                        {finding.label}
+                      </span>
+                      {finding.code ? (
+                        <span className="font-mono text-xs text-slate-500">
+                          {finding.code}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-xs leading-5 text-slate-400">
+                      {finding.sourceFact}
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-cyan-200">
+                      <span className="font-semibold">Remediation:</span>{" "}
+                      {finding.remediation}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </section>
+          <section
+            aria-labelledby="local-operating-loop-proof-status-heading"
+            className="mt-4 border-t border-slate-800 pt-4"
+          >
+            <h3
+              id="local-operating-loop-proof-status-heading"
+              className="text-sm font-semibold text-slate-100"
+            >
+              Proof-chain status
+            </h3>
+            <div className="mt-2 font-mono text-xs uppercase text-cyan-200">
+              {proofStatus.label}
+            </div>
+            <p className="mt-2 text-xs leading-5 text-slate-300">
+              {proofStatus.message}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-amber-200">
+              {proofStatus.verificationBoundary}
+            </p>
+          </section>
           <p className="mt-3 text-xs text-red-200">
             Recommendation and proof are recomputed server-side. This panel does
             not persist, route, execute, or call a provider.
@@ -521,17 +608,28 @@ function LocalOperatingLoopProjectionPanel({
         </OperatorGateCard>
       </div>
 
-      {uiState.workPacket ? (
-        <JsonOutput
-          title="one proposed Work Packet"
-          value={uiState.workPacket}
-        />
-      ) : null}
-      {uiState.artifact ? (
-        <JsonOutput
-          title="ephemeral local-shadow decision artifact"
-          value={uiState.artifact}
-        />
+      {hasTerminalState ? (
+        terminalPresentation ? (
+          <TerminalPresentation presentation={terminalPresentation} />
+        ) : (
+          <div
+            aria-labelledby="local-operating-loop-terminal-unavailable-heading"
+            aria-live="assertive"
+            role="alert"
+          >
+            <OperatorGateCard>
+              <h3
+                id="local-operating-loop-terminal-unavailable-heading"
+                className="text-sm font-semibold text-red-100"
+              >
+                Terminal summary unavailable
+              </h3>
+              <p className="mt-2 text-sm text-red-200">
+                {LOCAL_OPERATING_LOOP_TERMINAL_PRESENTATION_UNAVAILABLE_COPY}
+              </p>
+            </OperatorGateCard>
+          </div>
+        )
       ) : null}
     </OperatorPanel>
   );
@@ -623,35 +721,94 @@ function applySuccessResponse(
 function ProjectionField({
   label,
   value,
-  compact = false,
 }: {
   label: string;
   value: string;
-  compact?: boolean;
 }) {
   return (
     <div>
       <dt className="font-mono text-xs uppercase text-slate-500">{label}</dt>
-      <dd
-        className={`mt-1 text-xs text-slate-200 ${
-          compact ? "max-h-16 overflow-auto break-all font-mono" : ""
-        }`}
-      >
-        {value}
-      </dd>
+      <dd className="mt-1 text-xs text-slate-200">{value}</dd>
     </div>
   );
 }
 
-function JsonOutput({ title, value }: { title: string; value: unknown }) {
+function TerminalPresentation({
+  presentation,
+}: {
+  presentation: LocalOperatingLoopTerminalPresentation;
+}) {
   return (
     <OperatorGateCard>
-      <div className="font-mono text-xs uppercase tracking-wide text-slate-500">
-        {title}
-      </div>
-      <pre className="mt-3 max-h-96 overflow-auto whitespace-pre-wrap rounded border border-slate-800 bg-slate-950 p-3 text-xs leading-6 text-slate-200">
-        {JSON.stringify(value, null, 2)}
-      </pre>
+      <section aria-labelledby="local-operating-loop-terminal-summary-heading">
+        <h3
+          id="local-operating-loop-terminal-summary-heading"
+          className="text-sm font-semibold text-slate-100"
+        >
+          Terminal local-shadow summary
+        </h3>
+        <p className="mt-2 text-xs leading-5 text-slate-400">
+          This bounded summary limits the on-screen terminal presentation. It
+          does not redact the underlying browser response or network tooling.
+        </p>
+        <dl className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <ProjectionField
+            label="terminal state"
+            value={presentation.terminalState}
+          />
+          <ProjectionField label="decision" value={presentation.decision} />
+          <ProjectionField
+            label="recommendation"
+            value={presentation.recommendation}
+          />
+          <ProjectionField
+            label="finding count"
+            value={String(presentation.findingCount)}
+          />
+          <ProjectionField
+            label="Work Packet count"
+            value={String(presentation.workPacketCount)}
+          />
+          <ProjectionField
+            label="Work Packet status"
+            value={presentation.workPacketStatus}
+          />
+          <ProjectionField
+            label="Work Packet execution authority"
+            value={String(presentation.workPacketExecutionAuthority)}
+          />
+          <ProjectionField
+            label="artifact count"
+            value={String(presentation.artifactCount)}
+          />
+          <ProjectionField
+            label="receipt authority"
+            value={presentation.receiptAuthority}
+          />
+          <ProjectionField
+            label="persistence"
+            value={presentation.persistence}
+          />
+          <ProjectionField
+            label="program effect"
+            value={presentation.programEffect}
+          />
+          <ProjectionField
+            label="not a Control-Thread acceptance receipt"
+            value={String(
+              presentation.notAControlThreadAcceptanceReceipt,
+            )}
+          />
+          <ProjectionField
+            label="decision scope"
+            value={presentation.decisionScope}
+          />
+          <ProjectionField
+            label="artifact execution authority"
+            value={String(presentation.artifactExecutionAuthority)}
+          />
+        </dl>
+      </section>
     </OperatorGateCard>
   );
 }

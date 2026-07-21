@@ -17,6 +17,9 @@ import {
   defaultMotionIntakeDraft,
   MOTION_INTAKE_NON_AUTHORIZATIONS,
 } from "@/lib/controlPlane/motionKernel/motion-intake";
+import {
+  shouldSuspendLocalOperatingLoopForUnstagedDraft,
+} from "@/lib/controlPlane/motionKernel/local-operating-loop";
 import type {
   DeliberationRunPersistenceStatus,
   DeliberationRunSourceMode,
@@ -74,6 +77,10 @@ export function NativeMotionIntakeComposer({
     defaultMotionIntakeDraft,
   );
   const [composedMotion, setComposedMotion] = useState<Motion | null>(null);
+  const [
+    composedMotionHasUnstagedChanges,
+    setComposedMotionHasUnstagedChanges,
+  ] = useState(false);
   const [savedRecords, setSavedRecords] = useState<MotionIntakeRecord[]>(
     persistedMotionRecords,
   );
@@ -93,18 +100,28 @@ export function NativeMotionIntakeComposer({
   const selectedMotion =
     motions.find((motion) => motion.id === selectedMotionId) ?? motions[0];
   const selectedBasisType = getSelectedBasisType(selectedMotion?.id);
+  const suspendLocalOperatingLoop =
+    shouldSuspendLocalOperatingLoopForUnstagedDraft({
+      selectedMotionId: selectedMotion?.id,
+      composedMotionId: composedMotion?.id ?? null,
+      composedMotionHasUnstagedChanges,
+    });
 
   function updateDraft<K extends keyof MotionIntakeDraft>(
     key: K,
     value: MotionIntakeDraft[K],
   ) {
     setDraft((current) => ({ ...current, [key]: value }));
+    if (composedMotion) {
+      setComposedMotionHasUnstagedChanges(true);
+    }
   }
 
   function stageComposedMotion() {
     const motion = buildComposedMotionBasis({ draft });
     setComposedMotion(motion);
     setSelectedMotionId(motion.id);
+    setComposedMotionHasUnstagedChanges(false);
   }
 
   async function persistMotionDraft() {
@@ -274,6 +291,7 @@ export function NativeMotionIntakeComposer({
                 onClick={() => {
                   setDraft(defaultMotionIntakeDraft);
                   setComposedMotion(null);
+                  setComposedMotionHasUnstagedChanges(false);
                   setSaveStatus(null);
                   setSelectedMotionId(sampleMotions[1]?.id ?? sampleMotions[0]?.id ?? "");
                 }}
@@ -301,7 +319,11 @@ export function NativeMotionIntakeComposer({
             <div className="flex flex-wrap gap-2">
               <OperatorBadge tone="readOnly">{selectedBasisType}</OperatorBadge>
               <OperatorBadge tone={composedMotion ? "advisory" : "blocked"}>
-                {composedMotion ? "composed motion staged" : "sample only"}
+                {composedMotion
+                  ? composedMotionHasUnstagedChanges
+                    ? "composed motion has unstaged changes"
+                    : "composed motion staged"
+                  : "sample only"}
               </OperatorBadge>
               <OperatorBadge tone={savedRecords.length > 0 ? "advisory" : "blocked"}>
                 {savedRecords.length} persisted intake records
@@ -434,7 +456,33 @@ export function NativeMotionIntakeComposer({
         </OperatorGateCard>
       </OperatorPanel>
 
-      <LocalOperatingLoopPanel selectedMotion={selectedMotion} />
+      {suspendLocalOperatingLoop ? (
+        <div
+          aria-labelledby="unstaged-draft-changes-heading"
+          aria-live="assertive"
+          role="alert"
+        >
+          <OperatorGateCard>
+            <h2
+              id="unstaged-draft-changes-heading"
+              className="text-base font-semibold text-red-100"
+            >
+              Unstaged draft changes
+            </h2>
+            <p className="mt-2 text-sm text-slate-300">
+              The visible composer no longer matches the previously staged
+              canonical projection. Prior local-shadow output was cleared from
+              view.
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              Choose Stage composed motion locally before validation can resume.
+              A full manual text revert still requires explicit restaging.
+            </p>
+          </OperatorGateCard>
+        </div>
+      ) : (
+        <LocalOperatingLoopPanel selectedMotion={selectedMotion} />
+      )}
 
       <ManualDeliberationAction
         motions={motions}
