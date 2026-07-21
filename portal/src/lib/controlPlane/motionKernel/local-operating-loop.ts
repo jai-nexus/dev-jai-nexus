@@ -196,6 +196,89 @@ export type LocalOperatingLoopUiState = {
   activeRequestId: number | null;
 };
 
+export type LocalOperatingLoopPresentationPhase =
+  | LocalOperatingLoopState
+  | "VALIDATING"
+  | "DELIBERATING";
+
+export const LOCAL_OPERATING_LOOP_PHASE_COPY: Readonly<
+  Record<LocalOperatingLoopPresentationPhase, string>
+> = {
+  DRAFT: "Ready for structural validation. This checks request shape only.",
+  VALIDATING: "Checking request structure only.",
+  VALIDATED:
+    "Structure validated. No semantic recommendation has been produced.",
+  DELIBERATING:
+    "Running server-side semantic deliberation to derive a recommendation.",
+  AWAITING_DECISION:
+    "Semantic deliberation complete. Review the server-derived recommendation before an ADMIN decision.",
+  ACCEPTED: "Accepted locally for proposed Work Packet generation only.",
+  HELD: "Local-shadow state advanced to HELD.",
+  REJECTED: "Local-shadow state advanced to REJECTED.",
+};
+
+export const LOCAL_OPERATING_LOOP_STRUCTURAL_FAILURE_COPY =
+  "Structural validation found fields that need correction. The selected motion remains available and the local shadow returned to DRAFT.";
+
+export type LocalOperatingLoopStructuralRemediation = {
+  id: string;
+  field: string;
+  message: string;
+};
+
+const localOperatingLoopStructuralRemediationRules = [
+  {
+    id: "motion-id",
+    field: "Motion identifier",
+    pathPrefix: "input.motionId",
+    message: "Provide a single-line motion identifier.",
+  },
+  {
+    id: "title",
+    field: "Title",
+    pathPrefix: "input.title",
+    message: "Provide a single-line motion title within 240 characters.",
+  },
+  {
+    id: "summary",
+    field: "Summary",
+    pathPrefix: "input.summary",
+    message: "Provide a motion summary between 1 and 4,000 characters.",
+  },
+  {
+    id: "target-repository",
+    field: "Target repository",
+    pathPrefix: "input.targetRepo",
+    message: "Provide a single-line target repository within 200 characters.",
+  },
+  {
+    id: "target-threads",
+    field: "Target threads",
+    pathPrefix: "input.targetThreads",
+    message:
+      "Choose one to six unique target threads from the available options.",
+  },
+  {
+    id: "evidence-pointers",
+    field: "Evidence pointers",
+    pathPrefix: "input.evidencePointers",
+    message: "Use no more than 20 unique, non-empty evidence pointers.",
+  },
+  {
+    id: "action",
+    field: "Action",
+    pathPrefix: "action",
+    message: "Choose validation, deliberation, or an ADMIN decision.",
+  },
+] as const;
+
+const localOperatingLoopGenericRemediation = {
+  id: "request",
+  field: "Motion request",
+  message:
+    "Review the motion structure and remove unsupported fields before retrying.",
+} as const;
+
 const targetThreadSchema = z.enum(LOCAL_OPERATING_LOOP_TARGET_THREADS);
 const proofSchema = z.string().min(1).max(200).regex(/^[a-z0-9.-]+$/);
 
@@ -390,6 +473,46 @@ export function createLocalOperatingLoopUiState(
     artifact: null,
     activeRequestId: null,
   };
+}
+
+export function recoverLocalOperatingLoopStructuralFailure(
+  state: LocalOperatingLoopUiState,
+): LocalOperatingLoopUiState {
+  return createLocalOperatingLoopUiState(state.projectionKey);
+}
+
+export function createLocalOperatingLoopStructuralRemediations(
+  issues: LocalOperatingLoopErrorResponse["error"]["issues"],
+): LocalOperatingLoopStructuralRemediation[] {
+  const selectedRuleIds = new Set<string>();
+  let includeGenericRemediation = !issues || issues.length === 0;
+
+  for (const issue of issues ?? []) {
+    const rule = localOperatingLoopStructuralRemediationRules.find(
+      (candidate) =>
+        issue.path === candidate.pathPrefix ||
+        issue.path.startsWith(`${candidate.pathPrefix}.`),
+    );
+    if (rule) {
+      selectedRuleIds.add(rule.id);
+    } else {
+      includeGenericRemediation = true;
+    }
+  }
+
+  const remediations: LocalOperatingLoopStructuralRemediation[] =
+    localOperatingLoopStructuralRemediationRules
+      .filter((rule) => selectedRuleIds.has(rule.id))
+      .map((rule) => ({
+        id: rule.id,
+        field: rule.field,
+        message: rule.message,
+      }));
+
+  if (includeGenericRemediation) {
+    remediations.push(localOperatingLoopGenericRemediation);
+  }
+  return remediations;
 }
 
 export function invalidateLocalOperatingLoopUiState(
