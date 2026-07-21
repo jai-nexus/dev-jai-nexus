@@ -1762,6 +1762,251 @@ async function testVerifiesContentDerivedFingerprintsAndIds() {
   );
 }
 
+async function testRejectsFullyCoordinatedFalseEvidenceGraphs() {
+  const fixtures = await buildSuccessResponseFixtures(genuineGoInput);
+  const candidatePacketDomain =
+    "jai-nexus/local-operating-loop/candidate-packet/v1";
+  const recommendationDomain =
+    "jai-nexus/local-operating-loop/recommendation/v1";
+  const artifactDomain =
+    "jai-nexus/local-operating-loop/decision-artifact/v1";
+
+  function packetMaterial(input: {
+    motionFingerprint: string;
+    actor: string;
+    motion: LocalOperatingLoopInput;
+  }) {
+    return {
+      packet_version: "local-shadow-work-packet.v1",
+      status: "PROPOSED_ONLY",
+      base_sha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+      motion_id: input.motion.motionId,
+      motion_fingerprint: input.motionFingerprint,
+      title: input.motion.title,
+      summary: input.motion.summary,
+      target_repo: input.motion.targetRepo,
+      target_threads: [...input.motion.targetThreads],
+      evidence_pointers: [...input.motion.evidencePointers],
+      proposed_by: input.actor,
+      decision_scope: "GENERATE_WORK_PACKET_ONLY",
+      execution_authority_granted: false,
+      non_authorizations: [...LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS],
+    };
+  }
+
+  function artifactMaterial(input: {
+    motion: LocalOperatingLoopInput;
+    motionFingerprint: string;
+    recommendation: "GO" | "NEEDS_REVISION" | "BLOCKED";
+    findingCodes: string[];
+    decision: "ACCEPT" | "HOLD" | "REJECT";
+    actor: string;
+    candidatePacketHash: string | null;
+  }) {
+    return {
+      artifact_version: "local-shadow-decision-artifact.v1",
+      base_sha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+      motion_id: input.motion.motionId,
+      motion_fingerprint: input.motionFingerprint,
+      recommendation: input.recommendation,
+      finding_codes: input.findingCodes,
+      decision: input.decision,
+      actor: input.actor,
+      candidate_packet_hash: input.candidatePacketHash,
+      receipt_authority: "DEMONSTRATION_ONLY",
+      persistence: "NONE",
+      program_effect: "NONE",
+      not_a_control_thread_acceptance_receipt: true,
+      decision_scope: "GENERATE_WORK_PACKET_ONLY",
+      execution_authority_granted: false,
+    };
+  }
+
+  async function artifactId(material: unknown) {
+    const digest = await hashLocalOperatingLoopCanonicalValue(
+      artifactDomain,
+      material,
+    );
+    return `local-shadow-decision-${digest.slice(0, 24)}`;
+  }
+
+  const falseMotionGraph = mutableClone(fixtures.accepted);
+  const falseMotionPacket = nestedRecord(falseMotionGraph, "workPacket");
+  const falseMotionArtifact = nestedRecord(falseMotionGraph, "artifact");
+  const falseMotionFingerprint = differentSha256(
+    falseMotionGraph.motionFingerprint,
+  );
+  falseMotionGraph.motionFingerprint = falseMotionFingerprint;
+  falseMotionPacket.motion_fingerprint = falseMotionFingerprint;
+  falseMotionArtifact.motion_fingerprint = falseMotionFingerprint;
+  const falseMotionPacketMaterial = packetMaterial({
+    motion: fixtures.accepted.input,
+    actor: fixtures.accepted.actor,
+    motionFingerprint: falseMotionFingerprint,
+  });
+  const falseMotionCandidateHash =
+    await hashLocalOperatingLoopCanonicalValue(
+      candidatePacketDomain,
+      falseMotionPacketMaterial,
+    );
+  falseMotionPacket.packet_id =
+    `local-shadow-work-packet-${falseMotionCandidateHash.slice(0, 24)}`;
+  falseMotionArtifact.candidate_packet_hash = falseMotionCandidateHash;
+  const falseMotionArtifactMaterial = artifactMaterial({
+    motion: fixtures.accepted.input,
+    motionFingerprint: falseMotionFingerprint,
+    recommendation: fixtures.accepted.recommendation,
+    findingCodes: [...fixtures.accepted.findingCodes],
+    decision: fixtures.accepted.decision,
+    actor: fixtures.accepted.actor,
+    candidatePacketHash: falseMotionCandidateHash,
+  });
+  falseMotionArtifact.artifact_id = await artifactId(
+    falseMotionArtifactMaterial,
+  );
+  assert.notEqual(
+    falseMotionFingerprint,
+    fixtures.accepted.motionFingerprint,
+  );
+  assert.equal(falseMotionGraph.motionFingerprint, falseMotionFingerprint);
+  assert.deepEqual(falseMotionPacket, {
+    packet_id: `local-shadow-work-packet-${falseMotionCandidateHash.slice(0, 24)}`,
+    ...falseMotionPacketMaterial,
+  });
+  assert.deepEqual(falseMotionArtifact, {
+    artifact_id: await artifactId(falseMotionArtifactMaterial),
+    ...falseMotionArtifactMaterial,
+  });
+  assert.equal(
+    (
+      await classifyClientResponse(
+        falseMotionGraph,
+        decisionRequest(genuineGoInput, "ACCEPT"),
+      )
+    ).kind,
+    "RECOVERY",
+    "coordinated false motion-fingerprint graph",
+  );
+
+  const falseCandidateGraph = mutableClone(fixtures.accepted);
+  const falseCandidatePacket = nestedRecord(
+    falseCandidateGraph,
+    "workPacket",
+  );
+  const falseCandidateArtifact = nestedRecord(
+    falseCandidateGraph,
+    "artifact",
+  );
+  const validPacketMaterial = packetMaterial({
+    motion: fixtures.accepted.input,
+    actor: fixtures.accepted.actor,
+    motionFingerprint: fixtures.accepted.motionFingerprint,
+  });
+  const validCandidateHash = await hashLocalOperatingLoopCanonicalValue(
+    candidatePacketDomain,
+    validPacketMaterial,
+  );
+  const falseCandidateHash = differentSha256(validCandidateHash);
+  falseCandidatePacket.packet_id =
+    `local-shadow-work-packet-${falseCandidateHash.slice(0, 24)}`;
+  falseCandidateArtifact.candidate_packet_hash = falseCandidateHash;
+  const falseCandidateArtifactMaterial = artifactMaterial({
+    motion: fixtures.accepted.input,
+    motionFingerprint: fixtures.accepted.motionFingerprint,
+    recommendation: fixtures.accepted.recommendation,
+    findingCodes: [...fixtures.accepted.findingCodes],
+    decision: fixtures.accepted.decision,
+    actor: fixtures.accepted.actor,
+    candidatePacketHash: falseCandidateHash,
+  });
+  falseCandidateArtifact.artifact_id = await artifactId(
+    falseCandidateArtifactMaterial,
+  );
+  assert.equal(
+    validCandidateHash,
+    fixtures.accepted.artifact.candidate_packet_hash,
+  );
+  assert.notEqual(falseCandidateHash, validCandidateHash);
+  assert.deepEqual(falseCandidatePacket, {
+    packet_id: `local-shadow-work-packet-${falseCandidateHash.slice(0, 24)}`,
+    ...validPacketMaterial,
+  });
+  assert.deepEqual(falseCandidateArtifact, {
+    artifact_id: await artifactId(falseCandidateArtifactMaterial),
+    ...falseCandidateArtifactMaterial,
+  });
+  assert.equal(
+    (
+      await classifyClientResponse(
+        falseCandidateGraph,
+        decisionRequest(genuineGoInput, "ACCEPT"),
+      )
+    ).kind,
+    "RECOVERY",
+    "coordinated false candidate-hash graph",
+  );
+
+  const falseRecommendationGraph = mutableClone(fixtures.held);
+  const falseRecommendationArtifact = nestedRecord(
+    falseRecommendationGraph,
+    "artifact",
+  );
+  const falseRecommendation = "NEEDS_REVISION" as const;
+  const falseFindingCodes = ["EVIDENCE_REQUIRED"];
+  const falseRecommendationFingerprint =
+    await hashLocalOperatingLoopCanonicalValue(recommendationDomain, {
+      recommendation: falseRecommendation,
+      findingCodes: falseFindingCodes,
+    });
+  falseRecommendationGraph.recommendation = falseRecommendation;
+  falseRecommendationGraph.findingCodes = falseFindingCodes;
+  falseRecommendationGraph.recommendationFingerprint =
+    falseRecommendationFingerprint;
+  falseRecommendationGraph.workPacket = null;
+  falseRecommendationArtifact.recommendation = falseRecommendation;
+  falseRecommendationArtifact.finding_codes = falseFindingCodes;
+  falseRecommendationArtifact.candidate_packet_hash = null;
+  const falseRecommendationArtifactMaterial = artifactMaterial({
+    motion: fixtures.held.input,
+    motionFingerprint: fixtures.held.motionFingerprint,
+    recommendation: falseRecommendation,
+    findingCodes: falseFindingCodes,
+    decision: fixtures.held.decision,
+    actor: fixtures.held.actor,
+    candidatePacketHash: null,
+  });
+  falseRecommendationArtifact.artifact_id = await artifactId(
+    falseRecommendationArtifactMaterial,
+  );
+  assert.deepEqual(
+    deriveLocalOperatingLoopRecommendation(fixtures.held.input),
+    { recommendation: "GO", findingCodes: [], advisoryOnly: true },
+  );
+  assert.equal(falseRecommendationGraph.workPacket, null);
+  assert.equal(falseRecommendationArtifact.candidate_packet_hash, null);
+  assert.equal(
+    falseRecommendationGraph.recommendationFingerprint,
+    await hashLocalOperatingLoopCanonicalValue(recommendationDomain, {
+      recommendation: falseRecommendation,
+      findingCodes: falseFindingCodes,
+    }),
+  );
+  assert.deepEqual(falseRecommendationArtifact, {
+    artifact_id: await artifactId(falseRecommendationArtifactMaterial),
+    ...falseRecommendationArtifactMaterial,
+  });
+  assert.equal(
+    (
+      await classifyClientResponse(
+        falseRecommendationGraph,
+        decisionRequest(genuineGoInput, "HOLD"),
+      )
+    ).kind,
+    "RECOVERY",
+    "coordinated false recommendation/findings graph",
+  );
+}
+
 async function testClassifiesValidNonGoTerminalResponses() {
   const go = await buildSuccessResponseFixtures(genuineGoInput);
   assert.equal(go.awaitingDecision.recommendation, "GO");
@@ -2835,6 +3080,7 @@ await testBindsEveryResponseToExactRequestedTransition();
 await testAcceptsServerNormalizedResponsesWithoutProjectionDrift();
 await testRejectsRecommendationAndFindingContradictions();
 await testVerifiesContentDerivedFingerprintsAndIds();
+await testRejectsFullyCoordinatedFalseEvidenceGraphs();
 await testClassifiesValidNonGoTerminalResponses();
 await testSuppressesResponsesThatBecomeStaleDuringAsyncClassification();
 await testRejectsSemanticallyIncoherentSuccessPayloads();
