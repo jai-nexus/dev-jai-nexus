@@ -377,10 +377,24 @@ export type LocalOperatingLoopClientResponseClassification =
     };
 
 export type LocalOperatingLoopClientResponseExpectation = {
-  requestInput: LocalOperatingLoopInput;
+  request: unknown;
   requestProjectionKey: string;
   currentProjectionKey: string;
 };
+
+export type LocalOperatingLoopContentHasher = (
+  domain: string,
+  value: unknown,
+) => Promise<string>;
+
+const LOCAL_OPERATING_LOOP_MOTION_HASH_DOMAIN =
+  "jai-nexus/local-operating-loop/motion/v1";
+const LOCAL_OPERATING_LOOP_RECOMMENDATION_HASH_DOMAIN =
+  "jai-nexus/local-operating-loop/recommendation/v1";
+const LOCAL_OPERATING_LOOP_CANDIDATE_PACKET_HASH_DOMAIN =
+  "jai-nexus/local-operating-loop/candidate-packet/v1";
+const LOCAL_OPERATING_LOOP_ARTIFACT_HASH_DOMAIN =
+  "jai-nexus/local-operating-loop/decision-artifact/v1";
 
 export type LocalOperatingLoopBrowserLifecycleEvent =
   | { type: "PAGEHIDE" }
@@ -655,10 +669,12 @@ export function applyLocalOperatingLoopBrowserLifecycle(
   return state;
 }
 
-export function classifyLocalOperatingLoopClientResponse(
+export async function classifyLocalOperatingLoopClientResponse(
   value: unknown,
   expectation: LocalOperatingLoopClientResponseExpectation,
-): LocalOperatingLoopClientResponseClassification {
+  contentHasher: LocalOperatingLoopContentHasher =
+    hashLocalOperatingLoopCanonicalValue,
+): Promise<LocalOperatingLoopClientResponseClassification> {
   if (!isRecord(value)) {
     return { kind: "RECOVERY", code: null };
   }
@@ -690,14 +706,23 @@ export function classifyLocalOperatingLoopClientResponse(
     return { kind: "RECOVERY", code: value.error.code };
   }
 
-  if (
-    value.ok === true &&
-    isSafeLocalOperatingLoopSuccessResponse(value, expectation)
-  ) {
-    return {
-      kind: "SUCCESS",
-      response: value as LocalOperatingLoopSuccessResponse,
-    };
+  if (value.ok === true) {
+    try {
+      if (
+        await isSafeLocalOperatingLoopSuccessResponse(
+          value,
+          expectation,
+          contentHasher,
+        )
+      ) {
+        return {
+          kind: "SUCCESS",
+          response: value as LocalOperatingLoopSuccessResponse,
+        };
+      }
+    } catch {
+      return { kind: "RECOVERY", code: null };
+    }
   }
 
   return { kind: "RECOVERY", code: null };
@@ -724,23 +749,33 @@ export function shouldApplyLocalOperatingLoopResponse(input: {
   );
 }
 
-function isSafeLocalOperatingLoopSuccessResponse(
+async function isSafeLocalOperatingLoopSuccessResponse(
   value: Record<string, unknown>,
   expectation: LocalOperatingLoopClientResponseExpectation,
-): boolean {
+  contentHasher: LocalOperatingLoopContentHasher,
+): Promise<boolean> {
+  const expectedRequest = parseLocalOperatingLoopExpectedRequest(expectation);
   if (
+    !expectedRequest ||
     value.contractVersion !== LOCAL_OPERATING_LOOP_CONTRACT_VERSION ||
     value.baseSha !== LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA ||
     typeof value.actor !== "string" ||
     normalizeLocalOperatingLoopActorEmail(value.actor) !== value.actor ||
     !isSafeLocalOperatingLoopInput(value.input) ||
-    !matchesLocalOperatingLoopResponseProjection(
-      value.input,
-      expectation,
-    ) ||
+    canonicalizeLocalOperatingLoopValue(value.input) !==
+      canonicalizeLocalOperatingLoopValue(expectedRequest.input) ||
+    !matchesLocalOperatingLoopRequestedTransition(expectedRequest, value) ||
     !isLocalOperatingLoopSha256(value.motionFingerprint) ||
     !hasExactNonAuthorizations(value.nonAuthorizations)
   ) {
+    return false;
+  }
+
+  const expectedMotionFingerprint = await contentHasher(
+    LOCAL_OPERATING_LOOP_MOTION_HASH_DOMAIN,
+    value.input,
+  );
+  if (value.motionFingerprint !== expectedMotionFingerprint) {
     return false;
   }
 
@@ -761,8 +796,8 @@ function isSafeLocalOperatingLoopSuccessResponse(
   }
 
   if (value.state === "AWAITING_DECISION") {
-    return (
-      hasExactKeys(value, [
+    if (
+      !hasExactKeys(value, [
         "actor",
         "baseSha",
         "candidatePacketHash",
@@ -776,15 +811,26 @@ function isSafeLocalOperatingLoopSuccessResponse(
         "recommendation",
         "recommendationFingerprint",
         "state",
-      ]) &&
-      isLocalOperatingLoopRecommendation(value.recommendation) &&
-      isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
-      isLocalOperatingLoopSha256(value.recommendationFingerprint) &&
-      hasCoherentLocalOperatingLoopCandidateHash(
-        value.recommendation,
-        value.candidatePacketHash,
-      ) &&
-      isLocalOperatingLoopDeliberationProof(value.deliberationProof)
+      ]) ||
+      !isLocalOperatingLoopRecommendation(value.recommendation) ||
+      !isLocalOperatingLoopFindingCodeArray(value.findingCodes) ||
+      !isLocalOperatingLoopSha256(value.recommendationFingerprint) ||
+      !isLocalOperatingLoopDeliberationProof(value.deliberationProof)
+    ) {
+      return false;
+    }
+    const expected = await buildLocalOperatingLoopIntegrityEvidence({
+      input: value.input,
+      actor: value.actor,
+      motionFingerprint: expectedMotionFingerprint,
+      contentHasher,
+    });
+    return (
+      value.recommendation === expected.recommendation &&
+      hasExactArrayValues(value.findingCodes, expected.findingCodes) &&
+      value.recommendationFingerprint ===
+        expected.recommendationFingerprint &&
+      value.candidatePacketHash === expected.candidatePacketHash
     );
   }
 
@@ -822,15 +868,47 @@ function isSafeLocalOperatingLoopSuccessResponse(
     return false;
   }
 
+  const expected = await buildLocalOperatingLoopIntegrityEvidence({
+    input: value.input,
+    actor: value.actor,
+    motionFingerprint: expectedMotionFingerprint,
+    contentHasher,
+  });
+  if (
+    value.recommendation !== expected.recommendation ||
+    !hasExactArrayValues(value.findingCodes, expected.findingCodes) ||
+    value.recommendationFingerprint !== expected.recommendationFingerprint
+  ) {
+    return false;
+  }
+
+  const artifactMaterial = buildLocalOperatingLoopArtifactIntegrityMaterial({
+    input: value.input,
+    actor: value.actor,
+    decision: expectedDecision,
+    recommendation: expected.recommendation,
+    findingCodes: expected.findingCodes,
+    motionFingerprint: expectedMotionFingerprint,
+    candidatePacketHash: expected.candidatePacketHash,
+  });
+  const expectedArtifactId = `local-shadow-decision-${(
+    await contentHasher(
+      LOCAL_OPERATING_LOOP_ARTIFACT_HASH_DOMAIN,
+      artifactMaterial,
+    )
+  ).slice(0, 24)}`;
+
   const artifact = value.artifact;
   if (
     !isSafeLocalOperatingLoopArtifact(artifact, {
       input: value.input,
       actor: value.actor,
-      motionFingerprint: value.motionFingerprint,
-      recommendation: value.recommendation,
-      findingCodes: value.findingCodes,
+      motionFingerprint: expectedMotionFingerprint,
+      recommendation: expected.recommendation,
+      findingCodes: expected.findingCodes,
       decision: expectedDecision,
+      candidatePacketHash: expected.candidatePacketHash,
+      artifactId: expectedArtifactId,
     })
   ) {
     return false;
@@ -838,13 +916,13 @@ function isSafeLocalOperatingLoopSuccessResponse(
 
   if (value.state === "ACCEPTED") {
     return (
-      value.recommendation === "GO" &&
-      isLocalOperatingLoopSha256(artifact.candidate_packet_hash) &&
+      expected.recommendation === "GO" &&
+      isLocalOperatingLoopSha256(expected.candidatePacketHash) &&
       isSafeLocalOperatingLoopWorkPacket(value.workPacket, {
         input: value.input,
         actor: value.actor,
-        motionFingerprint: value.motionFingerprint,
-        candidatePacketHash: artifact.candidate_packet_hash,
+        motionFingerprint: expectedMotionFingerprint,
+        candidatePacketHash: expected.candidatePacketHash,
       })
     );
   }
@@ -852,24 +930,132 @@ function isSafeLocalOperatingLoopSuccessResponse(
   return value.workPacket === null;
 }
 
-function matchesLocalOperatingLoopResponseProjection(
-  responseInput: LocalOperatingLoopInput,
+function parseLocalOperatingLoopExpectedRequest(
   expectation: LocalOperatingLoopClientResponseExpectation,
-): boolean {
-  if (!isSafeLocalOperatingLoopInput(expectation.requestInput)) {
-    return false;
+): LocalOperatingLoopAction | null {
+  if (
+    !isRecord(expectation.request) ||
+    !Object.prototype.hasOwnProperty.call(expectation.request, "input")
+  ) {
+    return null;
   }
-  const expectedProjectionKey = createLocalOperatingLoopProjectionKey(
-    expectation.requestInput,
-  );
+  let rawProjectionKey: string;
+  try {
+    rawProjectionKey = canonicalizeLocalOperatingLoopValue(
+      expectation.request.input,
+    );
+  } catch {
+    return null;
+  }
+  if (
+    expectation.requestProjectionKey !== rawProjectionKey ||
+    expectation.currentProjectionKey !== rawProjectionKey
+  ) {
+    return null;
+  }
+  const parsed = parseLocalOperatingLoopAction(expectation.request);
+  return parsed.ok ? parsed.value : null;
+}
+
+function matchesLocalOperatingLoopRequestedTransition(
+  request: LocalOperatingLoopAction,
+  response: Record<string, unknown>,
+): boolean {
+  if (request.action === "VALIDATE") {
+    return response.state === "VALIDATED";
+  }
+  if (request.action === "DELIBERATE") {
+    return response.state === "AWAITING_DECISION";
+  }
+  const expectedState =
+    request.decision === "ACCEPT"
+      ? "ACCEPTED"
+      : request.decision === "HOLD"
+        ? "HELD"
+        : "REJECTED";
   return (
-    expectation.currentProjectionKey === expectation.requestProjectionKey &&
-    expectation.requestProjectionKey === expectedProjectionKey &&
-    createLocalOperatingLoopProjectionKey(responseInput) ===
-      expectedProjectionKey &&
-    canonicalizeLocalOperatingLoopValue(responseInput) ===
-      canonicalizeLocalOperatingLoopValue(expectation.requestInput)
+    response.state === expectedState &&
+    response.decision === request.decision
   );
+}
+
+async function buildLocalOperatingLoopIntegrityEvidence(input: {
+  input: LocalOperatingLoopInput;
+  actor: string;
+  motionFingerprint: string;
+  contentHasher: LocalOperatingLoopContentHasher;
+}) {
+  const { recommendation, findingCodes } =
+    deriveLocalOperatingLoopRecommendation(input.input);
+  const recommendationFingerprint = await input.contentHasher(
+    LOCAL_OPERATING_LOOP_RECOMMENDATION_HASH_DOMAIN,
+    { recommendation, findingCodes },
+  );
+  const packetMaterial =
+    recommendation === "GO"
+      ? buildLocalOperatingLoopPacketMaterial({
+          motion: input.input,
+          actor: input.actor,
+          motionFingerprint: input.motionFingerprint,
+        })
+      : null;
+  const candidatePacketHash = packetMaterial
+    ? await input.contentHasher(
+        LOCAL_OPERATING_LOOP_CANDIDATE_PACKET_HASH_DOMAIN,
+        packetMaterial,
+      )
+    : null;
+  return {
+    recommendation,
+    findingCodes,
+    recommendationFingerprint,
+    candidatePacketHash,
+  };
+}
+
+function buildLocalOperatingLoopArtifactIntegrityMaterial(input: {
+  input: LocalOperatingLoopInput;
+  actor: string;
+  decision: LocalOperatingLoopDecision;
+  recommendation: LocalOperatingLoopRecommendation;
+  findingCodes: LocalOperatingLoopFindingCode[];
+  motionFingerprint: string;
+  candidatePacketHash: string | null;
+}) {
+  return {
+    artifact_version: "local-shadow-decision-artifact.v1" as const,
+    base_sha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+    motion_id: input.input.motionId,
+    motion_fingerprint: input.motionFingerprint,
+    recommendation: input.recommendation,
+    finding_codes: input.findingCodes,
+    decision: input.decision,
+    actor: input.actor,
+    candidate_packet_hash: input.candidatePacketHash,
+    receipt_authority: "DEMONSTRATION_ONLY" as const,
+    persistence: "NONE" as const,
+    program_effect: "NONE" as const,
+    not_a_control_thread_acceptance_receipt: true as const,
+    decision_scope: "GENERATE_WORK_PACKET_ONLY" as const,
+    execution_authority_granted: false as const,
+  };
+}
+
+export async function hashLocalOperatingLoopCanonicalValue(
+  domain: string,
+  value: unknown,
+): Promise<string> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) {
+    throw new Error("Browser SHA-256 is unavailable.");
+  }
+  const encoded = new TextEncoder().encode(
+    `${domain}\0${canonicalizeLocalOperatingLoopValue(value)}`,
+  );
+  const digest = await subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
 }
 
 function isSafeLocalOperatingLoopInput(
@@ -952,6 +1138,8 @@ function isSafeLocalOperatingLoopArtifact(
     recommendation: LocalOperatingLoopRecommendation;
     findingCodes: LocalOperatingLoopFindingCode[];
     decision: LocalOperatingLoopDecision;
+    candidatePacketHash: string | null;
+    artifactId: string;
   },
 ): value is LocalOperatingLoopArtifact {
   if (
@@ -978,6 +1166,7 @@ function isSafeLocalOperatingLoopArtifact(
     return false;
   }
   return (
+    value.artifact_id === expected.artifactId &&
     isLocalOperatingLoopArtifactId(value.artifact_id) &&
     value.artifact_version === "local-shadow-decision-artifact.v1" &&
     value.base_sha === LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA &&
@@ -988,10 +1177,7 @@ function isSafeLocalOperatingLoopArtifact(
     hasExactArrayValues(value.finding_codes, expected.findingCodes) &&
     value.decision === expected.decision &&
     value.actor === expected.actor &&
-    hasCoherentLocalOperatingLoopCandidateHash(
-      expected.recommendation,
-      value.candidate_packet_hash,
-    ) &&
+    value.candidate_packet_hash === expected.candidatePacketHash &&
     value.receipt_authority === "DEMONSTRATION_ONLY" &&
     value.persistence === "NONE" &&
     value.program_effect === "NONE" &&
@@ -1130,15 +1316,6 @@ function isLocalOperatingLoopArtifactId(value: unknown): value is string {
     typeof value === "string" &&
     /^local-shadow-decision-[a-f0-9]{24}$/.test(value)
   );
-}
-
-function hasCoherentLocalOperatingLoopCandidateHash(
-  recommendation: LocalOperatingLoopRecommendation,
-  candidatePacketHash: unknown,
-): candidatePacketHash is string | null {
-  return recommendation === "GO"
-    ? isLocalOperatingLoopSha256(candidatePacketHash)
-    : candidatePacketHash === null;
 }
 
 function hasExactArrayValues(
