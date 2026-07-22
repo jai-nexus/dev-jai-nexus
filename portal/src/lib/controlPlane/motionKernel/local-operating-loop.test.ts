@@ -1906,6 +1906,207 @@ async function testBoundaryReceiptCopyLifecycleIsSingleFlightAndStaleSafe() {
   assert.deepEqual(stale, { status: "IDLE", attemptId: 3 });
 }
 
+async function testBoundaryReceiptPendingCopyPreservesNaturalFocusAndSingleFlight() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const previewStart = panelSource.indexOf(
+    "function BoundaryReceiptPreview",
+  );
+  const previewEnd = panelSource.indexOf(
+    "function BoundaryReceiptField",
+    previewStart,
+  );
+  assert.ok(previewStart >= 0);
+  assert.ok(previewEnd > previewStart);
+  const previewRegion = panelSource.slice(previewStart, previewEnd);
+  const copyRegion = boundedSource(
+    panelSource,
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_START",
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_END",
+  );
+  const buttonStart = previewRegion.indexOf("<button");
+  const buttonEnd = previewRegion.indexOf("</button>", buttonStart);
+  assert.ok(buttonStart >= 0);
+  assert.ok(buttonEnd > buttonStart);
+  const copyButtonSource = previewRegion.slice(
+    buttonStart,
+    buttonEnd + "</button>".length,
+  );
+
+  assert.equal((previewRegion.match(/<button/g) ?? []).length, 1);
+  assert.match(copyButtonSource, /type="button"/);
+  assert.match(copyButtonSource, /Copy redacted boundary receipt/);
+  assert.doesNotMatch(copyButtonSource, /\sdisabled(?:=|\s|>)/);
+  assert.match(copyButtonSource, /aria-disabled=\{copyBlocked\}/);
+  assert.match(
+    copyButtonSource,
+    /aria-busy=\{copyState\.status === "COPYING"\}/,
+  );
+  assert.match(
+    copyButtonSource,
+    /aria-describedby="local-operating-loop-boundary-receipt-privacy-warning"/,
+  );
+  assert.match(
+    copyButtonSource,
+    /copyBlocked[\s\S]*cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500/,
+  );
+  assert.match(
+    previewRegion,
+    /const copyBlocked = copyState\.status === "COPYING" \|\| unavailable/,
+  );
+
+  assert.match(
+    copyRegion,
+    /function handleBoundaryReceiptCopy\(\) \{\s+const currentCopyStatus = copyStateRef\.current\.status/,
+  );
+  assert.match(
+    copyRegion,
+    /currentCopyStatus === "COPYING" \|\|\s+currentCopyStatus === "UNAVAILABLE"[\s\S]*?return;/,
+  );
+  const guardIndex = copyRegion.indexOf(
+    'currentCopyStatus === "COPYING"',
+  );
+  const secureContextIndex = copyRegion.indexOf("window.isSecureContext");
+  const claimIndex = copyRegion.indexOf(
+    "claimLocalOperatingLoopBoundaryReceiptCopyAttempt",
+  );
+  const claimStateIndex = copyRegion.indexOf("writeCopyState(claim.state)");
+  const writeIndex = copyRegion.indexOf(
+    "navigator.clipboard.writeText(receiptText)",
+  );
+  assert.ok(guardIndex >= 0);
+  assert.ok(secureContextIndex > guardIndex);
+  assert.ok(claimIndex > secureContextIndex);
+  assert.ok(claimStateIndex > claimIndex);
+  assert.ok(writeIndex > claimStateIndex);
+  assert.equal(
+    (copyRegion.match(/navigator\.clipboard\.writeText\(receiptText\)/g) ?? [])
+      .length,
+    1,
+  );
+
+  const first = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: createLocalOperatingLoopBoundaryReceiptCopyState(),
+    clipboardAvailable: true,
+  });
+  assert.equal(first.shouldWrite, true);
+  const rapidRepeat = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: first.state,
+    clipboardAvailable: true,
+  });
+  assert.equal(rapidRepeat.shouldWrite, false);
+  assert.equal(rapidRepeat.attemptId, null);
+  assert.equal(rapidRepeat.state, first.state);
+}
+
+async function testBoundaryReceiptCopySettlementDoesNotMoveFocus() {
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const previewStart = panelSource.indexOf(
+    "function BoundaryReceiptPreview",
+  );
+  const previewEnd = panelSource.indexOf(
+    "function BoundaryReceiptField",
+    previewStart,
+  );
+  assert.ok(previewStart >= 0);
+  assert.ok(previewEnd > previewStart);
+  const previewRegion = panelSource.slice(previewStart, previewEnd);
+  const copyRegion = boundedSource(
+    panelSource,
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_START",
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_END",
+  );
+
+  for (const workaround of [
+    /\.focus\s*\(/,
+    /\.blur\s*\(/,
+    /document\.activeElement/,
+    /\bautoFocus\b/,
+    /\btabIndex\b/,
+    /\bsetTimeout\b/,
+    /\bsetInterval\b/,
+    /requestAnimationFrame/,
+    /queueMicrotask/,
+    /flushSync/,
+  ]) {
+    assert.doesNotMatch(previewRegion, workaround);
+  }
+  for (const prohibitedPrimitive of [
+    /fetch\s*\(/,
+    /XMLHttpRequest/,
+    /WebSocket/,
+    /sendBeacon/,
+    /localStorage/,
+    /sessionStorage/,
+    /indexedDB/i,
+    /clipboard\.read/,
+    /permissions\.query/,
+    /execCommand/,
+    /Blob\s*\(/,
+    /createObjectURL/,
+    /showSaveFilePicker/,
+    /\bdownload\b/i,
+    /providerClient|modelClient|githubClient|linearClient/i,
+  ]) {
+    assert.doesNotMatch(previewRegion, prohibitedPrimitive);
+  }
+
+  assert.match(copyRegion, /if \(!mountedRef\.current\) \{\s+return;/);
+  assert.match(
+    copyRegion,
+    /settleLocalOperatingLoopBoundaryReceiptCopyAttempt/,
+  );
+  assert.match(previewRegion, /mountedRef\.current = false/);
+  assert.match(
+    previewRegion,
+    /clearLocalOperatingLoopBoundaryReceiptCopyState\(\s*copyStateRef\.current/,
+  );
+  assert.match(
+    panelSource,
+    /<BoundaryReceiptPreview\s+key=\{boundaryReceiptText\}/,
+  );
+  assert.match(
+    panelSource,
+    /<LocalOperatingLoopProjectionPanel\s+key=\{projectionKey\}/,
+  );
+
+  for (const status of ["COPIED", "FAILED"] as const) {
+    const retry = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+      state: { status, attemptId: 4 },
+      clipboardAvailable: true,
+    });
+    assert.equal(retry.shouldWrite, true, status);
+    assert.equal(retry.attemptId, 5, status);
+    assert.deepEqual(retry.state, { status: "COPYING", attemptId: 5 });
+  }
+  const claimed = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: createLocalOperatingLoopBoundaryReceiptCopyState(),
+    clipboardAvailable: true,
+  });
+  assert.ok(claimed.attemptId);
+  assert.deepEqual(
+    settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+      state: claimed.state,
+      attemptId: claimed.attemptId,
+      receiptIsCurrent: false,
+      outcome: "COPIED",
+    }),
+    { status: "IDLE", attemptId: 2 },
+  );
+
+  for (const decision of ["Review ACCEPT", "Review HOLD", "Review REJECT"]) {
+    assert.match(panelSource, new RegExp(decision));
+  }
+  assert.match(panelSource, /Cancel decision/);
+  assert.match(
+    panelSource,
+    /confirmationHeadingRef\.current\?\.focus\(\)/,
+  );
+}
+
 async function testBoundaryReceiptCopyFailureIsFixedFailClosedAndAccessible() {
   const unavailable = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
     state: createLocalOperatingLoopBoundaryReceiptCopyState(),
@@ -6549,6 +6750,8 @@ await testBoundaryReceiptSeparatesTerminalClaimsFromUnverifiedExternalEffects();
 await testBoundaryReceiptNeverClaimsTransportRedactionOrProofAuthenticity();
 await testBoundaryReceiptCopyControlIsTerminalOnlyAndReceiptOnly();
 await testBoundaryReceiptCopyLifecycleIsSingleFlightAndStaleSafe();
+await testBoundaryReceiptPendingCopyPreservesNaturalFocusAndSingleFlight();
+await testBoundaryReceiptCopySettlementDoesNotMoveFocus();
 await testBoundaryReceiptCopyFailureIsFixedFailClosedAndAccessible();
 await testBoundaryReceiptCopyUsesNoNetworkStorageDownloadOrFallbackPrimitive();
 await testBoundaryReceiptResetInvalidationAndLifecycleClearCopyStatus();

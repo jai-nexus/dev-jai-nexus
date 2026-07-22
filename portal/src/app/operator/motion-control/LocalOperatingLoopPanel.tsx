@@ -1160,6 +1160,14 @@ function BoundaryReceiptPreview({
 
   // D8_BOUNDARY_RECEIPT_COPY_CONTROL_START
   function handleBoundaryReceiptCopy() {
+    const currentCopyStatus = copyStateRef.current.status;
+    if (
+      currentCopyStatus === "COPYING" ||
+      currentCopyStatus === "UNAVAILABLE"
+    ) {
+      return;
+    }
+
     let clipboardAvailable = false;
     try {
       clipboardAvailable =
@@ -1279,6 +1287,7 @@ function BoundaryReceiptPreview({
   const alertStatus =
     copyState.status === "UNAVAILABLE" || copyState.status === "FAILED";
   const unavailable = copyState.status === "UNAVAILABLE";
+  const copyBlocked = copyState.status === "COPYING" || unavailable;
 
   return (
     <article
@@ -1316,10 +1325,14 @@ function BoundaryReceiptPreview({
         <button
           type="button"
           onClick={handleBoundaryReceiptCopy}
-          disabled={copyState.status === "COPYING" || unavailable}
+          aria-disabled={copyBlocked}
           aria-busy={copyState.status === "COPYING"}
           aria-describedby="local-operating-loop-boundary-receipt-privacy-warning"
-          className="rounded border border-cyan-500 bg-cyan-950 px-4 py-2 text-sm font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
+          className={`rounded border px-4 py-2 text-sm font-semibold ${
+            copyBlocked
+              ? "cursor-not-allowed border-slate-800 bg-slate-900 text-slate-500"
+              : "border-cyan-500 bg-cyan-950 text-cyan-100"
+          }`}
         >
           Copy redacted boundary receipt
         </button>
