@@ -1295,6 +1295,338 @@ async function testBoundaryReceiptRejectsMalformedAndIncoherentPresentationsWith
   }
 }
 
+async function testBoundaryReceiptUsesSingleValidatedDescriptorSnapshot() {
+  const safePresentation = terminalPresentation("ACCEPT");
+  const expectedReceipt =
+    createLocalOperatingLoopBoundaryReceipt(safePresentation);
+  const expectedSerialized = expectedBoundaryReceiptText(safePresentation);
+  assert.ok(expectedReceipt);
+
+  const expectedKeys = Reflect.ownKeys(safePresentation) as string[];
+  const safeDescriptors =
+    Object.getOwnPropertyDescriptors(safePresentation);
+  const forbiddenActor = "d8r1-private-actor@example.com";
+  const newlineInjection = "ACCEPTED\nactor: d8r1-injected@example.com";
+
+  type DescriptorProxyOptions = {
+    ownKeys?: () => Array<string | symbol>;
+    getPrototypeOf?: () => object | null;
+    descriptorFor?: (
+      key: string,
+      descriptor: PropertyDescriptor | undefined,
+      readCount: number,
+    ) => PropertyDescriptor | undefined;
+    getValue?: (key: string | symbol, readCount: number) => unknown;
+  };
+
+  function createDescriptorProxy(options: DescriptorProxyOptions = {}) {
+    const calls = {
+      descriptor: new Map<string, number>(),
+      get: 0,
+      ownKeys: 0,
+      prototype: 0,
+    };
+    const proxy = new Proxy(Object.create(null) as Record<string, unknown>, {
+      getPrototypeOf() {
+        calls.prototype += 1;
+        return options.getPrototypeOf ? options.getPrototypeOf() : null;
+      },
+      ownKeys() {
+        calls.ownKeys += 1;
+        return options.ownKeys ? options.ownKeys() : [...expectedKeys];
+      },
+      getOwnPropertyDescriptor(_target, property) {
+        const key = String(property);
+        const readCount = (calls.descriptor.get(key) ?? 0) + 1;
+        calls.descriptor.set(key, readCount);
+        const safeDescriptor =
+          typeof property === "string"
+            ? safeDescriptors[property]
+            : undefined;
+        const descriptor = safeDescriptor
+          ? { ...safeDescriptor, configurable: true }
+          : undefined;
+        return options.descriptorFor
+          ? options.descriptorFor(key, descriptor, readCount)
+          : descriptor;
+      },
+      get(_target, property) {
+        calls.get += 1;
+        return options.getValue
+          ? options.getValue(property, calls.get)
+          : forbiddenActor;
+      },
+    });
+    return { calls, proxy };
+  }
+
+  function assertSingleDescriptorCapture(
+    calls: ReturnType<typeof createDescriptorProxy>["calls"],
+  ) {
+    assert.equal(calls.prototype, 1);
+    assert.equal(calls.ownKeys, 1);
+    assert.equal(calls.get, 0);
+    assert.deepEqual(
+      expectedKeys.map((key) => [key, calls.descriptor.get(key)]),
+      expectedKeys.map((key) => [key, 1]),
+    );
+  }
+
+  function assertFailsClosed(factory: () => unknown) {
+    assert.equal(
+      callWithoutThrow(() =>
+        createLocalOperatingLoopBoundaryReceipt(factory()),
+      ),
+      null,
+    );
+    assert.equal(
+      callWithoutThrow(() =>
+        serializeLocalOperatingLoopBoundaryReceipt(factory()),
+      ),
+      null,
+    );
+  }
+
+  const actorProxy = createDescriptorProxy({
+    getValue: () => forbiddenActor,
+  });
+  const actorReceipt = createLocalOperatingLoopBoundaryReceipt(
+    actorProxy.proxy,
+  );
+  assert.deepEqual(actorReceipt, expectedReceipt);
+  assert.ok(actorReceipt);
+  assert.equal(JSON.stringify(actorReceipt).includes(forbiddenActor), false);
+  assertSingleDescriptorCapture(actorProxy.calls);
+
+  const actorSerializationProxy = createDescriptorProxy({
+    getValue: () => forbiddenActor,
+  });
+  const actorSerialized = serializeLocalOperatingLoopBoundaryReceipt(
+    actorSerializationProxy.proxy,
+  );
+  assert.equal(actorSerialized, expectedSerialized);
+  assert.ok(actorSerialized);
+  assert.equal(actorSerialized.includes(forbiddenActor), false);
+  assertSingleDescriptorCapture(actorSerializationProxy.calls);
+
+  const statefulReadProxy = createDescriptorProxy({
+    getValue: (property, readCount) =>
+      readCount === 1 && typeof property === "string"
+        ? safePresentation[
+            property as keyof LocalOperatingLoopTerminalPresentation
+          ]
+        : newlineInjection,
+  });
+  const statefulSerialized =
+    serializeLocalOperatingLoopBoundaryReceipt(statefulReadProxy.proxy);
+  assert.equal(statefulSerialized, expectedSerialized);
+  assert.ok(statefulSerialized);
+  assert.equal(statefulSerialized.includes(newlineInjection), false);
+  assert.equal(statefulSerialized.includes(forbiddenActor), false);
+  assertSingleDescriptorCapture(statefulReadProxy.calls);
+
+  assertFailsClosed(
+    () =>
+      createDescriptorProxy({
+        descriptorFor: (key, descriptor) =>
+          key === "terminalState" && descriptor
+            ? { ...descriptor, value: newlineInjection }
+            : descriptor,
+      }).proxy,
+  );
+
+  const rawTrapMarker = "d8r1-private-trap-value";
+  assertFailsClosed(
+    () =>
+      new Proxy(Object.create(null), {
+        getPrototypeOf() {
+          throw new Error(rawTrapMarker);
+        },
+      }),
+  );
+  assertFailsClosed(
+    () =>
+      new Proxy(Object.create(null), {
+        getPrototypeOf: () => null,
+        ownKeys() {
+          throw new Error(rawTrapMarker);
+        },
+      }),
+  );
+  assertFailsClosed(
+    () =>
+      new Proxy(Object.create(null), {
+        getPrototypeOf: () => null,
+        ownKeys: () => [...expectedKeys],
+        getOwnPropertyDescriptor() {
+          throw new Error(rawTrapMarker);
+        },
+      }),
+  );
+  assertFailsClosed(
+    () =>
+      new Proxy(Object.create(null), {
+        getPrototypeOf: () =>
+          "malformed-prototype" as unknown as object,
+      }),
+  );
+  assertFailsClosed(
+    () =>
+      new Proxy(Object.create(null), {
+        getPrototypeOf: () => null,
+        ownKeys: () => [expectedKeys[0], expectedKeys[0]],
+      }),
+  );
+
+  let changingKeyRead = 0;
+  const changingKeyProxy = new Proxy(Object.create(null), {
+    getPrototypeOf: () => null,
+    ownKeys() {
+      changingKeyRead += 1;
+      return changingKeyRead === 1
+        ? expectedKeys.slice(1)
+        : [...expectedKeys, "unexpectedKey"];
+    },
+  });
+  assert.equal(
+    callWithoutThrow(() =>
+      createLocalOperatingLoopBoundaryReceipt(changingKeyProxy),
+    ),
+    null,
+  );
+  assert.equal(
+    callWithoutThrow(() =>
+      serializeLocalOperatingLoopBoundaryReceipt(changingKeyProxy),
+    ),
+    null,
+  );
+  assert.equal(changingKeyRead, 2);
+
+  assertFailsClosed(
+    () =>
+      createDescriptorProxy({
+        ownKeys: () => [...expectedKeys, Symbol("private")],
+      }).proxy,
+  );
+  assertFailsClosed(
+    () =>
+      createDescriptorProxy({
+        descriptorFor: (key, descriptor) =>
+          key === "terminalState" ? undefined : descriptor,
+      }).proxy,
+  );
+  assertFailsClosed(
+    () =>
+      createDescriptorProxy({
+        descriptorFor: (key, descriptor) =>
+          key === "terminalState" && descriptor
+            ? { ...descriptor, enumerable: false }
+            : descriptor,
+      }).proxy,
+  );
+  assertFailsClosed(
+    () =>
+      createDescriptorProxy({
+        descriptorFor: (key, descriptor) =>
+          key === "terminalState" && descriptor
+            ? {
+                configurable: true,
+                enumerable: true,
+                get: () => newlineInjection,
+              }
+            : descriptor,
+      }).proxy,
+  );
+
+  function createMutatingSourceProxy() {
+    const sourcePresentation = {
+      ...safePresentation,
+    } as Record<string, unknown>;
+    let descriptorReads = 0;
+    let propertyReads = 0;
+    const proxy = new Proxy(sourcePresentation, {
+      getOwnPropertyDescriptor(target, property) {
+        const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+        descriptorReads += 1;
+        if (descriptorReads === expectedKeys.length) {
+          target.terminalState = newlineInjection;
+        }
+        return descriptor;
+      },
+      get(target, property, receiver) {
+        propertyReads += 1;
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    return {
+      get descriptorReads() {
+        return descriptorReads;
+      },
+      get propertyReads() {
+        return propertyReads;
+      },
+      proxy,
+      sourcePresentation,
+    };
+  }
+
+  const mutatingReceiptSource = createMutatingSourceProxy();
+  assert.deepEqual(
+    createLocalOperatingLoopBoundaryReceipt(mutatingReceiptSource.proxy),
+    expectedReceipt,
+  );
+  assert.equal(
+    mutatingReceiptSource.sourcePresentation.terminalState,
+    newlineInjection,
+  );
+  assert.equal(mutatingReceiptSource.descriptorReads, expectedKeys.length);
+  assert.equal(mutatingReceiptSource.propertyReads, 0);
+
+  const mutatingSerializedSource = createMutatingSourceProxy();
+  assert.equal(
+    serializeLocalOperatingLoopBoundaryReceipt(
+      mutatingSerializedSource.proxy,
+    ),
+    expectedSerialized,
+  );
+  assert.equal(mutatingSerializedSource.descriptorReads, expectedKeys.length);
+  assert.equal(mutatingSerializedSource.propertyReads, 0);
+
+  const moduleSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const parserStart = moduleSource.indexOf(
+    "function parseLocalOperatingLoopBoundaryReceiptInput(",
+  );
+  const receiptStart = moduleSource.indexOf(
+    "export function createLocalOperatingLoopBoundaryReceipt(",
+    parserStart,
+  );
+  const serializerStart = moduleSource.indexOf(
+    "export function serializeLocalOperatingLoopBoundaryReceipt(",
+    receiptStart,
+  );
+  assert.ok(parserStart >= 0);
+  assert.ok(receiptStart > parserStart);
+  assert.ok(serializerStart > receiptStart);
+  const parserSource = moduleSource.slice(parserStart, receiptStart);
+  const receiptSource = moduleSource.slice(receiptStart, serializerStart);
+  assert.equal(
+    (parserSource.match(/Reflect\.ownKeys\(value\)/g) ?? []).length,
+    1,
+  );
+  assert.equal(
+    (parserSource.match(/Object\.getOwnPropertyDescriptor\(value, key\)/g) ?? [])
+      .length,
+    1,
+  );
+  assert.doesNotMatch(parserSource, /Object\.getOwnPropertyDescriptors/);
+  assert.doesNotMatch(parserSource, /\bvalue(?:\.|\[)/);
+  assert.match(receiptSource, /const snapshot =/);
+  assert.match(receiptSource, /terminal_state: snapshot\.terminalState/);
+  assert.doesNotMatch(receiptSource, /\bvalue(?:\.|\[)/);
+}
+
 async function testBoundaryReceiptExcludesSensitiveKeysAndSourceValues() {
   const state = terminalUiState("ACCEPT");
   assert.ok(state.workPacket);
@@ -6211,6 +6543,7 @@ await testFounderSafeTerminalPresentationExcludesSensitiveKeys();
 await testBoundaryReceiptSnapshotsForAcceptHoldAndReject();
 await testBoundaryReceiptSerializationIsDeterministicAndLfNormalized();
 await testBoundaryReceiptRejectsMalformedAndIncoherentPresentationsWithoutThrowing();
+await testBoundaryReceiptUsesSingleValidatedDescriptorSnapshot();
 await testBoundaryReceiptExcludesSensitiveKeysAndSourceValues();
 await testBoundaryReceiptSeparatesTerminalClaimsFromUnverifiedExternalEffects();
 await testBoundaryReceiptNeverClaimsTransportRedactionOrProofAuthenticity();

@@ -1081,157 +1081,173 @@ export function createFounderSafeLocalOperatingLoopTerminalPresentation(
 }
 
 // D8_BOUNDARY_RECEIPT_SOURCE_START
-function hasExactLocalOperatingLoopBoundaryReceiptInputKeys(
-  value: Record<string, unknown>,
-  expected: string[],
-): boolean {
-  const keys = Reflect.ownKeys(value);
-  if (
-    keys.length !== expected.length ||
-    keys.some((key) => typeof key !== "string")
-  ) {
-    return false;
-  }
-  const descriptors = Object.getOwnPropertyDescriptors(value);
-  return (
-    (keys as string[]).sort().join("\n") ===
-      [...expected].sort().join("\n") &&
-    (keys as string[]).every((key) => {
-      const descriptor = descriptors[key];
-      return Boolean(
-        descriptor && descriptor.enumerable && "value" in descriptor,
-      );
-    })
-  );
-}
+const LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS = [
+  "artifactCount",
+  "artifactExecutionAuthority",
+  "decision",
+  "decisionScope",
+  "findingCount",
+  "notAControlThreadAcceptanceReceipt",
+  "persistence",
+  "programEffect",
+  "receiptAuthority",
+  "recommendation",
+  "terminalState",
+  "workPacketCount",
+  "workPacketExecutionAuthority",
+  "workPacketStatus",
+] as const satisfies ReadonlyArray<
+  keyof LocalOperatingLoopTerminalPresentation
+>;
 
-function isExactLocalOperatingLoopTerminalPresentation(
+function parseLocalOperatingLoopBoundaryReceiptInput(
   value: unknown,
-): value is LocalOperatingLoopTerminalPresentation {
-  if (!isRecord(value)) {
-    return false;
-  }
-  const prototype = Object.getPrototypeOf(value);
-  if (prototype !== Object.prototype && prototype !== null) {
-    return false;
-  }
-  if (
-    !hasExactLocalOperatingLoopBoundaryReceiptInputKeys(value, [
-      "artifactCount",
-      "artifactExecutionAuthority",
-      "decision",
-      "decisionScope",
-      "findingCount",
-      "notAControlThreadAcceptanceReceipt",
-      "persistence",
-      "programEffect",
-      "receiptAuthority",
-      "recommendation",
-      "terminalState",
-      "workPacketCount",
-      "workPacketExecutionAuthority",
-      "workPacketStatus",
-    ]) ||
-    !isLocalOperatingLoopTerminalState(value.terminalState) ||
-    !isLocalOperatingLoopDecision(value.decision) ||
-    !isLocalOperatingLoopRecommendation(value.recommendation) ||
-    typeof value.findingCount !== "number" ||
-    !Number.isSafeInteger(value.findingCount) ||
-    value.findingCount < 0 ||
-    value.findingCount > LOCAL_OPERATING_LOOP_FINDING_ORDER.length ||
-    (value.recommendation === "GO" && value.findingCount !== 0) ||
-    (value.recommendation !== "GO" && value.findingCount === 0) ||
-    (value.workPacketCount !== 0 && value.workPacketCount !== 1) ||
-    (value.workPacketStatus !== "NONE" &&
-      value.workPacketStatus !== "PROPOSED_ONLY") ||
-    value.workPacketExecutionAuthority !== false ||
-    value.artifactCount !== 1 ||
-    value.receiptAuthority !== "DEMONSTRATION_ONLY" ||
-    value.persistence !== "NONE" ||
-    value.programEffect !== "NONE" ||
-    value.notAControlThreadAcceptanceReceipt !== true ||
-    value.decisionScope !== "GENERATE_WORK_PACKET_ONLY" ||
-    value.artifactExecutionAuthority !== false
-  ) {
-    return false;
-  }
+): LocalOperatingLoopTerminalPresentation | null {
+  try {
+    if (
+      typeof value !== "object" ||
+      value === null ||
+      Array.isArray(value)
+    ) {
+      return null;
+    }
 
-  const expectedDecision =
-    localOperatingLoopDecisionByTerminalState[value.terminalState];
-  if (value.decision !== expectedDecision) {
-    return false;
-  }
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      return null;
+    }
 
-  if (value.terminalState === "ACCEPTED") {
-    return (
-      value.decision === "ACCEPT" &&
-      value.recommendation === "GO" &&
-      value.findingCount === 0 &&
-      value.workPacketCount === 1 &&
-      value.workPacketStatus === "PROPOSED_ONLY"
-    );
-  }
+    const ownKeys = Reflect.ownKeys(value);
+    if (
+      ownKeys.length !==
+        LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS.length ||
+      ownKeys.some(
+        (key) =>
+          typeof key !== "string" ||
+          !LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS.includes(
+            key as (typeof LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS)[number],
+          ),
+      )
+    ) {
+      return null;
+    }
 
-  return (
-    value.decision !== "ACCEPT" &&
-    value.workPacketCount === 0 &&
-    value.workPacketStatus === "NONE"
-  );
+    const snapshot: Record<string, unknown> = Object.create(null);
+    for (const key of LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (
+        descriptor === undefined ||
+        descriptor.enumerable !== true ||
+        !Object.prototype.hasOwnProperty.call(descriptor, "value") ||
+        Object.prototype.hasOwnProperty.call(descriptor, "get") ||
+        Object.prototype.hasOwnProperty.call(descriptor, "set")
+      ) {
+        return null;
+      }
+      snapshot[key] = descriptor.value;
+    }
+
+    if (
+      !isLocalOperatingLoopTerminalState(snapshot.terminalState) ||
+      !isLocalOperatingLoopDecision(snapshot.decision) ||
+      !isLocalOperatingLoopRecommendation(snapshot.recommendation) ||
+      typeof snapshot.findingCount !== "number" ||
+      !Number.isSafeInteger(snapshot.findingCount) ||
+      snapshot.findingCount < 0 ||
+      snapshot.findingCount > LOCAL_OPERATING_LOOP_FINDING_ORDER.length ||
+      (snapshot.recommendation === "GO" && snapshot.findingCount !== 0) ||
+      (snapshot.recommendation !== "GO" && snapshot.findingCount === 0) ||
+      (snapshot.workPacketCount !== 0 && snapshot.workPacketCount !== 1) ||
+      (snapshot.workPacketStatus !== "NONE" &&
+        snapshot.workPacketStatus !== "PROPOSED_ONLY") ||
+      snapshot.workPacketExecutionAuthority !== false ||
+      snapshot.artifactCount !== 1 ||
+      snapshot.receiptAuthority !== "DEMONSTRATION_ONLY" ||
+      snapshot.persistence !== "NONE" ||
+      snapshot.programEffect !== "NONE" ||
+      snapshot.notAControlThreadAcceptanceReceipt !== true ||
+      snapshot.decisionScope !== "GENERATE_WORK_PACKET_ONLY" ||
+      snapshot.artifactExecutionAuthority !== false
+    ) {
+      return null;
+    }
+
+    const expectedDecision =
+      localOperatingLoopDecisionByTerminalState[snapshot.terminalState];
+    if (snapshot.decision !== expectedDecision) {
+      return null;
+    }
+
+    if (
+      snapshot.terminalState === "ACCEPTED"
+        ? snapshot.decision !== "ACCEPT" ||
+          snapshot.recommendation !== "GO" ||
+          snapshot.findingCount !== 0 ||
+          snapshot.workPacketCount !== 1 ||
+          snapshot.workPacketStatus !== "PROPOSED_ONLY"
+        : snapshot.decision === "ACCEPT" ||
+          snapshot.workPacketCount !== 0 ||
+          snapshot.workPacketStatus !== "NONE"
+    ) {
+      return null;
+    }
+
+    return snapshot as unknown as LocalOperatingLoopTerminalPresentation;
+  } catch {
+    return null;
+  }
 }
 
 export function createLocalOperatingLoopBoundaryReceipt(
   value: unknown,
 ): LocalOperatingLoopBoundaryReceipt | null {
-  try {
-    if (!isExactLocalOperatingLoopTerminalPresentation(value)) {
-      return null;
-    }
-    return {
-      heading: LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
-      receipt_version:
-        "founder-readable-local-shadow-boundary-receipt.v1",
-      evidence_scope: "FOUNDER_VISIBLE_REDACTED_TERMINAL_ONLY",
-      redaction_scope: "EXPORT_PAYLOAD_ONLY",
-      underlying_transport_redacted: false,
-      terminal_state: value.terminalState,
-      decision: value.decision,
-      recommendation: value.recommendation,
-      finding_count: value.findingCount,
-      work_packet_count: value.workPacketCount,
-      work_packet_status: value.workPacketStatus,
-      work_packet_content: "REDACTED_NOT_EXPORTED",
-      work_packet_execution_authority: false,
-      artifact_count: 1,
-      receipt_authority: "DEMONSTRATION_ONLY",
-      terminal_response_persistence_claim: "NONE",
-      program_effect_claim: "NONE",
-      not_control_thread_acceptance_receipt: true,
-      decision_scope: "GENERATE_WORK_PACKET_ONLY",
-      artifact_execution_authority: false,
-      server_hmac_authenticity: "NOT_BROWSER_VERIFIED",
-      transport_redaction: "NOT_CLAIMED",
-      external_persistence_effect: "UNVERIFIED",
-      provider_effect: "UNVERIFIED",
-      github_effect: "UNVERIFIED",
-      linear_effect: "UNVERIFIED",
-      agent_council_effect: "UNVERIFIED",
-      customer_effect: "UNVERIFIED",
-      execution_effect: "UNVERIFIED",
-      deployment_effect: "UNVERIFIED",
-      export_method: "USER_INITIATED_LOCAL_CLIPBOARD",
-      clipboard_write_status: "NOT_INCLUDED_IN_EXPORTED_RECEIPT",
-      clipboard_retention: "OUTSIDE_APPLICATION_CONTROL",
-      copy_control_network_dispatch: "STATICALLY_EXCLUDED",
-      copy_control_application_persistence: "STATICALLY_EXCLUDED",
-      copy_control_file_download: "STATICALLY_EXCLUDED",
-      verification_scope:
-        "CLIENT_COHERENCE_AND_STATIC_COPY_CONTROL_ISOLATION_ONLY",
-      receipt_authenticity: "NOT_PROVIDED",
-      authority_granted: false,
-    };
-  } catch {
+  const snapshot = parseLocalOperatingLoopBoundaryReceiptInput(value);
+  if (!snapshot) {
     return null;
   }
+  return {
+    heading: LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
+    receipt_version:
+      "founder-readable-local-shadow-boundary-receipt.v1",
+    evidence_scope: "FOUNDER_VISIBLE_REDACTED_TERMINAL_ONLY",
+    redaction_scope: "EXPORT_PAYLOAD_ONLY",
+    underlying_transport_redacted: false,
+    terminal_state: snapshot.terminalState,
+    decision: snapshot.decision,
+    recommendation: snapshot.recommendation,
+    finding_count: snapshot.findingCount,
+    work_packet_count: snapshot.workPacketCount,
+    work_packet_status: snapshot.workPacketStatus,
+    work_packet_content: "REDACTED_NOT_EXPORTED",
+    work_packet_execution_authority: false,
+    artifact_count: 1,
+    receipt_authority: "DEMONSTRATION_ONLY",
+    terminal_response_persistence_claim: "NONE",
+    program_effect_claim: "NONE",
+    not_control_thread_acceptance_receipt: true,
+    decision_scope: "GENERATE_WORK_PACKET_ONLY",
+    artifact_execution_authority: false,
+    server_hmac_authenticity: "NOT_BROWSER_VERIFIED",
+    transport_redaction: "NOT_CLAIMED",
+    external_persistence_effect: "UNVERIFIED",
+    provider_effect: "UNVERIFIED",
+    github_effect: "UNVERIFIED",
+    linear_effect: "UNVERIFIED",
+    agent_council_effect: "UNVERIFIED",
+    customer_effect: "UNVERIFIED",
+    execution_effect: "UNVERIFIED",
+    deployment_effect: "UNVERIFIED",
+    export_method: "USER_INITIATED_LOCAL_CLIPBOARD",
+    clipboard_write_status: "NOT_INCLUDED_IN_EXPORTED_RECEIPT",
+    clipboard_retention: "OUTSIDE_APPLICATION_CONTROL",
+    copy_control_network_dispatch: "STATICALLY_EXCLUDED",
+    copy_control_application_persistence: "STATICALLY_EXCLUDED",
+    copy_control_file_download: "STATICALLY_EXCLUDED",
+    verification_scope:
+      "CLIENT_COHERENCE_AND_STATIC_COPY_CONTROL_ISOLATION_ONLY",
+    receipt_authenticity: "NOT_PROVIDED",
+    authority_granted: false,
+  };
 }
 
 export function serializeLocalOperatingLoopBoundaryReceipt(
