@@ -71,6 +71,13 @@ acceptance and A5 route are later `WORKFLOW_ONLY` events. They
 | 8 | GitHub PR and merge metadata | [PR390] | `MIRROR_ONLY` | Corroborates delivery and squash only; cannot establish A4 acceptance or A5 authority. |
 | 8 | Linear issue and project | [LINEAR-A5], [LINEAR-PROGRAM] | `MIRROR_ONLY` | Coordination visibility only; cannot route, accept, or transition a Program. |
 
+The opening packet remains valid `RATIFIED_PHASE_SPECIFIC` candidate evidence
+for its accepted scope. Its successor display names `Founder-Developer Workflow
+Pilot v0` and `Agent/Council Bounded Activation Pilot v0` are preserved in
+section 11 as `CONTRADICTORY` naming evidence. Those labels carried no rename
+authority: Motion 0248 controls canonical identity, and the historical packet
+text is neither edited nor silently normalized.
+
 This registry inherits A2 precedence without modification:
 
 1. HUMAN_OPERATOR remains the constitutional authority origin.
@@ -214,7 +221,11 @@ Motion.
 | `A5-CLM-006` | Linear | JAI-185 and its Program project display A5 routed and Program 1 active. | [LINEAR-A5], [LINEAR-PROGRAM] | `MIRROR_ONLY` | Mirror status can look operational. | Coordination visibility only. | `does-not-supersede` repository receipts or fresh workflow decisions. | No Linear mutation in A5. |
 | `A5-CLM-007` | A4 cutoff | A4 artifact says A4 acceptance held and A5 authority not granted. | [A4] | `RATIFIED_PHASE_SPECIFIC` | Fresh A4 acceptance and A5 route are later. | Accurate at A4 artifact cutoff. | Current workflow decisions `records-later-event`; A4 is not rewritten. | Historical text is not stale authority for the later lane. |
 | `A5-CLM-008` | A4/A5 workflow | A4 was accepted under `CT-2026-07-22-Q3M7Y26-P1-A4-ACCEPT-v0`; A5 is routed under the token in section 2. | Current A5 Work Packet | `ACCEPTED_CURRENT` | Immutable acceptance receipt is unavailable. | Governs this bounded delivery only. | `records-later-event` after [A4]; [PR390] only corroborates merge. | Workflow-only authority is preserved as such. |
+| `A5-CLM-009` | Successor Program naming | For stable Program ID `jai-founder-developer-workflow-pilot-v0`, [OPENING-PACKET] records `Founder-Developer Workflow Pilot v0` while [MOTION-DECISION] canonically records `Founder Developer Workflow Pilot v0`. | [OPENING-PACKET], [MOTION-DECISION] | `CONTRADICTORY` | Treating the packet display name as identity would silently rename the Program. | Motion 0248's canonical name controls; the packet label remains preserved phase-specific evidence only. | The [OPENING-PACKET] label `does-not-supersede` [MOTION-DECISION]. | The stable Program ID joins both sources without changing current Program state, order, or authority. |
+| `A5-CLM-010` | Successor Program naming | For stable Program ID `jai-agent-council-bounded-activation-pilot-v0`, [OPENING-PACKET] records `Agent/Council Bounded Activation Pilot v0` while [MOTION-DECISION] canonically records `Bounded JAI Agent and Council Activation Pilot v0`. | [OPENING-PACKET], [MOTION-DECISION] | `CONTRADICTORY` | Treating the packet display name as identity would silently rename the Program. | Motion 0248's canonical name controls; the packet label remains preserved phase-specific evidence only. | The [OPENING-PACKET] label `does-not-supersede` [MOTION-DECISION]. | The stable Program ID joins both sources without changing current Program state, order, or authority. |
 
+The two successor naming contradictions remain preserved as historical
+phase-specific evidence, while Motion 0248 resolves current canonical identity.
 After scope and time normalization, no unresolved current Program-state
 contradiction remains. No duplicate source independently increases active
 count. Unavailable evidence is retained below rather than reconstructed.
@@ -302,9 +313,10 @@ preclaimed by the initial authored draft.
 
 | Validation | Required result | Recorded result |
 | --- | --- | --- |
-| Changed-path inventory | Exactly this one path | `PASS - sole untracked path is this artifact` |
+| Changed-path inventory | Exactly this one path | `PASS - sole modified path is this artifact` |
 | Core/boundary schema | Four unique complete rows in each table; exact join | `PASS - 4 x 13-cell core; 4 x 15-cell boundary; zero duplicates or join gaps` |
 | Sequence and byte match | Positions 1-4; IDs and names match Motion 0248 | `PASS - exact 4 of 4 dynamic comparison` |
+| Successor-name provenance | Preserve both packet/canonical pairs, stable IDs, `CONTRADICTORY`, and `does-not-supersede` | `PASS - both opening-packet labels and both Motion 0248 canonical names are preserved and classified without alias or rename authority` |
 | Active count | One contributor; sum `1`; three frozen; maximum-one holds | `PASS - 1 contributor; sum 1; 3 frozen; 1 <= 1` |
 | Receipt and predecessor gates | Program 1 receipt resolves; Programs 2-4 have no receipt; exact chain | `PASS - P1 receipt resolved; P2-P4 unavailable; P1 -> P2 -> P3 -> P4` |
 | Source resolution | Every immutable commit/path reference resolves | `PASS - 10 immutable blob paths and 1 commit resolved; PR and Linear mirrors read successfully` |
@@ -313,12 +325,13 @@ preclaimed by the initial authored draft.
 | Positive-authority scan | No prohibited grant | `PASS - no positive persistence, provider, runtime, execution, customer, Agent, Council, production, Batch-exit, Program-exit, or JAI-activation grant` |
 | Behavioral inventory | Exactly 15 files in deterministic byte order | `PASS - exact routed inventory` |
 | Behavioral execution | All 15 focused `tsx` commands exit `0` | `PASS - 15 of 15 exit 0` |
-| `git diff --check` | PASS | `PASS - ordinary check plus no-index whitespace audit for the untracked artifact` |
-| Cached path and whitespace | One path; `git diff --cached --check` PASS | `PASS - exact allowlisted path; 393 additions; zero deletions` |
+| `git diff --check` | PASS | `PASS - ordinary A5R1 repair diff check` |
+| Cached path and whitespace | One path; `git diff --cached --check` PASS | `PASS - exact allowlisted path; cumulative 406 additions; zero deletions` |
 
 Local portal lint, typecheck, Prisma validation, and production build are:
 
-`N/A - documentation-only local change; required through portal_ci_guardrails.`
+`N/A - one-file documentary provenance repair; required on the final head
+through portal_ci_guardrails.`
 
 Each exact `tsx` command first stopped before test execution in the normal
 sandbox with the known `listen EPERM` IPC restriction. The unchanged commands
