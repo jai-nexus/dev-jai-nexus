@@ -30,31 +30,36 @@ in a controlling source.
 | Work Packet | `Q3M7Y26-P1-A6-v0` |
 | A6R1 repair route | `CT-2026-07-22-Q3M7Y26-P1-A6R1-ROUTE-PROVENANCE-COMPLETENESS-v0` |
 | A6R1 Work Packet | `Q3M7Y26-P1-A6R1-v0` |
+| A6R2 repair route | `CT-2026-07-22-Q3M7Y26-P1-A6R2-SELF-ROUTE-COMPLETENESS-v0` |
+| A6R2 Work Packet | `Q3M7Y26-P1-A6R2-v0` |
 | A6 starting head | `06bf8a288d0040df124d4b139a4c9086bf6d5ed5` |
+| A6R2 starting head | `f492618e69006f8cdb42f357d3fa56674d15d149` |
 | Role | `JAI::DEV::BUILDER` |
 | Repository | `jai-nexus/dev-jai-nexus` |
 | Required base | `933108807587e3cdd03fb439edbc6755a7dd6b97` |
 | A5 Control acceptance | `CT-2026-07-22-Q3M7Y26-P1-A5-ACCEPT-v0` |
 | A5 accepted head | `79263883e2a487a2ecef1f354394f3ffa47dc0e8` |
-| Evidence cutoff | `2026-07-22T19:06:43Z` |
+| Evidence cutoff | `2026-07-22T19:27:57Z` |
 | Evidence ceiling | `DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY` |
 
 The A5 acceptance token above is fresh CONTROL_THREAD evidence supplied by the
 A6 Work Packet. The A5 squash does not independently create acceptance. The
-A6R1 repair route is fresh CONTROL_THREAD evidence supplied by the A6R1 Work
-Packet; it authorizes this bounded repair and does not accept A6.
+A6R1 route is fresh CONTROL_THREAD evidence supplied by the A6R1 Work Packet;
+its completed repair remains bounded repository evidence and does not accept
+A6. The A6R2 route is fresh CONTROL_THREAD evidence supplied by the A6R2 Work
+Packet; it authorizes the current bounded repair and does not accept A6.
 
 ## 3. Source basis and authority precedence
 
 | Rank | Source | Reference | Classification | Use |
 | --- | --- | --- | --- | --- |
-| 1 | Fresh HUMAN_OPERATOR / CONTROL_THREAD decisions | Current A6 and A6R1 Work Packets | `ACCEPTED_CURRENT` | A5 acceptance, A6 route, A6R1 repair route, exact manifest, and current non-authorizations. |
+| 1 | Fresh HUMAN_OPERATOR / CONTROL_THREAD decisions | Current A6, A6R1, and A6R2 Work Packets | `ACCEPTED_CURRENT` | A5 acceptance, A6 route, A6R1 and A6R2 repair routes, exact manifest, and current non-authorizations. |
 | 2 | Ratified Motion and Program opening | [MOTION-DECISION], [OPENING-RECEIPT] | `ACCEPTED_CURRENT` | Program identity, state, Batch titles, naming grammar, and planning-only boundary. |
 | 3 | Accepted A2 precedence | [A2] | `ACCEPTED_CURRENT` | Evidence classes, conflict rules, and relation vocabulary. |
 | 4 | Accepted A4 decision registry | [A4] | `RATIFIED_PHASE_SPECIFIC` | Historical route, repair, founder, acceptance, delivery, and exception evidence through D8. |
 | 5 | Accepted A5 Program registry | [A5], current A6 Work Packet | `ACCEPTED_CURRENT` | One-active Program state and frozen successors; A5 artifact cutoff remains historical. |
 | 6 | Immutable commit and blob evidence | [MAIN] and SHA-pinned blobs or commits in [MOTION-DECISION], [OPENING-RECEIPT], [A1], [A2], [A4], [A5], [ROLES], [ROLEMAP], [TAXONOMY], and [TAXONOMY-TEST] | `STATIC_CONFIGURATION` | Exact source and repository-delivery evidence at the pinned SHA; immutability does not create Control authority. |
-| 7 | Mutable GitHub PR metadata | [PR386], [PR387], [PR390], [PR391] | `MIRROR_ONLY` | Live PR bodies, metadata, comments, and check summaries corroborate delivery only and are not immutable. |
+| 7 | Mutable GitHub PR metadata | [PR386], [PR387], [PR390], [PR391], [PR392] | `MIRROR_ONLY` | Live PR bodies, metadata, comments, and check summaries corroborate delivery only and are not immutable. |
 | 8 | Running-observed evidence | Founder observations indexed by [A4] | `RATIFIED_PHASE_SPECIFIC` | Limited to each named observation ceiling. |
 | 9 | Repository role/taxonomy configuration | [ROLES], [ROLEMAP], [TAXONOMY], [TAXONOMY-TEST] | `STATIC_CONFIGURATION` | Portable role interfaces and legacy display metadata; no current coordinate authority. |
 | 10 | Linear Program plan and A6 issue | [LINEAR-PROGRAM], [LINEAR-A6] | `MIRROR_ONLY` | Lane IDs, titles, raw Wave labels, and current coordination posture only. |
@@ -255,7 +260,7 @@ Batch D remains nonuniform: `D-A` D1–D2; `D-B` D3–D8; `D-C` D9–D13; `D-D` 
 | `A6-L-A3` | `ROUTED_HISTORICAL` | `JAI::DEV::VERIFIER` | Current A6 Work Packet; [A4] | `UNRESOLVED_PENDING_CONTROL_ROUTE` | `READ_ONLY_RECONCILIATION` | `RESPONSE_ONLY_EVIDENCE` | `NORMALIZED_EVIDENCE_RETURNED` | `ACCEPTED_BOUNDED` | `RECONCILIATION_EVIDENCE_ONLY` | `NONE` | `1` | `ACCEPTED_CURRENT` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
 | `A6-L-A4` | `ROUTED_HISTORICAL` | `JAI::DEV::BUILDER` | [A4], [PR390] | `jai-nexus/dev-jai-nexus` | `DOCUMENTARY_REGISTRY` | `MERGED` | `INDEPENDENTLY_VERIFIED` | `ACCEPTED_BOUNDED` | `DOCUMENTATION_REGISTRY_ONLY` | `NONE` | `3` | `ACCEPTED_CURRENT` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
 | `A6-L-A5` | `ROUTED_HISTORICAL` | `JAI::DEV::BUILDER` | Current A6 Work Packet; [PR391] | `jai-nexus/dev-jai-nexus` | `DOCUMENTARY_PROGRAM_STATE_REGISTRY` | `MERGED` | `INDEPENDENTLY_VERIFIED` | `ACCEPTED_BOUNDED` | `DOCUMENTATION_PROGRAM_STATE_REGISTRY_ONLY` | `NONE` | `2` | `ACCEPTED_CURRENT` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
-| `A6-L-A6` | `ROUTED_CURRENT` | `JAI::DEV::BUILDER` | Current A6 Work Packet | `jai-nexus/dev-jai-nexus` | `DOCUMENTARY / ONE_PATH / DRAFT_PR_ONLY` | `DRAFT_PR_DELIVERY_IN_PROGRESS` | `PENDING_INDEPENDENT_VERIFICATION` | `NOT_ACCEPTED` | `DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY` | `NONE` | `0` | `ACCEPTED_CURRENT_ROUTE_ONLY` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
+| `A6-L-A6` | `ROUTED_CURRENT` | `JAI::DEV::BUILDER` | Current A6 Work Packet | `jai-nexus/dev-jai-nexus` | `DOCUMENTARY / ONE_PATH / DRAFT_PR_ONLY` | `DRAFT_PR_DELIVERY_IN_PROGRESS` | `PENDING_INDEPENDENT_VERIFICATION` | `NOT_ACCEPTED` | `DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY` | `NONE` | `2` | `ACCEPTED_CURRENT_ROUTE_ONLY` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
 | `A6-L-A7` | `UNROUTED` | `UNROUTED` | Current A6 Work Packet mirror snapshot | `UNRESOLVED_PENDING_CONTROL_ROUTE` | `PROPOSED / MIRROR_ONLY` | `NOT_DELIVERED` | `NOT_VERIFIED` | `NOT_ACCEPTED` | `NONE` | `NONE` | `0` | `PROPOSED_UNROUTED` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
 | `A6-L-A8` | `UNROUTED` | `UNROUTED` | Current A6 Work Packet mirror snapshot | `UNRESOLVED_PENDING_CONTROL_ROUTE` | `PROPOSED / MIRROR_ONLY` | `NOT_DELIVERED` | `NOT_VERIFIED` | `NOT_ACCEPTED` | `NONE` | `NONE` | `0` | `PROPOSED_UNROUTED` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
 | `A6-L-A9` | `UNROUTED` | `UNROUTED` | Current A6 Work Packet mirror snapshot | `UNRESOLVED_PENDING_CONTROL_ROUTE` | `PROPOSED / MIRROR_ONLY` | `NOT_DELIVERED` | `NOT_VERIFIED` | `NOT_ACCEPTED` | `NONE` | `NONE` | `0` | `PROPOSED_UNROUTED` | No inferred role, repository ownership, route, acceptance, credit, execution, Batch exit, Program exit, or JAI activation. |
@@ -370,6 +375,8 @@ portable delivery role nor repository ownership.
 | `A6-R-014` | `CT-2026-07-21-Q3M7Y26-P1-D7R1-MALFORMED-CONFIRMATION-FAIL-CLOSED-v0` | HUMAN_OPERATOR / CONTROL_THREAD | [A4] | `RATIFIED_PHASE_SPECIFIC` | D7R1 repair route; parent `Q3M7Y26-P1:D7`; child `A6-CE-D7-01` | No new Lane, acceptance, credit, execution, Batch exit, Program exit, or activation. |
 | `A6-R-015` | `CT-2026-07-22-Q3M7Y26-P1-D8R1-DESCRIPTOR-SNAPSHOT-FAIL-CLOSED-v0` | HUMAN_OPERATOR / CONTROL_THREAD | [A4] | `RATIFIED_PHASE_SPECIFIC` | D8R1 repair route; parent `Q3M7Y26-P1:D8`; child `A6-CE-D8-01` | No new Lane, acceptance, credit, execution, Batch exit, Program exit, or activation. |
 | `A6-R-016` | `CT-2026-07-22-Q3M7Y26-P1-D8R2-CLIPBOARD-FOCUS-RETENTION-v0` | HUMAN_OPERATOR / CONTROL_THREAD | [A4] | `RATIFIED_PHASE_SPECIFIC` | D8R2 repair route; parent `Q3M7Y26-P1:D8`; child `A6-CE-D8-03` | No new Lane, acceptance, credit, execution, Batch exit, Program exit, or activation. |
+| `A6-R-017` | `CT-2026-07-22-Q3M7Y26-P1-A6R1-ROUTE-PROVENANCE-COMPLETENESS-v0` | HUMAN_OPERATOR / CONTROL_THREAD | Current A6R1 Work Packet; [PR392] | `ACCEPTED_CURRENT` | Completed bounded A6R1 repair route; parent `Q3M7Y26-P1:A6`; child `A6-CE-A6-01` | Authority effect `NONE`; no new Lane, acceptance, credit, execution, Batch exit, Program exit, or activation. |
+| `A6-R-018` | `CT-2026-07-22-Q3M7Y26-P1-A6R2-SELF-ROUTE-COMPLETENESS-v0` | HUMAN_OPERATOR / CONTROL_THREAD | Current A6R2 Work Packet | `ACCEPTED_CURRENT` | Current bounded A6R2 repair route; parent `Q3M7Y26-P1:A6`; child `A6-CE-A6-02` | Authority effect `NONE`; no new Lane, acceptance, credit, execution, Batch exit, Program exit, or activation. |
 
 <!-- A6_ROUTE_REGISTRY_END -->
 
@@ -378,6 +385,16 @@ This registry covers base-Lane route authorizations and authorization-bearing
 and source-head tokens remain in the child-event registry and are not treated
 as independent route authorizations. Unavailable D1, D2, D4, and D5 base-route
 tokens remain in section 15 rather than being synthesized.
+
+### Current-envelope rule
+
+The registry includes every authorization-bearing route known at its evidence
+cutoff, including the current A6R2 envelope. A6R2 is recorded as routed, not
+self-accepted or self-delivered by this artifact. The resulting commit and PR
+checks are later repository evidence reported in the PR body. Any later
+CONTROL_THREAD acceptance is a future event and is neither inferred nor
+pre-recorded here. This cutoff rule prevents infinite self-referential repair
+routing.
 
 ## 12. Route-to-coordinate junction registry
 
@@ -402,6 +419,8 @@ tokens remain in section 15 rather than being synthesized.
 | `A6-RJ-016` | `A6-R-014` | `Q3M7Y26-P1:D7` | `A6-CE-D7-01` | `routes existing repair child; child remains is_lane=false` | `RATIFIED_PHASE_SPECIFIC` |
 | `A6-RJ-017` | `A6-R-015` | `Q3M7Y26-P1:D8` | `A6-CE-D8-01` | `routes existing repair child; child remains is_lane=false` | `RATIFIED_PHASE_SPECIFIC` |
 | `A6-RJ-018` | `A6-R-016` | `Q3M7Y26-P1:D8` | `A6-CE-D8-03` | `routes existing repair child; child remains is_lane=false` | `RATIFIED_PHASE_SPECIFIC` |
+| `A6-RJ-019` | `A6-R-017` | `Q3M7Y26-P1:A6` | `A6-CE-A6-01` | `routes existing non-Lane A6R1 repair event` | `ACCEPTED_CURRENT` |
+| `A6-RJ-020` | `A6-R-018` | `Q3M7Y26-P1:A6` | `A6-CE-A6-02` | `routes current non-Lane A6R2 repair event` | `ACCEPTED_CURRENT` |
 
 <!-- A6_ROUTE_JUNCTION_END -->
 
@@ -423,6 +442,8 @@ Each repair-route junction binds one existing parent Lane and one existing
 | `A6-CE-A4-03` | `A4` | `CONTROL_ACCEPTANCE` | `3` | `false` | CONTROL_THREAD | `CT-2026-07-22-Q3M7Y26-P1-A4-ACCEPT-v0` | Current A6 Work Packet; [LINEAR-PROGRAM] | `ACCEPTED_CURRENT` | `ACCEPTED_BOUNDED` | records-later-event after A4R2 | `DOCUMENTATION_REGISTRY_ONLY` |
 | `A6-CE-A5-01` | `A5` | `REPAIR_ROUTE` | `1` | `false` | HUMAN_OPERATOR / CONTROL_THREAD | `CT-2026-07-22-Q3M7Y26-P1-A5R1-SUCCESSOR-NAMING-PROVENANCE-v0` | [PR391] | `MIRROR_ONLY` | `DELIVERED_REPAIR` | corrects successor naming provenance without rename authority | `NONE` |
 | `A6-CE-A5-02` | `A5` | `CONTROL_ACCEPTANCE` | `2` | `false` | CONTROL_THREAD | `CT-2026-07-22-Q3M7Y26-P1-A5-ACCEPT-v0` | Current A6 Work Packet; [LINEAR-PROGRAM] | `ACCEPTED_CURRENT` | `ACCEPTED_BOUNDED` | records-later-event after A5R1 | `DOCUMENTATION_PROGRAM_STATE_REGISTRY_ONLY` |
+| `A6-CE-A6-01` | `A6` | `REPAIR_ROUTE` | `1` | `false` | HUMAN_OPERATOR / CONTROL_THREAD | `CT-2026-07-22-Q3M7Y26-P1-A6R1-ROUTE-PROVENANCE-COMPLETENESS-v0` | Current A6R1 Work Packet; [PR392] | `ACCEPTED_CURRENT` | `DELIVERED_REPAIR` | records A6R1 after the initial A6 delivery | `NONE` |
+| `A6-CE-A6-02` | `A6` | `REPAIR_ROUTE` | `2` | `false` | HUMAN_OPERATOR / CONTROL_THREAD | `CT-2026-07-22-Q3M7Y26-P1-A6R2-SELF-ROUTE-COMPLETENESS-v0` | Current A6R2 Work Packet | `ACCEPTED_CURRENT` | `ROUTED_CURRENT_REPAIR` | records the current repair envelope at the artifact's evidence cutoff | `NONE` |
 | `A6-CE-D3-01` | `D3` | `FOUNDER_OBSERVATION` | `1` | `false` | HUMAN_OPERATOR | `UNAVAILABLE_NOT_IN_IMMUTABLE_SOURCE` | [A4] | `RATIFIED_PHASE_SPECIFIC` | `REVISE` | phase-bounds the product finding to the observed surface | `NONE` |
 | `A6-CE-D3-02` | `D3` | `CONTROL_ACCEPTANCE` | `2` | `false` | CONTROL_THREAD | `CT-2026-07-20-Q3M7Y26-P1-D3-ACCEPT-v0` | [A4] | `ACCEPTED_CURRENT` | `ACCEPTED_BOUNDED` | records-later-event after founder observation | `FOUNDER_OBSERVATION_EVIDENCE_ONLY` |
 | `A6-CE-D4-01` | `D4` | `CONTROL_ACCEPTANCE` | `1` | `false` | CONTROL_THREAD | `CT-2026-07-21-Q3M7Y26-P1-D4-ACCEPT-v0` | [A4] | `ACCEPTED_CURRENT` | `ACCEPTED_BOUNDED` | records-later-event after delivery | `TESTED_MODEL_PLUS_STATIC_UI_ONLY` |
@@ -446,7 +467,7 @@ Each repair-route junction binds one existing parent Lane and one existing
 
 <!-- A6_CHILD_EVENT_END -->
 
-All twenty-nine child events join to one existing base Lane. Repair and observation suffixes are never promoted into base coordinates.
+All thirty-one child events join to one existing base Lane. Repair and observation suffixes are never promoted into base coordinates.
 
 ## 14. Batch D proving-exception overlay
 
@@ -499,7 +520,7 @@ grant execution authority, transition a Program, or activate JAI.
 | --- | --- | --- | --- |
 | Program 1 | `OPEN_FOR_BATCH_PLANNING_ONLY` | `STANDING_EXECUTION_AUTHORITY_NOT_GRANTED` | Separate accepted Program transition required. |
 | A1–A5 | `ACCEPTED_AT_EXACT_BOUNDED_CEILINGS` | `NO_BATCH_A_EXIT_CREDIT` | No retroactive expansion. |
-| A6 | `ROUTED_FOR_A6R1_DOCUMENTARY_REPAIR / NOT_ACCEPTED` | `DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY` | A6R1 final independent verification and separate CONTROL_THREAD acceptance. |
+| A6 | `ROUTED_FOR_A6R2_DOCUMENTARY_REPAIR / NOT_ACCEPTED` | `DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY` | A6R2 final independent verification and separate CONTROL_THREAD acceptance. |
 | A7–A15 | `PROPOSED / UNROUTED` | `NONE` | Fresh accepted main and separate exact route. |
 | B1–B15 | `PROPOSED / UNROUTED` | `NONE` | Batch B not opened for execution. |
 | C1–C15 | `PROPOSED / UNROUTED` | `NONE` | Batch C not opened for execution. |
@@ -510,7 +531,7 @@ grant execution authority, transition a Program, or activate JAI.
 | F1–F15 | `PROPOSED / UNROUTED` | `NONE` | Batch F not opened for execution. |
 | Programs 2–4 | `NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN` | `NONE` | Immediate predecessor `CLOSED_ACCEPTED` plus every fresh opening gate. |
 
-A7 or A8 may consume this registry only after A6R1 final independent
+A7 or A8 may consume this registry only after A6R2 final independent
 verification, separate CONTROL_THREAD A6 acceptance, squash merge, branch
 deletion, fresh main reconciliation, and a separately issued exact route. This
 is a handoff boundary, not routing authority.
@@ -527,16 +548,19 @@ is a handoff boundary, not routing authority.
 | Base Lanes per Batch | Exactly 15 each | `PASS — A=15; B=15; C=15; D=15; E=15; F=15` |
 | Core/boundary joins | Exact one-to-one; zero duplicates or orphans | `PASS — 90 joined; 0 duplicate IDs; 0 orphans` |
 | Wave map | Standard map for A/B/C/E/F; exact nonuniform D map | `PASS` |
-| Route registry | Unique exact tokens; combined route retained once | `PASS — 16 routes; 18 unique junctions; 0 orphans` |
-| Artifact-local registry IDs | Exactly 185 unique IDs | `PASS — 185 unique; 0 duplicates` |
-| Child events | All `is_lane=false`; every parent exists | `PASS — 29 child events; 0 orphans` |
-| Frozen table preservation | Program, Wave, Lane core, child-event, and exception tables unchanged from A6 head | `PASS — byte-identical` |
+| Route registry | Unique exact tokens; combined route retained once | `PASS — 18 routes; 20 unique junctions; 0 orphans` |
+| Artifact-local registry IDs | Exactly 191 unique IDs | `PASS — 191 unique; 0 duplicates` |
+| Child events | All `is_lane=false`; every parent exists | `PASS — 31 child events; 0 orphans` |
+| A6 repair-route joins | Both routes bind exact A6 parent and exact non-Lane child | `PASS — A6-R-017/A6-CE-A6-01 and A6-R-018/A6-CE-A6-02` |
+| A6 boundary child count | Exactly 2 | `PASS — 2` |
+| Current-envelope rule | Current route recorded without future acceptance | `PASS — A6R2 routed; not self-accepted or self-delivered` |
+| Frozen table preservation | Program, Wave, Lane core, exception, and 29 preexisting child-event rows unchanged from A6R1 head | `PASS — byte-identical` |
 | Legacy collision audit | B40 values excluded from base registry | `PASS` |
 | No-retroactive-credit audit | No inferred route, acceptance, credit, or execution | `PASS` |
 | D3 role/repository provenance | No mirror-derived role or ownership | `PASS — role unavailable; repository unresolved; HUMAN_OPERATOR observation and bounded evidence preserved` |
 | Immutable/mutable GitHub evidence | SHA-pinned evidence separated from mutable PR metadata | `PASS — immutable commit/blob row separated from MIRROR_ONLY PR metadata` |
 | Batch D provenance | Closed exception grounded in A4; planning remains mirror-only | `PASS — title, closed exception, and planning sources separated; closure token unavailable; no D9 authority` |
-| Source classification | Every material claim sourced or explicitly unavailable | `PASS — 17 reference definitions; 0 unresolved; 10 SHA-pinned blob references` |
+| Source classification | Every material claim sourced or explicitly unavailable | `PASS — 18 reference definitions; 0 unresolved; 10 SHA-pinned blob references` |
 | Initial A6 behavioral inventory | Exactly 15 files including local-operating-loop | `PASS — 15 exact files; includes motionKernel/local-operating-loop.test.ts` |
 | Initial A6 behavioral execution | All 15 individual focused commands exit 0 | `PASS — 15/15 exit 0` |
 | Initial A6 `git diff --check` | PASS | `PASS — no findings` |
@@ -544,12 +568,20 @@ is a handoff boundary, not routing authority.
 | A6R1 local behavioral/lint/typecheck/Prisma/build | Documentation-only repair | `N/A — no production or test path changed; required through portal_ci_guardrails` |
 | A6R1 `git diff --check` | PASS | `PASS — no findings` |
 | A6R1 cached path and whitespace | One allowlisted path; cached check PASS | `PASS — one path; no findings` |
+| A6R2 local behavioral/lint/typecheck/Prisma/build | Documentation-only repair | `N/A — no production or test path changed; required through portal_ci_guardrails` |
+| A6R2 `git diff --check` | PASS | `PASS — no findings` |
+| A6R2 cached path and whitespace | One allowlisted path; cached check PASS | `PASS — one path; no findings` |
 
 For initial A6 validation, all fifteen exact commands first encountered the established sandbox-only
 `listen EPERM` before test execution. They were rerun unchanged outside the
 sandbox under explicit approval, and all fifteen exited `0`.
 
 For A6R1, local behavioral tests, lint, typecheck, Prisma validation, and
+production build are:
+
+`N/A — documentation-only change; required through portal_ci_guardrails.`
+
+For A6R2, local behavioral tests, lint, typecheck, Prisma validation, and
 production build are:
 
 `N/A — documentation-only change; required through portal_ci_guardrails.`
@@ -582,7 +614,9 @@ This artifact and its Draft PR do not authorize or perform:
 
 `A6R1_MAXIMUM_CREDIT: DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY`
 
-`A6_ACCEPTANCE: HELD_PENDING_A6R1_FINAL_VERIFICATION`
+`A6R2_MAXIMUM_CREDIT: DOCUMENTATION_CONTROL_COORDINATE_REGISTRY_ONLY`
+
+`A6_ACCEPTANCE: HELD_PENDING_A6R2_FINAL_VERIFICATION`
 
 `A7_EXECUTION_AUTHORITY: NOT_GRANTED`
 
@@ -600,7 +634,7 @@ This artifact and its Draft PR do not authorize or perform:
 
 `JAI_ACTIVATION_CREDIT: NONE`
 
-`NEXT_REQUIRED_DECISION: ACCEPT_A6R1_FOR_FINAL_INDEPENDENT_VERIFICATION`
+`NEXT_REQUIRED_DECISION: ACCEPT_A6R2_FOR_FINAL_INDEPENDENT_VERIFICATION`
 
 [MOTION-DECISION]: https://github.com/jai-nexus/dev-jai-nexus/blob/291e2006f1a7af9711d1b7c822ac46abc9569557/.nexus/motions/motion-0248/decision.yaml
 [OPENING-RECEIPT]: https://github.com/jai-nexus/dev-jai-nexus/blob/6f9dea1904066c45a75f3789377d32c2b0b16106/docs/reference/q3m7y26-jai-governance-intelligence-main-state-operating-loop-program-opening-receipt-v0.md
@@ -617,5 +651,6 @@ This artifact and its Draft PR do not authorize or perform:
 [PR387]: https://github.com/jai-nexus/dev-jai-nexus/pull/387
 [PR390]: https://github.com/jai-nexus/dev-jai-nexus/pull/390
 [PR391]: https://github.com/jai-nexus/dev-jai-nexus/pull/391
+[PR392]: https://github.com/jai-nexus/dev-jai-nexus/pull/392
 [LINEAR-PROGRAM]: https://linear.app/jai-nexus/project/q3m7y26-jai-governance-intelligence-main-state-reconciliation-mv-loop-9841da077546
 [LINEAR-A6]: https://linear.app/jai-nexus/issue/JAI-188/q3m7y26-p1a6-control-coordinate-registry
