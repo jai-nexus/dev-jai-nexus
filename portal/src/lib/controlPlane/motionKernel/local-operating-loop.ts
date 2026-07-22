@@ -213,6 +213,48 @@ export type LocalOperatingLoopTerminalPresentation = {
   artifactExecutionAuthority: false;
 };
 
+export type LocalOperatingLoopDecisionConfirmationBasis = {
+  projectionKey: string;
+  validationProof: string;
+  deliberationProof: string;
+  recommendation: LocalOperatingLoopRecommendation;
+  findingCodes: readonly LocalOperatingLoopFindingCode[];
+  decision: LocalOperatingLoopDecision;
+};
+
+export type LocalOperatingLoopDecisionConfirmationState =
+  | { phase: "IDLE"; basis: null }
+  | {
+      phase: "REVIEWING";
+      decision: LocalOperatingLoopDecision;
+      basis: LocalOperatingLoopDecisionConfirmationBasis;
+    }
+  | {
+      phase: "CLAIMED";
+      decision: LocalOperatingLoopDecision;
+      basis: LocalOperatingLoopDecisionConfirmationBasis;
+    };
+
+export type LocalOperatingLoopDecisionConfirmationContext = {
+  motion: LocalOperatingLoopInput;
+  state: LocalOperatingLoopUiState;
+  currentProjectionKey: string;
+  requiresFreshValidation?: boolean;
+};
+
+export type LocalOperatingLoopDecisionConfirmationPresentation = {
+  phase: "REVIEWING" | "CLAIMED";
+  heading: string;
+  description: string;
+  decision: LocalOperatingLoopDecision;
+  recommendation: LocalOperatingLoopRecommendation;
+  proofStatus: "Deliberation current";
+  confirmLabel: string;
+  consequences: readonly string[];
+  nonAuthorizations: readonly string[];
+  submittingCopy: string | null;
+};
+
 export type LocalOperatingLoopSemanticFindingExplanation = {
   code: LocalOperatingLoopFindingCode | null;
   label: string;
@@ -965,6 +1007,403 @@ export function createFounderSafeLocalOperatingLoopTerminalPresentation(
     decisionScope: "GENERATE_WORK_PACKET_ONLY",
     artifactExecutionAuthority: false,
   };
+}
+
+const localOperatingLoopDecisionConfirmationCopy = {
+  ACCEPT: {
+    confirmLabel: "Confirm ACCEPT — propose packet only",
+    consequences: [
+      "Server recomputation must remain GO.",
+      "One PROPOSED_ONLY, non-executable Work Packet and one demonstration-only, non-persistent artifact may be returned.",
+      "Neither creates Control-Thread acceptance or execution authority.",
+    ],
+    submittingCopy: "Submitting ACCEPT local-shadow decision...",
+  },
+  HOLD: {
+    confirmLabel: "Confirm HOLD — no packet",
+    consequences: [
+      "Zero Work Packets and one demonstration-only, non-persistent artifact may be returned.",
+      "HOLD does not pause or mutate external work.",
+    ],
+    submittingCopy: "Submitting HOLD local-shadow decision...",
+  },
+  REJECT: {
+    confirmLabel: "Confirm REJECT — no packet",
+    consequences: [
+      "Zero Work Packets and one demonstration-only, non-persistent artifact may be returned.",
+      "REJECT does not cancel or mutate external work.",
+    ],
+    submittingCopy: "Submitting REJECT local-shadow decision...",
+  },
+} as const satisfies Readonly<
+  Record<
+    LocalOperatingLoopDecision,
+    {
+      confirmLabel: string;
+      consequences: readonly string[];
+      submittingCopy: string;
+    }
+  >
+>;
+
+const localOperatingLoopDecisionConfirmationNonAuthorizations = [
+  "Local shadow only.",
+  "Not Control-Thread acceptance.",
+  "Not a durable receipt.",
+  "No persistence.",
+  "No routing or execution.",
+  "No deployment or customer effect.",
+  "No provider authority.",
+  "No Agent or Council authority.",
+  "No Batch or Program exit.",
+  "No JAI activation.",
+] as const;
+
+function isLocalOperatingLoopDecision(
+  value: unknown,
+): value is LocalOperatingLoopDecision {
+  return (
+    value === "ACCEPT" || value === "HOLD" || value === "REJECT"
+  );
+}
+
+function isStructurallyValidLocalOperatingLoopInput(
+  value: unknown,
+): value is LocalOperatingLoopInput {
+  return (
+    isRecord(value) && localOperatingLoopInputSchema.safeParse(value).success
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationUiState(
+  value: unknown,
+): value is LocalOperatingLoopUiState {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "activeRequestId",
+      "artifact",
+      "deliberationProof",
+      "findingCodes",
+      "projectionKey",
+      "recommendation",
+      "state",
+      "validationProof",
+      "workPacket",
+    ]) &&
+    typeof value.projectionKey === "string" &&
+    value.state === "AWAITING_DECISION" &&
+    isLocalOperatingLoopValidationProof(value.validationProof) &&
+    isLocalOperatingLoopDeliberationProof(value.deliberationProof) &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+    value.workPacket === null &&
+    value.artifact === null &&
+    (value.activeRequestId === null ||
+      (typeof value.activeRequestId === "number" &&
+        Number.isSafeInteger(value.activeRequestId) &&
+        value.activeRequestId > 0))
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationContext(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationContext {
+  if (
+    !isRecord(value) ||
+    (!hasExactKeys(value, [
+      "currentProjectionKey",
+      "motion",
+      "state",
+    ]) &&
+      !hasExactKeys(value, [
+        "currentProjectionKey",
+        "motion",
+        "requiresFreshValidation",
+        "state",
+      ]))
+  ) {
+    return false;
+  }
+  return (
+    typeof value.currentProjectionKey === "string" &&
+    isStructurallyValidLocalOperatingLoopInput(value.motion) &&
+    isLocalOperatingLoopDecisionConfirmationUiState(value.state) &&
+    (!("requiresFreshValidation" in value) ||
+      typeof value.requiresFreshValidation === "boolean")
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationBasis(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationBasis {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, [
+      "decision",
+      "deliberationProof",
+      "findingCodes",
+      "projectionKey",
+      "recommendation",
+      "validationProof",
+    ]) &&
+    typeof value.projectionKey === "string" &&
+    isLocalOperatingLoopValidationProof(value.validationProof) &&
+    isLocalOperatingLoopDeliberationProof(value.deliberationProof) &&
+    isLocalOperatingLoopRecommendation(value.recommendation) &&
+    isLocalOperatingLoopFindingCodeArray(value.findingCodes) &&
+    isLocalOperatingLoopDecision(value.decision)
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationState(
+  value: unknown,
+): value is LocalOperatingLoopDecisionConfirmationState {
+  if (!isRecord(value)) {
+    return false;
+  }
+  if (value.phase === "IDLE") {
+    return hasExactKeys(value, ["basis", "phase"]) && value.basis === null;
+  }
+  if (value.phase !== "REVIEWING" && value.phase !== "CLAIMED") {
+    return false;
+  }
+  return (
+    hasExactKeys(value, ["basis", "decision", "phase"]) &&
+    isLocalOperatingLoopDecision(value.decision) &&
+    isLocalOperatingLoopDecisionConfirmationBasis(value.basis) &&
+    value.decision === value.basis.decision
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationBeginInput(
+  value: unknown,
+): value is {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+  decision: LocalOperatingLoopDecision;
+} {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["confirmation", "context", "decision"]) &&
+    isLocalOperatingLoopDecisionConfirmationState(value.confirmation) &&
+    isLocalOperatingLoopDecisionConfirmationContext(value.context) &&
+    isLocalOperatingLoopDecision(value.decision)
+  );
+}
+
+function isLocalOperatingLoopDecisionConfirmationOperationInput(
+  value: unknown,
+): value is {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+} {
+  return (
+    isRecord(value) &&
+    hasExactKeys(value, ["confirmation", "context"]) &&
+    isLocalOperatingLoopDecisionConfirmationState(value.confirmation) &&
+    isLocalOperatingLoopDecisionConfirmationContext(value.context)
+  );
+}
+
+export function clearLocalOperatingLoopDecisionConfirmation(): LocalOperatingLoopDecisionConfirmationState {
+  return { phase: "IDLE", basis: null };
+}
+
+export function beginLocalOperatingLoopDecisionConfirmation(input: {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+  decision: LocalOperatingLoopDecision;
+}): Extract<
+  LocalOperatingLoopDecisionConfirmationState,
+  { phase: "REVIEWING" }
+> | null {
+  if (!isLocalOperatingLoopDecisionConfirmationBeginInput(input)) {
+    return null;
+  }
+  if (input.confirmation.phase !== "IDLE") {
+    return null;
+  }
+  const basis = createLocalOperatingLoopDecisionConfirmationBasis(
+    input.context,
+    input.decision,
+    false,
+  );
+  return basis
+    ? { phase: "REVIEWING", decision: input.decision, basis }
+    : null;
+}
+
+export function claimLocalOperatingLoopDecisionConfirmation(input: {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+}): Extract<
+  LocalOperatingLoopDecisionConfirmationState,
+  { phase: "CLAIMED" }
+> | null {
+  if (!isLocalOperatingLoopDecisionConfirmationOperationInput(input)) {
+    return null;
+  }
+  if (input.confirmation.phase !== "REVIEWING") {
+    return null;
+  }
+  if (input.confirmation.decision !== input.confirmation.basis.decision) {
+    return null;
+  }
+  const currentBasis = createLocalOperatingLoopDecisionConfirmationBasis(
+    input.context,
+    input.confirmation.decision,
+    false,
+  );
+  if (
+    !currentBasis ||
+    !hasExactLocalOperatingLoopDecisionConfirmationBasis(
+      input.confirmation.basis,
+      currentBasis,
+    )
+  ) {
+    return null;
+  }
+  return {
+    phase: "CLAIMED",
+    decision: input.confirmation.decision,
+    basis: currentBasis,
+  };
+}
+
+export function cancelLocalOperatingLoopDecisionConfirmation(
+  confirmation: LocalOperatingLoopDecisionConfirmationState,
+): LocalOperatingLoopDecisionConfirmationState {
+  if (!isLocalOperatingLoopDecisionConfirmationState(confirmation)) {
+    return clearLocalOperatingLoopDecisionConfirmation();
+  }
+  return confirmation.phase === "REVIEWING"
+    ? clearLocalOperatingLoopDecisionConfirmation()
+    : confirmation;
+}
+
+export function isLocalOperatingLoopDecisionConfirmationCurrent(input: {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+}): boolean {
+  if (!isLocalOperatingLoopDecisionConfirmationOperationInput(input)) {
+    return false;
+  }
+  if (input.confirmation.phase === "IDLE") {
+    return true;
+  }
+  if (input.confirmation.decision !== input.confirmation.basis.decision) {
+    return false;
+  }
+  const currentBasis = createLocalOperatingLoopDecisionConfirmationBasis(
+    input.context,
+    input.confirmation.decision,
+    input.confirmation.phase === "CLAIMED",
+  );
+  return (
+    currentBasis !== null &&
+    hasExactLocalOperatingLoopDecisionConfirmationBasis(
+      input.confirmation.basis,
+      currentBasis,
+    )
+  );
+}
+
+export function createLocalOperatingLoopDecisionConfirmationPresentation(input: {
+  confirmation: LocalOperatingLoopDecisionConfirmationState;
+  context: LocalOperatingLoopDecisionConfirmationContext;
+}): LocalOperatingLoopDecisionConfirmationPresentation | null {
+  if (
+    !isLocalOperatingLoopDecisionConfirmationOperationInput(input) ||
+    input.confirmation.phase === "IDLE" ||
+    !isLocalOperatingLoopDecisionConfirmationCurrent(input)
+  ) {
+    return null;
+  }
+  const { phase, basis } = input.confirmation;
+  if (!isLocalOperatingLoopDecision(basis.decision)) {
+    return null;
+  }
+  const copy = localOperatingLoopDecisionConfirmationCopy[basis.decision];
+  return {
+    phase,
+    heading: `Review ${basis.decision} decision`,
+    description:
+      "Review the intended local-shadow decision and its bounded effects before confirming.",
+    decision: basis.decision,
+    recommendation: basis.recommendation,
+    proofStatus: "Deliberation current",
+    confirmLabel: copy.confirmLabel,
+    consequences: [...copy.consequences],
+    nonAuthorizations: [
+      ...localOperatingLoopDecisionConfirmationNonAuthorizations,
+    ],
+    submittingCopy: phase === "CLAIMED" ? copy.submittingCopy : null,
+  };
+}
+
+function createLocalOperatingLoopDecisionConfirmationBasis(
+  context: LocalOperatingLoopDecisionConfirmationContext,
+  decision: LocalOperatingLoopDecision,
+  allowActiveRequest: boolean,
+): LocalOperatingLoopDecisionConfirmationBasis | null {
+  const { state } = context;
+  if (
+    context.currentProjectionKey !==
+      createLocalOperatingLoopProjectionKey(context.motion) ||
+    state.projectionKey !== context.currentProjectionKey ||
+    state.state !== "AWAITING_DECISION" ||
+    (!allowActiveRequest && state.activeRequestId !== null) ||
+    state.workPacket !== null ||
+    state.artifact !== null ||
+    !isCurrentLocalOperatingLoopDeliberationState(state) ||
+    state.validationProof === null ||
+    state.deliberationProof === null ||
+    state.recommendation === null
+  ) {
+    return null;
+  }
+
+  const proofStatus = createLocalOperatingLoopProofStatus({
+    state,
+    currentProjectionKey: context.currentProjectionKey,
+    requiresFreshValidation: context.requiresFreshValidation,
+  });
+  const explanation = createLocalOperatingLoopRecommendationExplanation({
+    motion: context.motion,
+    recommendation: state.recommendation,
+    findingCodes: state.findingCodes,
+  });
+  if (
+    proofStatus.code !== "DELIBERATION_CURRENT" ||
+    explanation.status !== "CURRENT" ||
+    (decision === "ACCEPT" && state.recommendation !== "GO")
+  ) {
+    return null;
+  }
+
+  return {
+    projectionKey: context.currentProjectionKey,
+    validationProof: state.validationProof,
+    deliberationProof: state.deliberationProof,
+    recommendation: state.recommendation,
+    findingCodes: [...state.findingCodes],
+    decision,
+  };
+}
+
+function hasExactLocalOperatingLoopDecisionConfirmationBasis(
+  left: LocalOperatingLoopDecisionConfirmationBasis,
+  right: LocalOperatingLoopDecisionConfirmationBasis,
+): boolean {
+  return (
+    left.projectionKey === right.projectionKey &&
+    left.validationProof === right.validationProof &&
+    left.deliberationProof === right.deliberationProof &&
+    left.recommendation === right.recommendation &&
+    hasExactArrayValues(left.findingCodes, right.findingCodes) &&
+    left.decision === right.decision
+  );
 }
 
 export function buildLocalOperatingLoopPacketMaterial(input: {
