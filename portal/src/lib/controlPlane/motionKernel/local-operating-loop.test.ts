@@ -4,6 +4,8 @@ import { encode, getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 
 import {
+  LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY,
+  LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
   LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
   LOCAL_OPERATING_LOOP_FINDING_ORDER,
   LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS,
@@ -21,9 +23,13 @@ import {
   canonicalizeLocalOperatingLoopValue,
   cancelLocalOperatingLoopDecisionConfirmation,
   classifyLocalOperatingLoopClientResponse,
+  claimLocalOperatingLoopBoundaryReceiptCopyAttempt,
   claimLocalOperatingLoopDecisionConfirmation,
+  clearLocalOperatingLoopBoundaryReceiptCopyState,
   clearLocalOperatingLoopDecisionConfirmation,
   createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopBoundaryReceipt,
+  createLocalOperatingLoopBoundaryReceiptCopyState,
   createLocalOperatingLoopDecisionConfirmationPresentation,
   createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopProjectionKey,
@@ -38,6 +44,8 @@ import {
   parseLocalOperatingLoopAction,
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
+  serializeLocalOperatingLoopBoundaryReceipt,
+  settleLocalOperatingLoopBoundaryReceiptCopyAttempt,
   shouldApplyLocalOperatingLoopResponse,
   shouldSuspendLocalOperatingLoopForUnstagedDraft,
   type LocalOperatingLoopAction,
@@ -47,6 +55,7 @@ import {
   type LocalOperatingLoopInput,
   type LocalOperatingLoopResponse,
   type LocalOperatingLoopSuccessResponse,
+  type LocalOperatingLoopTerminalPresentation,
   type LocalOperatingLoopUiState,
 } from "./local-operating-loop";
 import { createLocalOperatingLoopHandler } from "./local-operating-loop-handler";
@@ -241,6 +250,64 @@ function terminalUiState(
     },
     activeRequestId: null,
   };
+}
+
+function terminalPresentation(
+  decision: "ACCEPT" | "HOLD" | "REJECT",
+) {
+  const presentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(
+      terminalUiState(decision),
+    );
+  assert.ok(presentation);
+  return presentation;
+}
+
+function expectedBoundaryReceiptText(
+  presentation: LocalOperatingLoopTerminalPresentation,
+): string {
+  return [
+    LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
+    "receipt_version: founder-readable-local-shadow-boundary-receipt.v1",
+    "evidence_scope: FOUNDER_VISIBLE_REDACTED_TERMINAL_ONLY",
+    "redaction_scope: EXPORT_PAYLOAD_ONLY",
+    "underlying_transport_redacted: false",
+    `terminal_state: ${presentation.terminalState}`,
+    `decision: ${presentation.decision}`,
+    `recommendation: ${presentation.recommendation}`,
+    `finding_count: ${presentation.findingCount}`,
+    `work_packet_count: ${presentation.workPacketCount}`,
+    `work_packet_status: ${presentation.workPacketStatus}`,
+    "work_packet_content: REDACTED_NOT_EXPORTED",
+    "work_packet_execution_authority: false",
+    "artifact_count: 1",
+    "receipt_authority: DEMONSTRATION_ONLY",
+    "terminal_response_persistence_claim: NONE",
+    "program_effect_claim: NONE",
+    "not_control_thread_acceptance_receipt: true",
+    "decision_scope: GENERATE_WORK_PACKET_ONLY",
+    "artifact_execution_authority: false",
+    "server_hmac_authenticity: NOT_BROWSER_VERIFIED",
+    "transport_redaction: NOT_CLAIMED",
+    "external_persistence_effect: UNVERIFIED",
+    "provider_effect: UNVERIFIED",
+    "github_effect: UNVERIFIED",
+    "linear_effect: UNVERIFIED",
+    "agent_council_effect: UNVERIFIED",
+    "customer_effect: UNVERIFIED",
+    "execution_effect: UNVERIFIED",
+    "deployment_effect: UNVERIFIED",
+    "export_method: USER_INITIATED_LOCAL_CLIPBOARD",
+    "clipboard_write_status: NOT_INCLUDED_IN_EXPORTED_RECEIPT",
+    "clipboard_retention: OUTSIDE_APPLICATION_CONTROL",
+    "copy_control_network_dispatch: STATICALLY_EXCLUDED",
+    "copy_control_application_persistence: STATICALLY_EXCLUDED",
+    "copy_control_file_download: STATICALLY_EXCLUDED",
+    "verification_scope: CLIENT_COHERENCE_AND_STATIC_COPY_CONTROL_ISOLATION_ONLY",
+    "receipt_authenticity: NOT_PROVIDED",
+    "authority_granted: false",
+    "",
+  ].join("\n");
 }
 
 function decisionConfirmationContext(
@@ -1058,6 +1125,669 @@ async function testFounderSafeTerminalPresentationExcludesSensitiveKeys() {
   for (const value of sensitiveValues) {
     assert.equal(serialized.includes(value), false, value);
   }
+}
+
+async function testBoundaryReceiptSnapshotsForAcceptHoldAndReject() {
+  for (const decision of ["ACCEPT", "HOLD", "REJECT"] as const) {
+    const presentation = terminalPresentation(decision);
+    const receipt = createLocalOperatingLoopBoundaryReceipt(presentation);
+    assert.ok(receipt);
+    assert.deepEqual(
+      {
+        terminal_state: receipt.terminal_state,
+        decision: receipt.decision,
+        recommendation: receipt.recommendation,
+        finding_count: receipt.finding_count,
+        work_packet_count: receipt.work_packet_count,
+        work_packet_status: receipt.work_packet_status,
+      },
+      {
+        terminal_state: presentation.terminalState,
+        decision: presentation.decision,
+        recommendation: presentation.recommendation,
+        finding_count: presentation.findingCount,
+        work_packet_count: presentation.workPacketCount,
+        work_packet_status: presentation.workPacketStatus,
+      },
+    );
+    assert.equal(
+      serializeLocalOperatingLoopBoundaryReceipt(presentation),
+      expectedBoundaryReceiptText(presentation),
+      decision,
+    );
+  }
+}
+
+async function testBoundaryReceiptSerializationIsDeterministicAndLfNormalized() {
+  const presentation = terminalPresentation("ACCEPT");
+  const first = serializeLocalOperatingLoopBoundaryReceipt(presentation);
+  const second = serializeLocalOperatingLoopBoundaryReceipt(
+    structuredClone(presentation),
+  );
+  assert.equal(first, second);
+  assert.ok(first);
+  assert.ok(second);
+  assert.equal(first.startsWith("\uFEFF"), false);
+  assert.equal(first.includes("\r"), false);
+  assert.equal(first.endsWith("\n"), true);
+  assert.equal(first.endsWith("\n\n"), false);
+  assert.equal(Buffer.from(first, "utf8").equals(Buffer.from(second, "utf8")), true);
+
+  const sourceVariant = terminalUiState("ACCEPT");
+  assert.ok(sourceVariant.workPacket);
+  assert.ok(sourceVariant.artifact);
+  sourceVariant.workPacket.title = "Different motion title never exported";
+  sourceVariant.workPacket.summary =
+    "Different motion summary never exported";
+  sourceVariant.workPacket.proposed_by = "different-founder@example.com";
+  sourceVariant.artifact.actor = "different-founder@example.com";
+  sourceVariant.artifact.motion_id = "different-motion-id";
+  const equivalentPresentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(sourceVariant);
+  assert.deepEqual(equivalentPresentation, presentation);
+  assert.equal(
+    serializeLocalOperatingLoopBoundaryReceipt(equivalentPresentation),
+    first,
+  );
+  assert.doesNotMatch(first, /Date|timestamp|uuid|digest|signature|filename/i);
+}
+
+async function testBoundaryReceiptRejectsMalformedAndIncoherentPresentationsWithoutThrowing() {
+  const accepted = terminalPresentation("ACCEPT") as unknown as Record<
+    string,
+    unknown
+  >;
+  const held = terminalPresentation("HOLD") as unknown as Record<
+    string,
+    unknown
+  >;
+  const rejected = terminalPresentation("REJECT") as unknown as Record<
+    string,
+    unknown
+  >;
+  const changed = (key: string, value: unknown) => ({
+    ...accepted,
+    [key]: value,
+  });
+  const malformed: unknown[] = [
+    undefined,
+    null,
+    "terminal",
+    1,
+    true,
+    [],
+    {},
+    { ...accepted, unexpected: "source-field" },
+    changed("terminalState", "TERMINAL"),
+    changed("decision", "HOLD"),
+    changed("recommendation", "UNKNOWN"),
+    changed("recommendation", "NEEDS_REVISION"),
+    changed("findingCount", 1),
+    changed("workPacketCount", 0),
+    changed("workPacketStatus", "NONE"),
+    changed("findingCount", -1),
+    changed("findingCount", 0.5),
+    changed("findingCount", Number.NaN),
+    changed("findingCount", LOCAL_OPERATING_LOOP_FINDING_ORDER.length + 1),
+    changed("workPacketCount", 2),
+    changed("workPacketStatus", "DURABLE"),
+    changed("workPacketExecutionAuthority", true),
+    changed("artifactCount", 0),
+    changed("receiptAuthority", "AUTHORITATIVE"),
+    changed("persistence", "DURABLE"),
+    changed("programEffect", "OPENED"),
+    changed("notAControlThreadAcceptanceReceipt", false),
+    changed("decisionScope", "EXECUTE_WORK_PACKET"),
+    changed("artifactExecutionAuthority", true),
+    { ...held, workPacketCount: 1 },
+    { ...held, workPacketStatus: "PROPOSED_ONLY" },
+    { ...rejected, workPacketCount: 1 },
+    { ...rejected, workPacketStatus: "PROPOSED_ONLY" },
+    { ...held, recommendation: "BLOCKED", findingCount: 0 },
+    { ...held, recommendation: "GO", findingCount: 1 },
+  ];
+
+  for (const key of Object.keys(accepted)) {
+    const missing = { ...accepted };
+    delete missing[key];
+    malformed.push(missing);
+  }
+
+  malformed.push(Object.assign(Object.create({ actor: "inherited" }), accepted));
+  const inheritedTerminal = Object.create({ terminalState: "ACCEPTED" }) as Record<
+    string,
+    unknown
+  >;
+  Object.assign(inheritedTerminal, accepted);
+  delete inheritedTerminal.terminalState;
+  malformed.push(inheritedTerminal);
+  const symbolExtra = { ...accepted };
+  Object.defineProperty(symbolExtra, Symbol("private"), {
+    value: "symbol-source-value",
+    enumerable: true,
+  });
+  malformed.push(symbolExtra);
+  const nonEnumerableExtra = { ...accepted };
+  Object.defineProperty(nonEnumerableExtra, "privateSource", {
+    value: "non-enumerable-source-value",
+    enumerable: false,
+  });
+  malformed.push(nonEnumerableExtra);
+  const accessorValue = { ...accepted };
+  Object.defineProperty(accessorValue, "terminalState", {
+    get: () => "ACCEPTED",
+    enumerable: true,
+  });
+  malformed.push(accessorValue);
+  const revocable = Proxy.revocable({ ...accepted }, {});
+  revocable.revoke();
+  malformed.push(revocable.proxy);
+
+  for (const value of malformed) {
+    assert.equal(
+      callWithoutThrow(() => createLocalOperatingLoopBoundaryReceipt(value)),
+      null,
+    );
+    assert.equal(
+      callWithoutThrow(() => serializeLocalOperatingLoopBoundaryReceipt(value)),
+      null,
+    );
+  }
+}
+
+async function testBoundaryReceiptExcludesSensitiveKeysAndSourceValues() {
+  const state = terminalUiState("ACCEPT");
+  assert.ok(state.workPacket);
+  assert.ok(state.artifact);
+  const seededValues = [
+    "d8-founder+private@example.com",
+    "d8-motion-private-id",
+    "D8 private motion title",
+    "D8 private motion summary",
+    "jai-nexus/private-repository",
+    "JAI_PRIVATE_TARGET_THREAD",
+    "https://evidence.invalid/private-pointer",
+    "local-shadow-work-packet-private-id",
+    "local-shadow-decision-artifact-private-id",
+    "8".repeat(40),
+    "1".repeat(64),
+    "2".repeat(64),
+    "3".repeat(64),
+    `local-loop.validation.v1.${"4".repeat(64)}`,
+    `local-loop.deliberation.v1.${"5".repeat(64)}`,
+    "d8-secret-private-value",
+    "d8-token-private-value",
+    "d8-cookie-private-value",
+  ] as const;
+
+  state.projectionKey = "d8-private-projection-key";
+  state.validationProof = seededValues[13];
+  state.deliberationProof = seededValues[14];
+  state.workPacket.proposed_by = seededValues[0];
+  state.workPacket.motion_id = seededValues[1];
+  state.workPacket.title = seededValues[2];
+  state.workPacket.summary = seededValues[3];
+  state.workPacket.target_repo = seededValues[4];
+  state.workPacket.target_threads = [
+    seededValues[5] as unknown as (typeof state.workPacket.target_threads)[number],
+  ];
+  state.workPacket.evidence_pointers = [seededValues[6]];
+  state.workPacket.packet_id = seededValues[7];
+  state.workPacket.base_sha = seededValues[9] as typeof state.workPacket.base_sha;
+  state.workPacket.motion_fingerprint = seededValues[10];
+  state.artifact.actor = seededValues[0];
+  state.artifact.motion_id = seededValues[1];
+  state.artifact.artifact_id = seededValues[8];
+  state.artifact.base_sha = seededValues[9] as typeof state.artifact.base_sha;
+  state.artifact.motion_fingerprint = seededValues[10];
+  state.artifact.candidate_packet_hash = seededValues[12];
+
+  const presentation =
+    createFounderSafeLocalOperatingLoopTerminalPresentation(state);
+  assert.ok(presentation);
+  const receipt = createLocalOperatingLoopBoundaryReceipt(presentation);
+  const serialized =
+    serializeLocalOperatingLoopBoundaryReceipt(presentation);
+  assert.ok(receipt);
+  assert.ok(serialized);
+
+  const forbiddenKeys = new Set([
+    "actor",
+    "proposer",
+    "email",
+    "motionId",
+    "motion_id",
+    "title",
+    "summary",
+    "purpose",
+    "scope",
+    "requestedOutcome",
+    "risks",
+    "constraints",
+    "repository",
+    "targetRepo",
+    "targetThreads",
+    "evidencePointers",
+    "projectionKey",
+    "packetId",
+    "packet_id",
+    "artifactId",
+    "artifact_id",
+    "baseSha",
+    "base_sha",
+    "headSha",
+    "commitSha",
+    "motionFingerprint",
+    "recommendationFingerprint",
+    "candidatePacketHash",
+    "validationProof",
+    "deliberationProof",
+    "token",
+    "cookie",
+    "secret",
+    "credentials",
+    "request",
+    "response",
+    "url",
+    "userAgent",
+  ]);
+  assert.deepEqual(
+    collectNestedKeys(receipt).filter((key) => forbiddenKeys.has(key)),
+    [],
+  );
+
+  const founderVisibleMaterial = [
+    JSON.stringify(receipt),
+    serialized,
+    JSON.stringify(LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY),
+    source("src/app/operator/motion-control/LocalOperatingLoopPanel.tsx"),
+  ].join("\n");
+  for (const value of [...seededValues, state.projectionKey]) {
+    assert.equal(founderVisibleMaterial.includes(value), false, value);
+  }
+
+  assert.equal(
+    serializeLocalOperatingLoopBoundaryReceipt({
+      ...presentation,
+      actor: seededValues[0],
+      request: { token: seededValues[16] },
+    }),
+    null,
+  );
+}
+
+async function testBoundaryReceiptSeparatesTerminalClaimsFromUnverifiedExternalEffects() {
+  const receipt = createLocalOperatingLoopBoundaryReceipt(
+    terminalPresentation("HOLD"),
+  );
+  assert.ok(receipt);
+  assert.equal(receipt.terminal_response_persistence_claim, "NONE");
+  assert.equal(receipt.program_effect_claim, "NONE");
+  for (const effect of [
+    receipt.external_persistence_effect,
+    receipt.provider_effect,
+    receipt.github_effect,
+    receipt.linear_effect,
+    receipt.agent_council_effect,
+    receipt.customer_effect,
+    receipt.execution_effect,
+    receipt.deployment_effect,
+  ]) {
+    assert.equal(effect, "UNVERIFIED");
+  }
+  const serialized = serializeLocalOperatingLoopBoundaryReceipt(
+    terminalPresentation("HOLD"),
+  );
+  assert.ok(serialized);
+  assert.match(serialized, /terminal_response_persistence_claim: NONE\n/);
+  assert.match(serialized, /external_persistence_effect: UNVERIFIED\n/);
+  assert.doesNotMatch(serialized, /external_persistence_effect: NONE/);
+}
+
+async function testBoundaryReceiptNeverClaimsTransportRedactionOrProofAuthenticity() {
+  const receipt = createLocalOperatingLoopBoundaryReceipt(
+    terminalPresentation("REJECT"),
+  );
+  assert.ok(receipt);
+  assert.equal(receipt.underlying_transport_redacted, false);
+  assert.equal(receipt.transport_redaction, "NOT_CLAIMED");
+  assert.equal(receipt.server_hmac_authenticity, "NOT_BROWSER_VERIFIED");
+  assert.equal(receipt.receipt_authenticity, "NOT_PROVIDED");
+  assert.equal(receipt.authority_granted, false);
+  const serialized = serializeLocalOperatingLoopBoundaryReceipt(
+    terminalPresentation("REJECT"),
+  );
+  assert.ok(serialized);
+  assert.doesNotMatch(
+    serialized,
+    /validationProof|deliberationProof|HMAC material|SIGNED|AUTHENTICATED/,
+  );
+  assert.match(serialized, /transport_redaction: NOT_CLAIMED/);
+  assert.match(serialized, /receipt_authenticity: NOT_PROVIDED/);
+}
+
+async function testBoundaryReceiptCopyControlIsTerminalOnlyAndReceiptOnly() {
+  const draft = createLocalOperatingLoopUiState("draft-projection");
+  assert.equal(
+    createFounderSafeLocalOperatingLoopTerminalPresentation(draft),
+    null,
+  );
+  assert.equal(createLocalOperatingLoopBoundaryReceipt(draft), null);
+  assert.equal(serializeLocalOperatingLoopBoundaryReceipt(draft), null);
+
+  for (const decision of ["ACCEPT", "HOLD", "REJECT"] as const) {
+    assert.ok(
+      serializeLocalOperatingLoopBoundaryReceipt(
+        terminalPresentation(decision),
+      ),
+    );
+  }
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const copyRegion = boundedSource(
+    panelSource,
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_START",
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_END",
+  );
+  assert.match(
+    panelSource,
+    /createLocalOperatingLoopBoundaryReceipt\(terminalPresentation\)/,
+  );
+  assert.match(
+    panelSource,
+    /serializeLocalOperatingLoopBoundaryReceipt\(terminalPresentation\)/,
+  );
+  assert.equal(
+    panelSource.match(/Copy redacted boundary receipt/g)?.length,
+    1,
+  );
+  assert.match(copyRegion, /navigator\.clipboard\.writeText\(receiptText\)/);
+  assert.doesNotMatch(
+    copyRegion,
+    /writeText\((?:uiState|terminalPresentation|boundaryReceipt|response|request)/,
+  );
+  assert.ok(
+    panelSource.indexOf("function TerminalPresentation") <
+      panelSource.indexOf("Copy redacted boundary receipt"),
+  );
+}
+
+async function testBoundaryReceiptCopyLifecycleIsSingleFlightAndStaleSafe() {
+  const initial = createLocalOperatingLoopBoundaryReceiptCopyState();
+  assert.deepEqual(initial, { status: "IDLE", attemptId: 0 });
+
+  const first = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: initial,
+    clipboardAvailable: true,
+  });
+  assert.equal(first.shouldWrite, true);
+  assert.equal(first.attemptId, 1);
+  assert.deepEqual(first.state, { status: "COPYING", attemptId: 1 });
+
+  const duplicate = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: first.state,
+    clipboardAvailable: true,
+  });
+  assert.equal(duplicate.shouldWrite, false);
+  assert.equal(duplicate.attemptId, null);
+  assert.equal(duplicate.state, first.state);
+
+  assert.equal(
+    settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+      state: first.state,
+      attemptId: 999,
+      receiptIsCurrent: true,
+      outcome: "COPIED",
+    }),
+    first.state,
+  );
+  const copied = settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: first.state,
+    attemptId: 1,
+    receiptIsCurrent: true,
+    outcome: "COPIED",
+  });
+  assert.deepEqual(copied, { status: "COPIED", attemptId: 1 });
+
+  const second = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: copied,
+    clipboardAvailable: true,
+  });
+  assert.deepEqual(second.state, { status: "COPYING", attemptId: 2 });
+  assert.equal(
+    settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+      state: second.state,
+      attemptId: 1,
+      receiptIsCurrent: true,
+      outcome: "FAILED",
+    }),
+    second.state,
+  );
+  const stale = settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: second.state,
+    attemptId: 2,
+    receiptIsCurrent: false,
+    outcome: "COPIED",
+  });
+  assert.deepEqual(stale, { status: "IDLE", attemptId: 3 });
+}
+
+async function testBoundaryReceiptCopyFailureIsFixedFailClosedAndAccessible() {
+  const unavailable = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: createLocalOperatingLoopBoundaryReceiptCopyState(),
+    clipboardAvailable: false,
+  });
+  assert.deepEqual(unavailable.state, {
+    status: "UNAVAILABLE",
+    attemptId: 1,
+  });
+  assert.equal(unavailable.shouldWrite, false);
+  assert.equal(
+    LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY.UNAVAILABLE,
+    "Clipboard export is unavailable in this browser context. No fallback was attempted.",
+  );
+
+  const claimed = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: createLocalOperatingLoopBoundaryReceiptCopyState(),
+    clipboardAvailable: true,
+  });
+  assert.ok(claimed.attemptId);
+  const failed = settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+    state: claimed.state,
+    attemptId: claimed.attemptId,
+    receiptIsCurrent: true,
+    outcome: "FAILED",
+  });
+  assert.equal(failed.status, "FAILED");
+  assert.equal(
+    LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY.FAILED,
+    "The browser did not confirm the clipboard write. No fallback was attempted.",
+  );
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const previewRegion = panelSource.slice(
+    panelSource.indexOf("function BoundaryReceiptPreview"),
+  );
+  assert.match(previewRegion, /<article/);
+  assert.match(previewRegion, />\s*Redacted boundary receipt\s*</);
+  assert.match(previewRegion, /type="button"/);
+  assert.match(
+    previewRegion,
+    /aria-describedby="local-operating-loop-boundary-receipt-privacy-warning"/,
+  );
+  assert.match(previewRegion, /aria-busy=/);
+  assert.match(previewRegion, /role=\{alertStatus \? "alert" : "status"\}/);
+  assert.match(previewRegion, /aria-live=\{alertStatus \? "assertive" : "polite"\}/);
+  assert.match(previewRegion, /Clipboard unavailable/);
+  assert.doesNotMatch(previewRegion, /\.focus\(/);
+  assert.doesNotMatch(previewRegion, /console\./);
+}
+
+async function testBoundaryReceiptCopyUsesNoNetworkStorageDownloadOrFallbackPrimitive() {
+  const moduleSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  const receiptRegion = boundedSource(
+    moduleSource,
+    "// D8_BOUNDARY_RECEIPT_SOURCE_START",
+    "// D8_BOUNDARY_RECEIPT_SOURCE_END",
+  );
+  const copyRegion = boundedSource(
+    panelSource,
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_START",
+    "// D8_BOUNDARY_RECEIPT_COPY_CONTROL_END",
+  );
+  const previewRegion = panelSource.slice(
+    panelSource.indexOf("function BoundaryReceiptPreview"),
+  );
+  const d8Source = [receiptRegion, copyRegion, previewRegion].join("\n");
+  const forbiddenPatterns = [
+    /fetch\s*\(/,
+    /XMLHttpRequest/,
+    /WebSocket/,
+    /EventSource/,
+    /sendBeacon/,
+    /localStorage/,
+    /sessionStorage/,
+    /indexedDB/i,
+    /caches\./,
+    /document\.cookie/,
+    /\bfs\b/,
+    /Blob\s*\(/,
+    /URL\.createObjectURL/,
+    /window\.open/,
+    /navigator\.share/,
+    /showSaveFilePicker/,
+    /clipboard\.readText/,
+    /permissions\.query/,
+    /execCommand/,
+    /<textarea/,
+    /<pre/,
+    /<a[^>]+download/,
+    /JSON\.stringify/,
+    /providerClient|modelClient|githubClient|linearClient/i,
+  ];
+  for (const pattern of forbiddenPatterns) {
+    assert.doesNotMatch(d8Source, pattern);
+  }
+  assert.match(copyRegion, /window\.isSecureContext/);
+  assert.match(copyRegion, /navigator\.clipboard\.writeText\(receiptText\)/);
+  assert.match(copyRegion, /catch\s*\{[\s\S]*clipboardAvailable = false/);
+  assert.equal(copyRegion.includes("await"), false);
+}
+
+async function testBoundaryReceiptResetInvalidationAndLifecycleClearCopyStatus() {
+  for (const state of [
+    { status: "COPYING", attemptId: 7 },
+    { status: "COPIED", attemptId: 8 },
+    { status: "UNAVAILABLE", attemptId: 9 },
+    { status: "FAILED", attemptId: 10 },
+  ] as const) {
+    const cleared = clearLocalOperatingLoopBoundaryReceiptCopyState(state);
+    assert.deepEqual(cleared, {
+      status: "IDLE",
+      attemptId: state.attemptId + 1,
+    });
+  }
+  assert.deepEqual(
+    clearLocalOperatingLoopBoundaryReceiptCopyState({
+      status: "COPYING",
+      attemptId: Number.MAX_SAFE_INTEGER,
+    }),
+    { status: "IDLE", attemptId: 1 },
+  );
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  assert.match(
+    panelSource,
+    /<BoundaryReceiptPreview\s+key=\{boundaryReceiptText\}/,
+  );
+  assert.match(
+    panelSource,
+    /mountedRef\.current = false/,
+  );
+  assert.match(
+    panelSource,
+    /clearLocalOperatingLoopBoundaryReceiptCopyState\(\s*copyStateRef\.current/,
+  );
+  assert.match(
+    panelSource,
+    /\{hasTerminalState \? \([\s\S]*terminalPresentation \? \(/,
+  );
+  assert.match(
+    panelSource,
+    /<LocalOperatingLoopProjectionPanel\s+key=\{projectionKey\}/,
+  );
+}
+
+async function testD7DecisionConfirmationAndD2ThroughD6ContractsRemainFrozen() {
+  assert.equal(
+    LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
+    "jai-local-operating-loop.v1",
+  );
+  assert.equal(
+    LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
+    "a0e7b76af02899659529355773bf293d58269897",
+  );
+  const context = decisionConfirmationContext();
+  const reviewing = beginLocalOperatingLoopDecisionConfirmation({
+    confirmation: clearLocalOperatingLoopDecisionConfirmation(),
+    context,
+    decision: "ACCEPT",
+  });
+  assert.ok(reviewing);
+  const presentation =
+    createLocalOperatingLoopDecisionConfirmationPresentation({
+      confirmation: reviewing,
+      context,
+    });
+  assert.ok(presentation);
+  assert.equal(presentation.heading, "Review ACCEPT decision");
+  assert.equal(presentation.proofStatus, "Deliberation current");
+  assert.match(presentation.confirmLabel, /^Confirm ACCEPT/);
+  const claimed = claimLocalOperatingLoopDecisionConfirmation({
+    confirmation: reviewing,
+    context,
+  });
+  assert.ok(claimed);
+  assert.equal(claimed.phase, "CLAIMED");
+
+  const panelSource = source(
+    "src/app/operator/motion-control/LocalOperatingLoopPanel.tsx",
+  );
+  for (const copy of [
+    "Review ACCEPT",
+    "Review HOLD",
+    "Review REJECT",
+    "Cancel decision",
+  ]) {
+    assert.match(panelSource, new RegExp(copy));
+  }
+  assert.match(panelSource, /event\.key === "Escape"/);
+  assert.match(panelSource, /confirmationHeadingRef\.current\?\.focus\(\)/);
+  assert.match(panelSource, /claimLocalOperatingLoopDecisionConfirmation/);
+
+  const moduleSource = source(
+    "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
+  );
+  const receiptRegion = boundedSource(
+    moduleSource,
+    "// D8_BOUNDARY_RECEIPT_SOURCE_START",
+    "// D8_BOUNDARY_RECEIPT_SOURCE_END",
+  );
+  assert.doesNotMatch(
+    receiptRegion,
+    /parseLocalOperatingLoopAction|deriveLocalOperatingLoopRecommendation|hashLocalOperatingLoopCanonicalValue|buildLocalOperatingLoopWorkPacket|classifyLocalOperatingLoopClientResponse/,
+  );
 }
 
 async function testTerminalUiContainsNoRawJsonSink() {
@@ -5430,6 +6160,18 @@ function source(path: string): string {
   return readFileSync(path, "utf8");
 }
 
+function boundedSource(
+  value: string,
+  startMarker: string,
+  endMarker: string,
+): string {
+  const start = value.indexOf(startMarker);
+  const end = value.indexOf(endMarker);
+  assert.ok(start >= 0, startMarker);
+  assert.ok(end > start, endMarker);
+  return value.slice(start, end + endMarker.length);
+}
+
 function collectNestedKeys(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.flatMap((item) => collectNestedKeys(item));
@@ -5466,6 +6208,18 @@ await testProofStatusReturnsNotCurrentForInconsistentState();
 await testFounderSafeTerminalPresentationSnapshots();
 await testFounderSafeTerminalPresentationRejectsIncoherentState();
 await testFounderSafeTerminalPresentationExcludesSensitiveKeys();
+await testBoundaryReceiptSnapshotsForAcceptHoldAndReject();
+await testBoundaryReceiptSerializationIsDeterministicAndLfNormalized();
+await testBoundaryReceiptRejectsMalformedAndIncoherentPresentationsWithoutThrowing();
+await testBoundaryReceiptExcludesSensitiveKeysAndSourceValues();
+await testBoundaryReceiptSeparatesTerminalClaimsFromUnverifiedExternalEffects();
+await testBoundaryReceiptNeverClaimsTransportRedactionOrProofAuthenticity();
+await testBoundaryReceiptCopyControlIsTerminalOnlyAndReceiptOnly();
+await testBoundaryReceiptCopyLifecycleIsSingleFlightAndStaleSafe();
+await testBoundaryReceiptCopyFailureIsFixedFailClosedAndAccessible();
+await testBoundaryReceiptCopyUsesNoNetworkStorageDownloadOrFallbackPrimitive();
+await testBoundaryReceiptResetInvalidationAndLifecycleClearCopyStatus();
+await testD7DecisionConfirmationAndD2ThroughD6ContractsRemainFrozen();
 await testTerminalUiContainsNoRawJsonSink();
 await testUnstagedDraftChangesSuspendOnlySelectedComposedProjection();
 await testComposerEditsNeverAutoStage();

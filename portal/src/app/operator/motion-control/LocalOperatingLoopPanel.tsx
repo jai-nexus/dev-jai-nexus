@@ -9,6 +9,7 @@ import {
   OperatorSectionHeader,
 } from "@/components/operator/slate";
 import {
+  LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY,
   LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
   LOCAL_OPERATING_LOOP_PHASE_COPY,
   LOCAL_OPERATING_LOOP_REAUTHENTICATION_HREF,
@@ -20,9 +21,13 @@ import {
   beginLocalOperatingLoopDecisionConfirmation,
   cancelLocalOperatingLoopDecisionConfirmation,
   classifyLocalOperatingLoopClientResponse,
+  claimLocalOperatingLoopBoundaryReceiptCopyAttempt,
   claimLocalOperatingLoopDecisionConfirmation,
+  clearLocalOperatingLoopBoundaryReceiptCopyState,
   clearLocalOperatingLoopDecisionConfirmation,
   createFounderSafeLocalOperatingLoopTerminalPresentation,
+  createLocalOperatingLoopBoundaryReceipt,
+  createLocalOperatingLoopBoundaryReceiptCopyState,
   createLocalOperatingLoopDecisionConfirmationPresentation,
   createLocalOperatingLoopProofStatus,
   createLocalOperatingLoopRecommendationExplanation,
@@ -33,8 +38,12 @@ import {
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   isLocalOperatingLoopDecisionConfirmationCurrent,
+  serializeLocalOperatingLoopBoundaryReceipt,
+  settleLocalOperatingLoopBoundaryReceiptCopyAttempt,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopAction,
+  type LocalOperatingLoopBoundaryReceipt,
+  type LocalOperatingLoopBoundaryReceiptCopyState,
   type LocalOperatingLoopDecision,
   type LocalOperatingLoopDecisionConfirmationContext,
   type LocalOperatingLoopDecisionConfirmationState,
@@ -422,6 +431,12 @@ function LocalOperatingLoopProjectionPanel({
     uiState.state === "REJECTED";
   const terminalPresentation =
     createFounderSafeLocalOperatingLoopTerminalPresentation(uiState);
+  const boundaryReceipt = terminalPresentation
+    ? createLocalOperatingLoopBoundaryReceipt(terminalPresentation)
+    : null;
+  const boundaryReceiptText = terminalPresentation
+    ? serializeLocalOperatingLoopBoundaryReceipt(terminalPresentation)
+    : null;
   const confirmationContext =
     useMemo<LocalOperatingLoopDecisionConfirmationContext | null>(
       () =>
@@ -891,7 +906,11 @@ function LocalOperatingLoopProjectionPanel({
 
       {hasTerminalState ? (
         terminalPresentation ? (
-          <TerminalPresentation presentation={terminalPresentation} />
+          <TerminalPresentation
+            presentation={terminalPresentation}
+            boundaryReceipt={boundaryReceipt}
+            boundaryReceiptText={boundaryReceiptText}
+          />
         ) : (
           <div
             aria-labelledby="local-operating-loop-terminal-unavailable-heading"
@@ -1016,8 +1035,12 @@ function ProjectionField({
 
 function TerminalPresentation({
   presentation,
+  boundaryReceipt,
+  boundaryReceiptText,
 }: {
   presentation: LocalOperatingLoopTerminalPresentation;
+  boundaryReceipt: LocalOperatingLoopBoundaryReceipt | null;
+  boundaryReceiptText: string | null;
 }) {
   return (
     <OperatorGateCard>
@@ -1090,6 +1113,250 @@ function TerminalPresentation({
           />
         </dl>
       </section>
+      {boundaryReceipt && boundaryReceiptText ? (
+        <BoundaryReceiptPreview
+          key={boundaryReceiptText}
+          receipt={boundaryReceipt}
+          receiptText={boundaryReceiptText}
+        />
+      ) : null}
     </OperatorGateCard>
+  );
+}
+
+function BoundaryReceiptPreview({
+  receipt,
+  receiptText,
+}: {
+  receipt: LocalOperatingLoopBoundaryReceipt;
+  receiptText: string;
+}) {
+  const [copyState, setCopyState] =
+    useState<LocalOperatingLoopBoundaryReceiptCopyState>(() =>
+      createLocalOperatingLoopBoundaryReceiptCopyState(),
+    );
+  const copyStateRef = useRef<LocalOperatingLoopBoundaryReceiptCopyState>(
+    createLocalOperatingLoopBoundaryReceiptCopyState(),
+  );
+  const mountedRef = useRef(false);
+  const writeCopyState = useCallback(
+    (next: LocalOperatingLoopBoundaryReceiptCopyState) => {
+      copyStateRef.current = next;
+      setCopyState(next);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      copyStateRef.current =
+        clearLocalOperatingLoopBoundaryReceiptCopyState(
+          copyStateRef.current,
+        );
+    };
+  }, []);
+
+  // D8_BOUNDARY_RECEIPT_COPY_CONTROL_START
+  function handleBoundaryReceiptCopy() {
+    let clipboardAvailable = false;
+    try {
+      clipboardAvailable =
+        window.isSecureContext &&
+        typeof navigator.clipboard?.writeText === "function";
+    } catch {
+      clipboardAvailable = false;
+    }
+    const claim = claimLocalOperatingLoopBoundaryReceiptCopyAttempt({
+      state: copyStateRef.current,
+      clipboardAvailable,
+    });
+    writeCopyState(claim.state);
+    if (!claim.shouldWrite || claim.attemptId === null) {
+      return;
+    }
+
+    const attemptId = claim.attemptId;
+    const settle = (outcome: "COPIED" | "FAILED") => {
+      if (!mountedRef.current) {
+        return;
+      }
+      const current = copyStateRef.current;
+      const next = settleLocalOperatingLoopBoundaryReceiptCopyAttempt({
+        state: current,
+        attemptId,
+        receiptIsCurrent: true,
+        outcome,
+      });
+      if (next !== current) {
+        writeCopyState(next);
+      }
+    };
+
+    let writeResult: Promise<void>;
+    try {
+      writeResult = navigator.clipboard.writeText(receiptText);
+    } catch {
+      settle("FAILED");
+      return;
+    }
+    void writeResult.then(
+      () => settle("COPIED"),
+      () => settle("FAILED"),
+    );
+  }
+  // D8_BOUNDARY_RECEIPT_COPY_CONTROL_END
+
+  const fields = [
+    ["receipt_version", receipt.receipt_version],
+    ["evidence_scope", receipt.evidence_scope],
+    ["redaction_scope", receipt.redaction_scope],
+    [
+      "underlying_transport_redacted",
+      String(receipt.underlying_transport_redacted),
+    ],
+    ["terminal_state", receipt.terminal_state],
+    ["decision", receipt.decision],
+    ["recommendation", receipt.recommendation],
+    ["finding_count", String(receipt.finding_count)],
+    ["work_packet_count", String(receipt.work_packet_count)],
+    ["work_packet_status", receipt.work_packet_status],
+    ["work_packet_content", receipt.work_packet_content],
+    [
+      "work_packet_execution_authority",
+      String(receipt.work_packet_execution_authority),
+    ],
+    ["artifact_count", String(receipt.artifact_count)],
+    ["receipt_authority", receipt.receipt_authority],
+    [
+      "terminal_response_persistence_claim",
+      receipt.terminal_response_persistence_claim,
+    ],
+    ["program_effect_claim", receipt.program_effect_claim],
+    [
+      "not_control_thread_acceptance_receipt",
+      String(receipt.not_control_thread_acceptance_receipt),
+    ],
+    ["decision_scope", receipt.decision_scope],
+    [
+      "artifact_execution_authority",
+      String(receipt.artifact_execution_authority),
+    ],
+    ["server_hmac_authenticity", receipt.server_hmac_authenticity],
+    ["transport_redaction", receipt.transport_redaction],
+    ["external_persistence_effect", receipt.external_persistence_effect],
+    ["provider_effect", receipt.provider_effect],
+    ["github_effect", receipt.github_effect],
+    ["linear_effect", receipt.linear_effect],
+    ["agent_council_effect", receipt.agent_council_effect],
+    ["customer_effect", receipt.customer_effect],
+    ["execution_effect", receipt.execution_effect],
+    ["deployment_effect", receipt.deployment_effect],
+    ["export_method", receipt.export_method],
+    ["clipboard_write_status", receipt.clipboard_write_status],
+    ["clipboard_retention", receipt.clipboard_retention],
+    [
+      "copy_control_network_dispatch",
+      receipt.copy_control_network_dispatch,
+    ],
+    [
+      "copy_control_application_persistence",
+      receipt.copy_control_application_persistence,
+    ],
+    [
+      "copy_control_file_download",
+      receipt.copy_control_file_download,
+    ],
+    ["verification_scope", receipt.verification_scope],
+    ["receipt_authenticity", receipt.receipt_authenticity],
+    ["authority_granted", String(receipt.authority_granted)],
+  ] as const;
+  const statusCopy =
+    LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY[
+      copyState.status
+    ];
+  const alertStatus =
+    copyState.status === "UNAVAILABLE" || copyState.status === "FAILED";
+  const unavailable = copyState.status === "UNAVAILABLE";
+
+  return (
+    <article
+      aria-labelledby="local-operating-loop-boundary-receipt-heading"
+      className="mt-6 border-t border-slate-800 pt-5"
+    >
+      <h3
+        id="local-operating-loop-boundary-receipt-heading"
+        className="text-sm font-semibold text-slate-100"
+      >
+        Redacted boundary receipt
+      </h3>
+      <p className="mt-2 font-mono text-xs text-cyan-200">
+        {receipt.heading}
+      </p>
+      <p
+        id="local-operating-loop-boundary-receipt-privacy-warning"
+        className="mt-3 text-xs leading-5 text-amber-200"
+      >
+        Only this allowlisted redacted receipt will be copied. Work Packet
+        content and sensitive source fields are omitted. Clipboard export is a
+        separate browser and operating-system effect; retention and downstream
+        paste behavior are outside JAI NEXUS control. This receipt does not
+        redact browser memory, the underlying response, or network tooling.
+        Persistence and external-system absence are not runtime-verified. The
+        receipt is not signed, authoritative, durable, executable, or a
+        Control-Thread receipt.
+      </p>
+      <dl className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {fields.map(([label, value]) => (
+          <BoundaryReceiptField key={label} label={label} value={value} />
+        ))}
+      </dl>
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handleBoundaryReceiptCopy}
+          disabled={copyState.status === "COPYING" || unavailable}
+          aria-busy={copyState.status === "COPYING"}
+          aria-describedby="local-operating-loop-boundary-receipt-privacy-warning"
+          className="rounded border border-cyan-500 bg-cyan-950 px-4 py-2 text-sm font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:border-slate-800 disabled:bg-slate-900 disabled:text-slate-500"
+        >
+          Copy redacted boundary receipt
+        </button>
+        {unavailable ? (
+          <span className="font-mono text-xs uppercase text-red-200">
+            Clipboard unavailable
+          </span>
+        ) : null}
+      </div>
+      {statusCopy ? (
+        <p
+          role={alertStatus ? "alert" : "status"}
+          aria-live={alertStatus ? "assertive" : "polite"}
+          className={`mt-3 text-xs leading-5 ${
+            alertStatus ? "text-red-200" : "text-cyan-200"
+          }`}
+        >
+          {statusCopy}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
+function BoundaryReceiptField({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="break-words font-mono text-xs uppercase text-slate-500">
+        {label}
+      </dt>
+      <dd className="mt-1 break-words text-xs text-slate-200">{value}</dd>
+    </div>
   );
 }

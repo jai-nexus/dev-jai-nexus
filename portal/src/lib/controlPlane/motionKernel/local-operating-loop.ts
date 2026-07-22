@@ -213,6 +213,77 @@ export type LocalOperatingLoopTerminalPresentation = {
   artifactExecutionAuthority: false;
 };
 
+export const LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING =
+  "JAI NEXUS — LOCAL-SHADOW BOUNDARY RECEIPT" as const;
+
+export type LocalOperatingLoopBoundaryReceipt = {
+  heading: typeof LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING;
+  receipt_version: "founder-readable-local-shadow-boundary-receipt.v1";
+  evidence_scope: "FOUNDER_VISIBLE_REDACTED_TERMINAL_ONLY";
+  redaction_scope: "EXPORT_PAYLOAD_ONLY";
+  underlying_transport_redacted: false;
+  terminal_state: LocalOperatingLoopTerminalPresentation["terminalState"];
+  decision: LocalOperatingLoopDecision;
+  recommendation: LocalOperatingLoopRecommendation;
+  finding_count: number;
+  work_packet_count: 0 | 1;
+  work_packet_status: "NONE" | "PROPOSED_ONLY";
+  work_packet_content: "REDACTED_NOT_EXPORTED";
+  work_packet_execution_authority: false;
+  artifact_count: 1;
+  receipt_authority: "DEMONSTRATION_ONLY";
+  terminal_response_persistence_claim: "NONE";
+  program_effect_claim: "NONE";
+  not_control_thread_acceptance_receipt: true;
+  decision_scope: "GENERATE_WORK_PACKET_ONLY";
+  artifact_execution_authority: false;
+  server_hmac_authenticity: "NOT_BROWSER_VERIFIED";
+  transport_redaction: "NOT_CLAIMED";
+  external_persistence_effect: "UNVERIFIED";
+  provider_effect: "UNVERIFIED";
+  github_effect: "UNVERIFIED";
+  linear_effect: "UNVERIFIED";
+  agent_council_effect: "UNVERIFIED";
+  customer_effect: "UNVERIFIED";
+  execution_effect: "UNVERIFIED";
+  deployment_effect: "UNVERIFIED";
+  export_method: "USER_INITIATED_LOCAL_CLIPBOARD";
+  clipboard_write_status: "NOT_INCLUDED_IN_EXPORTED_RECEIPT";
+  clipboard_retention: "OUTSIDE_APPLICATION_CONTROL";
+  copy_control_network_dispatch: "STATICALLY_EXCLUDED";
+  copy_control_application_persistence: "STATICALLY_EXCLUDED";
+  copy_control_file_download: "STATICALLY_EXCLUDED";
+  verification_scope: "CLIENT_COHERENCE_AND_STATIC_COPY_CONTROL_ISOLATION_ONLY";
+  receipt_authenticity: "NOT_PROVIDED";
+  authority_granted: false;
+};
+
+export type LocalOperatingLoopBoundaryReceiptCopyStatus =
+  | "IDLE"
+  | "COPYING"
+  | "COPIED"
+  | "UNAVAILABLE"
+  | "FAILED";
+
+export type LocalOperatingLoopBoundaryReceiptCopyState = {
+  status: LocalOperatingLoopBoundaryReceiptCopyStatus;
+  attemptId: number;
+};
+
+export const LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY = {
+  IDLE: null,
+  COPYING:
+    "Copying the redacted boundary receipt to the browser clipboard…",
+  COPIED:
+    "Browser reported that the redacted boundary receipt was written to the clipboard. Readback, retention, later paste behavior, and downstream disclosure are not verified.",
+  UNAVAILABLE:
+    "Clipboard export is unavailable in this browser context. No fallback was attempted.",
+  FAILED:
+    "The browser did not confirm the clipboard write. No fallback was attempted.",
+} as const satisfies Readonly<
+  Record<LocalOperatingLoopBoundaryReceiptCopyStatus, string | null>
+>;
+
 export type LocalOperatingLoopDecisionConfirmationBasis = {
   projectionKey: string;
   validationProof: string;
@@ -1008,6 +1079,286 @@ export function createFounderSafeLocalOperatingLoopTerminalPresentation(
     artifactExecutionAuthority: false,
   };
 }
+
+// D8_BOUNDARY_RECEIPT_SOURCE_START
+function hasExactLocalOperatingLoopBoundaryReceiptInputKeys(
+  value: Record<string, unknown>,
+  expected: string[],
+): boolean {
+  const keys = Reflect.ownKeys(value);
+  if (
+    keys.length !== expected.length ||
+    keys.some((key) => typeof key !== "string")
+  ) {
+    return false;
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  return (
+    (keys as string[]).sort().join("\n") ===
+      [...expected].sort().join("\n") &&
+    (keys as string[]).every((key) => {
+      const descriptor = descriptors[key];
+      return Boolean(
+        descriptor && descriptor.enumerable && "value" in descriptor,
+      );
+    })
+  );
+}
+
+function isExactLocalOperatingLoopTerminalPresentation(
+  value: unknown,
+): value is LocalOperatingLoopTerminalPresentation {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return false;
+  }
+  if (
+    !hasExactLocalOperatingLoopBoundaryReceiptInputKeys(value, [
+      "artifactCount",
+      "artifactExecutionAuthority",
+      "decision",
+      "decisionScope",
+      "findingCount",
+      "notAControlThreadAcceptanceReceipt",
+      "persistence",
+      "programEffect",
+      "receiptAuthority",
+      "recommendation",
+      "terminalState",
+      "workPacketCount",
+      "workPacketExecutionAuthority",
+      "workPacketStatus",
+    ]) ||
+    !isLocalOperatingLoopTerminalState(value.terminalState) ||
+    !isLocalOperatingLoopDecision(value.decision) ||
+    !isLocalOperatingLoopRecommendation(value.recommendation) ||
+    typeof value.findingCount !== "number" ||
+    !Number.isSafeInteger(value.findingCount) ||
+    value.findingCount < 0 ||
+    value.findingCount > LOCAL_OPERATING_LOOP_FINDING_ORDER.length ||
+    (value.recommendation === "GO" && value.findingCount !== 0) ||
+    (value.recommendation !== "GO" && value.findingCount === 0) ||
+    (value.workPacketCount !== 0 && value.workPacketCount !== 1) ||
+    (value.workPacketStatus !== "NONE" &&
+      value.workPacketStatus !== "PROPOSED_ONLY") ||
+    value.workPacketExecutionAuthority !== false ||
+    value.artifactCount !== 1 ||
+    value.receiptAuthority !== "DEMONSTRATION_ONLY" ||
+    value.persistence !== "NONE" ||
+    value.programEffect !== "NONE" ||
+    value.notAControlThreadAcceptanceReceipt !== true ||
+    value.decisionScope !== "GENERATE_WORK_PACKET_ONLY" ||
+    value.artifactExecutionAuthority !== false
+  ) {
+    return false;
+  }
+
+  const expectedDecision =
+    localOperatingLoopDecisionByTerminalState[value.terminalState];
+  if (value.decision !== expectedDecision) {
+    return false;
+  }
+
+  if (value.terminalState === "ACCEPTED") {
+    return (
+      value.decision === "ACCEPT" &&
+      value.recommendation === "GO" &&
+      value.findingCount === 0 &&
+      value.workPacketCount === 1 &&
+      value.workPacketStatus === "PROPOSED_ONLY"
+    );
+  }
+
+  return (
+    value.decision !== "ACCEPT" &&
+    value.workPacketCount === 0 &&
+    value.workPacketStatus === "NONE"
+  );
+}
+
+export function createLocalOperatingLoopBoundaryReceipt(
+  value: unknown,
+): LocalOperatingLoopBoundaryReceipt | null {
+  try {
+    if (!isExactLocalOperatingLoopTerminalPresentation(value)) {
+      return null;
+    }
+    return {
+      heading: LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
+      receipt_version:
+        "founder-readable-local-shadow-boundary-receipt.v1",
+      evidence_scope: "FOUNDER_VISIBLE_REDACTED_TERMINAL_ONLY",
+      redaction_scope: "EXPORT_PAYLOAD_ONLY",
+      underlying_transport_redacted: false,
+      terminal_state: value.terminalState,
+      decision: value.decision,
+      recommendation: value.recommendation,
+      finding_count: value.findingCount,
+      work_packet_count: value.workPacketCount,
+      work_packet_status: value.workPacketStatus,
+      work_packet_content: "REDACTED_NOT_EXPORTED",
+      work_packet_execution_authority: false,
+      artifact_count: 1,
+      receipt_authority: "DEMONSTRATION_ONLY",
+      terminal_response_persistence_claim: "NONE",
+      program_effect_claim: "NONE",
+      not_control_thread_acceptance_receipt: true,
+      decision_scope: "GENERATE_WORK_PACKET_ONLY",
+      artifact_execution_authority: false,
+      server_hmac_authenticity: "NOT_BROWSER_VERIFIED",
+      transport_redaction: "NOT_CLAIMED",
+      external_persistence_effect: "UNVERIFIED",
+      provider_effect: "UNVERIFIED",
+      github_effect: "UNVERIFIED",
+      linear_effect: "UNVERIFIED",
+      agent_council_effect: "UNVERIFIED",
+      customer_effect: "UNVERIFIED",
+      execution_effect: "UNVERIFIED",
+      deployment_effect: "UNVERIFIED",
+      export_method: "USER_INITIATED_LOCAL_CLIPBOARD",
+      clipboard_write_status: "NOT_INCLUDED_IN_EXPORTED_RECEIPT",
+      clipboard_retention: "OUTSIDE_APPLICATION_CONTROL",
+      copy_control_network_dispatch: "STATICALLY_EXCLUDED",
+      copy_control_application_persistence: "STATICALLY_EXCLUDED",
+      copy_control_file_download: "STATICALLY_EXCLUDED",
+      verification_scope:
+        "CLIENT_COHERENCE_AND_STATIC_COPY_CONTROL_ISOLATION_ONLY",
+      receipt_authenticity: "NOT_PROVIDED",
+      authority_granted: false,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function serializeLocalOperatingLoopBoundaryReceipt(
+  value: unknown,
+): string | null {
+  const receipt = createLocalOperatingLoopBoundaryReceipt(value);
+  if (!receipt) {
+    return null;
+  }
+
+  return [
+    receipt.heading,
+    `receipt_version: ${receipt.receipt_version}`,
+    `evidence_scope: ${receipt.evidence_scope}`,
+    `redaction_scope: ${receipt.redaction_scope}`,
+    "underlying_transport_redacted: false",
+    `terminal_state: ${receipt.terminal_state}`,
+    `decision: ${receipt.decision}`,
+    `recommendation: ${receipt.recommendation}`,
+    `finding_count: ${receipt.finding_count}`,
+    `work_packet_count: ${receipt.work_packet_count}`,
+    `work_packet_status: ${receipt.work_packet_status}`,
+    `work_packet_content: ${receipt.work_packet_content}`,
+    "work_packet_execution_authority: false",
+    "artifact_count: 1",
+    `receipt_authority: ${receipt.receipt_authority}`,
+    `terminal_response_persistence_claim: ${receipt.terminal_response_persistence_claim}`,
+    `program_effect_claim: ${receipt.program_effect_claim}`,
+    "not_control_thread_acceptance_receipt: true",
+    `decision_scope: ${receipt.decision_scope}`,
+    "artifact_execution_authority: false",
+    `server_hmac_authenticity: ${receipt.server_hmac_authenticity}`,
+    `transport_redaction: ${receipt.transport_redaction}`,
+    `external_persistence_effect: ${receipt.external_persistence_effect}`,
+    `provider_effect: ${receipt.provider_effect}`,
+    `github_effect: ${receipt.github_effect}`,
+    `linear_effect: ${receipt.linear_effect}`,
+    `agent_council_effect: ${receipt.agent_council_effect}`,
+    `customer_effect: ${receipt.customer_effect}`,
+    `execution_effect: ${receipt.execution_effect}`,
+    `deployment_effect: ${receipt.deployment_effect}`,
+    `export_method: ${receipt.export_method}`,
+    `clipboard_write_status: ${receipt.clipboard_write_status}`,
+    `clipboard_retention: ${receipt.clipboard_retention}`,
+    `copy_control_network_dispatch: ${receipt.copy_control_network_dispatch}`,
+    `copy_control_application_persistence: ${receipt.copy_control_application_persistence}`,
+    `copy_control_file_download: ${receipt.copy_control_file_download}`,
+    `verification_scope: ${receipt.verification_scope}`,
+    `receipt_authenticity: ${receipt.receipt_authenticity}`,
+    "authority_granted: false",
+    "",
+  ].join("\n");
+}
+
+export function createLocalOperatingLoopBoundaryReceiptCopyState(): LocalOperatingLoopBoundaryReceiptCopyState {
+  return { status: "IDLE", attemptId: 0 };
+}
+
+function nextLocalOperatingLoopBoundaryReceiptCopyAttemptId(
+  attemptId: number,
+): number {
+  return attemptId >= Number.MAX_SAFE_INTEGER ? 1 : attemptId + 1;
+}
+
+export function clearLocalOperatingLoopBoundaryReceiptCopyState(
+  state: LocalOperatingLoopBoundaryReceiptCopyState,
+): LocalOperatingLoopBoundaryReceiptCopyState {
+  return {
+    status: "IDLE",
+    attemptId: nextLocalOperatingLoopBoundaryReceiptCopyAttemptId(
+      state.attemptId,
+    ),
+  };
+}
+
+export function claimLocalOperatingLoopBoundaryReceiptCopyAttempt(input: {
+  state: LocalOperatingLoopBoundaryReceiptCopyState;
+  clipboardAvailable: boolean;
+}): {
+  state: LocalOperatingLoopBoundaryReceiptCopyState;
+  attemptId: number | null;
+  shouldWrite: boolean;
+} {
+  if (input.state.status === "COPYING") {
+    return {
+      state: input.state,
+      attemptId: null,
+      shouldWrite: false,
+    };
+  }
+
+  const attemptId = nextLocalOperatingLoopBoundaryReceiptCopyAttemptId(
+    input.state.attemptId,
+  );
+  if (!input.clipboardAvailable) {
+    return {
+      state: { status: "UNAVAILABLE", attemptId },
+      attemptId: null,
+      shouldWrite: false,
+    };
+  }
+
+  return {
+    state: { status: "COPYING", attemptId },
+    attemptId,
+    shouldWrite: true,
+  };
+}
+
+export function settleLocalOperatingLoopBoundaryReceiptCopyAttempt(input: {
+  state: LocalOperatingLoopBoundaryReceiptCopyState;
+  attemptId: number;
+  receiptIsCurrent: boolean;
+  outcome: "COPIED" | "FAILED";
+}): LocalOperatingLoopBoundaryReceiptCopyState {
+  if (
+    input.state.status !== "COPYING" ||
+    input.state.attemptId !== input.attemptId
+  ) {
+    return input.state;
+  }
+  if (!input.receiptIsCurrent) {
+    return clearLocalOperatingLoopBoundaryReceiptCopyState(input.state);
+  }
+  return { ...input.state, status: input.outcome };
+}
+// D8_BOUNDARY_RECEIPT_SOURCE_END
 
 const localOperatingLoopDecisionConfirmationCopy = {
   ACCEPT: {
