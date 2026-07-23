@@ -10,6 +10,7 @@ Role: JAI::DEV::BUILDER
 | Batch / wave / lane | `A / A-C / A11 - Dependency and External-Effect Map v0` |
 | Coordinate | `Q3M7Y26-P1:A11` |
 | Route | `CT-2026-07-23-Q3M7Y26-P1-START-A11-DEPENDENCY-EXTERNAL-EFFECT-MAP-v0` |
+| Repair route | `CT-2026-07-23-Q3M7Y26-P1-A11R1-REFERENCE-JOIN-COMPLETENESS-v0` |
 | Redacted-boundary supplement | `CT-2026-07-23-Q3M7Y26-P1-A11-REDACTED-SEED-CREDENTIAL-BOUNDARY-v0` |
 | Work Packet | `Q3M7Y26-P1-A11-v0` |
 | Repository / base | `jai-nexus/dev-jai-nexus @ 34e84ac3240fd237e93e38502e8a860e32c24f3b` |
@@ -55,6 +56,9 @@ actions are not application-level GitHub reachability evidence.
 `UNAVAILABLE`, `UNRESOLVED`, and `DEFERRED` below retain their A2 meanings.
 Import presence is not invocation; route presence is not a completed request;
 credential identifiers are not credential values or configured credentials.
+`SEED_PATH_SOURCE_REACHABLE` means the tracked source path is reachable only
+through explicit Prisma seed invocation. It proves neither seed execution nor
+production reachability.
 
 ## 3. Dependency-node registry
 
@@ -137,9 +141,10 @@ not decide whether the literal is safe, synthetic, active, reused, or compromise
 | `A11-EFF-017` | Prisma seed DB mutation / [PRISMA-SEED], [PRISMA-CONFIG] | Seed users and related fixture data through Prisma seed command | Explicit seed command plus runtime database configuration | `SEED_PATH_SOURCE_REACHABLE` | Seed execution/audit receipt `UNAVAILABLE` | A11 did not execute seed, database, or authentication behavior. |
 | `A11-EFF-018` | Workflow repository synchronization / [SYNC-WORKFLOW] | CI workflow probes GitHub and runs repository synchronization script | Manual or configured workflow trigger and workflow secret identifiers | `CONFIG_DECLARATION_ONLY` | Workflow logs/artifacts are external to A11 inspection | A11 did not dispatch workflow, GitHub, or repository action. |
 | `A11-EFF-019` | Package-script filesystem/process operations / [ROOT-PACKAGE], [PORTAL-PACKAGE] | Declared seed, migration, snapshot, council, grid, and export commands | Human/CI command invocation and each script's own gates | `CONFIG_DECLARATION_ONLY` | Script-specific receipt `UNAVAILABLE` | A11 did not run package, process, Codex, Agent, or Council commands. |
+| `A11-EFF-020` | Node/internal HTTP requests / [INTERNAL-CLIENT] | Node `fetch` requests to internal repository and wave endpoints | Explicit exported client-method call plus internal base/token configuration | `DIRECT_SOURCE_REACHABLE` | Request/result evidence `UNAVAILABLE`; no identifier-based caller was found in the bounded scan | A11 did not invoke an internal HTTP request. |
 <!-- A11_EFFECT_END -->
 
-Observed effect-sink count: **19 unique records**.
+Observed effect-sink count: **20 unique records**.
 
 ## 6. Entry-point-to-dependency edge registry
 
@@ -148,9 +153,9 @@ Observed effect-sink count: **19 unique records**.
 | --- | --- | --- | --- | --- | --- | --- |
 | `A11-EDGE-001` | `/api/auth/[...nextauth]` | `A11-DEP-001` | `A11-EFF-001` | Credential sign-in | NextAuth credentials flow | `GUARD_REACHABLE` |
 | `A11-EDGE-002` | Shared protected request | `A11-DEP-002` | `NONE` | Page/API request | Gatekeeper session or in-route token lane | `GUARD_REACHABLE` |
-| `A11-EDGE-003` | Motion intake composer -> motion-intake route | `A11-DEP-010` | `A11-EFF-002` | Founder submit | Route parsing and database configuration | `GUARD_REACHABLE` |
-| `A11-EDGE-004` | Manual deliberation action -> manual-inference route | `A11-DEP-007`, `A11-DEP-008`, `A11-DEP-010` | `A11-EFF-003`, `A11-EFF-013` | Explicit manual action | Requested mode and provider/database gates | `GUARD_REACHABLE` |
-| `A11-EDGE-005` | Passalong router -> collection/detail route | `A11-DEP-011` | `A11-EFF-004` | Explicit create/list/edit request | Route contract and database configuration | `GUARD_REACHABLE` |
+| `A11-EDGE-003` | Motion intake composer -> motion-intake route | `A11-DEP-010` | `A11-EFF-002`, `A11-EFF-015` | Founder submit | Route parsing and database configuration | `GUARD_REACHABLE` |
+| `A11-EDGE-004` | Manual deliberation action -> manual-inference route | `A11-DEP-007`, `A11-DEP-008`, `A11-DEP-010` | `A11-EFF-003`, `A11-EFF-013`, `A11-EFF-015` | Explicit manual action | Requested mode and provider/database gates | `GUARD_REACHABLE` |
+| `A11-EDGE-005` | Passalong router -> collection/detail route | `A11-DEP-011` | `A11-EFF-004`, `A11-EFF-015` | Explicit create/list/edit request | Route contract and database configuration | `GUARD_REACHABLE` |
 | `A11-EDGE-006` | Local operating-loop panel -> route | `A11-DEP-001` | `NONE` | Validate/deliberate/decide local-shadow request | JWT, ADMIN role, normalized actor, proof coherence | `GUARD_REACHABLE` |
 | `A11-EDGE-007` | Sync review action -> apply proxy | `A11-DEP-013` | `A11-EFF-016` | Explicit Apply click | Non-production and optional bypass-token gate | `GUARD_REACHABLE` |
 | `A11-EDGE-008` | Sync review action -> reject proxy | `A11-DEP-013` | `A11-EFF-016` | Explicit Reject click | Non-production and optional bypass-token gate | `GUARD_REACHABLE` |
@@ -166,9 +171,11 @@ Observed effect-sink count: **19 unique records**.
 | `A11-EDGE-018` | Portal/root package scripts | `A11-DEP-018` | `A11-EFF-017`, `A11-EFF-019` | Human or CI command | Command-specific configuration | `CONFIG_DECLARATION_ONLY` |
 | `A11-EDGE-019` | Repository-sync workflow | `A11-DEP-018` | `A11-EFF-018` | Workflow dispatch/schedule configuration | Workflow secret identifiers and workflow environment | `CONFIG_DECLARATION_ONLY` |
 | `A11-EDGE-020` | Agent/Council/sandbox UI surfaces | `A11-DEP-009`, `A11-DEP-019` | `NONE` | UI render or mock/manual helper | Static/mock non-authorization contract | `STATIC_UI_OR_DOCUMENTARY` |
+| `A11-EDGE-021` | Prisma seed entrypoint | `A11-DEP-004`, `A11-DEP-018` | `A11-EFF-017` | Explicit Prisma seed invocation | Prisma seed declaration and runtime database configuration | `SEED_PATH_SOURCE_REACHABLE` |
+| `A11-EDGE-022` | `jaiInternalClient.ts` exported `listRepos` / `createWave` / `logWaveAction` | `A11-DEP-012` | `A11-EFF-020` | Explicit exported client-method call; no identifier-based caller found in the bounded scan | Internal base/token configuration and each method's source guard | `DIRECT_SOURCE_REACHABLE` |
 <!-- A11_EDGE_END -->
 
-Observed edge count: **20 unique records**.
+Observed edge count: **22 unique records**.
 
 ## 7. Effect-chain and activation-gate registry
 
@@ -187,9 +194,10 @@ Observed edge count: **20 unique records**.
 | `A11-GATE-010` | Browser clipboard | Secure context, browser API, coherent terminal state, explicit action | [LOCAL-PANEL] | Static source plus phase-specific A10 evidence | `UNRESOLVED` |
 | `A11-GATE-011` | Seed execution | Explicit Prisma seed command and runtime database configuration | [PRISMA-CONFIG], [PRISMA-SEED], [PORTAL-PACKAGE] | Static source only | `UNRESOLVED` |
 | `A11-GATE-012` | Workflow repo synchronization | Workflow trigger, declared secret identifiers, GitHub/network availability | [SYNC-WORKFLOW] | Workflow declaration only | `UNRESOLVED` |
+| `A11-GATE-013` | Node/internal HTTP request | Explicit exported internal-client method call, internal base/token configuration, and reachable internal endpoint | [INTERNAL-CLIENT] | Static source only | `UNRESOLVED` |
 <!-- A11_GATE_END -->
 
-Observed activation-gate count: **12 unique records**. No gate is opened by
+Observed activation-gate count: **13 unique records**. No gate is opened by
 this artifact.
 
 ## 8. Founder-surface and route-to-effect matrix
@@ -298,7 +306,7 @@ Observed gap count: **12 unique records**. Genuine current contradictions:
 <!-- A11_ENVELOPE_START -->
 | envelope_id | route | coordinate | role | base | allowlist | evidence ceiling | current authority | downstream authority |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `A11-ENV-001` | `CT-2026-07-23-Q3M7Y26-P1-START-A11-DEPENDENCY-EXTERNAL-EFFECT-MAP-v0` | `Q3M7Y26-P1:A11` | `JAI::DEV::BUILDER` | `34e84ac3240fd237e93e38502e8a860e32c24f3b` | `docs/reference/q3m7y26-p1-a11-dependency-external-effect-map-v0.md` | `DOCUMENTATION_DEPENDENCY_EXTERNAL_EFFECT_MAP_ONLY` | `ONE_PATH / DOCUMENTARY / NO_RUNTIME / DRAFT_PR_ONLY` | `A12=NOT_GRANTED; D9=HELD; BATCH_EXIT=NONE; PROGRAM_EXIT=NONE; JAI_ACTIVATION=NONE` |
+| `A11-ENV-001` | `CT-2026-07-23-Q3M7Y26-P1-A11R1-REFERENCE-JOIN-COMPLETENESS-v0` | `Q3M7Y26-P1:A11R1` | `JAI::DEV::BUILDER` | `34e84ac3240fd237e93e38502e8a860e32c24f3b` | `docs/reference/q3m7y26-p1-a11-dependency-external-effect-map-v0.md` | `DOCUMENTATION_DEPENDENCY_EXTERNAL_EFFECT_MAP_ONLY` | `ONE_PATH / DOCUMENTARY / NO_RUNTIME / EXISTING_DRAFT_PR_ONLY` | `A12=NOT_GRANTED; D9=HELD; BATCH_EXIT=NONE; PROGRAM_EXIT=NONE; JAI_ACTIVATION=NONE` |
 <!-- A11_ENVELOPE_END -->
 
 ## 14. Mechanical invariants
@@ -307,16 +315,16 @@ Observed gap count: **12 unique records**. Genuine current contradictions:
 | --- | --- |
 | Dependency nodes | `19 unique` |
 | Credential identifiers | `12 unique / values 0` |
-| Effect sinks | `19 unique` |
-| Entry-to-dependency edges | `20 unique` |
-| Activation gates | `12 unique` |
+| Effect sinks | `20 unique` |
+| Entry-to-dependency edges | `22 unique` |
+| Activation gates | `13 unique` |
 | Route/surface records | `13 unique` |
 | Negative-isolation records | `10 unique` |
 | Gap records | `12 unique / genuine current contradictions 0` |
 | Current authority envelopes | `1 unique` |
 | Duplicate IDs / orphan joins | `0 / 0` |
 | Credential values, prefixes, lengths, hashes, or validation results | `0` |
-| Immutable references | `PASS / 48 definitions / 48 unique targets / 0 unresolved` |
+| Immutable references | `PASS / 46 definitions / 46 unique targets / 0 undefined uses / 0 unresolved` |
 | Positive execution, persistence, provider, customer, deployment, Batch-exit, Program-exit, Agent/Council, or activation grants | `0` |
 | Changed repository paths | `exactly 1, this artifact` |
 
@@ -344,7 +352,9 @@ compromised.
 
 `A11_EXTERNAL_EFFECT_ABSENCE_CREDIT: NONE`
 
-`A11_ACCEPTANCE: PENDING_INDEPENDENT_VERIFICATION`
+`A11R1_DISPOSITION: REPAIR_DELIVERED`
+
+`A11_ACCEPTANCE: HELD_PENDING_A11R1_FINAL_VERIFICATION`
 
 `A11_MERGE_AUTHORITY: NOT_GRANTED`
 
@@ -360,21 +370,19 @@ compromised.
 
 `JAI_ACTIVATION_CREDIT: NONE`
 
-`NEXT_REQUIRED_DECISION: ACCEPT_A11_BUILDER_PR_FOR_INDEPENDENT_VERIFICATION`
+`NEXT_REQUIRED_DECISION: ACCEPT_A11R1_FOR_FINAL_INDEPENDENT_VERIFICATION`
 
 ## 16. Immutable reference definitions
 
 [A2]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a2-authority-evidence-precedence-contradiction-ledger-v0.md
 [A4]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a4-ratified-motion-decision-registry-v0.md
-[A5]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a5-active-frozen-program-registry-v0.md
-[A6]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a6-control-coordinate-registry-v0.md
 [A7]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a7-pr-commit-evidence-ledger-v0.md
-[A8]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a8-governance-role-route-reconciliation-v0.md
 [A9]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a9-runnable-capability-inventory-v0.md
 [A10]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/docs/reference/q3m7y26-p1-a10-founder-workflow-surface-map-v0.md
 [AUTH]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/auth.ts
 [GATEKEEPER]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/gatekeeper.ts
 [INTERNAL-AUTH]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/lib/internalAuth.ts
+[INTERNAL-CLIENT]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/lib/jaiInternalClient.ts
 [CONTEXT-AUTH]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/lib/contextApiAuth.ts
 [SOT-AUTH]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/lib/sotIngestAuth.ts
 [PRISMA]: https://github.com/jai-nexus/dev-jai-nexus/blob/34e84ac3240fd237e93e38502e8a860e32c24f3b/portal/src/lib/prisma.ts
