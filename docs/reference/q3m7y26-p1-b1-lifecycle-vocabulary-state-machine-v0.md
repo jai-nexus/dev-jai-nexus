@@ -295,7 +295,7 @@ classification and must not be converted into a lifecycle state.
 | `B1-MAP-15` | A2 `ACCEPTED_CURRENT` | Evidence classification | `NO_LIFECYCLE_MAPPING / EVIDENCE_ONLY` | `EXCLUDED_FROM_STATE` |
 | `B1-MAP-16` | `STATIC_CONFIGURATION` | Evidence classification | `NO_LIFECYCLE_MAPPING / EVIDENCE_ONLY` | `EXCLUDED_FROM_STATE` |
 | `B1-MAP-17` | `MIRROR_ONLY` | Evidence classification | `NO_LIFECYCLE_MAPPING / EVIDENCE_ONLY` | `EXCLUDED_FROM_STATE` |
-| `B1-MAP-18` | `CLOSED_PHASE_BOUND` | Historical exception | `B1-ST-RTE-03`, `B1-ST-CTL-04` | `MULTI_AXIS_NORMALIZED` |
+| `B1-MAP-18` | `CLOSED_PHASE_BOUND` | Historical exception | `B1-ST-RTE-03` | `PHASE_BOUND_ROUTE_ONLY` |
 | `B1-MAP-19` | `HELD_PENDING_ACCEPTED_BATCH_B` | D9 control posture | `B1-ST-CTL-02`, `B1-ST-RTE-01` | `MULTI_AXIS_NORMALIZED` |
 | `B1-MAP-20` | `DOCUMENTARY`, `TESTED`, `BUILD_ONLY`, `STATIC_UI`, `MOCK_OR_SHADOW`, `RUNNING_OBSERVED`, `UNKNOWN` | A14/A15 evidence ceiling | `NO_LIFECYCLE_MAPPING / EVIDENCE_ONLY` | `EXCLUDED_FROM_STATE` |
 | `B1-MAP-21` | local-shadow `DRAFT`, `VALIDATED`, `AWAITING_DECISION` | Local UI | `NO_LIFECYCLE_MAPPING / LOCAL_SHADOW_ONLY` | `EXCLUDED_FROM_STATE` |
@@ -309,6 +309,13 @@ classification and must not be converted into a lifecycle state.
 
 Mapping rows: `28`; unique mapping IDs: `28`; every canonical state reference
 or explicit exclusion resolves.
+
+Phase-bound supersession audit: `PASS`. `B1-MAP-18` ends only the applicable
+route or exception envelope, preserves the historical record, and grants no
+continuing authority. It implies neither cancellation nor supersession and
+requires no named replacement. No phase-bound term maps to `B1-ST-CTL-04`
+without a named replacement; `B1-MAP-28` remains the only conditional
+mapping to `SUPERSEDED`.
 
 ## 11. Required surface separation
 
