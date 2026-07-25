@@ -183,7 +183,7 @@ authority_envelope:
   program_state: OPEN_FOR_BATCH_PLANNING_ONLY
   batch_planning_authority: GRANTED
   batch_execution_authority: NOT_GRANTED
-  execution_gates_granted: 0
+  execution_gates_granted: "0"
   other_authority: NOT_GRANTED
   evidence_pointer: OPENING-RECEIPT
 evidence_pointers:
