@@ -27,10 +27,11 @@ model, API, UI, workflow, generator, migration, or automation.
 | field | exact value |
 | --- | --- |
 | Program | `Q3M7Y26-P1` |
-| Program title | Q3M7Y26 JAI Governance Intelligence - Main-State Reconciliation and Minimum Viable Operating Loop v0 |
+| Program title | Q3M7Y26 JAI Governance Intelligence — Main-State Reconciliation and Minimum Viable Operating Loop v0 |
 | Batch | `B - Program Lifecycle and Receipt Canon` |
 | Wave | `B-A` |
-| Lane | `B2 - Control Coordinates Canon v0` |
+| A6 Lane title | Control Coordinates Canon |
+| Current route and artifact title | `B2 - Control Coordinates Canon v0` |
 | Full coordinate | `Q3M7Y26-P1:B2` |
 | Route | `CT-2026-07-24-Q3M7Y26-P1-START-B2-CONTROL-COORDINATES-CANON-v0` |
 | Work Packet | `Q3M7Y26-P1-B2-v0` |
@@ -46,6 +47,12 @@ route packet and the read-only JAI-199 observation. The B1 artifact at that
 base retains an earlier pending-acceptance cutoff even though [PR402] was
 subsequently integrated. No immutable B1 acceptance receipt was found; this
 proposal preserves that provenance gap.
+
+The A6 accepted instance record supplies the exact Lane title `Control
+Coordinates Canon`. The current B2 route and artifact use `Control Coordinates
+Canon v0` as their delivery title. A6 is the higher-precedence descriptive
+source for the Lane title; neither descriptive value participates in coordinate
+identity.
 
 ## 3. Source precedence and provenance
 
@@ -110,13 +117,20 @@ therefore `UNRESOLVED / DEFERRED`, and no NHID is assigned here.
 | `B2-FLD-007` | 7 | `program_title` | Optional | non-empty display string | Descriptive only; trim outer whitespace; preserve internal text. |
 | `B2-FLD-008` | 8 | `batch_title` | Optional | non-empty display string | Descriptive only; trim outer whitespace; preserve internal text. |
 | `B2-FLD-009` | 9 | `lane_title` | Optional | non-empty display string | Descriptive only; trim outer whitespace; preserve internal text. |
-| `B2-FLD-010` | 10 | `parent_coordinate` | Optional | exact Program-qualified coordinate | Structural relationship only; must resolve to an accepted parent definition. |
-| `B2-FLD-011` | 11 | `nhid_ref` | Optional | opaque non-empty reference string | Separate reference namespace; no identity merge or authority effect. |
+| `B2-FLD-010` | 10 | `nhid_ref` | Optional | opaque non-empty reference string | Separate reference namespace; no identity merge or authority effect. |
 
 Unknown fields are invalid. Route, role, repository, branch, PR, commit, Work
 Packet, Linear issue, lifecycle state, acceptance, credit, and activation are
 not fields in this identity schema. They belong in separately governed
 bindings or evidence records.
+
+`program_id` and `program_code` are one required binding, not independent
+labels. They must resolve together to exactly one accepted Program definition
+before `full_coordinate` can be valid. At this base, the accepted binding is
+`jai-governance-intelligence-main-state-operating-loop-v0` plus
+`Q3M7Y26-P1` in [OPENING-RECEIPT]. A missing binding, a pair that resolves to
+no accepted Program definition, a pair that resolves to multiple definitions,
+or a conflicting pair is `INVALID / FAIL_CLOSED`.
 
 ### Canonical human-display syntax
 
@@ -140,9 +154,9 @@ prose, but it is not the canonical identity value.
   "wave_code": "B-A",
   "lane_code": "B2",
   "full_coordinate": "Q3M7Y26-P1:B2",
-  "program_title": "Q3M7Y26 JAI Governance Intelligence - Main-State Reconciliation and Minimum Viable Operating Loop v0",
+  "program_title": "Q3M7Y26 JAI Governance Intelligence — Main-State Reconciliation and Minimum Viable Operating Loop v0",
   "batch_title": "Program Lifecycle and Receipt Canon",
-  "lane_title": "Control Coordinates Canon v0"
+  "lane_title": "Control Coordinates Canon"
 }
 ```
 
@@ -154,7 +168,7 @@ values. Optional absent fields are omitted, not encoded as empty strings.
 
 | validation_id | outcome | meaning |
 | --- | --- | --- |
-| `B2-VAL-001` | `VALID` | Every required field, grammar, structural join, uniqueness rule, and display/structured equality check passes. |
+| `B2-VAL-001` | `VALID` | Every required field, accepted Program-definition binding, grammar, local structural join, uniqueness rule, and display/structured equality check passes. |
 | `B2-VAL-002` | `INVALID` | At least one deterministic validation rule fails. |
 | `B2-VAL-003` | `UNRESOLVED` | Required identity evidence is missing or contradictory; dependent use fails closed. |
 
@@ -169,26 +183,26 @@ activation.
 | `B2-ID-001` | A bare Lane code is Program-local and is not globally unique. | Reject it as a complete Lane identity. |
 | `B2-ID-002` | The Program-qualified coordinate is the minimum stable Lane identity. | Require exact `program_code:lane_code`. |
 | `B2-ID-003` | `full_coordinate` must equal the structured `program_code` and `lane_code`. | `INVALID` on mismatch. |
-| `B2-ID-004` | Each `full_coordinate` is unique within a canonical registry snapshot. | Reject every duplicate pending reconciliation. |
+| `B2-ID-004` | A `full_coordinate` is non-reusable across accepted coordinate identity history. A repeated value must resolve to the same stable Lane identity, never a distinct Lane. | Reject attempted reuse as `INVALID / HOLD_FOR_IDENTITY_RECONCILIATION`. |
 | `B2-ID-005` | Titles, route tokens, Work Packets, GitHub identities, and Linear IDs are not coordinate identity. | Keep them in separate namespaces. |
 | `B2-ID-006` | Repository, branch, PR, and commit bindings are route or evidence facts. | Never derive identity or authority from them. |
 | `B2-ID-007` | One coordinate may participate in bounded polyrepo delivery. | Preserve one coordinate and separately route each repository binding. |
 | `B2-ID-008` | Cross-repository participation grants no repository ownership or authority. | Require an exact repository route for every mutation. |
 | `B2-ID-009` | Historical aliases never silently replace a canonical coordinate. | Preserve alias evidence and require explicit reconciliation. |
+| `B2-ID-010` | An accepted-history lookup is required before accepting a new full coordinate. A global registry service is not required by B2. | Defer service implementation; fail closed when the applicable accepted history is unavailable or contradictory. |
 
-## 7. Parent, child, and inheritance rules
+## 7. Structural-context and B4 boundary
 
-| rule_id | rule | permitted inheritance |
+| rule_id | rule | B2 effect |
 | --- | --- | --- |
 | `B2-INH-001` | A canonical stored record materializes every required field. | None at rest. |
-| `B2-INH-002` | A nested authoring envelope may supply `program_id` and `program_code` to a child before validation. | Structural context only; values must be materialized and revalidated. |
-| `B2-INH-003` | `batch_code`, `wave_code`, and `lane_code` must reconcile by prefix. | Structural consistency only. |
-| `B2-INH-004` | A `parent_coordinate` must resolve exactly and cannot alter child identity. | Structural relationship only. |
-| `B2-INH-005` | A Wave groups member Lanes but does not route them. | No route, role, or authority. |
-| `B2-INH-006` | A Batch route does not silently grant Lane execution authority. | No Lane route or execution. |
-| `B2-INH-007` | Route, role, repository, delivery, verification, acceptance, credit, integration, and activation never inherit from a parent coordinate. | None. |
-| `B2-INH-008` | Child repairs, observations, decisions, and receipts retain the parent coordinate as context but use separate event identifiers. | Coordinate reference only. |
-| `B2-INH-009` | Unsupported or implicit inheritance is invalid. | `INVALID / FAIL_CLOSED`. |
+| `B2-INH-002` | B2 checks only local Batch/Wave/Lane code coherence after all required fields are materialized. | No parent object, parent coordinate, child relation, or decomposition mechanics are defined. |
+| `B2-INH-003` | Batch/Wave/Lane decomposition, parent-relation mechanics, and ownership are reserved to B4. | B2 neither specifies nor validates parent/child topology. |
+| `B2-INH-004` | A Wave or Batch grouping does not route member Lanes. | No route, role, or authority. |
+| `B2-INH-005` | A Batch route does not silently grant Lane execution authority. | No Lane route or execution. |
+| `B2-INH-006` | Route, role, repository, delivery, verification, acceptance, credit, integration, and activation never derive from structural context. | None. |
+| `B2-INH-007` | Repairs, observations, decisions, and receipts may cite a stable coordinate through separate event identifiers. | Event association only; no hierarchy or authority inheritance. |
+| `B2-INH-008` | An attempted parent/child or decomposition rule presented as B2 canon is outside scope. | `UNRESOLVED / RESERVED_TO_B4`. |
 
 ## 8. Stability and event rules
 
@@ -211,18 +225,21 @@ activation.
 | `B2-CHK-002` | Unknown or duplicate field | `INVALID` |
 | `B2-CHK-003` | Program, Batch, Wave, or Lane code malformed | `INVALID` |
 | `B2-CHK-004` | Human display is not exact canonical `program_code:lane_code` | `INVALID` for canonical identity use |
-| `B2-CHK-005` | Batch, Wave, Lane, or parent/child structural mismatch | `INVALID` |
+| `B2-CHK-005` | Batch, Wave, or Lane local code mismatch | `INVALID` |
 | `B2-CHK-006` | Duplicate `full_coordinate` in one canonical snapshot | `INVALID / HOLD_ALL_DUPLICATES` |
 | `B2-CHK-007` | Structured and display representations differ | `INVALID` |
 | `B2-CHK-008` | Bare identifier is ambiguous | `INVALID / REQUIRE_PROGRAM_QUALIFICATION` |
-| `B2-CHK-009` | Route, role, repository, delivery, verification, acceptance, credit, integration, or activation is inherited | `INVALID / UNSUPPORTED_INHERITANCE` |
+| `B2-CHK-009` | Route, role, repository, delivery, verification, acceptance, credit, integration, or activation is derived from structural context | `INVALID / UNSUPPORTED_INHERITANCE` |
 | `B2-CHK-010` | Required identity evidence is unresolved, stale, or contradictory | `UNRESOLVED / FAIL_CLOSED` |
 | `B2-CHK-011` | NHID is treated as a Batch ID or Control Coordinate without accepted mapping evidence | `INVALID / NAMESPACE_COLLISION` |
 | `B2-CHK-012` | Coordinate validity is used as positive authority | `INVALID / AUTHORITY_BOUNDARY_VIOLATION` |
+| `B2-CHK-013` | `program_id` and `program_code` lack one exact accepted Program-definition binding, or conflict | `INVALID / PROGRAM_IDENTITY_BINDING` |
+| `B2-CHK-014` | An accepted historical `full_coordinate` is reused for a different stable Lane identity | `INVALID / IDENTITY_REUSE` |
 
 Validation never guesses a missing value, normalizes malformed codes into a
 different identity, resolves contradictions by chronology alone, or imports
-authority from a parent, mirror, title, repository, or lifecycle state.
+authority from structural context, a mirror, title, repository, or lifecycle
+state.
 
 ## 10. Exact Program 1 mappings
 
@@ -231,12 +248,14 @@ authority from a parent, mirror, title, repository, or lifecycle state.
 | `B2-MAP-001` | `jai-governance-intelligence-main-state-operating-loop-v0` | `Q3M7Y26-P1` | `A` | `A-A` | `A1` | `Q3M7Y26-P1:A1` | Accepted Documentation Baseline | `A6-L-A1` |
 | `B2-MAP-002` | `jai-governance-intelligence-main-state-operating-loop-v0` | `Q3M7Y26-P1` | `D` | `D-A` | `D1` | `Q3M7Y26-P1:D1` | Control-Plane Behavioral CI Enablement v0 | `A6-L-D1` |
 | `B2-MAP-003` | `jai-governance-intelligence-main-state-operating-loop-v0` | `Q3M7Y26-P1` | `D` | `D-A` | `D2` | `Q3M7Y26-P1:D2` | Founder Local Operating Loop Proving Seam v0 | `A6-L-D2` |
-| `B2-MAP-004` | `jai-governance-intelligence-main-state-operating-loop-v0` | `Q3M7Y26-P1` | `B` | `B-A` | `B2` | `Q3M7Y26-P1:B2` | Control Coordinates Canon v0 | `A6-L-B2` |
+| `B2-MAP-004` | `jai-governance-intelligence-main-state-operating-loop-v0` | `Q3M7Y26-P1` | `B` | `B-A` | `B2` | `Q3M7Y26-P1:B2` | Control Coordinates Canon | `A6-L-B2` |
 
-All four rows satisfy exact field grammar, Batch/Wave/Lane prefix joins, and
+All four rows satisfy one accepted Program-definition binding, exact field
+grammar, Batch/Wave/Lane prefix joins, and
 `full_coordinate = program_code + ":" + lane_code`. The A6 B2 status row is a
 historical cutoff that says `PROPOSED_UNROUTED`; the current route is a later
-event and does not alter B2's coordinate identity.
+event and does not alter B2's coordinate identity. The current B2 route and
+artifact title add `v0` only as a delivery-title distinction.
 
 ## 11. Example non-authority proof
 
@@ -312,7 +331,7 @@ does not advance any axis.
 | `B2-ISS-002` | JAI-199 remains Backlog and says `UNROUTED / PROPOSED_UNROUTED`. | `MIRROR_STALE` | Keep mirror-only; do not mutate or use it as authority. |
 | `B2-ISS-003` | B1 is integrated on main, but its artifact cutoff still says acceptance pending and no immutable acceptance receipt is present. | `PROVENANCE_GAP` | Use B1 as integrated documentary source; do not invent acceptance receipt evidence. |
 | `B2-ISS-004` | Repository sources define NHID as Numerical Hierarchy ID and a separate reference namespace but do not define an exact relationship to Control Coordinates. | `UNRESOLVED / DEFERRED` | Keep `nhid_ref` optional and opaque; no assignment or semantic merge. |
-| `B2-ISS-005` | Universal uniqueness beyond one accepted registry snapshot needs a future registry governance decision. | `DEFERRED` | Require exact full-coordinate uniqueness in every canonical snapshot; do not define a global service. |
+| `B2-ISS-005` | Full-coordinate non-reuse is normative across accepted identity history, but no global registry service is defined. | `DEFERRED_SERVICE_ONLY` | Consult applicable accepted identity history; do not define or require a service. |
 | `B2-ISS-006` | Program identity migration and alias retirement are not defined by B2. | `DEFERRED` | Fail closed and require a separately routed accepted migration contract. |
 
 None of these issues blocks the documentary proposal. Each blocks only the
@@ -323,7 +342,7 @@ unsupported dependent inference named in its disposition.
 | boundary_id | future Lane | reserved subject | B2 exclusion |
 | --- | --- | --- | --- |
 | `B2-RES-001` | `B3` | Program Charter Schema | No charter schema or charter authority. |
-| `B2-RES-002` | `B4` | Batch/Wave/Lane Decomposition Canon | No ownership, decomposition process, or routing topology. |
+| `B2-RES-002` | `B4` | Batch/Wave/Lane Decomposition Canon | No ownership, decomposition process, parent-relation mechanics, or routing topology. |
 | `B2-RES-003` | `B5` | Role and Authority Matrix | No role assignment or authority matrix. |
 | `B2-RES-004` | `B6` | Work Packet Canon | No Work Packet schema or issuance protocol. |
 | `B2-RES-005` | `B7` | Decision Token and Disposition Canon | No token grammar or decision protocol. |
@@ -403,7 +422,12 @@ remains `NOT_GRANTED`. Coordinates identify work and grant zero gates.
 
 `NEXT_REQUIRED_DECISION: ACCEPT_B2_BUILDER_PR_FOR_CONTROL_THREAD_DECISION`
 
-## 20. Immutable reference definitions
+## 20. Reference definitions
+
+| reference classification | count | definitions | permitted use |
+| --- | ---: | --- | --- |
+| `IMMUTABLE` | `9` | [MOTION-DECISION], [OPENING-RECEIPT], [A2], [A6], [A8], [A15], [B1], [B1-SOURCE], [B1-MERGE] | SHA-pinned repository source or commit evidence. |
+| `MUTABLE_CORROBORATING` | `2` | [PR402], [JAI-199] | Delivery or mirror corroboration only; never source-of-truth authority. |
 
 [MOTION-DECISION]: https://github.com/jai-nexus/dev-jai-nexus/blob/e8aaa217bf4079ec2ff3b7f2389d69718c8ad92b/.nexus/motions/motion-0248/decision.yaml
 [OPENING-RECEIPT]: https://github.com/jai-nexus/dev-jai-nexus/blob/e8aaa217bf4079ec2ff3b7f2389d69718c8ad92b/docs/reference/q3m7y26-jai-governance-intelligence-main-state-operating-loop-program-opening-receipt-v0.md
