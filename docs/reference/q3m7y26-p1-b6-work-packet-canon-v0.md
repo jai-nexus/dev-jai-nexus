@@ -59,9 +59,9 @@ control_coordinates_record binds byte-exact B2 identity/coordinate, B4 decomposi
 | control_coordinates_record | 1 | coordinates_id | identifier | 1 | required | unique within control_coordinates_record registry; not a reference |
 | control_coordinates_record | 2 | program_id | reference<B2.program_id> | 1 | required | byte-matches exactly one accepted B2 program_id |
 | control_coordinates_record | 3 | program_code | reference<B2.program_code> | 1 | required | jointly binds with program_id to exactly one accepted B2 Program identity |
-| control_coordinates_record | 4 | batch_id | reference<B2.batch_id> | 1 | required | byte-matches exactly one accepted B2 batch_id |
-| control_coordinates_record | 5 | wave_id | reference<B2.wave_id> | 1 | required | byte-matches exactly one accepted B2 wave_id |
-| control_coordinates_record | 6 | lane_id | reference<B2.lane_id> | 1 | required | byte-matches exactly one accepted B2 lane_id |
+| control_coordinates_record | 4 | batch_id | reference<B4.batch_record.batch_id> | 1 | required | byte-matches exactly one accepted B4 batch_record batch_id |
+| control_coordinates_record | 5 | wave_id | reference<B4.wave_record.wave_id> | 1 | required | byte-matches exactly one accepted B4 wave_record wave_id |
+| control_coordinates_record | 6 | lane_id | reference<B4.lane_record.lane_id> | 1 | required | byte-matches exactly one accepted B4 lane_record lane_id |
 | control_coordinates_record | 7 | decomposition_relationship_id | reference<B4.parent_child_relationship> | 1 | required | resolves exactly once in the accepted B4 relationship registry |
 | control_coordinates_record | 8 | route_id | external_route_identifier | 1 | required | byte-matches the externally supplied route; does not self-authorize |
 | control_coordinates_record | 9 | evidence_pointer_ids | ordered array<evidence_pointer_id> | 1..* | required | every item resolves exactly once in the Evidence Pointer Registry; order is significant |
@@ -74,10 +74,10 @@ control_coordinates_record binds byte-exact B2 identity/coordinate, B4 decomposi
 | authority_envelope_record | 1 | authority_envelope_id | identifier | 1 | required | unique within authority_envelope_record registry; not a reference |
 | authority_envelope_record | 2 | authority_source | string | 1 | required | scalar value; not an identifier or reference |
 | authority_envelope_record | 3 | route_id | external_route_identifier | 1 | required | byte-matches the externally supplied route; does not self-authorize |
-| authority_envelope_record | 4 | portable_role | reference<B5.portable_role> | 1 | required | byte-matches exactly one accepted B5 portable-role ID |
+| authority_envelope_record | 4 | portable_role | reference<B5.portable_role_record.role_id> | 1 | required | byte-matches exactly one accepted B5 portable_role_record role_id |
 | authority_envelope_record | 5 | actor_or_surface | string | 1 | required | scalar value; not an identifier or reference |
-| authority_envelope_record | 6 | authorized_action_ids | ordered array<reference<B5.action_record>> | 1..* | required | every item byte-matches exactly one B5 action ID; order is significant |
-| authority_envelope_record | 7 | prohibited_action_ids | ordered array<reference<B5.action_record>> | 1..* | required | every item byte-matches exactly one B5 action ID; order is significant |
+| authority_envelope_record | 6 | authorized_action_ids | ordered array<reference<B5.action_class_record.action_id>> | 1..* | required | every item byte-matches exactly one B5 action_class_record action_id; order is significant |
+| authority_envelope_record | 7 | prohibited_action_ids | ordered array<reference<B5.action_class_record.action_id>> | 1..* | required | every item byte-matches exactly one B5 action_class_record action_id; order is significant |
 | authority_envelope_record | 8 | activation_condition | string | 1 | required | scalar value; not an identifier or reference |
 | authority_envelope_record | 9 | expiry_condition | string | 1 | required | scalar value; not an identifier or reference |
 | authority_envelope_record | 10 | revocation_condition | string | 1 | required | scalar value; not an identifier or reference |
@@ -87,7 +87,7 @@ control_coordinates_record binds byte-exact B2 identity/coordinate, B4 decomposi
 | authority_envelope_record | 14 | evidence_pointer_ids | ordered array<evidence_pointer_id> | 1..* | required | every item resolves exactly once in the Evidence Pointer Registry; order is significant |
 | executor_binding_record | 1 | executor_binding_id | identifier | 1 | required | unique within executor_binding_record registry; not a reference |
 | executor_binding_record | 2 | execution_surface | string | 1 | required | scalar value; not an identifier or reference |
-| executor_binding_record | 3 | portable_role | reference<B5.portable_role> | 1 | required | byte-matches exactly one accepted B5 portable-role ID |
+| executor_binding_record | 3 | portable_role | reference<B5.portable_role_record.role_id> | 1 | required | byte-matches exactly one accepted B5 portable_role_record role_id |
 | executor_binding_record | 4 | identity_evidence_pointer_ids | ordered array<evidence_pointer_id> | 1..* | required | every item resolves exactly once in the Evidence Pointer Registry; order is significant |
 | executor_binding_record | 5 | scope_binding | string | 1 | required | scalar value; not an identifier or reference |
 | executor_binding_record | 6 | delegation_reference | reference<B5.delegation_record> or null | 0..1 | nullable | when non-null resolves exactly once in B5 delegation registry; null grants no delegation |
@@ -149,7 +149,7 @@ control_coordinates_record binds byte-exact B2 identity/coordinate, B4 decomposi
 | evidence_requirement_record | 1 | evidence_requirement_id | identifier | 1 | required | unique within evidence_requirement_record registry; not a reference |
 | evidence_requirement_record | 2 | evidence_class | enum<A2.evidence_class> | 1 | required | must byte-match one accepted A2 evidence-class value; unknown values fail closed |
 | evidence_requirement_record | 3 | required | boolean | 1 | required | exact true or false; not an identifier or reference |
-| evidence_requirement_record | 4 | producer_role | reference<B5.portable_role> | 1 | required | byte-matches exactly one accepted B5 portable-role ID |
+| evidence_requirement_record | 4 | producer_role | reference<B5.portable_role_record.role_id> | 1 | required | byte-matches exactly one accepted B5 portable_role_record role_id |
 | evidence_requirement_record | 5 | consumer_gate | string | 1 | required | scalar value; not an identifier or reference |
 | evidence_requirement_record | 6 | content_boundary | string | 1 | required | scalar value; not an identifier or reference |
 | evidence_requirement_record | 7 | sensitive_data_rule | string | 1 | required | scalar value; not an identifier or reference |
@@ -187,11 +187,14 @@ control_coordinates_record binds byte-exact B2 identity/coordinate, B4 decomposi
 
 Field order follows Field Registry ordinal; arrays preserve declared order; identifiers are unique; every reference resolves exactly once; unknown and duplicate keys fail closed; nullable differs from missing; applicable A2 normalization rules apply; no generated timestamp, random value, UUID, or inferred authority.
 
-## Current structured fixture
+## Historical structured fixture
 
-This fixture is documentary and local only. It contains the sixteen canonical
-record types in Field Registry order. Evidence-pointer IDs are intentionally
-unresolved B6R2D placeholders; no Evidence Pointer Registry is created here.
+This fixture is a documentary historical snapshot of the original B6
+authoring route and is local only. It contains the sixteen canonical record
+types in Field Registry order. Its evidence-pointer IDs resolve to the
+twelve-record Evidence Pointer Registry in this artifact. Resolution establishes
+only the recorded documentary joins; it does not establish runtime, receipt,
+acceptance, or evidence explicitly classified as unavailable.
 
 ### work_packet_record
 
@@ -448,6 +451,13 @@ evidence_pointer_ids: [B6-E-006]
 Every delivery record is independent. No action inherits authority from another
 action. Each record fails closed on missing, stale, mismatched, expired, or
 expanded authority.
+
+The records below preserve the original B6 authoring route at its historical
+observation boundary. `B6-DELIVERY-001` records that EDIT was
+`GRANTED_BY_CURRENT_ROUTE` at that boundary; the original route is now
+completed and expired, so it grants no continuing authority. The current route
+effect is `NONE`. The B6R3 route authorizes only this exact documentary repair;
+it authorizes no Work Packet execution or other delivery action.
 
 ```yaml
 delivery_authority_id: B6-DELIVERY-001
@@ -767,7 +777,7 @@ evidence_pointer_ids: [B6-E-001, B6-E-006]
 | Fixture and Field Registry | PASS: 16 type rows, 143 Field Registry rows, 45 fixture records, exact field order, and zero duplicate or unresolved local fixture IDs. |
 | Evidence registry and joins | PASS: 12 evidence records, 11 immutable SHA-pinned references, one mutable non-controlling Linear mirror, and every B6-E-001 through B6-E-012 defined and used. |
 | Validation contracts | PASS: B6-VAL-001 expected exit 0; B6-VAL-002 expected raw exit 1; both use STATIC_CONFIGURATION; no DOCUMENTARY evidence class remains. |
-| Delivery authority | PASS: 11 records; EDIT is the sole GRANTED_BY_CURRENT_ROUTE action; ten actions require separate future routes. |
+| Delivery authority | PASS: 11 historical records; EDIT preserves the sole GRANTED_BY_CURRENT_ROUTE event at the original completed/expired route boundary, with current route effect NONE; ten actions require separate future routes. |
 | Whitespace checks | PASS: `git diff --check` emitted zero diagnostics; no-index whitespace check emitted zero diagnostics with raw exit 1. |
 
 ## Non-authorizations
