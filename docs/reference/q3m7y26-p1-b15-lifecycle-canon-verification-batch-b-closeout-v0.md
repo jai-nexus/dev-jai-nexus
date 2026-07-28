@@ -1,4 +1,4 @@
-# Q3M7Y26-P1 B15 Lifecycle Canon Verification and Batch B Closeout v0
+# Q3M7Y26-P1 B15R1 Post-B6R3 Lifecycle Canon Re-verification v0
 
 Role: JAI::DEV::VERIFIER
 
@@ -9,16 +9,16 @@ Role: JAI::DEV::VERIFIER
 | Program | Q3M7Y26-P1 - Minimum Viable Operating Loop |
 | Batch | B - Program Lifecycle and Receipt Canon |
 | Wave | B-D |
-| Lane | B15 - Lifecycle Canon Verification and Batch B Closeout |
+| Lane | B15R1 - Post-B6R3 Lifecycle Canon Re-verification v0 |
 | Coordinate | Q3M7Y26-P1:B15 |
 | Repository | jai-nexus/dev-jai-nexus |
-| Base and HEAD | b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| Branch | review/q3m7y26-p1-b15-lifecycle-canon-verification-batch-b-closeout-v0 |
+| Base and HEAD | e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| Branch | review/q3m7y26-p1-b15r1-post-b6r3-lifecycle-canon-reverification-v0 |
 | Artifact | docs/reference/q3m7y26-p1-b15-lifecycle-canon-verification-batch-b-closeout-v0.md |
-| Verification mode | INDEPENDENT_DOCUMENTARY_VERIFICATION / UNSTAGED |
-| Evidence ceiling | DOCUMENTATION_INDEPENDENT_VERIFICATION_AND_BATCH_B_CLOSEOUT_EVIDENCE_ONLY |
-| Batch B closeout posture | HELD_NOT_READY |
-| Recommendation | REVISE |
+| Verification mode | INDEPENDENT_POST_REPAIR_DOCUMENTARY_REVERIFICATION / UNSTAGED |
+| Evidence ceiling | DOCUMENTATION_POST_B6R3_INDEPENDENT_REVERIFICATION_AND_BATCH_B_CLOSEOUT_RECOMMENDATION_ONLY |
+| Batch B closeout posture | HELD_PENDING_CONTROL_THREAD_DECISION |
+| Recommendation | GO_TO_CONTROL_THREAD_BATCH_B_CLOSEOUT_DECISION |
 
 This artifact independently evaluates the fourteen repository-integrated
 B1-B14 documentary artifacts at the exact base. Repository integration proves
@@ -26,27 +26,58 @@ only presence on the observed main state. It does not prove CONTROL_THREAD
 acceptance, receipt issuance, runtime behavior, external effects, or Batch B
 exit.
 
+### Original B15 Historical Result
+
+| historical field | value |
+| --- | --- |
+| Original B15 base | b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
+| Original source head | 4a87e2c840c8c560e5aae455c127c27fff4561f2 |
+| Original PR | https://github.com/jai-nexus/dev-jai-nexus/pull/416 |
+| Original integrated commit | 00b7c3c8cb3669892929203be26c7792b06d8fb6 / B15-E-016 |
+| Original result | 14 PASS / 2 FAIL |
+| Original recommendation | REVISE |
+| Original Batch B posture | HELD_NOT_READY |
+
+The original result remains historical evidence. B15R1 does not rewrite the
+original failures as passes at their earlier observation boundary.
+
+### B6R3 Repair Provenance
+
+| repair field | value |
+| --- | --- |
+| Repair base | 00b7c3c8cb3669892929203be26c7792b06d8fb6 |
+| Repair source head | 4320db3fe23ae44580d82dd5f65f2a02bc8fb1b4 / B15-E-017 |
+| Repair PR | https://github.com/jai-nexus/dev-jai-nexus/pull/417 |
+| Integrated repair and B15R1 base | e95d0b8613e2e79e32a361cae8304a71084ae7f3 / B15-E-018 |
+| Repair diff | one path / +23 / -13 |
+| Repository integration | SQUASH_MERGED |
+| B6 acceptance | NOT_INFERRED_FROM_MERGE |
+
 ## 2. Evidence and Authority Boundaries
 
 1. The exact repository base and the fourteen source paths are directly
    inspected local evidence.
 2. Each source artifact remains bounded by its own evidence ceiling and
    historical observation boundary.
-3. JAI-210 Done and JAI-212 In Progress are CONTROL_THREAD-supplied
-   `MIRROR_ONLY / NON_CONTROLLING` observations. B15 did not access or refresh
-   Linear. JAI-212 is recorded only by B15-E-015.
+3. JAI-203 Done and JAI-212 In Progress are CONTROL_THREAD-supplied
+   `MIRROR_ONLY / NON_CONTROLLING` observations. B15R1 did not access or
+   refresh Linear. They are recorded only by B15-E-019 and B15-E-015.
 4. Merge history and file presence establish repository integration only.
    Every acceptance, verification, receipt, credit, and exit conclusion
    requires its own evidence.
 5. Missing evidence remains `UNAVAILABLE` or `NOT_ESTABLISHED`. B15 does not
    reconstruct authority, acceptance, receipt, runtime, or effect evidence.
 6. This recommendation is verifier evidence, not CONTROL_THREAD disposition.
+7. The artifact's verification function is `JAI::DEV::VERIFIER`. Any later
+   dev-jai-nexus PR description must use the mechanical repository guardrail
+   role `JAI::DEV::BUILDER`. This distinction grants no delegation,
+   acceptance, execution, or authority transfer.
 
 ## 3. Verification Method
 
 | method_id | method | bounded result |
 | --- | --- | --- |
-| B15-METHOD-001 | Exact branch, HEAD, worktree, index, and target-absence preflight | Direct local repository observation |
+| B15-METHOD-001 | Exact branch, HEAD, clean worktree/index, and existing-target preflight | Direct local repository observation |
 | B15-METHOD-002 | `git cat-file -e` for all fourteen paths at the exact base | Repository path integration only |
 | B15-METHOD-003 | Source-manifest and predecessor-reference inspection | Documentary source and dependency evidence |
 | B15-METHOD-004 | Identifier, enum, state-domain, and semantic join comparison | Cross-canon documentary consistency |
@@ -66,7 +97,7 @@ Linear operation is part of this method.
 | B15-SRC-003 | B3 | q3m7y26-p1-b3-program-charter-schema-v0.md | Prospective twelve-field Program charter schema | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-003 |
 | B15-SRC-004 | B4 | q3m7y26-p1-b4-batch-wave-lane-decomposition-canon-v0.md | Batch, Wave, Lane, parentage, criteria, and mirror-reference separation | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-004 |
 | B15-SRC-005 | B5 | q3m7y26-p1-b5-role-authority-matrix-v0.md | Authority principals, portable roles, actions, delegation, and non-transitivity | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-005 |
-| B15-SRC-006 | B6 | q3m7y26-p1-b6-work-packet-canon-v0.md | Work Packet schema, bounded delivery actions, evidence requirements, and stops | PRESENT_AT_EXACT_BASE / DISCREPANCIES_OPEN | PENDING / unavailable | B15-E-006 |
+| B15-SRC-006 | B6 | q3m7y26-p1-b6-work-packet-canon-v0.md | Integrated B6R3 Work Packet join and temporal-evidence repair | PRESENT_AT_EXACT_BASE / B6R3_REPAIR_INTEGRATED / REVERIFIED | PENDING / merge does not establish acceptance | B15-E-006 |
 | B15-SRC-007 | B7 | q3m7y26-p1-b7-decision-token-disposition-canon-v0.md | Decision-token binding and five-disposition domain | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-007 |
 | B15-SRC-008 | B8 | q3m7y26-p1-b8-evidence-bundle-schema-v0.md | Evidence assembly, freshness, contradiction, and sensitive-data boundaries | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-008 |
 | B15-SRC-009 | B9 | q3m7y26-p1-b9-receipt-taxonomy-v0.md | Fourteen receipt classes and non-receipt boundaries | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-009 |
@@ -76,8 +107,9 @@ Linear operation is part of this method.
 | B15-SRC-013 | B13 | q3m7y26-p1-b13-rollback-reopen-supersession-canon-v0.md | Fail-closed rollback, reopen, supersession, receipt, and history rules | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-013 |
 | B15-SRC-014 | B14 | q3m7y26-p1-b14-github-linear-mirror-protocol-v0.md | Canon-to-mirror projection, idempotency, concurrency, and append-only history | PRESENT_AT_EXACT_BASE | PENDING / unavailable | B15-E-014 |
 
-Manifest result: `14/14` paths resolve at the exact base. This is integration
-evidence only.
+Manifest result: `14/14` paths resolve at
+`e95d0b8613e2e79e32a361cae8304a71084ae7f3`. This is integration evidence
+only.
 
 ## 5. Cross-Canon Identifier and Semantic Join Audit
 
@@ -87,8 +119,8 @@ evidence only.
 | B15-JOIN-002 | B2 coordinates -> B4 decomposition | B2 owns codes/full coordinate; B4 owns structural IDs and parentage | PASS |
 | B15-JOIN-003 | B4 Batch B fixture -> B1 axes | Structure and parentage create no lifecycle transition | PASS |
 | B15-JOIN-004 | B5 authority principals -> B12/B13 authority classifications | HUMAN_OPERATOR/CONSTITUTIONAL_ORIGIN and CONTROL_THREAD/DELEGATED_DECISION pairs align | PASS |
-| B15-JOIN-005 | B5 portable-role/action records -> B6 authority envelope | B6 target names `B5.portable_role` and `B5.action_record` do not byte-match B5 record-type names | FAIL / B15-DISC-002 |
-| B15-JOIN-006 | B4 structural IDs -> B6 control coordinates | B6 fixture values are B4 IDs, but its registry declares nonexistent B2 batch_id/wave_id/lane_id targets | FAIL / B15-DISC-001 |
+| B15-JOIN-005 | B5 portable-role/action records -> B6 authority envelope | B6 now targets `B5.portable_role_record.role_id` and `B5.action_class_record.action_id` exactly | PASS / B15-DISC-002 RESOLVED |
+| B15-JOIN-006 | B4 structural IDs -> B6 control coordinates | B6 now targets `B4.batch_record.batch_id`, `B4.wave_record.wave_id`, and `B4.lane_record.lane_id` exactly | PASS / B15-DISC-001 RESOLVED |
 | B15-JOIN-007 | B6 evidence requirements -> B8 requirement bindings | Three B6 requirement IDs map to STATIC_CONFIGURATION, MIRROR_ONLY, and UNAVAILABLE | PASS |
 | B15-JOIN-008 | B7 dispositions -> B1 axes | ACCEPT/REJECT map only to acceptance; HOLD maps to control; REVISE/UNRESOLVED have no lifecycle mapping | PASS |
 | B15-JOIN-009 | B8 bundle disposition -> B1 verification/acceptance | ASSEMBLED_UNVERIFIED remains NOT_VERIFIED and NOT_ACCEPTED | PASS |
@@ -100,8 +132,8 @@ evidence only.
 | B15-JOIN-015 | B9 MIRROR_RECEIPT -> B14 receipt boundary | Class B9-CLASS-013 remains non-issued, unverified, not established, and unavailable | PASS |
 | B15-JOIN-016 | B1 mirror axis -> B14 mirror postures | Canonical events alone do not establish CURRENT; missing mirror reads remain unavailable | PASS |
 
-Cross-canon result: `14 PASS / 2 FAIL`. Both failures are bounded to B6
-documentary target naming and block a clean Batch B closeout recommendation.
+Cross-canon result: `16 PASS / 0 FAIL`. No new unresolved or contradictory
+cross-canon join was found.
 
 ## 6. Lifecycle-Axis Preservation Audit
 
@@ -129,7 +161,7 @@ Each fixture proves only the named documentary behavior.
 | B15-POS-003 | B3 | Twelve-field Program charter preserves explicit unresolved founder outcome and success conditions | PASS |
 | B15-POS-004 | B4 | Batch B contains four Waves, fifteen portable Lane records, and separate mirror references | PASS |
 | B15-POS-005 | B5 | Verifier may independently validate under a fresh exact route but cannot self-route or accept | PASS |
-| B15-POS-006 | B6 | Work Packet fixture materializes sixteen record types, scoped actions, stops, and non-authorizations | PASS_LOCAL_STRUCTURE / CROSS_JOIN_HELD |
+| B15-POS-006 | B6 | Work Packet fixture materializes sixteen record types, scoped actions, stops, non-authorizations, and exact B4/B5 joins | PASS_LOCAL_AND_CROSS_CANON |
 | B15-POS-007 | B7 | Null-token UNRESOLVED fixture creates no decision or lifecycle effect | PASS |
 | B15-POS-008 | B8 | Evidence bundle remains ASSEMBLED_UNVERIFIED with unavailable runtime/integrity/receipt evidence | PASS |
 | B15-POS-009 | B9 | Safe taxonomy fixture remains NOT_ISSUED, UNVERIFIED, NOT_VERIFIED, and NOT_ACCEPTED | PASS |
@@ -139,8 +171,8 @@ Each fixture proves only the named documentary behavior.
 | B15-POS-013 | B13 | Non-active fixture retains unresolved state, no target, no issued receipt, and no transition | PASS |
 | B15-POS-014 | B14 | Non-mutating fixture keeps mirror read unavailable and authority effect NONE | PASS |
 
-Positive fixture result: `14/14` present; B6 passes local structure but remains
-held on the two cross-canon join failures.
+Positive fixture result: `14/14 PASS`; B6 passes local structure and current
+cross-canon joins.
 
 ## 8. Negative and Fail-Closed Fixtures
 
@@ -234,33 +266,34 @@ Credit result: PASS for dimension independence. Batch B exit remains
 | B15-MIRROR-006 | Canonical subject has no mirror | MISSING_MIRROR |
 | B15-MIRROR-007 | Multi-field write lacks one-boundary readback | PARTIAL_UPDATE |
 | B15-MIRROR-008 | Linear updatedAt changes after read | CONFLICT; apply nothing when authorship is indistinguishable |
-| B15-MIRROR-009 | JAI-210 Done | Supplied integration display only; no acceptance or currentness inference |
+| B15-MIRROR-009 | JAI-203 Done | Supplied B6R3 repository-integration display only; no B6 acceptance or currentness inference |
 | B15-MIRROR-010 | JAI-212 In Progress | Supplied route corroboration only; no verification or closeout effect |
 
 Mirror result: protocol semantics pass. Current mirror freshness is
-`UNAVAILABLE` because B15 did not access Linear.
+`UNAVAILABLE` because B15R1 did not access Linear.
 
 ## 14. Discrepancy Register
 
-| discrepancy_id | severity | evidence | finding | required treatment |
-| --- | --- | --- | --- | --- |
-| B15-DISC-001 | HIGH | B6 Field Registry control_coordinates_record ordinals 4-6; B2 and B4 schemas | B6 declares `batch_id`, `wave_id`, and `lane_id` as B2 targets, but B2 defines codes and reserves structural IDs/parentage to B4; B6 fixture values are B4 IDs | Repair B6 target types to exact B4 record references and reverify all joins |
-| B15-DISC-002 | MEDIUM | B6 authority/executor fields; B5 Canonical records | B6 targets `B5.portable_role` and `B5.action_record`; B5 declares `portable_role_record` and `action_class_record`, with no byte-exact alias established | Normalize B6 target record names or add an explicit accepted alias contract |
-| B15-DISC-003 | MEDIUM | B6 Current structured fixture preface and B6 Evidence Pointer Registry/final audit | B6 says evidence pointers are unresolved placeholders and no Evidence Pointer Registry is created, while the same artifact defines a 12-row registry and claims all joins resolve | Remove stale preface language and preserve the final resolved evidence posture |
-| B15-DISC-004 | LOW | B6 delivery-authority fixture and B1 route-expiry semantics | Integrated B6 text still calls EDIT `GRANTED_BY_CURRENT_ROUTE` for a completed historical route without explicitly labeling the fixture historical/expired at the B15 base | Mark the fixture historical at its source boundary and state current route effect NONE |
+| discrepancy_id | original severity | original finding | B15R1 status | exact repair evidence | current result |
+| --- | --- | --- | --- | --- | --- |
+| B15-DISC-001 | HIGH | B6 declared `batch_id`, `wave_id`, and `lane_id` as B2 targets although B4 owns the structural records and IDs | RESOLVED_AT_B15R1_BASE | B6 Field Registry now uses `reference<B4.batch_record.batch_id>`, `reference<B4.wave_record.wave_id>`, and `reference<B4.lane_record.lane_id>`; B15-E-017 and B15-E-018 | B15-JOIN-006 PASS |
+| B15-DISC-002 | MEDIUM | B6 targeted `B5.portable_role` and `B5.action_record`, which did not byte-match B5 canonical record types | RESOLVED_AT_B15R1_BASE | B6 now uses `reference<B5.portable_role_record.role_id>` and `reference<B5.action_class_record.action_id>`; B15-E-017 and B15-E-018 | B15-JOIN-005 PASS |
+| B15-DISC-003 | MEDIUM | B6 said evidence pointers were unresolved placeholders and no registry existed while defining a twelve-record registry | RESOLVED_AT_B15R1_BASE | Historical fixture preface now recognizes the twelve-record Evidence Pointer Registry and preserves unavailable/runtime/receipt/acceptance limits; B15-E-017 and B15-E-018 | Internal evidence text coherent |
+| B15-DISC-004 | LOW | B6 preserved EDIT as `GRANTED_BY_CURRENT_ROUTE` without clearly marking the completed route historical/expired with current effect NONE | RESOLVED_AT_B15R1_BASE | Delivery text preserves the historical EDIT event, states the original route is completed and expired, grants no continuing authority, and states current route effect `NONE`; B15-E-017 and B15-E-018 | Temporal authority boundary coherent |
 
-No contradiction requires choosing an owner or controlling source. The
-discrepancies are exact documentary repairs within B6.
+The original findings and severities remain historical evidence. All four are
+resolved at the B15R1 base, and no new discrepancy was found. Repository
+integration does not establish B6 acceptance.
 
 ## 15. Unavailable-Evidence Register
 
 | unavailable_id | missing evidence | consequence |
 | --- | --- | --- |
 | B15-U-001 | Exact CONTROL_THREAD acceptance evidence for B1-B14 | No artifact acceptance inferred from integration |
-| B15-U-002 | B15 acceptance disposition | Recommendation remains non-final |
+| B15-U-002 | B15R1 acceptance disposition | Recommendation remains non-final |
 | B15-U-003 | Batch B acceptance and exit decision | Batch B closeout remains held |
 | B15-U-004 | Batch B exit receipt/integrity instance | B11 BATCH_EXIT dimension remains NOT_ESTABLISHED |
-| B15-U-005 | Current Linear read for JAI-210 and JAI-212 | Mirror freshness/currentness unavailable |
+| B15-U-005 | Current Linear read for JAI-203 and JAI-212 | Mirror freshness/currentness unavailable |
 | B15-U-006 | Program 1 measurable founder outcome and success conditions | B3 prospective charter use remains unresolved |
 | B15-U-007 | Current Batch B-wide entry/execution authority | No Batch-wide execution |
 | B15-U-008 | Runtime, deployment, provider, customer, Agent, Council, or JAI activation evidence | No runtime or activation credit |
@@ -272,8 +305,8 @@ discrepancies are exact documentary repairs within B6.
 | criterion_id | criterion | evidence result | closeout effect |
 | --- | --- | --- | --- |
 | B15-CLOSE-001 | All fourteen artifacts integrated at exact base | SATISFIED / 14 of 14 | Necessary, not sufficient |
-| B15-CLOSE-002 | Cross-canon identifiers and target references resolve | NOT_SATISFIED / B15-DISC-001 and B15-DISC-002 | BLOCK |
-| B15-CLOSE-003 | Internal source text is non-contradictory | NOT_SATISFIED / B15-DISC-003 | BLOCK |
+| B15-CLOSE-002 | Cross-canon identifiers and target references resolve | SATISFIED / 16 PASS and 0 FAIL | Necessary, not sufficient |
+| B15-CLOSE-003 | Internal source text is non-contradictory | SATISFIED / B15-DISC-003 and B15-DISC-004 resolved | Necessary, not sufficient |
 | B15-CLOSE-004 | Lifecycle axes remain orthogonal | SATISFIED | No exit effect |
 | B15-CLOSE-005 | Positive and fail-closed fixtures cover B1-B14 | SATISFIED / 14 plus 14 | No exit effect |
 | B15-CLOSE-006 | Receipt and integrity boundaries align | SATISFIED_DOCUMENTARY_ONLY | No issued receipt |
@@ -284,31 +317,38 @@ discrepancies are exact documentary repairs within B6.
 | B15-CLOSE-011 | Linear state is treated as mirror-only | SATISFIED | No closeout effect |
 | B15-CLOSE-012 | Positive authority, runtime, external-effect, or activation grants are absent | SATISFIED | Preserves zero-gate posture |
 
-Batch B closeout readiness: `HELD_NOT_READY`. Four blocking criteria remain:
-cross-canon join repair, internal B6 text repair, acceptance evidence, and a
-separate Batch B closeout/exit decision with required receipt evidence.
+Closeout-criteria result: `9 SATISFIED` including one
+`SATISFIED_DOCUMENTARY_ONLY`, `1 UNAVAILABLE`, and `2 NOT_ESTABLISHED`.
+Batch B closeout remains `HELD_PENDING_CONTROL_THREAD_DECISION`. Exact
+acceptance evidence, a closeout/exit disposition, and required exit receipt
+evidence remain unavailable or not established; this re-verification does not
+supply them.
 
 ## 17. Evidence Pointer Registry
 
 | evidence_id | source_class | immutability | reference | claim | observation_boundary |
 | --- | --- | --- | --- | --- | --- |
-| B15-E-001 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b1-lifecycle-vocabulary-state-machine-v0.md | B1 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-002 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b2-control-coordinates-canon-v0.md | B2 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-003 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b3-program-charter-schema-v0.md | B3 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-004 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b4-batch-wave-lane-decomposition-canon-v0.md | B4 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-005 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b5-role-authority-matrix-v0.md | B5 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-006 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b6-work-packet-canon-v0.md | B6 integrated source and discrepancy evidence | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-007 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b7-decision-token-disposition-canon-v0.md | B7 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-008 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b8-evidence-bundle-schema-v0.md | B8 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-009 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b9-receipt-taxonomy-v0.md | B9 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-010 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0.md | B10 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-011 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b11-capability-credit-ledger-v0.md | B11 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-012 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b12-exception-out-of-sequence-work-canon-v0.md | B12 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-013 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b13-rollback-reopen-supersession-canon-v0.md | B13 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-014 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee/docs/reference/q3m7y26-p1-b14-github-linear-mirror-protocol-v0.md | B14 integrated documentary source | base b05d4d4f38c7bb7137f8af9a606b412ec1cfcaee |
-| B15-E-015 | CONTROL_THREAD_SUPPLIED_MIRROR_OBSERVATION | MUTABLE_CORROBORATING | Linear JAI-212 | MIRROR_ONLY / NON_CONTROLLING / IN_PROGRESS | CONTROL_THREAD_SUPPLIED_B15_ROUTE_BOUNDARY / CODEX_NOT_ACCESSED_OR_REFRESHED |
+| B15-E-001 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b1-lifecycle-vocabulary-state-machine-v0.md | B1 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-002 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b2-control-coordinates-canon-v0.md | B2 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-003 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b3-program-charter-schema-v0.md | B3 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-004 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b4-batch-wave-lane-decomposition-canon-v0.md | B4 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-005 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b5-role-authority-matrix-v0.md | B5 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-006 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b6-work-packet-canon-v0.md | B6R3 integrated repair source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-007 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b7-decision-token-disposition-canon-v0.md | B7 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-008 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b8-evidence-bundle-schema-v0.md | B8 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-009 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b9-receipt-taxonomy-v0.md | B9 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-010 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0.md | B10 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-011 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b11-capability-credit-ledger-v0.md | B11 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-012 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b12-exception-out-of-sequence-work-canon-v0.md | B12 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-013 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b13-rollback-reopen-supersession-canon-v0.md | B13 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-014 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/e95d0b8613e2e79e32a361cae8304a71084ae7f3/docs/reference/q3m7y26-p1-b14-github-linear-mirror-protocol-v0.md | B14 integrated documentary source | base e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-015 | CONTROL_THREAD_SUPPLIED | MUTABLE_CORROBORATING | Linear JAI-212 | MIRROR_ONLY / NOT_INDEPENDENTLY_ACCESSED / NON_CONTROLLING / IN_PROGRESS | CONTROL_THREAD_SUPPLIED_B15R1_ROUTE_BOUNDARY |
+| B15-E-016 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/commit/00b7c3c8cb3669892929203be26c7792b06d8fb6 | Original B15 integration and historical 14 PASS / 2 FAIL result | commit 00b7c3c8cb3669892929203be26c7792b06d8fb6 |
+| B15-E-017 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/4320db3fe23ae44580d82dd5f65f2a02bc8fb1b4/docs/reference/q3m7y26-p1-b6-work-packet-canon-v0.md | B6R3 repair source head | source head 4320db3fe23ae44580d82dd5f65f2a02bc8fb1b4 |
+| B15-E-018 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/commit/e95d0b8613e2e79e32a361cae8304a71084ae7f3 | B6R3 integrated commit and B15R1 current base | commit e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
+| B15-E-019 | CONTROL_THREAD_SUPPLIED | MUTABLE_CORROBORATING | Linear JAI-203 | MIRROR_ONLY / NOT_INDEPENDENTLY_ACCESSED / NON_CONTROLLING / DONE_FOR_REPOSITORY_REPAIR_INTEGRATION_ONLY | CONTROL_THREAD_SUPPLIED_B15R1_ROUTE_BOUNDARY |
 
-Immutable evidence records: 14. Mutable corroborating records: 1.
+Immutable evidence records: 17. Mutable corroborating records: 2.
 
 ## 18. Invalid Examples
 
@@ -337,7 +377,9 @@ Immutable evidence records: 14. Mutable corroborating records: 1.
 - Tables serialize in their displayed order.
 - IDs are unique and sort by ascending numeric suffix within each family.
 - Evidence arrays preserve declared ascending evidence-ID order.
-- Immutable repository references are pinned to the exact B15 base.
+- Current-source immutable repository references are pinned to the exact
+  B15R1 base; historical references are pinned to their exact commit or source
+  head.
 - Mutable mirror evidence records an explicit supplied observation boundary
   and remains non-controlling.
 - Null, unavailable, not established, and unresolved are distinct.
@@ -346,23 +388,23 @@ Immutable evidence records: 14. Mutable corroborating records: 1.
 
 ## 20. Recommendation, Risks, and Rollback
 
-`B15_RECOMMENDATION: REVISE`
+`B15R1_RECOMMENDATION: GO_TO_CONTROL_THREAD_BATCH_B_CLOSEOUT_DECISION`
 
 The fourteen source artifacts are repository-integrated and substantially
 preserve lifecycle, authority, receipt, credit, history, and mirror
-separation. Batch B is not ready for closeout because B6 contains two
-cross-canon target-resolution failures and two internal temporal/evidence
-wording discrepancies. Exact acceptance and Batch-exit evidence are also
-unavailable.
+separation. The B6R3 repair resolves all four original B15 discrepancies, all
+sixteen cross-canon joins pass, and all positive and fail-closed fixtures
+remain valid. No new discrepancy was found.
 
-The smallest next action is a separately routed B6 documentary repair,
-followed by fresh independent cross-canon verification. CONTROL_THREAD may
-then decide whether additional acceptance and Batch-exit evidence should be
-issued. B15 itself cannot issue either.
+The evidence supports advancing to a separate CONTROL_THREAD Batch B closeout
+decision. This recommendation does not accept B1-B14, accept B15R1, close or
+exit Batch B, issue a receipt, authorize D9, or establish runtime or activation
+evidence. Exact acceptance, closeout/exit disposition, and receipt/integrity
+evidence remain unavailable or not established.
 
-Documentary rollback is deletion or correction of this uncommitted B15
-artifact under separate authority. No predecessor artifact, Git history,
-external system, or runtime state is changed by this review.
+Documentary rollback is correction of this unstaged B15 artifact under
+separate authority. No predecessor artifact, Git history, external system, or
+runtime state is changed by this re-verification.
 
 ## 21. Final Audit and Explicit Non-Authorizations
 
@@ -371,22 +413,23 @@ external system, or runtime state is changed by this review.
 | B15-AUDIT-001 | Exact branch and base | PASS |
 | B15-AUDIT-002 | Source manifest | PASS / 14 rows |
 | B15-AUDIT-003 | Source paths at base | PASS / 14 of 14 |
-| B15-AUDIT-004 | Cross-canon joins | REVISE / 14 PASS and 2 FAIL |
+| B15-AUDIT-004 | Cross-canon joins | PASS / 16 PASS and 0 FAIL |
 | B15-AUDIT-005 | Lifecycle axes | PASS / 10 independent axes |
-| B15-AUDIT-006 | Positive fixtures | PASS / 14 rows; B6 cross-join caveat preserved |
+| B15-AUDIT-006 | Positive fixtures | PASS / 14 rows including B6 local-and-cross-canon PASS |
 | B15-AUDIT-007 | Negative fixtures | PASS / 14 rows |
 | B15-AUDIT-008 | Exception and history cases | PASS / no active operation inferred |
 | B15-AUDIT-009 | Receipt and integrity cases | PASS_DOCUMENTARY_ONLY / no issued receipt |
 | B15-AUDIT-010 | Capability credit | PASS / independent and non-transitive |
 | B15-AUDIT-011 | Mirror conflicts | PASS_DOCUMENTARY_ONLY / freshness unavailable |
-| B15-AUDIT-012 | Discrepancies | OPEN / 1 high, 2 medium, 1 low |
+| B15-AUDIT-012 | Discrepancies | RESOLVED_AT_B15R1_BASE / four historical records retained / no new discrepancy |
 | B15-AUDIT-013 | Unavailable evidence | PRESERVED / 10 rows |
-| B15-AUDIT-014 | Evidence IDs | PASS / 15 defined and used |
-| B15-AUDIT-015 | Immutable reference paths | PASS / 14 of 14 |
+| B15-AUDIT-014 | Evidence IDs | PASS / 19 defined and used |
+| B15-AUDIT-015 | Immutable references | PASS / 17 of 17 current or historical objects resolve |
 | B15-AUDIT-016 | Local identifier uniqueness | PASS / zero duplicates |
 | B15-AUDIT-017 | Positive authority or acceptance grants | PASS / zero |
-| B15-AUDIT-018 | Batch B closeout | HELD_NOT_READY |
+| B15-AUDIT-018 | Batch B closeout | HELD_PENDING_CONTROL_THREAD_DECISION |
 | B15-AUDIT-019 | B15 one-path scope and whitespace | PASS |
+| B15-AUDIT-020 | Verification and mechanical role labels | PASS / JAI::DEV::VERIFIER distinct from JAI::DEV::BUILDER |
 
 No predecessor edit, staging, commit, push, PR, ready conversion, merge,
 deployment, branch deletion, GitHub mutation, Linear access or mutation,
@@ -395,14 +438,14 @@ customer, Agent, Council, receipt issuance, acceptance, Batch exit, D9,
 Program exit, authority transfer, or JAI activation is authorized or
 performed.
 
-B15_MAXIMUM_CURRENT_CREDIT:
-DOCUMENTATION_INDEPENDENT_VERIFICATION_AND_BATCH_B_CLOSEOUT_EVIDENCE_ONLY
+B15R1_MAXIMUM_CURRENT_CREDIT:
+DOCUMENTATION_POST_B6R3_INDEPENDENT_REVERIFICATION_AND_BATCH_B_CLOSEOUT_RECOMMENDATION_ONLY
 
-B15_RECOMMENDATION: REVISE
-B15_ACCEPTANCE: PENDING_CONTROL_THREAD_DISPOSITION
-BATCH_B_CLOSEOUT: HELD_NOT_READY
+B15R1_RECOMMENDATION: GO_TO_CONTROL_THREAD_BATCH_B_CLOSEOUT_DECISION
+B15R1_ACCEPTANCE: PENDING_CONTROL_THREAD_DISPOSITION
+BATCH_B_CLOSEOUT: HELD_PENDING_CONTROL_THREAD_DECISION
 BATCH_B_EXIT_CREDIT: NONE
 D9_EXECUTION_AUTHORITY: NOT_GRANTED
 PROGRAM_EXIT_CREDIT: NONE
 JAI_ACTIVATION_CREDIT: NONE
-NEXT_REQUIRED_DECISION: REVISE_B6_THEN_REVERIFY_BATCH_B_CLOSEOUT
+NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B15R1_AND_DECIDE_BATCH_B_CLOSEOUT
