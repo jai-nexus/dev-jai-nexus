@@ -1,6 +1,10 @@
-# Q3M7Y26-P1 B15R1 Post-B6R3 Lifecycle Canon Re-verification v0
+# Q3M7Y26-P1 B15R3 Post-B10R2 Lifecycle Canon Re-verification v0
 
 Role: JAI::DEV::VERIFIER
+
+Sections 1 through 21 preserve the integrated B15R1 verification layer.
+Sections 22 through 32 add the B15R3 re-verification layer without rewriting
+the original B15, B6R3, B15R1, B15R2, or B10R2 chronology.
 
 ## 1. Status and Purpose
 
@@ -347,8 +351,10 @@ supply them.
 | B15-E-017 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/4320db3fe23ae44580d82dd5f65f2a02bc8fb1b4/docs/reference/q3m7y26-p1-b6-work-packet-canon-v0.md | B6R3 repair source head | source head 4320db3fe23ae44580d82dd5f65f2a02bc8fb1b4 |
 | B15-E-018 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/commit/e95d0b8613e2e79e32a361cae8304a71084ae7f3 | B6R3 integrated commit and B15R1 current base | commit e95d0b8613e2e79e32a361cae8304a71084ae7f3 |
 | B15-E-019 | CONTROL_THREAD_SUPPLIED | MUTABLE_CORROBORATING | Linear JAI-203 | MIRROR_ONLY / NOT_INDEPENDENTLY_ACCESSED / NON_CONTROLLING / DONE_FOR_REPOSITORY_REPAIR_INTEGRATION_ONLY | CONTROL_THREAD_SUPPLIED_B15R1_ROUTE_BOUNDARY |
+| B15-E-020 | REPOSITORY_HISTORY | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/3cd74bfa39d371a629e91cd7f17fa9743ee75c4f/docs/reference/q3m7y26-p1-b15r2-batch-b-control-thread-closeout-decision-candidate-v0.md | Integrated B15R2 explicit HUMAN_OPERATOR documentary closeout decision | commit 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f |
+| B15-E-021 | REPOSITORY_CANON | IMMUTABLE | https://github.com/jai-nexus/dev-jai-nexus/blob/f7493c5c4ad43772d55ab400d079178a4afa5107/docs/reference/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0.md | Integrated B10R2 portable receipt subject-binding repair | base f7493c5c4ad43772d55ab400d079178a4afa5107 |
 
-Immutable evidence records: 17. Mutable corroborating records: 2.
+Immutable evidence records: 19. Mutable corroborating records: 2.
 
 ## 18. Invalid Examples
 
@@ -449,3 +455,384 @@ D9_EXECUTION_AUTHORITY: NOT_GRANTED
 PROGRAM_EXIT_CREDIT: NONE
 JAI_ACTIVATION_CREDIT: NONE
 NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B15R1_AND_DECIDE_BATCH_B_CLOSEOUT
+
+## 22. B15R3 Current Status and Preserved Chronology
+
+| field | value |
+| --- | --- |
+| Program | Q3M7Y26-P1 - Minimum Viable Operating Loop |
+| Batch | B - Program Lifecycle and Receipt Canon |
+| Wave | B-D |
+| Lane | B15R3 - Post-B10R2 Lifecycle Canon Re-verification v0 |
+| Coordinate | Q3M7Y26-P1:B15 |
+| Route | CT-2026-07-29-Q3M7Y26-P1-B15R3-POST-B10R2-LIFECYCLE-CANON-REVERIFICATION-v0 |
+| Repository | jai-nexus/dev-jai-nexus |
+| Base and HEAD | f7493c5c4ad43772d55ab400d079178a4afa5107 |
+| Branch | review/q3m7y26-p1-b15r3-post-b10r2-lifecycle-canon-reverification-v0 |
+| Artifact | docs/reference/q3m7y26-p1-b15-lifecycle-canon-verification-batch-b-closeout-v0.md |
+| Verification function | JAI::DEV::VERIFIER |
+| Mechanical PR role | JAI::DEV::BUILDER |
+| Verification mode | INDEPENDENT_DOCUMENTARY_REVERIFICATION / ONE_FILE_ONLY / UNSTAGED |
+| Evidence ceiling | DOCUMENTATION_POST_B10R2_INDEPENDENT_REVERIFICATION_AND_RECLOSEOUT_RECOMMENDATION_ONLY |
+| Current documentary state | REOPENED_PENDING_CONTROL_THREAD_RECLOSEOUT_DECISION |
+| Recommendation | GO_TO_CONTROL_THREAD_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT_DECISION |
+
+| chronology_id | event | immutable boundary | preserved result | current effect |
+| --- | --- | --- | --- | --- |
+| B15R3-CHRON-001 | Original B15 / PR #416 | 00b7c3c8cb3669892929203be26c7792b06d8fb6 | 14 PASS / 2 FAIL / REVISE / HELD_NOT_READY | Historical finding preserved |
+| B15R3-CHRON-002 | B6R3 / PR #417 | e95d0b8613e2e79e32a361cae8304a71084ae7f3 | Four bounded cross-canon and temporal-evidence discrepancies repaired | Repair history preserved |
+| B15R3-CHRON-003 | B15R1 / PR #418 | dd0b35aa721e179e8f704d9289f425a6d26ebbf3 | 16 PASS / 0 FAIL; positive 14/14; negative 14/14; GO recommendation | Independent historical verification |
+| B15R3-CHRON-004 | B15R2 / PR #419 | 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f / B15-E-020 | HUMAN_OPERATOR selected ACCEPT_BATCH_B_DOCUMENTARY_CANON_CLOSEOUT; receipt NOT_ISSUED; lifecycle exit NOT_ESTABLISHED | Accepted documentary closeout history only |
+| B15R3-CHRON-005 | B10 portability defect and bounded reopening | HUMAN_OPERATOR decision after B15R2 | REOPEN_BATCH_B_DOCUMENTARY_CANON_FOR_B10R2_PORTABILITY_REPAIR_ONLY | Current canon no longer classified as reclosed |
+| B15R3-CHRON-006 | B10R2 / PR #420 | source df0500688e5355825c19a18193fb677153a11705; integration f7493c5c4ad43772d55ab400d079178a4afa5107 / B15-E-021 | ACCEPT_AS_DOCUMENTARY_PORTABILITY_REPAIR_EVIDENCE; +111 / -39; receipt NOT_ISSUED; transition NOT_PERFORMED | Portability repair integrated |
+| B15R3-CHRON-007 | Current B15R3 route | f7493c5c4ad43772d55ab400d079178a4afa5107 | Independent post-B10R2 re-verification only | Recommendation authority only |
+
+The accepted B15R2 documentary closeout remains immutable history. The bounded
+reopening and B10R2 repair do not erase it, but they require a fresh
+HUMAN_OPERATOR or CONTROL_THREAD documentary recloseout decision before the
+current canon may be classified as reclosed or reaccepted.
+
+## 23. B15R3 Fourteen-Source Manifest
+
+| source_id | lane | exact repository path | current-base observation | current acceptance posture | evidence basis |
+| --- | --- | --- | --- | --- | --- |
+| B15R3-SRC-001 | B1 | docs/reference/q3m7y26-p1-b1-lifecycle-vocabulary-state-machine-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-001 |
+| B15R3-SRC-002 | B2 | docs/reference/q3m7y26-p1-b2-control-coordinates-canon-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-002 |
+| B15R3-SRC-003 | B3 | docs/reference/q3m7y26-p1-b3-program-charter-schema-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-003 |
+| B15R3-SRC-004 | B4 | docs/reference/q3m7y26-p1-b4-batch-wave-lane-decomposition-canon-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-004 |
+| B15R3-SRC-005 | B5 | docs/reference/q3m7y26-p1-b5-role-authority-matrix-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-005 |
+| B15R3-SRC-006 | B6 | docs/reference/q3m7y26-p1-b6-work-packet-canon-v0.md | PRESENT_AT_EXACT_BASE / B6R3_PRESERVED | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-006, B15-E-017, B15-E-018 |
+| B15R3-SRC-007 | B7 | docs/reference/q3m7y26-p1-b7-decision-token-disposition-canon-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-007 |
+| B15R3-SRC-008 | B8 | docs/reference/q3m7y26-p1-b8-evidence-bundle-schema-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-008 |
+| B15R3-SRC-009 | B9 | docs/reference/q3m7y26-p1-b9-receipt-taxonomy-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-009 |
+| B15R3-SRC-010 | B10 | docs/reference/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0.md | PRESENT_AT_EXACT_BASE / B10R2_PORTABILITY_REPAIR_INTEGRATED | REPAIRED_AFTER_BOUNDED_REOPENING / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-010, B15-E-021 |
+| B15R3-SRC-011 | B11 | docs/reference/q3m7y26-p1-b11-capability-credit-ledger-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-011 |
+| B15R3-SRC-012 | B12 | docs/reference/q3m7y26-p1-b12-exception-out-of-sequence-work-canon-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-012 |
+| B15R3-SRC-013 | B13 | docs/reference/q3m7y26-p1-b13-rollback-reopen-supersession-canon-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-013 |
+| B15R3-SRC-014 | B14 | docs/reference/q3m7y26-p1-b14-github-linear-mirror-protocol-v0.md | PRESENT_AT_EXACT_BASE | HISTORICAL_B15R2_ACCEPTANCE / CURRENT_RECLOSEOUT_NOT_ESTABLISHED | B15-E-014 |
+
+B15R3 manifest result: `14/14 PASS` at
+`f7493c5c4ad43772d55ab400d079178a4afa5107`. Presence is repository
+integration evidence only.
+
+## 24. Established Sixteen-Join Re-verification
+
+The historical sixteen-join inventory and denominator are unchanged.
+B10R2-specific checks appear only in Section 25.
+
+| join_id | source -> target | B15R3 verification | result |
+| --- | --- | --- | --- |
+| B15R3-JOIN-001 | B2 Program identity -> accepted Program definition | Exact Program ID/code binding remains required before coordinate validity | PASS |
+| B15R3-JOIN-002 | B2 coordinates -> B4 decomposition | B2 code/full-coordinate ownership remains distinct from B4 structural IDs and parentage | PASS |
+| B15R3-JOIN-003 | B4 Batch B fixture -> B1 axes | Structure and parentage still create no lifecycle transition | PASS |
+| B15R3-JOIN-004 | B5 authority principals -> B12/B13 authority classifications | HUMAN_OPERATOR/CONSTITUTIONAL_ORIGIN and CONTROL_THREAD/DELEGATED_DECISION pairs remain aligned | PASS |
+| B15R3-JOIN-005 | B5 portable-role/action records -> B6 authority envelope | Exact B5 portable_role_record and action_class_record targets remain resolved | PASS |
+| B15R3-JOIN-006 | B4 structural IDs -> B6 control coordinates | Exact B4 batch_record, wave_record, and lane_record targets remain resolved | PASS |
+| B15R3-JOIN-007 | B6 evidence requirements -> B8 requirement bindings | Three B6 requirement IDs retain STATIC_CONFIGURATION, MIRROR_ONLY, and UNAVAILABLE bindings | PASS |
+| B15R3-JOIN-008 | B7 dispositions -> B1 axes | ACCEPT/REJECT, HOLD, REVISE, and UNRESOLVED mappings remain axis-bounded | PASS |
+| B15R3-JOIN-009 | B8 bundle disposition -> B1 verification/acceptance | ASSEMBLED_UNVERIFIED remains NOT_VERIFIED and NOT_ACCEPTED | PASS |
+| B15R3-JOIN-010 | B9 classes -> B10 class bindings | All fourteen B9 class ID/name pairs remain exact after B10R2 | PASS |
+| B15R3-JOIN-011 | B10 candidate -> B9 receipt taxonomy | Portable subject binding does not convert the safe non-issued candidate into a receipt instance | PASS |
+| B15R3-JOIN-012 | B11 dimensions -> B12 credit boundaries | D1 and D2 retain one direct and eighteen non-derivable independent dimensions | PASS |
+| B15R3-JOIN-013 | B1 transitions -> B13 operations | All ten cited rollback, reopen, and supersession transition IDs remain source-supported | PASS |
+| B15R3-JOIN-014 | B13 COMPLETED rules -> B14 history triggers | Completed operations still require exact evidence, effects, receipt/integrity, and currentness boundaries | PASS |
+| B15R3-JOIN-015 | B9 MIRROR_RECEIPT -> B14 receipt boundary | B9-CLASS-013 remains non-issued, unverified, not established, and unavailable | PASS |
+| B15R3-JOIN-016 | B1 mirror axis -> B14 mirror postures | Canonical events alone still do not establish mirror CURRENT | PASS |
+
+B15R3 cross-canon result: `16 PASS / 0 FAIL`. No join was added, removed, or
+renumbered.
+
+## 25. B10R2 Portable Subject-Binding Audit
+
+| audit_id | required portability check | observed result | disposition |
+| --- | --- | --- | --- |
+| B15R3-PORT-001 | Canonical record types | 9 | PASS |
+| B15R3-PORT-002 | Field Registry rows | 107 | PASS |
+| B15R3-PORT-003 | Ordered subject-coordinate fields | 14 | PASS |
+| B15R3-PORT-004 | B10-fixture-specific literal constraints in portable subject fields | 0 | PASS |
+| B15R3-PORT-005 | B2 Program binding | program_id field resolves through accepted B2 program_code plus program_id binding | PASS |
+| B15R3-PORT-006 | B4 structural bindings | Batch, Wave, Lane, relationship, and coordinate targets resolve exactly | PASS |
+| B15R3-PORT-007 | Repository subject coherence | Repository, SHA, branch, artifact path, subject type, subject ID, and evidence are one bounded subject | PASS |
+| B15R3-PORT-008 | Mutable mirror substitution | Linear identifiers are prohibited as canonical subject identity | PASS |
+| B15R3-PORT-009 | Existing B10 fixture | 14 fields / zero duplicate keys / schema order / non-issued / non-accepted | PASS |
+| B15R3-PORT-010 | Integrated B15R2 documentary decision | REPRESENTABLE_BY_SCHEMA / NOT_INSTANTIATED | PASS |
+| B15R3-PORT-011 | Prospective lifecycle-transition subject | REPRESENTABLE_IN_PRINCIPLE / SUBJECT_VALUES_UNAVAILABLE / NOT_INSTANTIATED | PASS |
+| B15R3-PORT-012 | B10 evidence registry | 15 defined and used | PASS |
+| B15R3-PORT-013 | B10 immutable references | 14/14 resolve | PASS |
+| B15R3-PORT-014 | Receipt issuance | NOT_ISSUED | PASS |
+| B15R3-PORT-015 | Acceptance or lifecycle effect from portability | NONE / NOT_PERFORMED | PASS |
+
+Original B10 portability finding:
+`RESOLVED_AT_B15R3_BASE`.
+
+## 26. B15R3 Positive Documentary Fixtures
+
+The established positive denominator remains fourteen.
+
+| fixture_id | source | current-base positive fixture | result |
+| --- | --- | --- | --- |
+| B15R3-POS-001 | B1 | Ten lifecycle axes remain independent | PASS |
+| B15R3-POS-002 | B2 | Program-qualified coordinate requires exact Program binding | PASS |
+| B15R3-POS-003 | B3 | Unresolved charter fields remain explicit and fail closed | PASS |
+| B15R3-POS-004 | B4 | Four Waves, fifteen portable Lanes, and separate mirrors remain coherent | PASS |
+| B15R3-POS-005 | B5 | Verifier may validate only under an exact route and cannot self-accept | PASS |
+| B15R3-POS-006 | B6 | Sixteen record types and exact B4/B5/evidence joins remain coherent | PASS_LOCAL_AND_CROSS_CANON |
+| B15R3-POS-007 | B7 | Null-token UNRESOLVED fixture creates no decision or lifecycle effect | PASS |
+| B15R3-POS-008 | B8 | ASSEMBLED_UNVERIFIED remains NOT_VERIFIED and NOT_ACCEPTED | PASS |
+| B15R3-POS-009 | B9 | Taxonomy fixture remains non-issued, unverified, and unaccepted | PASS |
+| B15R3-POS-010 | B10 | Portable safe fixture remains schema-coherent, non-issued, unverified, and unaccepted | PASS |
+| B15R3-POS-011 | B11 | Nineteen credit dimensions remain independent | PASS |
+| B15R3-POS-012 | B12 | Historical exceptions grant no current authority or inferred credit | PASS |
+| B15R3-POS-013 | B13 | Non-active operation fixture performs no transition | PASS |
+| B15R3-POS-014 | B14 | Non-mutating mirror fixture grants no currentness or authority | PASS |
+
+Positive fixture result: `14/14 PASS`.
+
+## 27. B15R3 Negative and Fail-Closed Fixtures
+
+The established negative denominator remains fourteen.
+
+| fixture_id | source | invalid condition | required result |
+| --- | --- | --- | --- |
+| B15R3-NEG-001 | B1 | Merge implies acceptance, transition, or activation | FAIL_CLOSED |
+| B15R3-NEG-002 | B2 | Coordinate conflicts with Program or Lane identity | INVALID / HOLD |
+| B15R3-NEG-003 | B3 | Unresolved charter value is inferred | CHARTER_INVALID |
+| B15R3-NEG-004 | B4 | Parent structure grants child execution | INVALID |
+| B15R3-NEG-005 | B5 | Verifier self-routes, self-accepts, stages, or delivers | PROHIBITED |
+| B15R3-NEG-006 | B6 | Stale route, expanded scope, mismatched role, or unresolved reference proceeds | HOLD |
+| B15R3-NEG-007 | B7 | Route or Work Packet ID substitutes for a decision token | INVALID |
+| B15R3-NEG-008 | B8 | Missing, cross-subject, or mutable-only evidence becomes controlling | HELD_UNAVAILABLE / FAIL_CLOSED |
+| B15R3-NEG-009 | B9 | Taxonomy class is treated as a receipt instance | INVALID / FAIL_CLOSED |
+| B15R3-NEG-010 | B10 | Cross-subject tuple, Linear identity substitution, or portability becomes issuance/authority | INVALID / FAIL_CLOSED |
+| B15R3-NEG-011 | B11 | One credit dimension is inferred from another | NOT_ESTABLISHED |
+| B15R3-NEG-012 | B12 | Historical exception is reused as current authority | FAIL_CLOSED |
+| B15R3-NEG-013 | B13 | Reopen restores expired authority or supersession omits replacement | FAIL_CLOSED |
+| B15R3-NEG-014 | B14 | Linear state or partial mirror write establishes canon or acceptance | HOLD / CONFLICT / REJECT |
+
+Negative fixture result: `14/14 PASS / FAIL_CLOSED_AS_REQUIRED`.
+
+## 28. B15R3 Receipt and Integrity Re-verification
+
+| case_id | check | current-base result |
+| --- | --- | --- |
+| B15R3-RCPT-001 | B9 vocabulary | 14 unchanged receipt-class ID/name pairs |
+| B15R3-RCPT-002 | B10 posture | Prospective portable schema only |
+| B15R3-RCPT-003 | Existing B10 fixture | receipt_instance_id null / NOT_ISSUED |
+| B15R3-RCPT-004 | Integrity and authenticity | UNVERIFIED / NOT_ESTABLISHED |
+| B15R3-RCPT-005 | Issuer authority | NOT_ESTABLISHED |
+| B15R3-RCPT-006 | Replay, durability, atomic consumption, and exactly-once | UNAVAILABLE or NOT_ESTABLISHED |
+| B15R3-RCPT-007 | B9-CLASS-011 / LIFECYCLE_TRANSITION_RECEIPT | Reserved for a separately authorized transition; no instance exists |
+| B15R3-RCPT-008 | B15R3 output | No receipt candidate or receipt instance created |
+
+Receipt and integrity result:
+`PASS_DOCUMENTARY_ONLY / RECEIPT_ISSUANCE_NOT_ISSUED`.
+
+## 29. Current Documentary Closeout Reconciliation
+
+| criterion_id | criterion | result | effect |
+| --- | --- | --- | --- |
+| B15R3-CLOSE-001 | B1-B14 source manifest | SATISFIED / 14 of 14 | Repository integration only |
+| B15R3-CLOSE-002 | Established cross-canon joins | SATISFIED / 16 PASS / 0 FAIL | Documentary coherence only |
+| B15R3-CLOSE-003 | B10R2 portability | SATISFIED / RESOLVED_AT_B15R3_BASE | No issuance or acceptance |
+| B15R3-CLOSE-004 | Positive fixtures | SATISFIED / 14 of 14 | Documentary behavior only |
+| B15R3-CLOSE-005 | Negative fixtures | SATISFIED / 14 of 14 fail closed | No adjacent credit |
+| B15R3-CLOSE-006 | B9/B10 receipt and integrity boundaries | SATISFIED_DOCUMENTARY_ONLY | No issued receipt |
+| B15R3-CLOSE-007 | B15R2 documentary closeout | ACCEPTED_HISTORY_PRESERVED | Does not automatically reclose current canon |
+| B15R3-CLOSE-008 | Fresh current documentary recloseout decision | NOT_ESTABLISHED | BLOCKS_CURRENT_RECLOSEOUT |
+| B15R3-CLOSE-009 | Batch B lifecycle exit | NOT_ESTABLISHED | Exit credit NONE |
+| B15R3-CLOSE-010 | D9 execution authority | NOT_GRANTED | No execution |
+
+BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY: ACCEPTED
+BATCH_B_DOCUMENTARY_CANON_CURRENT_STATE: REOPENED_PENDING_CONTROL_THREAD_RECLOSEOUT_DECISION
+BATCH_B_LIFECYCLE_EXIT: NOT_ESTABLISHED
+BATCH_B_EXIT_CREDIT: NONE
+D9_EXECUTION_AUTHORITY: NOT_GRANTED
+PROGRAM_EXIT_CREDIT: NONE
+JAI_ACTIVATION_CREDIT: NONE
+
+## 30. Evidence and Mirror Reconciliation
+
+The Evidence Pointer Registry now contains 21 unique definitions: 19 immutable
+repository or history records and two mutable corroborating records. Existing
+IDs and definitions remain unchanged; B15-E-020 and B15-E-021 are the only
+additions.
+
+| mirror_id | subject | CONTROL_THREAD-supplied posture | evidence treatment | authority effect |
+| --- | --- | --- | --- | --- |
+| B15R3-MIRROR-001 | Linear JAI-212 | CONTROL_THREAD_VERIFIED / MIRROR_ONLY / NON_CONTROLLING / B15R3_ROUTED | Current route observation; B15-E-015 historical definition preserved | NONE |
+| B15R3-MIRROR-002 | Linear JAI-203 | MIRROR_ONLY / NOT_INDEPENDENTLY_ACCESSED / NON_CONTROLLING / DONE_FOR_REPOSITORY_REPAIR_INTEGRATION_ONLY | Existing B15-E-019 boundary preserved; no freshness invented | NONE |
+
+Codex file execution did not access Linear. CONTROL_THREAD supplied the current
+mirror observations. Neither observation is canonical evidence, receipt
+evidence, acceptance, lifecycle state, or authority.
+
+## 31. B15R3 Recommendation, Risks, and Rollback
+
+B15R3_RECOMMENDATION: GO_TO_CONTROL_THREAD_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT_DECISION
+
+All required B15R3 documentary gates pass. The B10 portability finding is
+resolved at the exact base, the established sixteen joins remain 16/0, and the
+positive and negative fixtures remain 14/14 each. This supports a separate
+HUMAN_OPERATOR or CONTROL_THREAD documentary recloseout decision.
+
+The recommendation does not select ACCEPT, HOLD, or REVISE. It does not issue
+a receipt, reclose or reaccept the current canon, perform a lifecycle
+transition, establish Batch B exit credit, grant D9, establish Program exit,
+or activate JAI.
+
+| risk_id | risk | control |
+| --- | --- | --- |
+| B15R3-RISK-001 | Historical B15R2 acceptance mistaken for automatic current recloseout | Preserve accepted history separately from current reopened state |
+| B15R3-RISK-002 | Portability mistaken for receipt issuance or authority | Preserve NOT_ISSUED, unverified integrity, and effect NONE |
+| B15R3-RISK-003 | New portability checks alter the historical sixteen-join denominator | Keep all fifteen portability checks in a separate audit |
+| B15R3-RISK-004 | Mirror status treated as canon | Preserve JAI-212 and JAI-203 as non-controlling |
+| B15R3-RISK-005 | Recommendation mistaken for disposition | Require a separate explicit recloseout decision |
+
+Documentary rollback is restoration of this authorized B15 path to
+`f7493c5c4ad43772d55ab400d079178a4afa5107`. No predecessor, external system,
+or runtime state is changed by this re-verification.
+
+## 32. B15R3 Final Audit and Explicit Non-Authorizations
+
+| audit_id | gate | result |
+| --- | --- | --- |
+| B15R3-AUDIT-001 | Exact branch and base | PASS |
+| B15R3-AUDIT-002 | Current source manifest | PASS / 14 of 14 |
+| B15R3-AUDIT-003 | Established cross-canon joins | PASS / 16 PASS / 0 FAIL |
+| B15R3-AUDIT-004 | B10R2 portability | PASS / 15 checks / RESOLVED_AT_B15R3_BASE |
+| B15R3-AUDIT-005 | Positive fixtures | PASS / 14 of 14 |
+| B15R3-AUDIT-006 | Negative fixtures | PASS / 14 of 14 |
+| B15R3-AUDIT-007 | B9/B10 compatibility | PASS / 14 exact pairs / prospective schema only |
+| B15R3-AUDIT-008 | Receipt and integrity | PASS_DOCUMENTARY_ONLY / NOT_ISSUED / UNVERIFIED or NOT_ESTABLISHED |
+| B15R3-AUDIT-009 | Chronology | PASS / original failures, repairs, acceptance history, reopening, and repair preserved |
+| B15R3-AUDIT-010 | Evidence definitions | PASS / 21 defined once and used |
+| B15R3-AUDIT-011 | Immutable references | PASS / 19 of 19 resolve |
+| B15R3-AUDIT-012 | Mutable references | PASS / 2 / non-controlling |
+| B15R3-AUDIT-013 | Primary and local IDs | PASS / unique / zero unresolved |
+| B15R3-AUDIT-014 | Markdown table shapes | PASS |
+| B15R3-AUDIT-015 | Positive receipt, acceptance, lifecycle, exit, D9, Program-exit, or activation grants | PASS / 0 current grants |
+| B15R3-AUDIT-016 | Current documentary state | REOPENED_PENDING_CONTROL_THREAD_RECLOSEOUT_DECISION |
+| B15R3-AUDIT-017 | One-path scope and whitespace | PASS |
+| B15R3-AUDIT-018 | Verification and mechanical role labels | PASS / JAI::DEV::VERIFIER distinct from JAI::DEV::BUILDER |
+
+No predecessor edit, staging, commit, push, PR, merge, deployment, branch
+deletion, GitHub mutation, Linear access or mutation, package command, test,
+build, runtime, database, provider, customer, Agent, Council, receipt
+candidate, receipt instance, acceptance selection, lifecycle transition,
+Batch exit, D9, Program exit, authority transfer, or JAI activation is
+authorized or performed.
+
+B15R3_FILE_EXECUTION_DISPOSITION: REVERIFICATION_COMPLETED_UNSTAGED
+B15R3_VERIFICATION_RESULT: PASS
+B15R3_RECOMMENDATION: GO_TO_CONTROL_THREAD_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT_DECISION
+BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY: ACCEPTED
+BATCH_B_DOCUMENTARY_CANON_CURRENT_STATE: REOPENED_PENDING_CONTROL_THREAD_RECLOSEOUT_DECISION
+RECEIPT_ISSUANCE: NOT_ISSUED
+BATCH_B_LIFECYCLE_EXIT: NOT_ESTABLISHED
+BATCH_B_EXIT_CREDIT: NONE
+D9_EXECUTION_AUTHORITY: NOT_GRANTED
+PROGRAM_EXIT_CREDIT: NONE
+JAI_ACTIVATION_CREDIT: NONE
+NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B15R3_AND_DECIDE_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT
+
+## 33. B15R3R1 Documentary Canon Recloseout Decision Finalization
+
+SECTION_33_CURRENT_STATE_PRECEDENCE: SUPERSEDES_PRIOR_PRE_DECISION_CURRENT_STATE_FIELDS_ONLY
+
+Sections 1 through 32 remain the pre-decision independent-verification record.
+Their `REOPENED_PENDING_CONTROL_THREAD_RECLOSEOUT_DECISION` values remain
+preserved as history. Section 33 records the explicit HUMAN_OPERATOR decision
+and controls only the final current documentary state.
+
+### Decision Record
+
+| field | value |
+| --- | --- |
+| decision_id | B15R3R1-DECISION-001 |
+| route | CT-2026-07-29-Q3M7Y26-P1-B15R3R1-DOCUMENTARY-CANON-RECLOSEOUT-DECISION-FINALIZATION-v0 |
+| decision_source | HUMAN_OPERATOR |
+| selected_disposition | ACCEPT_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT |
+| decision_basis | Accepted B15R3 independent documentary re-verification |
+| exact_decision_time | EXACT_TIME_UNAVAILABLE |
+| decision_evidence_ids | [B15-E-022] |
+| decision_token_reference | null |
+| authority_token_reference | null |
+| receipt_instance_reference | null |
+| receipt_issuance | NOT_ISSUED |
+| integrity | UNVERIFIED |
+| lifecycle_effect | DOCUMENTARY_CANON_RECLOSEOUT_ONLY |
+| authority_effect | NONE_BEYOND_EXPLICIT_DOCUMENTARY_RECLOSEOUT |
+
+### Decision Options
+
+| option_id | disposition | selection_state | documentary effect | receipt effect | lifecycle-exit effect | authority effect |
+| --- | --- | --- | --- | --- | --- | --- |
+| B15R3R1-OPTION-001 | ACCEPT_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT | SELECTED | CURRENT_DOCUMENTARY_CANON_RECLOSED_ACCEPTED | NOT_ISSUED | NONE | NONE_BEYOND_EXPLICIT_DOCUMENTARY_RECLOSEOUT |
+| B15R3R1-OPTION-002 | HOLD_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT | NOT_SELECTED | NONE | NOT_ISSUED | NONE | NONE |
+| B15R3R1-OPTION-003 | REVISE_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT | NOT_SELECTED | NONE | NOT_ISSUED | NONE | NONE |
+
+Exactly one option is selected. HOLD and REVISE remain unselected.
+
+### Decision Effect
+
+The selected decision establishes only:
+
+1. The current Batch B documentary canon is reclosed and accepted at its
+   documentary ceiling.
+2. The earlier B15R2 documentary acceptance remains preserved as historical
+   evidence.
+3. The bounded B10R2 reopening, portability repair, and B15R3 independent
+   re-verification sequence is complete.
+
+The decision does not establish individual B1-B14 acceptance receipts,
+receipt issuance, integrity or authenticity proof, a B1 lifecycle-exit
+transition, Batch-exit credit, D9 execution authority, Program exit, runtime,
+deployment, provider, customer, Agent, Council, or activation authority.
+
+### B7, B9, and B10 Boundary
+
+| boundary_id | canon | decision treatment | preserved non-effect |
+| --- | --- | --- | --- |
+| B15R3R1-BOUNDARY-001 | B7 | Selected disposition maps only to bounded ACCEPT meaning; no B7 token instance exists | No token issuance, execution, or lifecycle transition |
+| B15R3R1-BOUNDARY-002 | B9 | A later receipt could record the direct HUMAN_OPERATOR decision, but no B9 receipt candidate or instance is created | Receipt issuance NOT_ISSUED |
+| B15R3R1-BOUNDARY-003 | B9-CLASS-011 / LIFECYCLE_TRANSITION_RECEIPT | RESERVED for a separately authorized lifecycle transition | No transition or Batch exit |
+| B15R3R1-BOUNDARY-004 | B10 | Receipt, integrity, authenticity, replay, durability, atomic-consumption, and exactly-once fields remain null, unavailable, unverified, or not established | No receipt or integrity proof |
+
+A direct HUMAN_OPERATOR decision establishes documentary recloseout. A receipt
+would only record that decision and is not required to create it.
+
+### Current Decision Evidence Extension
+
+| evidence_id | source_class | immutability | reference | claim | observation_boundary | authority_effect |
+| --- | --- | --- | --- | --- | --- | --- |
+| B15-E-022 | CURRENT_HUMAN_OPERATOR_DECISION | CURRENT_DECISION_NOT_IMMUTABLE_REPOSITORY_EVIDENCE | ACCEPT_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT | HUMAN_OPERATOR selected documentary canon recloseout based on accepted B15R3 independent documentary re-verification | EXPLICIT_HUMAN_OPERATOR_SELECTION_SUPPLIED_IN_CURRENT_CONTROL_THREAD_CONVERSATION | DOCUMENTARY_RECLOSEOUT_ONLY |
+
+Final evidence inventory: 22 definitions; 19 immutable repository or history
+records; 2 mutable corroborating records; 1 current HUMAN_OPERATOR decision
+record. B15-E-001 through B15-E-021 remain unchanged.
+
+### Final Current State and Explicit Non-Authorizations
+
+The final current documentary state is `RECLOSED_ACCEPTED`. This supersedes
+only the earlier pre-decision current-state fields. It does not rewrite
+historical evidence, recommendations, reopening, repair, or verification.
+
+No receipt issuance, integrity or authenticity proof, lifecycle-exit
+transition, Batch-exit credit, D9 execution, Program exit, runtime,
+deployment, provider, customer, Agent, Council, external effect, authority
+transfer, or JAI activation is authorized or established.
+
+B15R3R1_DISPOSITION: HUMAN_OPERATOR_RECLOSEOUT_DECISION_FINALIZED_UNSTAGED
+SELECTED_DISPOSITION: ACCEPT_BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT
+B15R3_CONTROL_THREAD_ACCEPTANCE: ACCEPTED_AS_INDEPENDENT_DOCUMENTARY_REVERIFICATION_EVIDENCE
+BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY: ACCEPTED
+BATCH_B_DOCUMENTARY_CANON_RECLOSEOUT: ACCEPTED
+BATCH_B_DOCUMENTARY_CANON_CURRENT_STATE: RECLOSED_ACCEPTED
+INDIVIDUAL_B1_B14_ACCEPTANCE_RECEIPTS: UNAVAILABLE
+RECEIPT_ISSUANCE: NOT_ISSUED
+BATCH_B_LIFECYCLE_EXIT: NOT_ESTABLISHED
+BATCH_B_EXIT_CREDIT: NONE
+D9_EXECUTION_AUTHORITY: NOT_GRANTED
+PROGRAM_EXIT_CREDIT: NONE
+JAI_ACTIVATION_CREDIT: NONE
+NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B15R3R1_FOR_MANUAL_GIT_DELIVERY
