@@ -6,17 +6,17 @@
 | Program | Q3M7Y26-P1 |
 | Batch | B — Program Lifecycle and Receipt Canon |
 | Wave | B-C |
-| Lane | B10 — Acceptance Receipt and Integrity Schema |
+| Lane | B10R2 — Portable Receipt Subject-Binding Repair v0 |
 | Lane ID | P1-B-LANE-10 |
 | Relationship | P1-REL-015 |
-| Route | CT-2026-07-27-Q3M7Y26-P1-START-B10-ACCEPTANCE-RECEIPT-INTEGRITY-SCHEMA-v0 |
+| Route | REOPEN_BATCH_B_DOCUMENTARY_CANON_FOR_B10R2_PORTABILITY_REPAIR_ONLY |
 | Role | JAI::DEV::BUILDER |
 | Repository | jai-nexus/dev-jai-nexus |
-| Required base | 5eff88be70610bb774af687d33b94a7de63c229e |
-| Branch | docs/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0 |
+| Required base | 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f |
+| Branch | docs/q3m7y26-p1-b10r2-portable-receipt-subject-binding-repair-v0 |
 | Artifact | docs/reference/q3m7y26-p1-b10-acceptance-receipt-integrity-schema-v0.md |
-| Linear mirror | JAI-207 / MIRROR_ONLY / NOT_INDEPENDENTLY_REFRESHED / NON_CONTROLLING |
-| Evidence ceiling | DOCUMENTATION_ACCEPTANCE_RECEIPT_INTEGRITY_SCHEMA_ONLY |
+| Linear mirror | JAI-207 / CONTROL_THREAD_VERIFIED / MIRROR_ONLY / NON_CONTROLLING / B10R2_ROUTED |
+| Evidence ceiling | DOCUMENTATION_PORTABLE_RECEIPT_SUBJECT_BINDING_REPAIR_ONLY |
 
 ## Purpose and Source Precedence
 
@@ -28,8 +28,10 @@ separate. Accepted decisions control authority, SHA-pinned repository evidence
 controls repository content, and Linear is mirror-only. Missing receipt or
 integrity evidence proves neither occurrence nor absence.
 
-This document issues no receipt, generates or verifies no digest or HMAC, accesses
-no key, writes no replay or durable state, consumes no token, and moves no B1 axis.
+This B10R2 repair makes only the documentary subject binding portable. This
+document issues no receipt, generates or verifies no digest or HMAC, accesses
+no key, writes no replay or durable state, consumes no token, and moves no B1
+axis.
 
 ## B9 Compatibility Boundary
 
@@ -101,18 +103,18 @@ Every reference resolves exactly once to its declared target.
 | b9_class_binding_record | 6 | lifecycle_effect | literal<NONE> | 1 | required | NOT_A_REFERENCE |
 | b9_class_binding_record | 7 | authority_effect | literal<NONE> | 1 | required | NOT_A_REFERENCE |
 | subject_coordinate_record | 1 | subject_binding_id | identifier | 1 | required | PRIMARY_IDENTIFIER |
-| subject_coordinate_record | 2 | program_id | literal<Q3M7Y26-P1> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 3 | batch_id | literal<P1-BATCH-B> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 4 | wave_id | literal<P1-B-WAVE-C> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 5 | lane_id | literal<P1-B-LANE-10> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 6 | relationship_id | literal<P1-REL-015> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 7 | coordinate | literal<Q3M7Y26-P1:B10> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 8 | repository | literal<jai-nexus/dev-jai-nexus> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 9 | base_sha | 40-character Git SHA | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 10 | branch | exact routed branch string | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 11 | artifact_path | exact repository-relative path | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 12 | subject_type | literal<DOCUMENTARY_SCHEMA_CANDIDATE> | 1 | required | NOT_A_REFERENCE |
-| subject_coordinate_record | 13 | subject_id | literal<B10-ACCEPTANCE-RECEIPT-INTEGRITY-SCHEMA-v0> | 1 | required | NOT_A_REFERENCE |
+| subject_coordinate_record | 2 | program_id | reference<B2 program_code within accepted program_id+program_code binding> | 1 | required | RESOLVES_EXACTLY_ONCE_TO_ACCEPTED_B2_PROGRAM_BINDING |
+| subject_coordinate_record | 3 | batch_id | reference<B4 batch_record.batch_id> | 1 | required | RESOLVES_EXACTLY_ONCE |
+| subject_coordinate_record | 4 | wave_id | reference<B4 wave_record.wave_id> | 1 | required | RESOLVES_EXACTLY_ONCE |
+| subject_coordinate_record | 5 | lane_id | reference<B4 lane_record.lane_id> | 1 | required | RESOLVES_EXACTLY_ONCE |
+| subject_coordinate_record | 6 | relationship_id | reference<B4 parent_child_relationship.relationship_id> | 1 | required | RESOLVES_EXACTLY_ONCE |
+| subject_coordinate_record | 7 | coordinate | reference<B4 lane_record.coordinate and B2 full_coordinate> | 1 | required | EXACT_COORDINATE_FOR_RESOLVED_PROGRAM_AND_LANE |
+| subject_coordinate_record | 8 | repository | normalized nonempty owner/repo identifier | 1 | required | EXACT_SUBJECT_REPOSITORY |
+| subject_coordinate_record | 9 | base_sha | exact 40-character Git SHA | 1 | required | EXACT_SUBJECT_REVISION |
+| subject_coordinate_record | 10 | branch | nonempty exact routed branch string | 1 | required | EXACT_SUBJECT_BRANCH |
+| subject_coordinate_record | 11 | artifact_path | exact repository-relative path | 1 | required | EXACT_SUBJECT_ARTIFACT_PATH |
+| subject_coordinate_record | 12 | subject_type | bounded evidence-backed subject-type identifier | 1 | required | PAIRS_WITH_SUBJECT_ID_WITHOUT_CLOSED_VOCABULARY_INFERENCE |
+| subject_coordinate_record | 13 | subject_id | stable evidence-backed subject identifier | 1 | required | UNIQUE_WITH_SUBJECT_TYPE_WITHIN_EXACT_SCOPE |
 | subject_coordinate_record | 14 | evidence_ids | ordered array<reference<evidence_pointer_record.evidence_id>> | 1..* | required | EACH_RESOLVES_EXACTLY_ONCE |
 | decision_evidence_binding_record | 1 | binding_id | identifier | 1 | required | PRIMARY_IDENTIFIER |
 | decision_evidence_binding_record | 2 | b7_token_instance_id | nullable<opaque B7 token instance ID> | 0..1 | required key | NULL_UNTIL_SEPARATELY_ESTABLISHED |
@@ -193,6 +195,38 @@ timestamp, randomness, UUID, environment value, or implicit default.
 
 A digest can compare deterministic content only. It cannot prove authenticity,
 authority, acceptance, non-repudiation, durability, execution, or effect occurrence.
+
+## Portable Subject Binding Boundary
+
+The historical field name `program_id` is retained to preserve the 14-field
+schema and fixture. Its value must resolve to B2 `program_code`, which must in
+turn resolve through exactly one accepted B2 `program_id` plus `program_code`
+binding. It is not an unconstrained display label. `batch_id`, `wave_id`,
+`lane_id`, and `relationship_id` resolve through B4 `batch_record`,
+`wave_record`, `lane_record`, and `parent_child_relationship`.
+
+The complete Program, Batch, Wave, Lane, relationship, and coordinate tuple
+must describe one coherent subject. The relationship must connect the resolved
+Wave to the resolved Lane, the Lane must belong to the resolved Wave, the Wave
+must belong to the resolved Batch, and the coordinate must equal the resolved
+B2 full coordinate and B4 Lane coordinate. Repository, SHA, branch, artifact
+path, subject type, subject ID, and evidence must all describe that same
+subject. A mutable Linear identifier cannot substitute for canonical identity.
+Unknown, conflicting, cross-subject, display-only, or duplicate bindings fail
+closed.
+
+`subject_type` and `subject_id` form one stable, evidence-backed identity pair
+that is unique within the exact repository, revision, coordinate, and artifact
+scope. B10R2 does not create an incomplete closed subject-type vocabulary.
+Portability is schema representability only and grants no issuance,
+acceptance, transition, execution, lifecycle, exit, D9, or external-effect
+authority.
+
+| compatibility_id | bounded subject | subject evidence | portability posture | receipt issuance | acceptance or transition | authority effect |
+| --- | --- | --- | --- | --- | --- | --- |
+| B10R2-PORT-001 | Existing B10 documentary fixture | B10-SUBJECT-BINDING-001 / B10-E-003 / B10-E-005 / B10-E-010 | PASS_AS_PORTABLE_SCHEMA_INSTANCE | NOT_ISSUED | NONE | NONE |
+| B10R2-PORT-002 | Integrated B15R2 documentary decision | B10-E-015 | REPRESENTABLE_BY_SCHEMA / NOT_INSTANTIATED | NOT_ISSUED | NONE / NOT_PERFORMED_BY_PORTABILITY | NONE |
+| B10R2-PORT-003 | Prospective Batch B lifecycle-transition candidate | SUBJECT_VALUES_UNAVAILABLE | REPRESENTABLE_IN_PRINCIPLE / SUBJECT_VALUES_UNAVAILABLE / NOT_INSTANTIATED | NOT_ISSUED | NONE / NOT_PERFORMED | NONE |
 
 ## Digest and Authenticity Boundary
 
@@ -404,7 +438,12 @@ neither occurrence nor absence of execution or external effects.
 | B10-E-011 | STATIC_CONFIGURATION | IMMUTABLE | [portal/src/lib/controlPlane/motionKernel/local-operating-loop.ts](https://github.com/jai-nexus/dev-jai-nexus/blob/5eff88be70610bb774af687d33b94a7de63c229e/portal/src/lib/controlPlane/motionKernel/local-operating-loop.ts) | Static local-shadow receipt, proof, digest, HMAC, and ID structures | Required base 5eff88be70610bb774af687d33b94a7de63c229e; no runtime inference | NONE |
 | B10-E-012 | STATIC_CONFIGURATION | IMMUTABLE | [portal/src/lib/controlPlane/motionKernel/local-operating-loop.test.ts](https://github.com/jai-nexus/dev-jai-nexus/blob/5eff88be70610bb774af687d33b94a7de63c229e/portal/src/lib/controlPlane/motionKernel/local-operating-loop.test.ts) | Behavioral test source exists; B10 does not rerun or claim passage | Required base 5eff88be70610bb774af687d33b94a7de63c229e; no runtime inference | NONE |
 | B10-E-013 | STATIC_CONFIGURATION | IMMUTABLE | [portal/src/lib/controlPlane/sandboxNexus/sandboxReceiptReturnDisplay.test.ts](https://github.com/jai-nexus/dev-jai-nexus/blob/5eff88be70610bb774af687d33b94a7de63c229e/portal/src/lib/controlPlane/sandboxNexus/sandboxReceiptReturnDisplay.test.ts) | Sandbox receipt-display test source exists; B10 does not rerun it | Required base 5eff88be70610bb774af687d33b94a7de63c229e; no runtime inference | NONE |
-| B10-E-014 | MUTABLE_CORROBORATING | MUTABLE_CORROBORATING | Linear JAI-207 | MIRROR_ONLY / NON_CONTROLLING | NOT_INDEPENDENTLY_REFRESHED | NONE |
+| B10-E-014 | MUTABLE_CORROBORATING | MUTABLE_CORROBORATING | Linear JAI-207 | MIRROR_ONLY / NON_CONTROLLING | CONTROL_THREAD_VERIFIED / MIRROR_ONLY / NON_CONTROLLING / B10R2_ROUTED | NONE |
+| B10-E-015 | REPOSITORY_CANON | IMMUTABLE | [B15R2](https://github.com/jai-nexus/dev-jai-nexus/blob/3cd74bfa39d371a629e91cd7f17fa9743ee75c4f/docs/reference/q3m7y26-p1-b15r2-batch-b-control-thread-closeout-decision-candidate-v0.md) | Integrated B15R2 documentary closeout decision | Required base 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f | NONE |
+
+Codex file execution did not access Linear. The JAI-207 observation was
+supplied by CONTROL_THREAD and remains mutable, mirror-only, and
+non-controlling.
 
 ## Non-Authorization Records
 | non_authorization_id | prohibited_effect | reason | required_future_route | authority_effect | evidence_ids |
@@ -445,6 +484,14 @@ neither occurrence nor absence of execution or external effects.
 | B10-INV-018 | Document or repository SHA treated as receipt digest | INVALID / FAIL_CLOSED |
 | B10-INV-019 | Syntactically valid MAC treated as trusted computation | INVALID / FAIL_CLOSED |
 | B10-INV-020 | B10 artifact treated as an issued receipt | INVALID / FAIL_CLOSED |
+| B10-INV-021 | Program, Batch, Wave, or Lane identifiers do not form one accepted B2/B4 tuple | INVALID / FAIL_CLOSED |
+| B10-INV-022 | Relationship is unknown, conflicting, or does not connect the resolved Wave and Lane | INVALID / FAIL_CLOSED |
+| B10-INV-023 | Coordinate differs from the resolved B2 full coordinate or B4 Lane coordinate | INVALID / FAIL_CLOSED |
+| B10-INV-024 | Repository, SHA, branch, or artifact path describes a different subject | INVALID / FAIL_CLOSED |
+| B10-INV-025 | subject_id is unstable, display-only, reused, or not evidence-bound | INVALID / FAIL_CLOSED |
+| B10-INV-026 | Linear issue ID substitutes for canonical subject identity | INVALID / FAIL_CLOSED |
+| B10-INV-027 | evidence_ids cross subject, revision, coordinate, or artifact boundaries | INVALID / FAIL_CLOSED |
+| B10-INV-028 | Portable representability interpreted as receipt issuance, acceptance, transition, exit, D9, or authority | INVALID / FAIL_CLOSED |
 
 Invalid processing must not echo a supplied sensitive value.
 
@@ -454,10 +501,15 @@ Invalid processing must not echo a supplied sensitive value.
 | B10-REC-001 | Local operating-loop receipt, proof, digest, HMAC, hash, and ID structures | STATIC_CONFIGURATION | Source structure only | Live authenticity, key trust, persistence, replay prevention, durability, or exactly-once | ["B10-E-010","B10-E-011"] |
 | B10-REC-002 | Local operating-loop behavioral test source | STATIC_CONFIGURATION / TEST_SOURCE_NOT_RERUN | Declared test cases only | Runtime key trust, durable state, transport security, or external-effect absence | ["B10-E-011","B10-E-012"] |
 | B10-REC-003 | Sandbox receipt-return display test source | STATIC_CONFIGURATION / MOCK_OR_SHADOW_SOURCE | Declared sandbox assertions only | Canonical receipt issuance, persistence, customer readiness, or production behavior | ["B10-E-010","B10-E-013"] |
-| B10-REC-004 | Linear JAI-207 | MIRROR_ONLY | Unrefreshed coordination identifier only | Canon, acceptance, completion, authority, or freshness | ["B10-E-005","B10-E-014"] |
+| B10-REC-004 | Linear JAI-207 | MIRROR_ONLY | CONTROL_THREAD-verified mutable coordination identifier at B10R2 route boundary | Canon, acceptance, completion, authority, or source-of-truth status | ["B10-E-005","B10-E-014"] |
 | B10-REC-005 | Unobserved runtime and external effects | UNKNOWN | No positive or negative occurrence claim | Persistence, provider, database, customer, production, or effect absence | ["B10-E-001","B10-E-010","B10-E-011"] |
 
-## Reservations
+## Historical Reservations
+
+These five rows preserve the original B10 reservation posture at its
+integration boundary. Later B11-B15 repository history is not erased,
+reopened, absorbed, or reclassified by B10R2.
+
 | reservation_id | boundary | B10 treatment |
 | --- | --- | --- |
 | B10-R-001 | B11 Capability and Credit Ledger | RESERVED / NOT_ABSORBED |
@@ -466,21 +518,38 @@ Invalid processing must not echo a supplied sensitive value.
 | B10-R-004 | B14 GitHub-Linear Mirror Protocol | RESERVED / NOT_ABSORBED |
 | B10-R-005 | B15 Lifecycle Canon Verification and Batch B Closeout | RESERVED / NOT_ABSORBED |
 
-## B10R1 Author-Side Final Audit
+## B10R2 Repair and Temporal History
+
+| history_id | event | immutable boundary | current effect | evidence |
+| --- | --- | --- | --- | --- |
+| B10R2-HIST-001 | Original B10 repository integration | c5870f1755dad88082a2be1f0d27fceef2f57dca | HISTORICAL_REPOSITORY_EVIDENCE / NOT_REWRITTEN | Git history for the B10 artifact |
+| B10R2-HIST-002 | B15R2 documentary closeout acceptance | 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f | BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY_ACCEPTED / NO_LIFECYCLE_EXIT | B10-E-015 |
+| B10R2-HIST-003 | Current B10R2 reopening | Current HUMAN_OPERATOR route at base 3cd74bfa39d371a629e91cd7f17fa9743ee75c4f | REOPENED_FOR_B10R2_PORTABILITY_REPAIR_ONLY / REPOSITORY_INTEGRATION_PENDING | CURRENT_ROUTE / NOT_IMMUTABLE_REPOSITORY_EVIDENCE |
+
+BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY: ACCEPTED
+B10_DOCUMENTARY_CANON_CURRENT_STATE: REOPENED_FOR_B10R2_PORTABILITY_REPAIR_ONLY
+B10_RECEIPT_ISSUANCE: NOT_ISSUED
+BATCH_B_LIFECYCLE_EXIT: NOT_ESTABLISHED
+BATCH_B_EXIT_CREDIT: NONE
+D9_EXECUTION_AUTHORITY: NOT_GRANTED
+PROGRAM_EXIT_CREDIT: NONE
+JAI_ACTIVATION_CREDIT: NONE
+
+## B10R2 Author-Side Final Audit
 | audit_id | gate | result | authority_effect |
 | --- | --- | --- | --- |
-| B10-AUDIT-001 | Canonical type and Field Registry alignment | PASS / 9 types / 107 fields / 9 primary identifiers | NONE |
+| B10-AUDIT-001 | Canonical type and Field Registry alignment | PASS / 9 types / 107 fields / 14 ordered subject-coordinate fields | NONE |
 | B10-AUDIT-002 | B9 class binding coverage | PASS / 14 exact ID-name pairs | NONE |
-| B10-AUDIT-003 | Safe fixture schema and local references | PASS / non-issued / unverified / non-accepted / all joins resolve | NONE |
-| B10-AUDIT-004 | Evidence registry | PASS / 14 defined and used / 13 immutable / 1 mutable corroborating | NONE |
-| B10-AUDIT-005 | Immutable path resolution | PASS / 13 of 13 at required base | NONE |
-| B10-AUDIT-006 | Digest and authenticity boundary | PASS / metadata only / no computation or trust claim | NONE |
-| B10-AUDIT-007 | Anti-replay, durability, and exactly-once boundary | PASS / UNAVAILABLE or NOT_ESTABLISHED | NONE |
-| B10-AUDIT-008 | Sensitive-value exclusion | PASS / no raw digest, HMAC, signature, key, credential, proof, or actor email | NONE |
-| B10-AUDIT-009 | Implementation reconciliation | PASS / STATIC_CONFIGURATION, MOCK_OR_SHADOW_SOURCE, MIRROR_ONLY, UNKNOWN | NONE |
-| B10-AUDIT-010 | Invalid examples and reservations | PASS / 20 invalid / 5 reserved B11-B15 boundaries | NONE |
-| B10-AUDIT-011 | Positive authority grants | PASS / 0 | NONE |
-| B10-AUDIT-012 | Whitespace and one-path scope | PASS / zero diagnostics / sole untracked artifact / index empty | NONE |
+| B10-AUDIT-003 | Portable subject Field Registry | PASS / 14 fields / 0 B10-fixture-specific literal constraints | NONE |
+| B10-AUDIT-004 | Safe fixture schema and local references | PASS / each key once / Field Registry order / non-issued / unverified / non-accepted | NONE |
+| B10-AUDIT-005 | B2 and B4 subject joins | PASS / one coherent Program, Batch, Wave, Lane, relationship, and coordinate tuple | NONE |
+| B10-AUDIT-006 | B9 and B15R2 compatibility | PASS / 14 B9 ID-name pairs / B15R2 representable but not instantiated | NONE |
+| B10-AUDIT-007 | Evidence registry | PASS / 15 defined and used / 14 immutable / 1 mutable corroborating | NONE |
+| B10-AUDIT-008 | Immutable path resolution | PASS / 14 of 14 | NONE |
+| B10-AUDIT-009 | Fixture integrity, replay, durability, and exactly-once boundary | PASS / UNAVAILABLE or NOT_ESTABLISHED / no positive inference | NONE |
+| B10-AUDIT-010 | Invalid examples and historical reservations | PASS / 28 invalid / 5 historical B11-B15 reservations | NONE |
+| B10-AUDIT-011 | Positive current receipt, acceptance, lifecycle, exit, D9, Program-exit, or activation grants | PASS / 0 / historical B15R2 documentary acceptance preserved | NONE |
+| B10-AUDIT-012 | Whitespace and one-path scope | PASS / zero diagnostics / sole modified artifact / index empty | NONE |
 
 This is author-side documentary validation only. It is not independent
 verification, CONTROL_THREAD acceptance, receipt issuance, integrity proof,
@@ -493,10 +562,13 @@ store mutation, token claim or consumption, independent verification, acceptance
 lifecycle transition, Git delivery, GitHub or Linear mutation, execution, external
 effect, downstream Lane, Batch exit, D9, Program exit, or activation authority.
 
-B10_MAXIMUM_CURRENT_CREDIT: DOCUMENTATION_ACCEPTANCE_RECEIPT_INTEGRITY_SCHEMA_ONLY
-B10_ACCEPTANCE: PENDING_INDEPENDENT_CONTROL_THREAD_VERIFICATION
-B10_FURTHER_EXECUTION_AUTHORITY: NOT_GRANTED
+B10R2_DISPOSITION: PORTABLE_RECEIPT_SUBJECT_BINDING_REPAIR_CANDIDATE_ONLY
+B10_DOCUMENTARY_CANON_CURRENT_STATE: REOPENED_FOR_B10R2_PORTABILITY_REPAIR_ONLY
+B10_RECEIPT_ISSUANCE: NOT_ISSUED
+BATCH_B_DOCUMENTARY_CLOSEOUT_HISTORY: ACCEPTED
+BATCH_B_LIFECYCLE_EXIT: NOT_ESTABLISHED
 BATCH_B_EXIT_CREDIT: NONE
+D9_EXECUTION_AUTHORITY: NOT_GRANTED
 PROGRAM_EXIT_CREDIT: NONE
 JAI_ACTIVATION_CREDIT: NONE
-NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B10_ACCEPTANCE_RECEIPT_INTEGRITY_SCHEMA
+NEXT_REQUIRED_DECISION: ACCEPT_HOLD_OR_REVISE_B10R2_PORTABILITY_REPAIR
