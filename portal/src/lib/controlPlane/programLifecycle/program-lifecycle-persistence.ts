@@ -13,6 +13,7 @@ type ProgramLifecycleSqlRow = {
   program_code: string;
   program_title: string | null;
   lifecycle_state: string;
+  lifecycle_version: number;
   created_at: Date;
   updated_at: Date;
 };
@@ -23,6 +24,7 @@ const PROGRAM_LIFECYCLE_SELECT = `
     "program_code",
     "program_title",
     "lifecycle_state",
+    "lifecycle_version",
     "created_at",
     "updated_at"
   FROM "program_lifecycle_records"
@@ -34,6 +36,7 @@ function rowToBoundaryRecord(row: ProgramLifecycleSqlRow) {
     programCode: row.program_code,
     programTitle: row.program_title,
     lifecycleState: row.lifecycle_state,
+    lifecycleVersion: row.lifecycle_version,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -83,6 +86,7 @@ function createServerPersistenceService() {
             "program_code",
             "program_title",
             "lifecycle_state",
+            "lifecycle_version",
             "created_at",
             "updated_at"
         `,

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 import {
@@ -38,6 +39,7 @@ function persistedRecord(
     programCode: PROGRAM_CODE,
     programTitle: "Program One",
     lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN",
+    lifecycleVersion: 0,
     createdAt: CREATED_AT,
     updatedAt: UPDATED_AT,
     ...overrides,
@@ -106,6 +108,13 @@ function testSchemaAndMigrationContracts() {
     ),
     "utf8",
   );
+  const versionMigration = readFileSync(
+    new URL(
+      "../../../../prisma/migrations/20260730070000_add_program_lifecycle_version/migration.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
   const expectedStates = [...PROGRAM_LIFECYCLE_STATES];
   const prismaEnum = schema.match(
     /enum PersistedProgramLifecycleState \{([\s\S]*?)\n\}/,
@@ -140,6 +149,7 @@ function testSchemaAndMigrationContracts() {
       'programCode String @unique @map("program_code")',
       'programTitle String? @map("program_title")',
       'lifecycleState PersistedProgramLifecycleState @default(NOT_ROUTED_NOT_OPEN_DOWNSTREAM_FROZEN) @map("lifecycle_state")',
+      'lifecycleVersion Int @default(0) @map("lifecycle_version")',
       'createdAt DateTime @default(now()) @map("created_at")',
       'updatedAt DateTime @default(now()) @updatedAt @map("updated_at")',
     ],
@@ -159,6 +169,23 @@ function testSchemaAndMigrationContracts() {
     0,
   );
   assert.equal(/seed|backfill/i.test(migration), false);
+  assert.equal(
+    createHash("sha256").update(migration).digest("hex"),
+    "6959b9d410d7d5ab1d18a1b947c420f36a0caa7284632caa16dc1141d70f8735",
+  );
+  assert.match(
+    versionMigration,
+    /ADD COLUMN "lifecycle_version" INTEGER NOT NULL DEFAULT 0/,
+  );
+  assert.match(
+    versionMigration,
+    /program_lifecycle_records_lifecycle_version_nonnegative_check/,
+  );
+  assert.match(versionMigration, /CHECK \("lifecycle_version" >= 0\)/);
+  assert.equal(
+    (versionMigration.match(/\b(?:INSERT|UPDATE|DELETE|TRUNCATE|DROP)\b/gi) ?? []).length,
+    0,
+  );
   for (const forbiddenField of [
     "repositoryId",
     "batchId",
@@ -166,7 +193,6 @@ function testSchemaAndMigrationContracts() {
     "laneId",
     "linearId",
     "githubId",
-    "version",
     "supersession",
     "receipt",
     "authority",
@@ -246,6 +272,32 @@ function testCanonicalUtcIsoTimestampValidation() {
   }
 }
 
+function testLifecycleVersionValidation() {
+  assert.equal(
+    validatePersistedProgramLifecycleRecord(persistedRecord({ lifecycleVersion: 0 }))
+      ?.lifecycleVersion,
+    0,
+  );
+  for (const lifecycleVersion of [
+    -1,
+    0.5,
+    2_147_483_648,
+    Number.MAX_SAFE_INTEGER + 1,
+    Number.NaN,
+    Infinity,
+    "0",
+    null,
+  ]) {
+    assert.equal(
+      validatePersistedProgramLifecycleRecord({
+        ...persistedRecord(),
+        lifecycleVersion,
+      }),
+      null,
+    );
+  }
+}
+
 function testDescriptorAndProxyInputsFailClosedWithoutGetterReads() {
   let getterReads = 0;
   const accessorInput = Object.defineProperties({}, {
@@ -297,6 +349,7 @@ async function testValidInitialCreationAndImmutableSnapshot() {
       programCode: PROGRAM_CODE,
       programTitle: "Program  One",
       lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN",
+      lifecycleVersion: 0,
     },
   ]);
   assert.deepEqual(input, before);
@@ -515,6 +568,12 @@ function testPersistenceSurfaceIsBounded() {
   assert.match(serverSource, /await import\("\.\.\/\.\.\/prisma"\)/);
   assert.match(serverSource, /\$queryRaw/);
   assert.match(serverSource, /INSERT INTO "program_lifecycle_records"/);
+  assert.match(serverSource, /"lifecycle_version"/);
+  const insertColumns = serverSource.match(
+    /INSERT INTO "program_lifecycle_records" \(([\s\S]*?)\)\s*VALUES/,
+  )?.[1];
+  assert.ok(insertColumns);
+  assert.equal(insertColumns.includes("lifecycle_version"), false);
   for (const prohibited of [
     "ON CONFLICT",
     "UPDATE ",
@@ -535,6 +594,7 @@ async function run() {
   testSchemaAndMigrationContracts();
   testCreateInputValidationAndTitleNormalization();
   testCanonicalUtcIsoTimestampValidation();
+  testLifecycleVersionValidation();
   testDescriptorAndProxyInputsFailClosedWithoutGetterReads();
   await testValidInitialCreationAndImmutableSnapshot();
   await testDuplicatesAndInvalidLifecycleInputFailClosed();
