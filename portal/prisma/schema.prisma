@@ -90,9 +90,33 @@ enum AgentRunStatus {
   CANCELED
 }
 
+enum PersistedProgramLifecycleState {
+  NOT_ROUTED_NOT_OPEN_DOWNSTREAM_FROZEN @map("NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN")
+  OPEN_FOR_BATCH_PLANNING_ONLY
+  UNRESOLVED_HOLD
+  CLOSED_ACCEPTED
+  CLOSED_NO_GO
+  CANCELLED
+  FAILED
+
+  @@map("program_lifecycle_state")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CORE MODELS
 // ─────────────────────────────────────────────────────────────────────────────
+
+model ProgramLifecycleRecord {
+  programId      String                        @id @map("program_id")
+  programCode    String                        @unique @map("program_code")
+  programTitle   String?                       @map("program_title")
+  lifecycleState PersistedProgramLifecycleState @default(NOT_ROUTED_NOT_OPEN_DOWNSTREAM_FROZEN) @map("lifecycle_state")
+  createdAt      DateTime                      @default(now()) @map("created_at")
+  updatedAt      DateTime                      @default(now()) @updatedAt @map("updated_at")
+
+  @@index([lifecycleState])
+  @@map("program_lifecycle_records")
+}
 
 model Repo {
   id            Int         @id @default(autoincrement())
