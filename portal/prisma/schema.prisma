@@ -111,6 +111,7 @@ model ProgramLifecycleRecord {
   programCode    String                        @unique @map("program_code")
   programTitle   String?                       @map("program_title")
   lifecycleState PersistedProgramLifecycleState @default(NOT_ROUTED_NOT_OPEN_DOWNSTREAM_FROZEN) @map("lifecycle_state")
+  lifecycleVersion Int                          @default(0) @map("lifecycle_version")
   createdAt      DateTime                      @default(now()) @map("created_at")
   updatedAt      DateTime                      @default(now()) @updatedAt @map("updated_at")
 

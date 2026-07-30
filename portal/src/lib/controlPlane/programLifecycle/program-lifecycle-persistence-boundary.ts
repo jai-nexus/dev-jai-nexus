@@ -14,11 +14,13 @@ const PERSISTED_ROW_KEYS = [
   "programCode",
   "programTitle",
   "lifecycleState",
+  "lifecycleVersion",
   "createdAt",
   "updatedAt",
 ] as const;
 const PROGRAM_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const PROGRAM_CODE_PATTERN = /^[A-Z][A-Z0-9]*-P[1-9][0-9]*$/;
+export const MAX_PROGRAM_LIFECYCLE_VERSION = 2_147_483_647;
 
 export interface InitialProgramLifecycleCreateInput {
   readonly programId: string;
@@ -29,11 +31,13 @@ export interface InitialProgramLifecycleCreateInput {
 export interface InitialProgramLifecycleRecord
   extends InitialProgramLifecycleCreateInput {
   readonly lifecycleState: typeof INITIAL_PROGRAM_LIFECYCLE_STATE;
+  readonly lifecycleVersion: 0;
 }
 
 export interface PersistedProgramLifecycleRecord
   extends InitialProgramLifecycleCreateInput {
   readonly lifecycleState: ProgramLifecycleState;
+  readonly lifecycleVersion: number;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -260,6 +264,15 @@ function isCanonicalUtcIsoTimestamp(value: unknown): value is string {
   return !Number.isNaN(timestamp.getTime()) && timestamp.toISOString() === value;
 }
 
+function isProgramLifecycleVersion(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= MAX_PROGRAM_LIFECYCLE_VERSION
+  );
+}
+
 function isProgramLifecycleState(value: unknown): value is ProgramLifecycleState {
   return (
     typeof value === "string" &&
@@ -275,6 +288,7 @@ function freezeInitialRecord(
     programCode: input.programCode,
     programTitle: input.programTitle,
     lifecycleState: INITIAL_PROGRAM_LIFECYCLE_STATE,
+    lifecycleVersion: 0,
   });
 }
 
@@ -286,6 +300,7 @@ function freezePersistedRecord(
     programCode: record.programCode,
     programTitle: record.programTitle,
     lifecycleState: record.lifecycleState,
+    lifecycleVersion: record.lifecycleVersion,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   });
@@ -326,6 +341,7 @@ export function validatePersistedProgramLifecycleRecord(
       !isCanonicalProgramCode(values.programCode) ||
       !isStoredProgramTitle(values.programTitle) ||
       !isProgramLifecycleState(values.lifecycleState) ||
+      !isProgramLifecycleVersion(values.lifecycleVersion) ||
       !isCanonicalUtcIsoTimestamp(values.createdAt) ||
       !isCanonicalUtcIsoTimestamp(values.updatedAt)
     ) {
@@ -337,6 +353,7 @@ export function validatePersistedProgramLifecycleRecord(
       programCode: values.programCode,
       programTitle: values.programTitle,
       lifecycleState: values.lifecycleState,
+      lifecycleVersion: values.lifecycleVersion,
       createdAt: values.createdAt,
       updatedAt: values.updatedAt,
     });
@@ -447,7 +464,8 @@ function initialRecordMatches(
     expected.programId === actual.programId &&
     expected.programCode === actual.programCode &&
     expected.programTitle === actual.programTitle &&
-    expected.lifecycleState === actual.lifecycleState
+    expected.lifecycleState === actual.lifecycleState &&
+    actual.lifecycleVersion === 0
   );
 }
 

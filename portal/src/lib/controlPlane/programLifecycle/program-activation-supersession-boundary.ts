@@ -10,6 +10,7 @@ import {
   evaluateProgramStateTransition,
 } from "./program-state-transition-matrix";
 import {
+  MAX_PROGRAM_LIFECYCLE_VERSION,
   validatePersistedProgramLifecycleRecord,
   type PersistedProgramLifecycleRecord,
   type ProgramLifecycleWriteEffect,
@@ -19,6 +20,11 @@ const COMMAND_KEYS = [
   "candidateProgramId",
   "governingMotions",
   "receipts",
+  "expectedLifecycleVersions",
+] as const;
+const EXPECTED_LIFECYCLE_VERSION_KEYS = [
+  "programId",
+  "lifecycleVersion",
 ] as const;
 const GOVERNING_MOTION_KEYS = [
   "motionId",
@@ -61,16 +67,24 @@ export interface ProgramActivationSupersessionReceipt {
   readonly freshnessState: "CURRENT" | "STALE" | "UNAVAILABLE";
 }
 
+export interface ExpectedProgramLifecycleVersion {
+  readonly programId: string;
+  readonly lifecycleVersion: number;
+}
+
 export interface ProgramActivationSupersessionCommand {
   readonly candidateProgramId: string;
   readonly governingMotions: readonly ProgramActivationSupersessionGoverningMotion[];
   readonly receipts: readonly ProgramActivationSupersessionReceipt[];
+  readonly expectedLifecycleVersions: readonly ExpectedProgramLifecycleVersion[];
 }
 
 export interface ProgramActivationSupersessionTransaction {
   readonly listLockedProgramLifecycleRecords: () => Promise<unknown>;
   readonly setProgramLifecycleState: (
     programId: string,
+    expectedLifecycleState: ProgramLifecycleState,
+    expectedLifecycleVersion: number,
     lifecycleState: ProgramLifecycleState,
   ) => Promise<void>;
 }
@@ -85,6 +99,8 @@ export type ProgramActivationSupersessionRejectionReason =
   | "INVALID_COMMAND"
   | "INVALID_PERSISTED_ROWS"
   | "MULTIPLE_ACTIVE_PROGRAMS"
+  | "STALE_STATE"
+  | "VERSION_EXHAUSTED"
   | "CANDIDATE_MISSING"
   | "CANDIDATE_ALREADY_ACTIVE"
   | "CANDIDATE_STATE_INVALID"
@@ -95,6 +111,7 @@ export type ProgramActivationSupersessionRejectionReason =
 export type ProgramActivationSupersessionUnavailableClassification =
   | "ADAPTER_UNAVAILABLE"
   | "ADAPTER_ERROR"
+  | "CONCURRENCY_CONFLICT"
   | "MALFORMED_TRANSACTION_RESULT"
   | "ROLLBACK_CONFIRMED";
 
@@ -134,6 +151,20 @@ export class ProgramActivationSupersessionRollbackConfirmedError extends Error {
   constructor() {
     super("Program lifecycle transaction rollback is confirmed.");
     this.name = "ProgramActivationSupersessionRollbackConfirmedError";
+  }
+}
+
+export class ProgramActivationSupersessionConcurrencyConflictError extends Error {
+  constructor() {
+    super("Program lifecycle compare-and-swap did not match.");
+    this.name = "ProgramActivationSupersessionConcurrencyConflictError";
+  }
+}
+
+export class ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError extends Error {
+  constructor() {
+    super("Program lifecycle compare-and-swap conflict was rolled back.");
+    this.name = "ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError";
   }
 }
 
@@ -227,6 +258,44 @@ function isNonWhitespaceString(value: unknown): value is string {
 
 function isCanonicalProgramId(value: unknown): value is string {
   return typeof value === "string" && PROGRAM_ID_PATTERN.test(value);
+}
+
+function isLifecycleVersion(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isSafeInteger(value) &&
+    value >= 0 &&
+    value <= MAX_PROGRAM_LIFECYCLE_VERSION
+  );
+}
+
+function parseExpectedLifecycleVersions(
+  input: unknown,
+): readonly ExpectedProgramLifecycleVersion[] | null {
+  const values = readExactArray(input);
+  if (!values) {
+    return null;
+  }
+
+  const expectedVersions: ExpectedProgramLifecycleVersion[] = [];
+  let previousProgramId: string | null = null;
+  for (const value of values) {
+    const fields = readExactDataObject(value, EXPECTED_LIFECYCLE_VERSION_KEYS);
+    if (
+      !fields ||
+      !isCanonicalProgramId(fields.programId) ||
+      !isLifecycleVersion(fields.lifecycleVersion) ||
+      (previousProgramId !== null && previousProgramId >= fields.programId)
+    ) {
+      return null;
+    }
+    expectedVersions.push(Object.freeze({
+      programId: fields.programId,
+      lifecycleVersion: fields.lifecycleVersion,
+    }));
+    previousProgramId = fields.programId;
+  }
+  return Object.freeze(expectedVersions);
 }
 
 function parseGoverningMotions(
@@ -324,13 +393,17 @@ function parseCommand(input: unknown): ProgramActivationSupersessionCommand | nu
 
     const governingMotions = parseGoverningMotions(fields.governingMotions);
     const receipts = parseReceipts(fields.receipts);
-    if (!governingMotions || !receipts) {
+    const expectedLifecycleVersions = parseExpectedLifecycleVersions(
+      fields.expectedLifecycleVersions,
+    );
+    if (!governingMotions || !receipts || !expectedLifecycleVersions) {
       return null;
     }
     return Object.freeze({
       candidateProgramId: fields.candidateProgramId,
       governingMotions,
       receipts,
+      expectedLifecycleVersions,
     });
   } catch {
     return null;
@@ -469,6 +542,27 @@ function replaceLifecycleState(
   );
 }
 
+function expectedVersionsMatch(
+  expectedVersions: readonly ExpectedProgramLifecycleVersion[],
+  records: readonly PersistedProgramLifecycleRecord[],
+): boolean {
+  return (
+    expectedVersions.length === records.length &&
+    records.every((record, index) =>
+      expectedVersions[index]?.programId === record.programId &&
+      expectedVersions[index]?.lifecycleVersion === record.lifecycleVersion,
+    )
+  );
+}
+
+function planCanIncrementVersions(plan: ExecutionPlan): boolean {
+  return (
+    plan.candidate.lifecycleVersion < MAX_PROGRAM_LIFECYCLE_VERSION &&
+    (!plan.supersededProgram ||
+      plan.supersededProgram.lifecycleVersion < MAX_PROGRAM_LIFECYCLE_VERSION)
+  );
+}
+
 function derivePlan(
   command: ProgramActivationSupersessionCommand,
   records: readonly PersistedProgramLifecycleRecord[],
@@ -568,6 +662,16 @@ function expectedLifecycleState(
   return record.lifecycleState;
 }
 
+function expectedLifecycleVersion(
+  plan: ExecutionPlan,
+  record: PersistedProgramLifecycleRecord,
+): number {
+  return record.programId === plan.candidate.programId ||
+    (plan.supersededProgram && record.programId === plan.supersededProgram.programId)
+    ? record.lifecycleVersion + 1
+    : record.lifecycleVersion;
+}
+
 function postStateMatches(
   plan: ExecutionPlan,
   before: readonly PersistedProgramLifecycleRecord[],
@@ -580,6 +684,7 @@ function postStateMatches(
   return before.every((previous) => {
     const next = after.find((record) => record.programId === previous.programId);
     const expectedState = expectedLifecycleState(plan, previous);
+    const expectedVersion = expectedLifecycleVersion(plan, previous);
     const isMutated = expectedState !== previous.lifecycleState;
     return (
       next !== undefined &&
@@ -587,6 +692,7 @@ function postStateMatches(
       previous.programTitle === next.programTitle &&
       previous.createdAt === next.createdAt &&
       next.lifecycleState === expectedState &&
+      next.lifecycleVersion === expectedVersion &&
       (isMutated
         ? timestampIsNotEarlier(previous.updatedAt, next.updatedAt)
         : previous.updatedAt === next.updatedAt)
@@ -657,6 +763,7 @@ export function createProgramActivationSupersessionService(
       }
 
       let mutationInvocationBegan = false;
+      let successfulMutationCount = 0;
       let expectedResult: ProgramActivationSupersessionResult | null = null;
       try {
         const returnedResult = await adapter.transaction(async (transaction) => {
@@ -668,9 +775,18 @@ export function createProgramActivationSupersessionService(
             return expectedResult;
           }
 
+          if (!expectedVersionsMatch(command.expectedLifecycleVersions, before)) {
+            expectedResult = rejected("STALE_STATE");
+            return expectedResult;
+          }
+
           const plan = derivePlan(command, before);
           if (!isPlan(plan)) {
             expectedResult = rejected(plan);
+            return expectedResult;
+          }
+          if (!planCanIncrementVersions(plan)) {
+            expectedResult = rejected("VERSION_EXHAUSTED");
             return expectedResult;
           }
 
@@ -678,11 +794,20 @@ export function createProgramActivationSupersessionService(
             mutationInvocationBegan = true;
             await transaction.setProgramLifecycleState(
               plan.supersededProgram.programId,
+              plan.supersededProgram.lifecycleState,
+              plan.supersededProgram.lifecycleVersion,
               HOLD_STATE,
             );
+            successfulMutationCount += 1;
           }
           mutationInvocationBegan = true;
-          await transaction.setProgramLifecycleState(plan.candidate.programId, OPEN_STATE);
+          await transaction.setProgramLifecycleState(
+            plan.candidate.programId,
+            plan.candidate.lifecycleState,
+            plan.candidate.lifecycleVersion,
+            OPEN_STATE,
+          );
+          successfulMutationCount += 1;
 
           const after = parsePersistedRows(
             await transaction.listLockedProgramLifecycleRecords(),
@@ -705,6 +830,18 @@ export function createProgramActivationSupersessionService(
       } catch (error) {
         if (error instanceof ProgramActivationSupersessionRollbackConfirmedError) {
           return unavailable("ROLLBACK_CONFIRMED", "NONE");
+        }
+        if (error instanceof ProgramActivationSupersessionConcurrencyConflictError) {
+          return unavailable(
+            "CONCURRENCY_CONFLICT",
+            successfulMutationCount === 0 ? "NONE" : "UNKNOWN",
+          );
+        }
+        if (
+          error instanceof
+          ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError
+        ) {
+          return unavailable("CONCURRENCY_CONFLICT", "NONE");
         }
         if (error instanceof ProgramActivationSupersessionPostStateError) {
           return unavailable("MALFORMED_TRANSACTION_RESULT", "UNKNOWN");

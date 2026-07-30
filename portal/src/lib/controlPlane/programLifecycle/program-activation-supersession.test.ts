@@ -2,13 +2,19 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import {
+  ProgramActivationSupersessionConcurrencyConflictError,
   ProgramActivationSupersessionRollbackConfirmedError,
+  ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError,
   ProgramActivationSupersessionUnavailableError,
   createProgramActivationSupersessionService,
   type ProgramActivationSupersessionAdapter,
   type ProgramActivationSupersessionCommand,
+  type ProgramActivationSupersessionTransaction,
 } from "./program-activation-supersession-boundary";
-import type { PersistedProgramLifecycleRecord } from "./program-lifecycle-persistence-boundary";
+import {
+  MAX_PROGRAM_LIFECYCLE_VERSION,
+  type PersistedProgramLifecycleRecord,
+} from "./program-lifecycle-persistence-boundary";
 
 const CANDIDATE_ID = "c6-candidate-program";
 const ACTIVE_ID = "c6-active-program";
@@ -23,6 +29,10 @@ type FakeFault =
   | "BETWEEN_HOLD_AND_OPEN"
   | "AFTER_SECOND_UPDATE"
   | "CONFIRMED_ROLLBACK"
+  | "CAS_MISS"
+  | "CAS_MISS_AFTER_HOLD"
+  | "CONFIRMED_CAS_MISS"
+  | "CONFIRMED_CAS_MISS_AFTER_HOLD"
   | "MALFORMED_POST_STATE"
   | "MALFORMED_TRANSACTION_RESULT";
 
@@ -38,6 +48,7 @@ function record(
     programCode: "Q3M7Y26-P1",
     programTitle: "C6 Candidate",
     lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN",
+    lifecycleVersion: 0,
     createdAt: CREATED_AT,
     updatedAt: UPDATED_AT,
     ...overrides,
@@ -81,8 +92,52 @@ function command(
         freshnessState: "CURRENT",
       },
     ],
+    expectedLifecycleVersions: [{
+      programId: CANDIDATE_ID,
+      lifecycleVersion: 0,
+    }],
     ...overrides,
   };
+}
+
+function commandForRecords(
+  records: readonly PersistedProgramLifecycleRecord[],
+  overrides: Partial<ProgramActivationSupersessionCommand> = {},
+): ProgramActivationSupersessionCommand {
+  return command({
+    ...overrides,
+    expectedLifecycleVersions: records
+      .map((item) => ({
+        programId: item.programId,
+        lifecycleVersion: item.lifecycleVersion,
+      }))
+      .sort((left, right) => left.programId.localeCompare(right.programId)),
+  });
+}
+
+function withExpectedVersions(
+  value: ProgramActivationSupersessionCommand,
+  records: readonly PersistedProgramLifecycleRecord[],
+): ProgramActivationSupersessionCommand {
+  return commandForRecords(records, value);
+}
+
+function commandForCandidate(
+  candidateProgramId: string,
+  records: readonly PersistedProgramLifecycleRecord[],
+): ProgramActivationSupersessionCommand {
+  const base = command();
+  return commandForRecords(records, {
+    candidateProgramId,
+    governingMotions: base.governingMotions.map((motion) => ({
+      ...motion,
+      subjectProgramId: candidateProgramId,
+    })),
+    receipts: base.receipts.map((receipt) => ({
+      ...receipt,
+      subjectProgramId: candidateProgramId,
+    })),
+  });
 }
 
 function cloneRecord(
@@ -116,21 +171,48 @@ function createFakeAdapter(
           }
           return workingRecords.map(cloneRecord);
         },
-        async setProgramLifecycleState(programId, lifecycleState) {
+        async setProgramLifecycleState(
+          programId,
+          expectedLifecycleState,
+          expectedLifecycleVersion,
+          lifecycleState,
+        ) {
           mutationCalls += 1;
           if (fault === "BEFORE_FIRST_UPDATE" && mutationCalls === 1) {
             throw new ProgramActivationSupersessionRollbackConfirmedError();
+          }
+          if (fault === "CAS_MISS" && mutationCalls === 1) {
+            throw new ProgramActivationSupersessionConcurrencyConflictError();
+          }
+          if (fault === "CAS_MISS_AFTER_HOLD" && mutationCalls === 2) {
+            throw new ProgramActivationSupersessionConcurrencyConflictError();
+          }
+          if (fault === "CONFIRMED_CAS_MISS" && mutationCalls === 1) {
+            throw new ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError();
+          }
+          if (
+            fault === "CONFIRMED_CAS_MISS_AFTER_HOLD" &&
+            mutationCalls === 2
+          ) {
+            throw new ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError();
           }
 
           const index = workingRecords.findIndex(
             (item) => item.programId === programId,
           );
           if (index < 0) {
-            throw new Error("fake transaction program was not found");
+            throw new ProgramActivationSupersessionConcurrencyConflictError();
+          }
+          if (
+            workingRecords[index].lifecycleState !== expectedLifecycleState ||
+            workingRecords[index].lifecycleVersion !== expectedLifecycleVersion
+          ) {
+            throw new ProgramActivationSupersessionConcurrencyConflictError();
           }
           workingRecords[index] = {
             ...workingRecords[index],
             lifecycleState,
+            lifecycleVersion: expectedLifecycleVersion + 1,
             updatedAt: MUTATED_UPDATED_AT,
           };
 
@@ -171,19 +253,57 @@ function createFakeAdapter(
   };
 }
 
+function createSerializedFakeAdapter(
+  initialRecords: readonly PersistedProgramLifecycleRecord[],
+) {
+  const fake = createFakeAdapter(initialRecords);
+  let queue = Promise.resolve();
+  let transactionsStarted = 0;
+
+  const adapter: ProgramActivationSupersessionAdapter = {
+    async transaction<Result>(
+      operation: (transaction: ProgramActivationSupersessionTransaction) => Promise<Result>,
+    ): Promise<Result> {
+      transactionsStarted += 1;
+      const previous = queue;
+      let release!: () => void;
+      queue = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await previous;
+      try {
+        return await fake.adapter.transaction(operation);
+      } finally {
+        release();
+      }
+    },
+  };
+
+  return {
+    adapter,
+    get committedRecords() {
+      return fake.committedRecords;
+    },
+    get transactionsStarted() {
+      return transactionsStarted;
+    },
+  };
+}
+
 async function testZeroActiveActivation() {
-  const fake = createFakeAdapter([
+  const zeroActiveRecords = [
     record(),
     record({
       programId: OTHER_ID,
       programCode: "Q3M7Y26-P2",
       lifecycleState: "CLOSED_ACCEPTED",
     }),
-  ]);
+  ];
+  const fake = createFakeAdapter(zeroActiveRecords);
   const sourceCommand = command();
   const beforeCommand = structuredClone(sourceCommand);
   const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-    sourceCommand,
+    withExpectedVersions(sourceCommand, zeroActiveRecords),
   );
 
   assert.equal(result.kind, "COMMITTED");
@@ -206,8 +326,16 @@ async function testZeroActiveActivation() {
     MUTATED_UPDATED_AT,
   );
   assert.equal(
+    result.records.find((item) => item.programId === CANDIDATE_ID)?.lifecycleVersion,
+    1,
+  );
+  assert.equal(
     result.records.find((item) => item.programId === OTHER_ID)?.updatedAt,
     UPDATED_AT,
+  );
+  assert.equal(
+    result.records.find((item) => item.programId === OTHER_ID)?.lifecycleVersion,
+    0,
   );
   assert.equal(Object.isFrozen(result.records), true);
   assert.equal(Object.isFrozen(result.records[0]), true);
@@ -225,9 +353,10 @@ async function testOneActiveAtomicSupersession() {
       lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
     }),
   };
-  const fake = createFakeAdapter([record(), activeSource]);
+  const supersessionRecords = [record(), activeSource];
+  const fake = createFakeAdapter(supersessionRecords);
   const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-    command(),
+    commandForRecords(supersessionRecords),
   );
 
   assert.equal(result.kind, "COMMITTED");
@@ -254,6 +383,14 @@ async function testOneActiveAtomicSupersession() {
   assert.equal(
     result.records.find((item) => item.programId === ACTIVE_ID)?.updatedAt,
     MUTATED_UPDATED_AT,
+  );
+  assert.equal(
+    result.records.find((item) => item.programId === CANDIDATE_ID)?.lifecycleVersion,
+    1,
+  );
+  assert.equal(
+    result.records.find((item) => item.programId === ACTIVE_ID)?.lifecycleVersion,
+    1,
   );
   assert.equal(fake.mutationCalls, 2);
   assert.equal(
@@ -337,7 +474,7 @@ async function testRejectionsRequestNoWrite() {
   for (const testCase of cases) {
     const fake = createFakeAdapter(testCase.rows);
     const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-      testCase.value,
+      withExpectedVersions(testCase.value as ProgramActivationSupersessionCommand, testCase.rows),
     );
     assert.equal(result.kind, "REJECTED", testCase.name);
     if (result.kind === "REJECTED") {
@@ -374,10 +511,11 @@ async function testMalformedPortfoliosAndEvidenceFailClosed() {
   ]);
   const multipleActive = await createProgramActivationSupersessionService(
     multipleActiveRows.adapter,
-  ).execute(command());
+  ).execute(commandForRecords(multipleActiveRows.committedRecords));
   assert.equal(multipleActive.kind, "REJECTED");
   if (multipleActive.kind === "REJECTED") {
     assert.equal(multipleActive.reason, "MULTIPLE_ACTIVE_PROGRAMS");
+    assert.equal(multipleActive.writeEffect, "NONE");
   }
   assert.equal(multipleActiveRows.mutationCalls, 0);
 
@@ -444,6 +582,21 @@ async function testCommandHardening() {
     enumerable: true,
     value: true,
   });
+  const expectedAccessor = { ...command().expectedLifecycleVersions[0] };
+  let expectedGetterReads = 0;
+  Object.defineProperty(expectedAccessor, "lifecycleVersion", {
+    enumerable: true,
+    get() {
+      expectedGetterReads += 1;
+      return 0;
+    },
+  });
+  const sparseExpectedVersions = new Array<unknown>(1);
+  const extendedExpectedVersions = [...command().expectedLifecycleVersions] as unknown[];
+  Object.defineProperty(extendedExpectedVersions, "unexpected", {
+    enumerable: true,
+    value: true,
+  });
 
   const invalidCases: Array<readonly [string, unknown]> = [
     ["noncanonical candidate", command({ candidateProgramId: "C6-CANDIDATE" })],
@@ -461,6 +614,11 @@ async function testCommandHardening() {
     ["proxy trap", new Proxy(command(), { ownKeys() { throw new Error("blocked"); } })],
     ["sparse motions", { ...command(), governingMotions: sparseMotions }],
     ["extended receipts", { ...command(), receipts: extendedReceipts }],
+    ["expected version accessor", { ...command(), expectedLifecycleVersions: [expectedAccessor] }],
+    ["expected version symbol", { ...command(), expectedLifecycleVersions: [{ ...command().expectedLifecycleVersions[0], [Symbol("unexpected")]: true }] }],
+    ["expected version proxy", { ...command(), expectedLifecycleVersions: [new Proxy(command().expectedLifecycleVersions[0], { ownKeys() { throw new Error("blocked"); } })] }],
+    ["sparse expected versions", { ...command(), expectedLifecycleVersions: sparseExpectedVersions }],
+    ["extended expected versions", { ...command(), expectedLifecycleVersions: extendedExpectedVersions }],
   ];
 
   for (const [name, value] of invalidCases) {
@@ -468,6 +626,265 @@ async function testCommandHardening() {
   }
   assert.equal(topGetterReads, 0);
   assert.equal(nestedGetterReads, 0);
+  assert.equal(expectedGetterReads, 0);
+}
+
+async function testExpectationVectorsAndDeterministicCompetition() {
+  const alternateCandidate = record({
+    programId: OTHER_ID,
+    programCode: "Q3M7Y26-P2",
+  });
+  const initialRecords = [record(), alternateCandidate];
+  const serialized = createSerializedFakeAdapter(initialRecords);
+  const service = createProgramActivationSupersessionService(serialized.adapter);
+  const firstCommand = commandForCandidate(CANDIDATE_ID, initialRecords);
+  const beforeFirstCommand = structuredClone(firstCommand);
+  const competingCommand = commandForCandidate(OTHER_ID, initialRecords);
+  const firstExecution = service.execute(firstCommand);
+  const competingExecution = service.execute(competingCommand);
+  const [first, competing] = await Promise.all([firstExecution, competingExecution]);
+
+  assert.equal(serialized.transactionsStarted, 2);
+  assert.deepEqual(firstCommand, beforeFirstCommand);
+  assert.equal(
+    [first, competing].filter((result) => result.kind === "COMMITTED").length,
+    1,
+  );
+  assert.equal(
+    [first, competing].filter(
+      (result) =>
+        result.kind === "REJECTED" &&
+        result.reason === "STALE_STATE" &&
+        result.writeEffect === "NONE",
+    ).length,
+    1,
+  );
+  assert.equal(
+    serialized.committedRecords.filter(
+      (item) => item.lifecycleState === "OPEN_FOR_BATCH_PLANNING_ONLY",
+    ).length,
+    1,
+  );
+  assert.equal(
+    serialized.committedRecords.find((item) => item.programId === CANDIDATE_ID)
+      ?.lifecycleVersion,
+    1,
+  );
+  assert.equal(
+    serialized.committedRecords.find((item) => item.programId === OTHER_ID)
+      ?.lifecycleVersion,
+    0,
+  );
+  assert.equal(
+    serialized.committedRecords.some((item) => item.lifecycleState === "UNRESOLVED_HOLD"),
+    false,
+  );
+
+  const replay = await service.execute(firstCommand);
+  assert.equal(replay.kind, "REJECTED");
+  if (replay.kind === "REJECTED") {
+    assert.equal(replay.reason, "STALE_STATE");
+  }
+
+  const freshCommand = commandForCandidate(OTHER_ID, serialized.committedRecords);
+  const later = await service.execute(freshCommand);
+  assert.equal(later.kind, "COMMITTED");
+  assert.equal(
+    serialized.committedRecords.filter(
+      (item) => item.lifecycleState === "OPEN_FOR_BATCH_PLANNING_ONLY",
+    ).length,
+    1,
+  );
+
+  const staleRecords = [record(), alternateCandidate];
+  const complete = commandForCandidate(CANDIDATE_ID, staleRecords);
+  const malformedCases: Array<readonly [string, unknown, "INVALID_COMMAND" | "STALE_STATE"]> = [
+    [
+      "missing expectation",
+      { ...complete, expectedLifecycleVersions: [complete.expectedLifecycleVersions[0]] },
+      "STALE_STATE",
+    ],
+    [
+      "extra expectation",
+      {
+        ...complete,
+        expectedLifecycleVersions: [
+          ...complete.expectedLifecycleVersions,
+          { programId: "c6-zextra", lifecycleVersion: 0 },
+        ],
+      },
+      "STALE_STATE",
+    ],
+    [
+      "substituted expectation",
+      {
+        ...complete,
+        expectedLifecycleVersions: [
+          complete.expectedLifecycleVersions[0],
+          { programId: "c6-substitute", lifecycleVersion: 0 },
+        ],
+      },
+      "STALE_STATE",
+    ],
+    [
+      "candidate version mismatch",
+      {
+        ...complete,
+        expectedLifecycleVersions: complete.expectedLifecycleVersions.map((item) =>
+          item.programId === CANDIDATE_ID ? { ...item, lifecycleVersion: 1 } : item,
+        ),
+      },
+      "STALE_STATE",
+    ],
+    [
+      "unrelated version mismatch",
+      {
+        ...complete,
+        expectedLifecycleVersions: complete.expectedLifecycleVersions.map((item) =>
+          item.programId === OTHER_ID ? { ...item, lifecycleVersion: 1 } : item,
+        ),
+      },
+      "STALE_STATE",
+    ],
+    [
+      "duplicate expectation",
+      {
+        ...complete,
+        expectedLifecycleVersions: [
+          complete.expectedLifecycleVersions[0],
+          complete.expectedLifecycleVersions[0],
+        ],
+      },
+      "INVALID_COMMAND",
+    ],
+    [
+      "unsorted expectation",
+      {
+        ...complete,
+        expectedLifecycleVersions: [...complete.expectedLifecycleVersions].reverse(),
+      },
+      "INVALID_COMMAND",
+    ],
+  ];
+  for (const [name, value, reason] of malformedCases) {
+    const staleFake = createFakeAdapter(staleRecords);
+    const result = await createProgramActivationSupersessionService(staleFake.adapter).execute(
+      value,
+    );
+    assert.equal(result.kind, "REJECTED", name);
+    if (result.kind === "REJECTED") {
+      assert.equal(result.reason, reason, name);
+    }
+    assert.equal(staleFake.mutationCalls, 0, name);
+  }
+
+  const activeRows = [
+    record(),
+    record({
+      programId: ACTIVE_ID,
+      programCode: "Q3M7Y26-P3",
+      lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
+    }),
+  ];
+  const activeMismatch = commandForCandidate(CANDIDATE_ID, activeRows);
+  const activeMismatchFake = createFakeAdapter(activeRows);
+  const activeMismatchResult = await createProgramActivationSupersessionService(
+    activeMismatchFake.adapter,
+  ).execute({
+    ...activeMismatch,
+    expectedLifecycleVersions: activeMismatch.expectedLifecycleVersions.map((item) =>
+      item.programId === ACTIVE_ID ? { ...item, lifecycleVersion: 1 } : item,
+    ),
+  });
+  assert.equal(activeMismatchResult.kind, "REJECTED");
+  if (activeMismatchResult.kind === "REJECTED") {
+    assert.equal(activeMismatchResult.reason, "STALE_STATE");
+  }
+  assert.equal(activeMismatchFake.mutationCalls, 0);
+
+  const stalePrecedenceRows = [record()];
+  const stalePrecedence = commandForRecords(stalePrecedenceRows);
+  const stalePrecedenceFake = createFakeAdapter(stalePrecedenceRows);
+  const stalePrecedenceResult = await createProgramActivationSupersessionService(
+    stalePrecedenceFake.adapter,
+  ).execute({
+    ...stalePrecedence,
+    governingMotions: [{
+      ...stalePrecedence.governingMotions[0],
+      ratificationState: "NOT_RATIFIED",
+    }],
+    expectedLifecycleVersions: [{ programId: CANDIDATE_ID, lifecycleVersion: 1 }],
+  });
+  assert.equal(stalePrecedenceResult.kind, "REJECTED");
+  if (stalePrecedenceResult.kind === "REJECTED") {
+    assert.equal(stalePrecedenceResult.reason, "STALE_STATE");
+  }
+  assert.equal(stalePrecedenceFake.mutationCalls, 0);
+
+  for (const version of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1, Number.NaN, Infinity, "0"] as const) {
+    await assertInvalidCommand(
+      {
+        ...command(),
+        expectedLifecycleVersions: [{ programId: CANDIDATE_ID, lifecycleVersion: version }],
+      },
+      `invalid expected version ${String(version)}`,
+    );
+  }
+
+  const exhausted = createFakeAdapter([
+    record({ lifecycleVersion: MAX_PROGRAM_LIFECYCLE_VERSION }),
+  ]);
+  const exhaustedResult = await createProgramActivationSupersessionService(
+    exhausted.adapter,
+  ).execute(commandForRecords(exhausted.committedRecords));
+  assert.equal(exhaustedResult.kind, "REJECTED");
+  if (exhaustedResult.kind === "REJECTED") {
+    assert.equal(exhaustedResult.reason, "VERSION_EXHAUSTED");
+    assert.equal(exhaustedResult.writeEffect, "NONE");
+  }
+  assert.equal(exhausted.mutationCalls, 0);
+
+  const exhaustedActive = createFakeAdapter([
+    record(),
+    record({
+      programId: ACTIVE_ID,
+      programCode: "Q3M7Y26-P2",
+      lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
+      lifecycleVersion: MAX_PROGRAM_LIFECYCLE_VERSION,
+    }),
+  ]);
+  const exhaustedActiveResult = await createProgramActivationSupersessionService(
+    exhaustedActive.adapter,
+  ).execute(commandForRecords(exhaustedActive.committedRecords));
+  assert.deepEqual(exhaustedActiveResult, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "VERSION_EXHAUSTED",
+    records: [],
+  });
+  assert.equal(exhaustedActive.mutationCalls, 0);
+
+  const unrelatedMaximumRows = [
+    record(),
+    record({
+      programId: OTHER_ID,
+      programCode: "Q3M7Y26-P2",
+      lifecycleState: "CLOSED_ACCEPTED",
+      lifecycleVersion: MAX_PROGRAM_LIFECYCLE_VERSION,
+    }),
+  ];
+  const unrelatedMaximum = createFakeAdapter(unrelatedMaximumRows);
+  const unrelatedMaximumResult = await createProgramActivationSupersessionService(
+    unrelatedMaximum.adapter,
+  ).execute(commandForRecords(unrelatedMaximumRows));
+  assert.equal(unrelatedMaximumResult.kind, "COMMITTED");
+  if (unrelatedMaximumResult.kind === "COMMITTED") {
+    assert.equal(
+      unrelatedMaximumResult.records.find((item) => item.programId === OTHER_ID)
+        ?.lifecycleVersion,
+      MAX_PROGRAM_LIFECYCLE_VERSION,
+    );
+  }
 }
 
 async function testPostStateCoherenceFailures() {
@@ -530,12 +947,30 @@ async function testPostStateCoherenceFailures() {
         item.programId === OTHER_ID ? { ...item, updatedAt: MUTATED_UPDATED_AT } : item,
       ),
     ],
+    [
+      "unchanged mutated version",
+      (rows) => rows.map((item) =>
+        item.programId === CANDIDATE_ID ? { ...item, lifecycleVersion: 0 } : item,
+      ),
+    ],
+    [
+      "mutated version increment greater than one",
+      (rows) => rows.map((item) =>
+        item.programId === CANDIDATE_ID ? { ...item, lifecycleVersion: 2 } : item,
+      ),
+    ],
+    [
+      "unrelated version drift",
+      (rows) => rows.map((item) =>
+        item.programId === OTHER_ID ? { ...item, lifecycleVersion: 1 } : item,
+      ),
+    ],
   ];
 
   for (const [name, transform] of transforms) {
     const fake = createFakeAdapter(zeroActiveRows, "NONE", transform);
     const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-      command(),
+      commandForRecords(zeroActiveRows),
     );
     assert.equal(result.kind, "UNAVAILABLE", name);
     if (result.kind === "UNAVAILABLE") {
@@ -543,6 +978,45 @@ async function testPostStateCoherenceFailures() {
       assert.equal(result.writeEffect, "UNKNOWN", name);
     }
     assert.equal(fake.mutationCalls, 1, name);
+  }
+
+  const supersessionRows = [
+    record(),
+    record({
+      programId: ACTIVE_ID,
+      programCode: "Q3M7Y26-P2",
+      lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
+    }),
+    record({
+      programId: OTHER_ID,
+      programCode: "Q3M7Y26-P3",
+      lifecycleState: "CLOSED_ACCEPTED",
+    }),
+  ];
+  for (const [name, transform] of [
+    [
+      "superseded version unchanged",
+      (rows: readonly PersistedProgramLifecycleRecord[]) => rows.map((item) =>
+        item.programId === ACTIVE_ID ? { ...item, lifecycleVersion: 0 } : item,
+      ),
+    ],
+    [
+      "superseded version increment greater than one",
+      (rows: readonly PersistedProgramLifecycleRecord[]) => rows.map((item) =>
+        item.programId === ACTIVE_ID ? { ...item, lifecycleVersion: 2 } : item,
+      ),
+    ],
+  ] as const) {
+    const fake = createFakeAdapter(supersessionRows, "NONE", transform);
+    const result = await createProgramActivationSupersessionService(fake.adapter).execute(
+      commandForRecords(supersessionRows),
+    );
+    assert.deepEqual(result, {
+      kind: "UNAVAILABLE",
+      writeEffect: "UNKNOWN",
+      classification: "MALFORMED_TRANSACTION_RESULT",
+      records: [],
+    }, name);
   }
 }
 
@@ -562,7 +1036,7 @@ async function testFaultEffectsAndNoPartialSuccess() {
   ] as const) {
     const fake = createFakeAdapter(supersessionRows, fault);
     const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-      command(),
+      commandForRecords(supersessionRows),
     );
     assert.equal(result.kind, "UNAVAILABLE");
     if (result.kind === "UNAVAILABLE") {
@@ -577,6 +1051,41 @@ async function testFaultEffectsAndNoPartialSuccess() {
     );
   }
 
+  for (const [fault, writeEffect] of [
+    ["CAS_MISS", "NONE"],
+    ["CAS_MISS_AFTER_HOLD", "UNKNOWN"],
+  ] as const) {
+    const fake = createFakeAdapter(supersessionRows, fault);
+    const before = JSON.stringify(fake.committedRecords);
+    const result = await createProgramActivationSupersessionService(fake.adapter).execute(
+      commandForRecords(supersessionRows),
+    );
+    assert.equal(result.kind, "UNAVAILABLE");
+    if (result.kind === "UNAVAILABLE") {
+      assert.equal(result.classification, "CONCURRENCY_CONFLICT");
+      assert.equal(result.writeEffect, writeEffect);
+    }
+    assert.equal(JSON.stringify(fake.committedRecords), before);
+  }
+
+  for (const fault of [
+    "CONFIRMED_CAS_MISS",
+    "CONFIRMED_CAS_MISS_AFTER_HOLD",
+  ] as const) {
+    const fake = createFakeAdapter(supersessionRows, fault);
+    const before = JSON.stringify(fake.committedRecords);
+    const result = await createProgramActivationSupersessionService(fake.adapter).execute(
+      commandForRecords(supersessionRows),
+    );
+    assert.deepEqual(result, {
+      kind: "UNAVAILABLE",
+      writeEffect: "NONE",
+      classification: "CONCURRENCY_CONFLICT",
+      records: [],
+    });
+    assert.equal(JSON.stringify(fake.committedRecords), before);
+  }
+
   for (const fault of [
     "BETWEEN_HOLD_AND_OPEN",
     "AFTER_SECOND_UPDATE",
@@ -585,7 +1094,7 @@ async function testFaultEffectsAndNoPartialSuccess() {
   ] as const) {
     const fake = createFakeAdapter(supersessionRows, fault);
     const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-      command(),
+      commandForRecords(supersessionRows),
     );
     assert.equal(result.kind, "UNAVAILABLE");
     if (result.kind === "UNAVAILABLE") {
@@ -595,6 +1104,8 @@ async function testFaultEffectsAndNoPartialSuccess() {
         fault === "MALFORMED_TRANSACTION_RESULT"
       ) {
         assert.equal(result.classification, "MALFORMED_TRANSACTION_RESULT");
+      } else {
+        assert.equal(result.classification, "ADAPTER_ERROR");
       }
     }
     assert.notEqual(result.kind, "COMMITTED");
@@ -652,10 +1163,25 @@ function testStaticBoundaryAndServerSeams() {
   );
   assert.equal(serverSource.startsWith('import "server-only";'), true);
   assert.equal((serverSource.match(/\$transaction/g) ?? []).length, 1);
+  assert.match(
+    serverSource,
+    /ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError/,
+  );
+  assert.ok(
+    serverSource.indexOf("catch (error)") > serverSource.indexOf("await prisma.$transaction"),
+  );
+  assert.match(
+    serverSource,
+    /catch \(error\)[\s\S]*ProgramActivationSupersessionConcurrencyConflictError[\s\S]*RollbackConfirmedConcurrencyConflictError/,
+  );
   assert.match(serverSource, /FOR UPDATE/);
   assert.match(serverSource, /UPDATE "program_lifecycle_records"/);
   assert.match(serverSource, /\$\{programId\}/);
+  assert.match(serverSource, /\$\{expectedLifecycleState\}/);
+  assert.match(serverSource, /\$\{expectedLifecycleVersion\}/);
   assert.match(serverSource, /\$\{lifecycleState\}/);
+  assert.match(serverSource, /"lifecycle_version" = "lifecycle_version" \+ 1/);
+  assert.match(serverSource, /"lifecycle_version" = \$\{expectedLifecycleVersion\}/);
   assert.match(serverSource, /"updated_at" = CURRENT_TIMESTAMP/);
   for (const prohibited of [
     "INSERT INTO",
@@ -672,8 +1198,6 @@ function testStaticBoundaryAndServerSeams() {
     assert.equal(serverSource.toLowerCase().includes(prohibited.toLowerCase()), false);
   }
   for (const reserved of [
-    ["expected", "Version"].join(""),
-    ["state", "Version"].join(""),
     ["finger", "print"].join(""),
     ["idempot", "ency"].join(""),
     ["retry"].join(""),
@@ -689,6 +1213,7 @@ async function run() {
   await testRejectionsRequestNoWrite();
   await testMalformedPortfoliosAndEvidenceFailClosed();
   await testCommandHardening();
+  await testExpectationVectorsAndDeterministicCompetition();
   await testPostStateCoherenceFailures();
   await testFaultEffectsAndNoPartialSuccess();
   await testAdapterFailuresAreFailClosed();
