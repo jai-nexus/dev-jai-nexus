@@ -15,9 +15,19 @@ import {
   type PersistedProgramLifecycleRecord,
   type ProgramLifecycleWriteEffect,
 } from "./program-lifecycle-persistence-boundary";
+import {
+  createProgramTransitionReceiptSetDraft,
+  parseProgramTransitionReceiptCommand,
+  receiptSetMatchesCanonicalCommand,
+  validateProgramTransitionReceiptSet,
+  type ProgramLifecycleTransitionReceipt,
+  type ProgramTransitionReceiptSet,
+  type ProgramTransitionReceiptSetDraft,
+} from "./program-transition-receipt-boundary";
 
 const COMMAND_KEYS = [
   "candidateProgramId",
+  "expectedSupersededProgramId",
   "governingMotions",
   "receipts",
   "expectedLifecycleVersions",
@@ -74,6 +84,7 @@ export interface ExpectedProgramLifecycleVersion {
 
 export interface ProgramActivationSupersessionCommand {
   readonly candidateProgramId: string;
+  readonly expectedSupersededProgramId: string | null;
   readonly governingMotions: readonly ProgramActivationSupersessionGoverningMotion[];
   readonly receipts: readonly ProgramActivationSupersessionReceipt[];
   readonly expectedLifecycleVersions: readonly ExpectedProgramLifecycleVersion[];
@@ -81,12 +92,18 @@ export interface ProgramActivationSupersessionCommand {
 
 export interface ProgramActivationSupersessionTransaction {
   readonly listLockedProgramLifecycleRecords: () => Promise<unknown>;
+  readonly findProgramTransitionReceiptSetByIdempotencyKeyHash: (
+    idempotencyKeyHash: string,
+  ) => Promise<unknown | null>;
   readonly setProgramLifecycleState: (
     programId: string,
     expectedLifecycleState: ProgramLifecycleState,
     expectedLifecycleVersion: number,
     lifecycleState: ProgramLifecycleState,
   ) => Promise<void>;
+  readonly insertProgramTransitionReceiptSet: (
+    receiptSet: ProgramTransitionReceiptSetDraft,
+  ) => Promise<unknown>;
 }
 
 export interface ProgramActivationSupersessionAdapter {
@@ -106,12 +123,18 @@ export type ProgramActivationSupersessionRejectionReason =
   | "CANDIDATE_STATE_INVALID"
   | "C3_CLASSIFICATION_MISMATCH"
   | "C4_INELIGIBLE"
-  | "PROJECTED_PORTFOLIO_INVALID";
+  | "PROJECTED_PORTFOLIO_INVALID"
+  | "EXPECTED_OPERATION_MISMATCH"
+  | "IDEMPOTENCY_CONFLICT";
 
 export type ProgramActivationSupersessionUnavailableClassification =
   | "ADAPTER_UNAVAILABLE"
   | "ADAPTER_ERROR"
   | "CONCURRENCY_CONFLICT"
+  | "MALFORMED_STORED_RECEIPT"
+  | "RECEIPT_PERSISTENCE_FAILURE"
+  | "UNIQUE_KEY_CONFLICT"
+  | "AMBIGUOUS_POST_WRITE_EFFECT"
   | "MALFORMED_TRANSACTION_RESULT"
   | "ROLLBACK_CONFIRMED";
 
@@ -122,6 +145,13 @@ export type ProgramActivationSupersessionResult =
       readonly candidateProgramId: string;
       readonly supersededProgramId: string | null;
       readonly records: readonly PersistedProgramLifecycleRecord[];
+      readonly receiptSet: ProgramTransitionReceiptSet;
+    }
+  | {
+      readonly kind: "REPLAYED";
+      readonly writeEffect: "NONE";
+      readonly receiptSet: ProgramTransitionReceiptSet;
+      readonly records: readonly [];
     }
   | {
       readonly kind: "REJECTED";
@@ -165,6 +195,41 @@ export class ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictEr
   constructor() {
     super("Program lifecycle compare-and-swap conflict was rolled back.");
     this.name = "ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError";
+  }
+}
+
+export class ProgramTransitionReceiptPersistenceError extends Error {
+  constructor() {
+    super("Program transition receipt persistence failed.");
+    this.name = "ProgramTransitionReceiptPersistenceError";
+  }
+}
+
+export class ProgramTransitionReceiptMalformedStoredError extends Error {
+  constructor() {
+    super("Stored program transition receipt is malformed.");
+    this.name = "ProgramTransitionReceiptMalformedStoredError";
+  }
+}
+
+export class ProgramTransitionReceiptUniqueKeyConflictError extends Error {
+  constructor() {
+    super("Program transition receipt key hash already exists.");
+    this.name = "ProgramTransitionReceiptUniqueKeyConflictError";
+  }
+}
+
+export class ProgramTransitionReceiptRollbackConfirmedConflictError extends Error {
+  constructor() {
+    super("Program transition receipt conflict was rolled back.");
+    this.name = "ProgramTransitionReceiptRollbackConfirmedConflictError";
+  }
+}
+
+export class ProgramTransitionReceiptAmbiguousPostWriteError extends Error {
+  constructor() {
+    super("Program transition receipt write effect is ambiguous.");
+    this.name = "ProgramTransitionReceiptAmbiguousPostWriteError";
   }
 }
 
@@ -384,10 +449,18 @@ function parseReceipts(
   return Object.freeze(receipts);
 }
 
-function parseCommand(input: unknown): ProgramActivationSupersessionCommand | null {
+export function parseProgramActivationSupersessionCommand(
+  input: unknown,
+): ProgramActivationSupersessionCommand | null {
   try {
     const fields = readExactDataObject(input, COMMAND_KEYS);
-    if (!fields || !isCanonicalProgramId(fields.candidateProgramId)) {
+    if (
+      !fields ||
+      !isCanonicalProgramId(fields.candidateProgramId) ||
+      (fields.expectedSupersededProgramId !== null &&
+        (!isCanonicalProgramId(fields.expectedSupersededProgramId) ||
+          fields.expectedSupersededProgramId === fields.candidateProgramId))
+    ) {
       return null;
     }
 
@@ -399,8 +472,17 @@ function parseCommand(input: unknown): ProgramActivationSupersessionCommand | nu
     if (!governingMotions || !receipts || !expectedLifecycleVersions) {
       return null;
     }
+    if (
+      fields.expectedSupersededProgramId !== null &&
+      !expectedLifecycleVersions.some(
+        (value) => value.programId === fields.expectedSupersededProgramId,
+      )
+    ) {
+      return null;
+    }
     return Object.freeze({
       candidateProgramId: fields.candidateProgramId,
+      expectedSupersededProgramId: fields.expectedSupersededProgramId,
       governingMotions,
       receipts,
       expectedLifecycleVersions,
@@ -477,6 +559,44 @@ function unavailable(
     classification,
     records: Object.freeze([]) as readonly [],
   });
+}
+
+function replayed(receiptSet: ProgramTransitionReceiptSet): ProgramActivationSupersessionResult {
+  return Object.freeze({
+    kind: "REPLAYED",
+    writeEffect: "NONE",
+    receiptSet,
+    records: Object.freeze([]) as readonly [],
+  });
+}
+
+function receiptSetMatchesDraft(
+  receiptSet: ProgramTransitionReceiptSet,
+  draft: ProgramTransitionReceiptSetDraft,
+): boolean {
+  return receiptSet.command.commandId === draft.command.commandId &&
+    receiptSet.command.idempotencyKeyHash === draft.command.idempotencyKeyHash &&
+    receiptSet.command.requestFingerprint === draft.command.requestFingerprint &&
+    receiptSet.command.fingerprintVersion === draft.command.fingerprintVersion &&
+    receiptSet.command.candidateProgramId === draft.command.candidateProgramId &&
+    receiptSet.command.operationKind === draft.command.operationKind &&
+    receiptSet.command.supersededProgramId === draft.command.supersededProgramId &&
+    receiptSet.command.expectedReceiptCount === draft.command.expectedReceiptCount &&
+    receiptSet.receipts.length === draft.receipts.length &&
+    receiptSet.receipts.every((receipt, index) => {
+      const expected = draft.receipts[index];
+      return expected !== undefined &&
+        receipt.receiptId === expected.receiptId &&
+        receipt.commandId === expected.commandId &&
+        receipt.receiptOrdinal === expected.receiptOrdinal &&
+        receipt.transitionId === expected.transitionId &&
+        receipt.lifecycleAxisId === expected.lifecycleAxisId &&
+        receipt.subjectProgramId === expected.subjectProgramId &&
+        receipt.sourceState === expected.sourceState &&
+        receipt.resultState === expected.resultState &&
+        receipt.sourceLifecycleVersion === expected.sourceLifecycleVersion &&
+        receipt.resultLifecycleVersion === expected.resultLifecycleVersion;
+    });
 }
 
 function isOpeningTransition(state: ProgramLifecycleState): boolean {
@@ -642,6 +762,15 @@ function derivePlan(
   });
 }
 
+function planMatchesExpectedOperation(
+  plan: ExecutionPlan,
+  command: ProgramActivationSupersessionCommand,
+): boolean {
+  return plan.kind === "OPEN_CANDIDATE"
+    ? command.expectedSupersededProgramId === null
+    : command.expectedSupersededProgramId === plan.supersededProgram.programId;
+}
+
 function timestampIsNotEarlier(previous: string, next: string): boolean {
   return new Date(next).getTime() >= new Date(previous).getTime();
 }
@@ -704,6 +833,7 @@ function committedResult(
   plan: ExecutionPlan,
   before: readonly PersistedProgramLifecycleRecord[],
   after: readonly PersistedProgramLifecycleRecord[],
+  receiptSet: ProgramTransitionReceiptSet,
 ): ProgramActivationSupersessionResult | null {
   const invariant = evaluateOneActiveProgramInvariant(
     after.map((record) => ({
@@ -732,6 +862,7 @@ function committedResult(
     candidateProgramId: plan.candidate.programId,
     supersededProgramId: plan.supersededProgram?.programId ?? null,
     records: Object.freeze([...after]),
+    receiptSet,
   });
 }
 
@@ -749,18 +880,19 @@ function failureClassification(
 
 /**
  * Produces a complete all-or-nothing lifecycle-state result from an injected
- * transaction. It derives portfolio data inside that transaction and does not
- * grant authority, issue a receipt, or invoke this operation by itself.
+ * transaction. It derives portfolio data and persists a complete receipt set
+ * inside that transaction; it grants no authority and invokes no operation by itself.
  */
 export function createProgramActivationSupersessionService(
   adapter: ProgramActivationSupersessionAdapter,
 ): ProgramActivationSupersessionService {
   return Object.freeze({
     async execute(input: unknown): Promise<ProgramActivationSupersessionResult> {
-      const command = parseCommand(input);
-      if (!command) {
+      const receiptCommand = parseProgramTransitionReceiptCommand(input);
+      if (!receiptCommand) {
         return rejected("INVALID_COMMAND");
       }
+      const command = receiptCommand.command;
 
       let mutationInvocationBegan = false;
       let successfulMutationCount = 0;
@@ -775,6 +907,21 @@ export function createProgramActivationSupersessionService(
             return expectedResult;
           }
 
+          const storedReceiptSet = await transaction
+            .findProgramTransitionReceiptSetByIdempotencyKeyHash(
+              receiptCommand.idempotencyKeyHash,
+            );
+          if (storedReceiptSet !== null) {
+            const receiptSet = validateProgramTransitionReceiptSet(storedReceiptSet);
+            if (!receiptSet) {
+              throw new ProgramTransitionReceiptMalformedStoredError();
+            }
+            expectedResult = receiptSetMatchesCanonicalCommand(receiptSet, receiptCommand)
+              ? replayed(receiptSet)
+              : rejected("IDEMPOTENCY_CONFLICT");
+            return expectedResult;
+          }
+
           if (!expectedVersionsMatch(command.expectedLifecycleVersions, before)) {
             expectedResult = rejected("STALE_STATE");
             return expectedResult;
@@ -783,6 +930,10 @@ export function createProgramActivationSupersessionService(
           const plan = derivePlan(command, before);
           if (!isPlan(plan)) {
             expectedResult = rejected(plan);
+            return expectedResult;
+          }
+          if (!planMatchesExpectedOperation(plan, command)) {
+            expectedResult = rejected("EXPECTED_OPERATION_MISMATCH");
             return expectedResult;
           }
           if (!planCanIncrementVersions(plan)) {
@@ -812,7 +963,41 @@ export function createProgramActivationSupersessionService(
           const after = parsePersistedRows(
             await transaction.listLockedProgramLifecycleRecords(),
           );
-          const committed = after ? committedResult(plan, before, after) : null;
+          if (!after) {
+            throw new ProgramActivationSupersessionPostStateError();
+          }
+          const candidateBefore = before.find(
+            (record) => record.programId === plan.candidate.programId,
+          );
+          const candidateAfter = after.find(
+            (record) => record.programId === plan.candidate.programId,
+          );
+          const supersededBefore = plan.supersededProgram
+            ? before.find((record) => record.programId === plan.supersededProgram?.programId) ?? null
+            : null;
+          const supersededAfter = plan.supersededProgram
+            ? after.find((record) => record.programId === plan.supersededProgram?.programId) ?? null
+            : null;
+          if (!candidateBefore || !candidateAfter) {
+            throw new ProgramActivationSupersessionPostStateError();
+          }
+          const draft = createProgramTransitionReceiptSetDraft({
+            command: receiptCommand,
+            candidateBefore,
+            candidateAfter,
+            supersededBefore,
+            supersededAfter,
+          });
+          if (!draft) {
+            throw new ProgramActivationSupersessionPostStateError();
+          }
+          const receiptSet = validateProgramTransitionReceiptSet(
+            await transaction.insertProgramTransitionReceiptSet(draft),
+          );
+          if (!receiptSet || !receiptSetMatchesDraft(receiptSet, draft)) {
+            throw new ProgramTransitionReceiptPersistenceError();
+          }
+          const committed = committedResult(plan, before, after, receiptSet);
           if (!committed) {
             throw new ProgramActivationSupersessionPostStateError();
           }
@@ -830,6 +1015,27 @@ export function createProgramActivationSupersessionService(
       } catch (error) {
         if (error instanceof ProgramActivationSupersessionRollbackConfirmedError) {
           return unavailable("ROLLBACK_CONFIRMED", "NONE");
+        }
+        if (error instanceof ProgramTransitionReceiptRollbackConfirmedConflictError) {
+          return unavailable("UNIQUE_KEY_CONFLICT", "NONE");
+        }
+        if (error instanceof ProgramTransitionReceiptUniqueKeyConflictError) {
+          return unavailable(
+            "UNIQUE_KEY_CONFLICT",
+            successfulMutationCount === 0 ? "NONE" : "UNKNOWN",
+          );
+        }
+        if (error instanceof ProgramTransitionReceiptPersistenceError) {
+          return unavailable(
+            "RECEIPT_PERSISTENCE_FAILURE",
+            successfulMutationCount === 0 ? "NONE" : "UNKNOWN",
+          );
+        }
+        if (error instanceof ProgramTransitionReceiptMalformedStoredError) {
+          return unavailable("MALFORMED_STORED_RECEIPT", "NONE");
+        }
+        if (error instanceof ProgramTransitionReceiptAmbiguousPostWriteError) {
+          return unavailable("AMBIGUOUS_POST_WRITE_EFFECT", "UNKNOWN");
         }
         if (error instanceof ProgramActivationSupersessionConcurrencyConflictError) {
           return unavailable(

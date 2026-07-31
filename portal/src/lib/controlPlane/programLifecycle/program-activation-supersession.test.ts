@@ -6,11 +6,20 @@ import {
   ProgramActivationSupersessionRollbackConfirmedError,
   ProgramActivationSupersessionRollbackConfirmedConcurrencyConflictError,
   ProgramActivationSupersessionUnavailableError,
+  ProgramTransitionReceiptPersistenceError,
+  ProgramTransitionReceiptRollbackConfirmedConflictError,
+  ProgramTransitionReceiptUniqueKeyConflictError,
   createProgramActivationSupersessionService,
   type ProgramActivationSupersessionAdapter,
   type ProgramActivationSupersessionCommand,
   type ProgramActivationSupersessionTransaction,
 } from "./program-activation-supersession-boundary";
+import type {
+  ProgramTransitionReceiptCommandInput,
+  ProgramTransitionReceiptSet,
+  ProgramTransitionReceiptSetDraft,
+} from "./program-transition-receipt-boundary";
+import { deriveProgramTransitionReceiptId } from "./program-transition-receipt-boundary";
 import {
   MAX_PROGRAM_LIFECYCLE_VERSION,
   type PersistedProgramLifecycleRecord,
@@ -33,6 +42,11 @@ type FakeFault =
   | "CAS_MISS_AFTER_HOLD"
   | "CONFIRMED_CAS_MISS"
   | "CONFIRMED_CAS_MISS_AFTER_HOLD"
+  | "RECEIPT_INSERT_FAILURE"
+  | "UNIQUE_KEY_CONFLICT"
+  | "CONFIRMED_UNIQUE_KEY_CONFLICT"
+  | "DRAFT_MUTATION"
+  | "MALFORMED_STORED_RECEIPT"
   | "MALFORMED_POST_STATE"
   | "MALFORMED_TRANSACTION_RESULT";
 
@@ -56,10 +70,12 @@ function record(
 }
 
 function command(
-  overrides: Partial<ProgramActivationSupersessionCommand> = {},
-): ProgramActivationSupersessionCommand {
+  overrides: Partial<ProgramTransitionReceiptCommandInput> = {},
+): ProgramTransitionReceiptCommandInput {
   return {
+    idempotencyKey: "c8-test-key-001",
     candidateProgramId: CANDIDATE_ID,
+    expectedSupersededProgramId: null,
     governingMotions: [
       {
         motionId: "c6-governing-motion",
@@ -102,10 +118,17 @@ function command(
 
 function commandForRecords(
   records: readonly PersistedProgramLifecycleRecord[],
-  overrides: Partial<ProgramActivationSupersessionCommand> = {},
-): ProgramActivationSupersessionCommand {
+  overrides: Partial<ProgramTransitionReceiptCommandInput> = {},
+): ProgramTransitionReceiptCommandInput {
   return command({
     ...overrides,
+    expectedSupersededProgramId: Object.hasOwn(overrides, "expectedSupersededProgramId")
+      ? overrides.expectedSupersededProgramId ?? null
+      : records.find(
+        (item) =>
+          item.programId !== (overrides.candidateProgramId ?? CANDIDATE_ID) &&
+          item.lifecycleState === "OPEN_FOR_BATCH_PLANNING_ONLY",
+      )?.programId ?? null,
     expectedLifecycleVersions: records
       .map((item) => ({
         programId: item.programId,
@@ -116,16 +139,16 @@ function commandForRecords(
 }
 
 function withExpectedVersions(
-  value: ProgramActivationSupersessionCommand,
+  value: ProgramTransitionReceiptCommandInput,
   records: readonly PersistedProgramLifecycleRecord[],
-): ProgramActivationSupersessionCommand {
+): ProgramTransitionReceiptCommandInput {
   return commandForRecords(records, value);
 }
 
 function commandForCandidate(
   candidateProgramId: string,
   records: readonly PersistedProgramLifecycleRecord[],
-): ProgramActivationSupersessionCommand {
+): ProgramTransitionReceiptCommandInput {
   const base = command();
   return commandForRecords(records, {
     candidateProgramId,
@@ -150,18 +173,29 @@ function createFakeAdapter(
   initialRecords: readonly PersistedProgramLifecycleRecord[],
   fault: FakeFault = "NONE",
   postStateTransformer: PostStateTransformer | null = null,
+  initialReceiptSets: readonly ProgramTransitionReceiptSet[] = [],
 ) {
   let committedRecords = initialRecords.map(cloneRecord);
+  let committedReceipts = new Map(
+    initialReceiptSets.map((receiptSet) => [receiptSet.command.idempotencyKeyHash, structuredClone(receiptSet)]),
+  );
   let transactionCalls = 0;
   let lockReads = 0;
   let mutationCalls = 0;
+  let receiptLookups = 0;
+  let receiptWrites = 0;
+  const events: string[] = [];
 
   const adapter: ProgramActivationSupersessionAdapter = {
     async transaction(operation) {
       transactionCalls += 1;
       const workingRecords = committedRecords.map(cloneRecord);
+      const workingReceipts = new Map(
+        [...committedReceipts].map(([key, receipt]) => [key, structuredClone(receipt)]),
+      );
       const result = await operation({
         async listLockedProgramLifecycleRecords() {
+          events.push("LOCK");
           lockReads += 1;
           if (fault === "MALFORMED_POST_STATE" && lockReads === 2) {
             return [workingRecords[0]];
@@ -171,12 +205,22 @@ function createFakeAdapter(
           }
           return workingRecords.map(cloneRecord);
         },
+        async findProgramTransitionReceiptSetByIdempotencyKeyHash(idempotencyKeyHash) {
+          events.push("LOOKUP");
+          receiptLookups += 1;
+          const stored = workingReceipts.get(idempotencyKeyHash) ?? null;
+          if (fault === "MALFORMED_STORED_RECEIPT" && stored) {
+            return { ...stored, command: { ...stored.command, expectedReceiptCount: 3 } };
+          }
+          return stored ? structuredClone(stored) : null;
+        },
         async setProgramLifecycleState(
           programId,
           expectedLifecycleState,
           expectedLifecycleVersion,
           lifecycleState,
         ) {
+          events.push("WRITE");
           mutationCalls += 1;
           if (fault === "BEFORE_FIRST_UPDATE" && mutationCalls === 1) {
             throw new ProgramActivationSupersessionRollbackConfirmedError();
@@ -226,9 +270,56 @@ function createFakeAdapter(
             throw new Error("fake transaction fault before commit");
           }
         },
+        async insertProgramTransitionReceiptSet(receiptSet: ProgramTransitionReceiptSetDraft) {
+          events.push("INSERT");
+          receiptWrites += 1;
+          const serializedDraft = JSON.stringify(receiptSet);
+          assert.equal(Object.hasOwn(receiptSet, "idempotencyKey"), false);
+          assert.equal(Object.hasOwn(receiptSet.command, "idempotencyKey"), false);
+          assert.equal(receiptSet.receipts.some((receipt) => Object.hasOwn(receipt, "idempotencyKey")), false);
+          assert.equal(serializedDraft.includes('"idempotencyKey"'), false);
+          assert.equal(serializedDraft.includes("c8-test-key-001"), false);
+          assert.equal(Object.hasOwn(receiptSet.command, "idempotencyKeyHash"), true);
+          if (fault === "DRAFT_MUTATION") {
+            assert.equal(Object.isFrozen(receiptSet), true);
+            assert.equal(Object.isFrozen(receiptSet.command), true);
+            assert.equal(Object.isFrozen(receiptSet.receipts), true);
+            for (const receipt of receiptSet.receipts) {
+              assert.equal(Object.isFrozen(receipt), true);
+              assert.throws(() => {
+                (receipt as { subjectProgramId: string }).subjectProgramId = "c6-mutated-program";
+              }, TypeError);
+            }
+            if (receiptSet.command.operationKind === "HOLD_AND_OPEN") {
+              assert.deepEqual(
+                receiptSet.receipts.map((receipt) => [receipt.subjectProgramId, receipt.transitionId]),
+                [[ACTIVE_ID, "B1-TR-028"], [CANDIDATE_ID, "B1-TR-027"]],
+              );
+            }
+          }
+          if (fault === "RECEIPT_INSERT_FAILURE") {
+            throw new ProgramTransitionReceiptPersistenceError();
+          }
+          if (fault === "UNIQUE_KEY_CONFLICT") {
+            throw new ProgramTransitionReceiptUniqueKeyConflictError();
+          }
+          if (fault === "CONFIRMED_UNIQUE_KEY_CONFLICT") {
+            throw new ProgramTransitionReceiptRollbackConfirmedConflictError();
+          }
+          const persisted: ProgramTransitionReceiptSet = {
+            command: { ...receiptSet.command, createdAt: MUTATED_UPDATED_AT },
+            receipts: receiptSet.receipts.map((receipt) => ({
+              ...receipt,
+              createdAt: MUTATED_UPDATED_AT,
+            })),
+          };
+          workingReceipts.set(receiptSet.command.idempotencyKeyHash, structuredClone(persisted));
+          return persisted;
+        },
       });
 
       committedRecords = workingRecords;
+      committedReceipts = workingReceipts;
       if (fault === "MALFORMED_TRANSACTION_RESULT") {
         return Object.freeze({}) as typeof result;
       }
@@ -249,6 +340,18 @@ function createFakeAdapter(
     },
     get mutationCalls() {
       return mutationCalls;
+    },
+    get receiptLookups() {
+      return receiptLookups;
+    },
+    get receiptWrites() {
+      return receiptWrites;
+    },
+    get events() {
+      return [...events];
+    },
+    get committedReceipts() {
+      return [...committedReceipts.values()].map((receipt) => structuredClone(receipt));
     },
   };
 }
@@ -286,6 +389,9 @@ function createSerializedFakeAdapter(
     },
     get transactionsStarted() {
       return transactionsStarted;
+    },
+    get committedReceipts() {
+      return fake.committedReceipts;
     },
   };
 }
@@ -343,6 +449,19 @@ async function testZeroActiveActivation() {
   assert.equal(fake.transactionCalls, 1);
   assert.equal(fake.lockReads, 2);
   assert.equal(fake.mutationCalls, 1);
+
+  const holdExpected = createFakeAdapter(zeroActiveRecords);
+  const mismatchedExpectation = await createProgramActivationSupersessionService(
+    holdExpected.adapter,
+  ).execute(commandForRecords(zeroActiveRecords, { expectedSupersededProgramId: OTHER_ID }));
+  assert.deepEqual(mismatchedExpectation, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "EXPECTED_OPERATION_MISMATCH",
+    records: [],
+  });
+  assert.equal(holdExpected.mutationCalls, 0);
+  assert.equal(holdExpected.receiptWrites, 0);
 }
 
 async function testOneActiveAtomicSupersession() {
@@ -353,7 +472,12 @@ async function testOneActiveAtomicSupersession() {
       lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
     }),
   };
-  const supersessionRecords = [record(), activeSource];
+  const expectedVectorOnly = record({
+    programId: OTHER_ID,
+    programCode: "Q3M7Y26-P3",
+    lifecycleState: "CLOSED_ACCEPTED",
+  });
+  const supersessionRecords = [record(), activeSource, expectedVectorOnly];
   const fake = createFakeAdapter(supersessionRecords);
   const result = await createProgramActivationSupersessionService(fake.adapter).execute(
     commandForRecords(supersessionRecords),
@@ -364,6 +488,14 @@ async function testOneActiveAtomicSupersession() {
     return;
   }
   assert.equal(result.supersededProgramId, ACTIVE_ID);
+  assert.equal(result.receiptSet.receipts.length, 2);
+  assert.deepEqual(
+    result.receiptSet.receipts.map((receipt) => [receipt.subjectProgramId, receipt.transitionId, receipt.lifecycleAxisId, receipt.sourceState, receipt.resultState]),
+    [
+      [ACTIVE_ID, "B1-TR-028", "B1-AX-08", "OPEN_FOR_BATCH_PLANNING_ONLY", "UNRESOLVED_HOLD"],
+      [CANDIDATE_ID, "B1-TR-027", "B1-AX-08", "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN", "OPEN_FOR_BATCH_PLANNING_ONLY"],
+    ],
+  );
   assert.equal(
     result.records.find((item) => item.programId === ACTIVE_ID)?.lifecycleState,
     "UNRESOLVED_HOLD",
@@ -400,11 +532,73 @@ async function testOneActiveAtomicSupersession() {
     1,
   );
 
+  const frozenHoldDraft = createFakeAdapter(supersessionRecords, "DRAFT_MUTATION");
+  const frozenHoldResult = await createProgramActivationSupersessionService(
+    frozenHoldDraft.adapter,
+  ).execute(commandForRecords(supersessionRecords, { idempotencyKey: "c8-hold-draft-key" }));
+  assert.equal(frozenHoldResult.kind, "COMMITTED");
+  if (frozenHoldResult.kind === "COMMITTED") {
+    assert.deepEqual(
+      frozenHoldResult.receiptSet.receipts.map((receipt) => [receipt.subjectProgramId, receipt.transitionId]),
+      [[ACTIVE_ID, "B1-TR-028"], [CANDIDATE_ID, "B1-TR-027"]],
+    );
+  }
+
   activeSource.programTitle = "changed outside the result";
   assert.equal(
     result.records.find((item) => item.programId === ACTIVE_ID)?.programTitle,
     "C6 Candidate",
   );
+
+  const novelMismatch = createFakeAdapter(supersessionRecords);
+  const mismatch = await createProgramActivationSupersessionService(novelMismatch.adapter).execute(
+    commandForRecords(supersessionRecords, { expectedSupersededProgramId: null }),
+  );
+  assert.deepEqual(mismatch, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "EXPECTED_OPERATION_MISMATCH",
+    records: [],
+  });
+  assert.equal(novelMismatch.mutationCalls, 0);
+  assert.equal(novelMismatch.receiptWrites, 0);
+
+  const coherentSubstitution = {
+    command: {
+      ...result.receiptSet.command,
+      supersededProgramId: OTHER_ID,
+    },
+    receipts: [
+      {
+        ...result.receiptSet.receipts[0],
+        receiptId: deriveProgramTransitionReceiptId(
+          result.receiptSet.command.commandId,
+          1,
+          "B1-TR-028",
+          OTHER_ID,
+        ),
+        subjectProgramId: OTHER_ID,
+      },
+      result.receiptSet.receipts[1],
+    ],
+  };
+  const substitutionReplay = createFakeAdapter(
+    supersessionRecords,
+    "NONE",
+    null,
+    [coherentSubstitution],
+  );
+  const substitution = await createProgramActivationSupersessionService(
+    substitutionReplay.adapter,
+  ).execute(commandForRecords(supersessionRecords));
+  assert.deepEqual(substitution, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "IDEMPOTENCY_CONFLICT",
+    records: [],
+  });
+  assert.equal(substitutionReplay.mutationCalls, 0);
+  assert.equal(substitutionReplay.receiptWrites, 0);
 }
 
 async function testRejectionsRequestNoWrite() {
@@ -474,7 +668,7 @@ async function testRejectionsRequestNoWrite() {
   for (const testCase of cases) {
     const fake = createFakeAdapter(testCase.rows);
     const result = await createProgramActivationSupersessionService(fake.adapter).execute(
-      withExpectedVersions(testCase.value as ProgramActivationSupersessionCommand, testCase.rows),
+      withExpectedVersions(testCase.value as ProgramTransitionReceiptCommandInput, testCase.rows),
     );
     assert.equal(result.kind, "REJECTED", testCase.name);
     if (result.kind === "REJECTED") {
@@ -640,8 +834,12 @@ async function testExpectationVectorsAndDeterministicCompetition() {
   const firstCommand = commandForCandidate(CANDIDATE_ID, initialRecords);
   const beforeFirstCommand = structuredClone(firstCommand);
   const competingCommand = commandForCandidate(OTHER_ID, initialRecords);
+  const competingWithDistinctKey = {
+    ...competingCommand,
+    idempotencyKey: "c8-test-key-002",
+  };
   const firstExecution = service.execute(firstCommand);
-  const competingExecution = service.execute(competingCommand);
+  const competingExecution = service.execute(competingWithDistinctKey);
   const [first, competing] = await Promise.all([firstExecution, competingExecution]);
 
   assert.equal(serialized.transactionsStarted, 2);
@@ -681,12 +879,16 @@ async function testExpectationVectorsAndDeterministicCompetition() {
   );
 
   const replay = await service.execute(firstCommand);
-  assert.equal(replay.kind, "REJECTED");
-  if (replay.kind === "REJECTED") {
-    assert.equal(replay.reason, "STALE_STATE");
+  assert.equal(replay.kind, "REPLAYED");
+  if (replay.kind === "REPLAYED" && first.kind === "COMMITTED") {
+    assert.deepEqual(replay.receiptSet, first.receiptSet);
+    assert.equal(replay.writeEffect, "NONE");
   }
 
-  const freshCommand = commandForCandidate(OTHER_ID, serialized.committedRecords);
+  const freshCommand = {
+    ...commandForCandidate(OTHER_ID, serialized.committedRecords),
+    idempotencyKey: "c8-test-key-003",
+  };
   const later = await service.execute(freshCommand);
   assert.equal(later.kind, "COMMITTED");
   assert.equal(
@@ -1112,6 +1314,153 @@ async function testFaultEffectsAndNoPartialSuccess() {
   }
 }
 
+async function testIdempotencyReplayAndReceiptFailures() {
+  const initialRecords = [record()];
+  const fake = createFakeAdapter(initialRecords);
+  const service = createProgramActivationSupersessionService(fake.adapter);
+  const source = commandForRecords(initialRecords);
+  const committed = await service.execute(source);
+  assert.equal(committed.kind, "COMMITTED");
+  if (committed.kind !== "COMMITTED") {
+    return;
+  }
+  assert.equal(committed.receiptSet.receipts.length, 1);
+  assert.equal(committed.receiptSet.receipts[0]?.receiptClassId, "B9-CLASS-011");
+  assert.equal(committed.receiptSet.receipts[0]?.receiptClassName, "LIFECYCLE_TRANSITION_RECEIPT");
+  assert.equal(committed.receiptSet.receipts[0]?.transitionId, "B1-TR-027");
+  assert.equal(committed.receiptSet.receipts[0]?.issuanceState, "ISSUED");
+  assert.equal(committed.receiptSet.receipts[0]?.integrityState, "UNVERIFIED");
+  assert.equal(committed.receiptSet.receipts[0]?.authenticityState, "NOT_ESTABLISHED");
+  assert.equal(committed.receiptSet.receipts[0]?.issuerAuthorityState, "NOT_ESTABLISHED");
+  assert.equal(fake.receiptWrites, 1);
+  assert.equal(fake.committedReceipts.length, 1);
+  assert.equal(JSON.stringify(committed).includes(source.idempotencyKey), false);
+  assert.equal(JSON.stringify(fake.committedReceipts).includes(source.idempotencyKey), false);
+  assert.deepEqual(fake.events, ["LOCK", "LOOKUP", "WRITE", "LOCK", "INSERT"]);
+
+  const staleReplay = await service.execute(source);
+  assert.equal(staleReplay.kind, "REPLAYED");
+  if (staleReplay.kind === "REPLAYED") {
+    assert.deepEqual(staleReplay.receiptSet, committed.receiptSet);
+  }
+  assert.equal(fake.mutationCalls, 1);
+  assert.equal(fake.receiptWrites, 1);
+
+  const reorderedReplay = await service.execute({
+    ...source,
+    governingMotions: [...source.governingMotions].reverse(),
+    receipts: [...source.receipts].reverse(),
+  });
+  assert.equal(reorderedReplay.kind, "REPLAYED");
+
+  const conflict = await service.execute({
+    ...source,
+    governingMotions: [{
+      ...source.governingMotions[0],
+      freshnessState: "STALE",
+    }],
+  });
+  assert.deepEqual(conflict, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "IDEMPOTENCY_CONFLICT",
+    records: [],
+  });
+
+  const staleFake = createFakeAdapter(initialRecords);
+  const stale = await createProgramActivationSupersessionService(staleFake.adapter).execute({
+    ...source,
+    idempotencyKey: "c8-test-key-novel-stale",
+    expectedLifecycleVersions: [{ programId: CANDIDATE_ID, lifecycleVersion: 1 }],
+  });
+  assert.deepEqual(stale, {
+    kind: "REJECTED",
+    writeEffect: "NONE",
+    reason: "STALE_STATE",
+    records: [],
+  });
+  assert.equal(staleFake.mutationCalls, 0);
+  assert.equal(staleFake.receiptWrites, 0);
+
+  const serialized = createSerializedFakeAdapter(initialRecords);
+  const serializedService = createProgramActivationSupersessionService(serialized.adapter);
+  const [first, second] = await Promise.all([
+    serializedService.execute(source),
+    serializedService.execute(source),
+  ]);
+  assert.equal(first.kind, "COMMITTED");
+  assert.equal(second.kind, "REPLAYED");
+  assert.equal(serialized.transactionsStarted, 2);
+  assert.equal(serialized.committedReceipts.length, 1);
+  assert.equal(
+    serialized.committedRecords.filter(
+      (item) => item.lifecycleState === "OPEN_FOR_BATCH_PLANNING_ONLY",
+    ).length,
+    1,
+  );
+
+  for (const [fault, classification, writeEffect] of [
+    ["RECEIPT_INSERT_FAILURE", "RECEIPT_PERSISTENCE_FAILURE", "UNKNOWN"],
+    ["UNIQUE_KEY_CONFLICT", "UNIQUE_KEY_CONFLICT", "UNKNOWN"],
+    ["CONFIRMED_UNIQUE_KEY_CONFLICT", "UNIQUE_KEY_CONFLICT", "NONE"],
+  ] as const) {
+    const faultFake = createFakeAdapter(initialRecords, fault);
+    const before = JSON.stringify(faultFake.committedRecords);
+    const result = await createProgramActivationSupersessionService(faultFake.adapter).execute(
+      commandForRecords(initialRecords, { idempotencyKey: `c8-test-fault-${fault}` }),
+    );
+    assert.equal(result.kind, "UNAVAILABLE");
+    if (result.kind === "UNAVAILABLE") {
+      assert.equal(result.classification, classification);
+      assert.equal(result.writeEffect, writeEffect);
+    }
+    assert.equal(JSON.stringify(faultFake.committedRecords), before);
+    assert.equal(faultFake.committedReceipts.length, 0);
+  }
+
+  const malformedStored = createFakeAdapter(
+    initialRecords,
+    "MALFORMED_STORED_RECEIPT",
+    null,
+    [committed.receiptSet],
+  );
+  const malformed = await createProgramActivationSupersessionService(
+    malformedStored.adapter,
+  ).execute(source);
+  assert.deepEqual(malformed, {
+    kind: "UNAVAILABLE",
+    writeEffect: "NONE",
+    classification: "MALFORMED_STORED_RECEIPT",
+    records: [],
+  });
+  assert.equal(malformedStored.mutationCalls, 0);
+  assert.equal(malformedStored.receiptWrites, 0);
+
+  const malformedSets: ReadonlyArray<readonly [string, ProgramTransitionReceiptSet, "UNAVAILABLE" | "REJECTED"]> = [
+    ["partial", { ...committed.receiptSet, receipts: [] }, "UNAVAILABLE"],
+    ["duplicate", { ...committed.receiptSet, command: { ...committed.receiptSet.command, operationKind: "HOLD_AND_OPEN", supersededProgramId: ACTIVE_ID, expectedReceiptCount: 2 }, receipts: [committed.receiptSet.receipts[0], committed.receiptSet.receipts[0]] }, "UNAVAILABLE"],
+    ["altered state", { ...committed.receiptSet, receipts: [{ ...committed.receiptSet.receipts[0], resultState: "UNRESOLVED_HOLD" }] }, "UNAVAILABLE"],
+    ["altered version", { ...committed.receiptSet, receipts: [{ ...committed.receiptSet.receipts[0], sourceLifecycleVersion: 2, resultLifecycleVersion: 3 }] }, "REJECTED"],
+    ["cross subject", { ...committed.receiptSet, receipts: [{ ...committed.receiptSet.receipts[0], subjectProgramId: OTHER_ID }] }, "UNAVAILABLE"],
+  ];
+  for (const [name, storedSet, kind] of malformedSets) {
+    const replayFake = createFakeAdapter(initialRecords, "NONE", null, [storedSet]);
+    const replayResult = await createProgramActivationSupersessionService(replayFake.adapter).execute(source);
+    assert.equal(replayResult.kind, kind, name);
+    assert.equal(replayFake.mutationCalls, 0, name);
+    assert.equal(replayFake.receiptWrites, 0, name);
+  }
+
+  const frozenDraft = createFakeAdapter(initialRecords, "DRAFT_MUTATION");
+  const frozenResult = await createProgramActivationSupersessionService(frozenDraft.adapter).execute(
+    commandForRecords(initialRecords, { idempotencyKey: "c8-test-frozen-draft" }),
+  );
+  assert.equal(frozenResult.kind, "COMMITTED");
+  if (frozenResult.kind === "COMMITTED") {
+    assert.equal(frozenResult.receiptSet.receipts[0]?.subjectProgramId, CANDIDATE_ID);
+  }
+}
+
 async function testAdapterFailuresAreFailClosed() {
   const unavailableAdapter: ProgramActivationSupersessionAdapter = {
     async transaction() {
@@ -1152,11 +1501,24 @@ function testStaticBoundaryAndServerSeams() {
     new URL("./program-activation-supersession.ts", import.meta.url),
     "utf8",
   );
+  const receiptBoundarySource = readFileSync(
+    new URL("./program-transition-receipt-boundary.ts", import.meta.url),
+    "utf8",
+  );
+  const schemaSource = readFileSync(
+    new URL("../../../../prisma/schema.prisma", import.meta.url),
+    "utf8",
+  );
+  const migrationSource = readFileSync(
+    new URL("../../../../prisma/migrations/20260730190000_add_program_transition_receipt_idempotency/migration.sql", import.meta.url),
+    "utf8",
+  );
 
   assert.match(boundarySource, /from "\.\/one-active-program-invariant"/);
   assert.match(boundarySource, /from "\.\/program-state-transition-matrix"/);
   assert.match(boundarySource, /from "\.\/program-activation-eligibility-gate"/);
   assert.match(boundarySource, /from "\.\/program-lifecycle-persistence-boundary"/);
+  assert.match(boundarySource, /from "\.\/program-transition-receipt-boundary"/);
   assert.equal(
     boundarySource.includes("NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN"),
     false,
@@ -1175,7 +1537,17 @@ function testStaticBoundaryAndServerSeams() {
     /catch \(error\)[\s\S]*ProgramActivationSupersessionConcurrencyConflictError[\s\S]*RollbackConfirmedConcurrencyConflictError/,
   );
   assert.match(serverSource, /FOR UPDATE/);
+  assert.ok(
+    serverSource.indexOf("listLockedProgramLifecycleRecords") <
+      serverSource.indexOf("findProgramTransitionReceiptSetByIdempotencyKeyHash"),
+  );
+  assert.ok(
+    serverSource.indexOf("insertProgramTransitionReceiptSet") >
+      serverSource.indexOf("setProgramLifecycleState"),
+  );
   assert.match(serverSource, /UPDATE "program_lifecycle_records"/);
+  assert.match(serverSource, /INSERT INTO "program_transition_commands"/);
+  assert.match(serverSource, /INSERT INTO "program_lifecycle_transition_receipts"/);
   assert.match(serverSource, /\$\{programId\}/);
   assert.match(serverSource, /\$\{expectedLifecycleState\}/);
   assert.match(serverSource, /\$\{expectedLifecycleVersion\}/);
@@ -1184,7 +1556,6 @@ function testStaticBoundaryAndServerSeams() {
   assert.match(serverSource, /"lifecycle_version" = \$\{expectedLifecycleVersion\}/);
   assert.match(serverSource, /"updated_at" = CURRENT_TIMESTAMP/);
   for (const prohibited of [
-    "INSERT INTO",
     "ON CONFLICT",
     "DELETE ",
     "fetch(",
@@ -1197,14 +1568,25 @@ function testStaticBoundaryAndServerSeams() {
   ]) {
     assert.equal(serverSource.toLowerCase().includes(prohibited.toLowerCase()), false);
   }
-  for (const reserved of [
-    ["finger", "print"].join(""),
-    ["idempot", "ency"].join(""),
-    ["retry"].join(""),
-  ]) {
+  for (const reserved of [["retry"].join("")]) {
     assert.equal(boundarySource.includes(reserved), false);
     assert.equal(serverSource.includes(reserved), false);
   }
+  for (const prohibited of ["fetch(", "provider", "outbox", "event", "retry"]) {
+    assert.equal(receiptBoundarySource.toLowerCase().includes(prohibited), false);
+  }
+  assert.match(schemaSource, /model ProgramTransitionCommand/);
+  assert.match(schemaSource, /model ProgramLifecycleTransitionReceipt/);
+  assert.match(schemaSource, /operationKind/);
+  assert.match(schemaSource, /supersededProgramId/);
+  assert.equal(schemaSource.includes("ProgramTransitionReceiptKind"), false);
+  assert.match(migrationSource, /CREATE TABLE "program_transition_commands"/);
+  assert.match(migrationSource, /CREATE TABLE "program_lifecycle_transition_receipts"/);
+  assert.match(migrationSource, /"operation_kind" TEXT NOT NULL/);
+  assert.match(migrationSource, /"superseded_program_id" TEXT/);
+  assert.match(migrationSource, /"fingerprint_version" = 'c8-transition-command\/v3'/);
+  assert.equal(migrationSource.includes("c8-transition-command/v2"), false);
+  assert.equal(/^\s*(?:INSERT|UPDATE|DELETE|ALTER|DROP)\s/m.test(migrationSource), false);
 }
 
 async function run() {
@@ -1216,6 +1598,7 @@ async function run() {
   await testExpectationVectorsAndDeterministicCompetition();
   await testPostStateCoherenceFailures();
   await testFaultEffectsAndNoPartialSuccess();
+  await testIdempotencyReplayAndReceiptFailures();
   await testAdapterFailuresAreFailClosed();
   testStaticBoundaryAndServerSeams();
 }

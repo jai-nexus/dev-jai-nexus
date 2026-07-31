@@ -102,6 +102,22 @@ enum PersistedProgramLifecycleState {
   @@map("program_lifecycle_state")
 }
 
+enum ProgramTransitionReceiptIssuanceState {
+  ISSUED
+}
+
+enum ProgramTransitionReceiptIntegrityState {
+  UNVERIFIED
+}
+
+enum ProgramTransitionReceiptAuthenticityState {
+  NOT_ESTABLISHED
+}
+
+enum ProgramTransitionReceiptIssuerAuthorityState {
+  NOT_ESTABLISHED
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CORE MODELS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -117,6 +133,48 @@ model ProgramLifecycleRecord {
 
   @@index([lifecycleState])
   @@map("program_lifecycle_records")
+}
+
+model ProgramTransitionCommand {
+  commandId            String                             @id @map("command_id")
+  idempotencyKeyHash   String                             @unique @map("idempotency_key_hash")
+  requestFingerprint   String                             @map("request_fingerprint")
+  fingerprintVersion   String                             @map("fingerprint_version")
+  candidateProgramId   String                             @map("candidate_program_id")
+  operationKind        String                             @map("operation_kind")
+  supersededProgramId  String?                            @map("superseded_program_id")
+  expectedReceiptCount Int                                @map("expected_receipt_count")
+  createdAt            DateTime                           @default(now()) @map("created_at")
+  receipts             ProgramLifecycleTransitionReceipt[]
+
+  @@index([candidateProgramId])
+  @@map("program_transition_commands")
+}
+
+model ProgramLifecycleTransitionReceipt {
+  receiptId             String                                      @id @map("receipt_id")
+  commandId             String                                      @map("command_id")
+  receiptOrdinal        Int                                         @map("receipt_ordinal")
+  receiptClassId        String                                      @map("receipt_class_id")
+  receiptClassName      String                                      @map("receipt_class_name")
+  transitionId          String                                      @map("transition_id")
+  lifecycleAxisId       String                                      @map("lifecycle_axis_id")
+  subjectProgramId      String                                      @map("subject_program_id")
+  sourceState           PersistedProgramLifecycleState              @map("source_state")
+  resultState           PersistedProgramLifecycleState              @map("result_state")
+  sourceLifecycleVersion Int                                        @map("source_lifecycle_version")
+  resultLifecycleVersion Int                                        @map("result_lifecycle_version")
+  issuanceState         ProgramTransitionReceiptIssuanceState       @map("issuance_state")
+  integrityState        ProgramTransitionReceiptIntegrityState      @map("integrity_state")
+  authenticityState     ProgramTransitionReceiptAuthenticityState   @map("authenticity_state")
+  issuerAuthorityState  ProgramTransitionReceiptIssuerAuthorityState @map("issuer_authority_state")
+  createdAt             DateTime                                    @default(now()) @map("created_at")
+  command               ProgramTransitionCommand                    @relation(fields: [commandId], references: [commandId], onDelete: Restrict)
+
+  @@unique([commandId, receiptOrdinal])
+  @@unique([commandId, subjectProgramId])
+  @@index([subjectProgramId])
+  @@map("program_lifecycle_transition_receipts")
 }
 
 model Repo {
