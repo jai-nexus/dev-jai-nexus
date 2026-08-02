@@ -16,6 +16,7 @@ const links = [
   { href: "/operator/chats", label: "Chats" },
   { href: "/operator/jai", label: "JAI" },
   { href: "/operator/control-plane", label: "Control Plane" },
+  { href: "/operator/program-lifecycle", label: "Programs" },
   { href: "/operator/design-system", label: "Design System" },
   { href: "/operator/live-dashboard", label: "Live Dashboard" },
   { href: "/operator/council-prototype", label: "Council Prototype" },
