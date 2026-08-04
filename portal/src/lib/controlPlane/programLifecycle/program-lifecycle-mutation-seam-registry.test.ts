@@ -92,6 +92,7 @@ const PURE_ANCHORS: readonly InferredSeam[] = Object.freeze([
   anchor("portal/src/lib/controlPlane/programLifecycle/frozen-program-protection-boundary.ts", "evaluateFrozenProgramProtection", "PURE", "NONE", "SUPPLIED_SNAPSHOT", "CLASSIFICATION_ONLY", "SUPPLIED_SNAPSHOT", "C11"),
   anchor("portal/src/lib/controlPlane/programLifecycle/founder-active-program-control-surface.ts", "buildFounderActiveProgramControlSurface", "DISPLAY", "NONE", "SUPPLIED_SNAPSHOT", "DOCUMENTARY_ONLY", "SUPPLIED_SNAPSHOT", "C12"),
   anchor("portal/src/app/operator/program-lifecycle/page.tsx", "ProgramLifecyclePage", "DISPLAY", "NONE", "SUPPLIED_SNAPSHOT", "DOCUMENTARY_ONLY", "SUPPLIED_SNAPSHOT", "C12"),
+  anchor("portal/src/lib/controlPlane/programLifecycle/program-lifecycle-reconciliation-recovery-boundary.ts", "reconcileProgramLifecycleFaultAndRehearseRollback", "PURE", "NONE", "SUPPLIED_SNAPSHOT", "CLASSIFICATION_ONLY", "SUPPLIED_SNAPSHOT", "C14"),
 ]);
 
 function anchor(
@@ -987,6 +988,35 @@ assert.deepEqual(PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.filter((entry) => entr
 ]);
 assert.deepEqual(PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.filter((entry) => entry.surfaceClass === "SCHEMA").map((entry) => entry.symbol), ["model ProgramLifecycleRecord", "model ProgramTransitionCommand", "model ProgramLifecycleTransitionReceipt"]);
 assert.deepEqual(PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.filter((entry) => entry.path.includes("20260730190000")).map((entry) => entry.symbol), ["CREATE TABLE \"program_transition_commands\"", "CREATE TABLE \"program_lifecycle_transition_receipts\""]);
+assert.equal(PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.length, 31);
+assert.deepEqual(Object.fromEntries(PROGRAM_LIFECYCLE_SEAM_DISPOSITIONS.map((disposition) => [disposition, PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.filter((entry) => entry.disposition === disposition).length])), {
+  CANONICAL_AND_GUARDED: 13,
+  CLASSIFICATION_ONLY: 9,
+  DOCUMENTARY_ONLY: 9,
+  FORMALLY_DEPRECATED_AND_UNREACHABLE: 0,
+  UNRESOLVED_BYPASS: 0,
+});
+const c14RegistryEntry = PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY.find((entry) => entry.id === "C13-SEAM-031");
+assert.ok(c14RegistryEntry);
+assert.deepEqual(c14RegistryEntry, {
+  id: "C13-SEAM-031",
+  path: "portal/src/lib/controlPlane/programLifecycle/program-lifecycle-reconciliation-recovery-boundary.ts",
+  symbol: "reconcileProgramLifecycleFaultAndRehearseRollback",
+  surfaceClass: "PURE",
+  effectClass: "NONE",
+  triggerClass: "SUPPLIED_SNAPSHOT",
+  guardEvidence: "C14 supplied-snapshot fault reconciliation, human-review reporting, and in-memory rollback rehearsal only",
+  canonicalBoundary: "C14",
+  disposition: "CLASSIFICATION_ONLY",
+  replacement: null,
+  writeCapable: false,
+  evidencePosture: "SUPPLIED_SNAPSHOT",
+  authorityEffect: "NONE",
+  mutationAuthorized: false,
+});
+assert.equal(live.effects.length, 13);
+assert.equal(live.declarativeCount, 7);
+assert.equal(live.seams.filter((seam) => seam.writeCapable).length, 8);
 
 const mutationFixtures = scanSources([
   fixture("fixture/direct.ts", "export async function anything() { return prisma.programLifecycleRecord.update({}); }"),
