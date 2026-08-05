@@ -11,7 +11,6 @@ import {
   ProgramTransitionReceiptUniqueKeyConflictError,
   createProgramActivationSupersessionService,
   type ProgramActivationSupersessionAdapter,
-  type ProgramActivationSupersessionCommand,
   type ProgramActivationSupersessionTransaction,
 } from "./program-activation-supersession-boundary";
 import type {

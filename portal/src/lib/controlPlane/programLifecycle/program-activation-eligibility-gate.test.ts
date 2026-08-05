@@ -572,8 +572,9 @@ function testInvalidInputHardening() {
       ],
     }),
   );
-  const { freshnessState: _omittedFreshnessState, ...motionWithoutFreshnessState } =
+  const { freshnessState: omittedFreshnessState, ...motionWithoutFreshnessState } =
     createGoverningMotion();
+  assert.equal(omittedFreshnessState, "CURRENT");
   expectInvalid(
     createEligibleInput({
       governingMotions: [motionWithoutFreshnessState as unknown as SyntheticMotion],
