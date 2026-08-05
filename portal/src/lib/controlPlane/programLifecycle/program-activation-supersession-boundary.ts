@@ -20,7 +20,6 @@ import {
   parseProgramTransitionReceiptCommand,
   receiptSetMatchesCanonicalCommand,
   validateProgramTransitionReceiptSet,
-  type ProgramLifecycleTransitionReceipt,
   type ProgramTransitionReceiptSet,
   type ProgramTransitionReceiptSetDraft,
 } from "./program-transition-receipt-boundary";
