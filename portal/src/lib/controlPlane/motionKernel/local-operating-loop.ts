@@ -5,6 +5,58 @@ export const LOCAL_OPERATING_LOOP_CONTRACT_VERSION =
 export const LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA =
   "a0e7b76af02899659529355773bf293d58269897" as const;
 
+export const LOCAL_SHADOW_BINDING_POSTURE =
+  "LOCAL_SHADOW_DOCUMENTARY_PROJECTION_ONLY" as const;
+
+// Edition 1 projects Motion 0248 from the opening receipt's Git blob at
+// the D-impl baseline. Its version is local to this documentary projection.
+const DOCUMENTARY_PROGRAM_ID = "jai-governance-intelligence-main-state-operating-loop-v0";
+export const LOCAL_SHADOW_PROGRAM_SNAPSHOT = Object.freeze({
+  program_lifecycle_id: DOCUMENTARY_PROGRAM_ID,
+  snapshot_version: 1,
+  snapshot_hash: "25d2dd5d6285c29560a2047ecf34697c2247719a",
+  base_sha: "ab658d65b5bf06331006990f47e7bae872df4c0e",
+  binding_posture: LOCAL_SHADOW_BINDING_POSTURE,
+  authority_granted: false,
+  governing_motion_id: "motion-0248",
+  contract_version: "jai-program-binding.v1",
+  active_program_count: 1,
+  portfolio: Object.freeze([Object.freeze({
+    programId: DOCUMENTARY_PROGRAM_ID,
+    lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY",
+  })]),
+} as const);
+
+export const D9_ADAPTER_VERSION = "d9-batch-b-lifecycle-contract-adapter/v1";
+export const D9_RECEIPT_CLASS = "B9-CLASS-014 / DEMONSTRATION_RECEIPT";
+export const D9_UI_CLASS = "B9-NR-009 / NON_RECEIPT";
+export const D9_PACKET_CLASS = "B9-NR-002 / NON_RECEIPT";
+export const LOCAL_SHADOW_PACKET_VERSION = "local-shadow-work-packet.v1";
+
+const adaptedReceiptFields = z.object({
+  kind: z.literal("ADAPTED"),
+  adapter_version: z.literal(D9_ADAPTER_VERSION),
+  binding_posture: z.literal(LOCAL_SHADOW_BINDING_POSTURE),
+  authority_granted: z.literal(false),
+  boundary_receipt_classification: z.literal(D9_RECEIPT_CLASS),
+  ui_output_classification: z.literal(D9_UI_CLASS),
+  work_packet_classification: z.literal(D9_PACKET_CLASS).nullable(),
+  packet_version: z.literal(LOCAL_SHADOW_PACKET_VERSION).nullable(),
+}).strict();
+
+export type AdaptedReceiptFields = z.infer<typeof adaptedReceiptFields>;
+
+function parseAdaptedReceipt(value: unknown, accepted: boolean): AdaptedReceiptFields | null {
+  const snapshot = readReceiptFields(value, Object.keys(adaptedReceiptFields.shape));
+  const result = adaptedReceiptFields.safeParse(snapshot);
+  if (!result.success ||
+      (result.data.work_packet_classification !== null) !== accepted ||
+      (result.data.packet_version !== null) !== accepted) {
+    return null;
+  }
+  return result.data;
+}
+
 export const LOCAL_OPERATING_LOOP_TARGET_THREADS = [
   "JAI_CONTROL_THREAD",
   "JAI_ORCHESTRATOR_NEXUS",
@@ -58,7 +110,7 @@ export type LocalOperatingLoopState =
   | "HELD"
   | "REJECTED";
 
-export type LocalOperatingLoopAction =
+export type LocalOperatingLoopAction = { programSnapshot?: unknown } & (
   | {
       action: "VALIDATE";
       input: LocalOperatingLoopInput;
@@ -73,7 +125,7 @@ export type LocalOperatingLoopAction =
       input: LocalOperatingLoopInput;
       decision: LocalOperatingLoopDecision;
       deliberationProof: string;
-    };
+    });
 
 export type LocalOperatingLoopRecommendationResult = {
   recommendation: LocalOperatingLoopRecommendation;
@@ -157,6 +209,7 @@ export type LocalOperatingLoopSuccessResponse =
       findingCodes: LocalOperatingLoopFindingCode[];
       recommendationFingerprint: string;
       decision: LocalOperatingLoopDecision;
+      adaptedReceipt: AdaptedReceiptFields;
       workPacket: LocalOperatingLoopWorkPacket | null;
       artifact: LocalOperatingLoopArtifact;
       nonAuthorizations: string[];
@@ -164,6 +217,7 @@ export type LocalOperatingLoopSuccessResponse =
 
 export type LocalOperatingLoopErrorResponse = {
   ok: false;
+  workPackets?: [];
   error: {
     code:
       | "SERVER_SECRET_UNAVAILABLE"
@@ -173,6 +227,9 @@ export type LocalOperatingLoopErrorResponse = {
       | "INVALID_JSON"
       | "INVALID_REQUEST"
       | "INVALID_PROOF"
+      | "INVALID_EXPECTED_SNAPSHOT"
+      | "INELIGIBLE"
+      | "D9_ADAPTER_BLOCKED"
       | "ACCEPT_REQUIRES_GO";
     message: string;
     issues?: Array<{ path: string; code: string }>;
@@ -186,6 +243,7 @@ export type LocalOperatingLoopResponse =
 
 export type LocalOperatingLoopUiState = {
   projectionKey: string;
+  adaptedReceipt?: AdaptedReceiptFields;
   state: LocalOperatingLoopState;
   validationProof: string | null;
   deliberationProof: string | null;
@@ -516,6 +574,21 @@ const localOperatingLoopRecoveryNotices = {
       "Local shadow returned to DRAFT because the proof is no longer valid.",
     requiresReauthentication: false,
   },
+  INVALID_EXPECTED_SNAPSHOT: {
+    ...localOperatingLoopGenericRecoveryNotice,
+    heading: "Program snapshot unavailable",
+    message: "Validate again with the pinned Program 1 documentary snapshot.",
+  },
+  INELIGIBLE: {
+    ...localOperatingLoopGenericRecoveryNotice,
+    heading: "Program binding ineligible",
+    message: "This transition requires the single eligible Program 1 documentary binding.",
+  },
+  D9_ADAPTER_BLOCKED: {
+    ...localOperatingLoopGenericRecoveryNotice,
+    heading: "D9 receipt blocked",
+    message: "The lifecycle adapter could not verify a coherent terminal summary and receipt.",
+  },
   INVALID_JSON: localOperatingLoopGenericRecoveryNotice,
   ACCEPT_REQUIRES_GO: localOperatingLoopGenericRecoveryNotice,
 } as const satisfies Record<
@@ -590,12 +663,14 @@ const localOperatingLoopActionSchema = z.discriminatedUnion("action", [
     .object({
       action: z.literal("VALIDATE"),
       input: localOperatingLoopInputSchema,
+      programSnapshot: z.unknown().optional(),
     })
     .strict(),
   z
     .object({
       action: z.literal("DELIBERATE"),
       input: localOperatingLoopInputSchema,
+      programSnapshot: z.unknown().optional(),
       validationProof: proofSchema,
     })
     .strict(),
@@ -603,6 +678,7 @@ const localOperatingLoopActionSchema = z.discriminatedUnion("action", [
     .object({
       action: z.literal("DECIDE"),
       input: localOperatingLoopInputSchema,
+      programSnapshot: z.unknown().optional(),
       decision: z.enum(["ACCEPT", "HOLD", "REJECT"]),
       deliberationProof: proofSchema,
     })
@@ -1034,6 +1110,22 @@ export function createFounderSafeLocalOperatingLoopTerminalPresentation(
     return null;
   }
 
+  return createLocalOperatingLoopTerminalPresentation({
+    state: state.state,
+    recommendation: state.recommendation,
+    artifact: state.artifact,
+    findingCodes: state.findingCodes,
+    workPacket: state.workPacket,
+  });
+}
+
+export function createLocalOperatingLoopTerminalPresentation(state: {
+  state: LocalOperatingLoopTerminalPresentation["terminalState"];
+  recommendation: LocalOperatingLoopRecommendation;
+  findingCodes: LocalOperatingLoopFindingCode[];
+  artifact: LocalOperatingLoopArtifact;
+  workPacket: LocalOperatingLoopWorkPacket | null;
+}): LocalOperatingLoopTerminalPresentation | null {
   const terminalState = state.state;
   const decision = localOperatingLoopDecisionByTerminalState[terminalState];
   const artifact = state.artifact;
@@ -1100,9 +1192,10 @@ const LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS = [
   keyof LocalOperatingLoopTerminalPresentation
 >;
 
-function parseLocalOperatingLoopBoundaryReceiptInput(
+function readReceiptFields(
   value: unknown,
-): LocalOperatingLoopTerminalPresentation | null {
+  keys: readonly string[],
+): Record<string, unknown> | null {
   try {
     if (
       typeof value !== "object" ||
@@ -1119,21 +1212,14 @@ function parseLocalOperatingLoopBoundaryReceiptInput(
 
     const ownKeys = Reflect.ownKeys(value);
     if (
-      ownKeys.length !==
-        LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS.length ||
-      ownKeys.some(
-        (key) =>
-          typeof key !== "string" ||
-          !LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS.includes(
-            key as (typeof LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS)[number],
-          ),
-      )
+      ownKeys.length !== keys.length ||
+      ownKeys.some((key) => typeof key !== "string" || !keys.includes(key))
     ) {
       return null;
     }
 
     const snapshot: Record<string, unknown> = Object.create(null);
-    for (const key of LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS) {
+    for (const key of keys) {
       const descriptor = Object.getOwnPropertyDescriptor(value, key);
       if (
         descriptor === undefined ||
@@ -1147,55 +1233,64 @@ function parseLocalOperatingLoopBoundaryReceiptInput(
       snapshot[key] = descriptor.value;
     }
 
-    if (
-      !isLocalOperatingLoopTerminalState(snapshot.terminalState) ||
-      !isLocalOperatingLoopDecision(snapshot.decision) ||
-      !isLocalOperatingLoopRecommendation(snapshot.recommendation) ||
-      typeof snapshot.findingCount !== "number" ||
-      !Number.isSafeInteger(snapshot.findingCount) ||
-      snapshot.findingCount < 0 ||
-      snapshot.findingCount > LOCAL_OPERATING_LOOP_FINDING_ORDER.length ||
-      (snapshot.recommendation === "GO" && snapshot.findingCount !== 0) ||
-      (snapshot.recommendation !== "GO" && snapshot.findingCount === 0) ||
-      (snapshot.workPacketCount !== 0 && snapshot.workPacketCount !== 1) ||
-      (snapshot.workPacketStatus !== "NONE" &&
-        snapshot.workPacketStatus !== "PROPOSED_ONLY") ||
-      snapshot.workPacketExecutionAuthority !== false ||
-      snapshot.artifactCount !== 1 ||
-      snapshot.receiptAuthority !== "DEMONSTRATION_ONLY" ||
-      snapshot.persistence !== "NONE" ||
-      snapshot.programEffect !== "NONE" ||
-      snapshot.notAControlThreadAcceptanceReceipt !== true ||
-      snapshot.decisionScope !== "GENERATE_WORK_PACKET_ONLY" ||
-      snapshot.artifactExecutionAuthority !== false
-    ) {
-      return null;
-    }
-
-    const expectedDecision =
-      localOperatingLoopDecisionByTerminalState[snapshot.terminalState];
-    if (snapshot.decision !== expectedDecision) {
-      return null;
-    }
-
-    if (
-      snapshot.terminalState === "ACCEPTED"
-        ? snapshot.decision !== "ACCEPT" ||
-          snapshot.recommendation !== "GO" ||
-          snapshot.findingCount !== 0 ||
-          snapshot.workPacketCount !== 1 ||
-          snapshot.workPacketStatus !== "PROPOSED_ONLY"
-        : snapshot.decision === "ACCEPT" ||
-          snapshot.workPacketCount !== 0 ||
-          snapshot.workPacketStatus !== "NONE"
-    ) {
-      return null;
-    }
-
-    return snapshot as unknown as LocalOperatingLoopTerminalPresentation;
+    return snapshot;
   } catch {
     return null;
   }
+}
+
+function parseLocalOperatingLoopBoundaryReceiptInput(
+  value: unknown,
+): LocalOperatingLoopTerminalPresentation | null {
+  const snapshot = readReceiptFields(value, LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_INPUT_KEYS);
+  if (!snapshot) return null;
+
+  if (
+    !isLocalOperatingLoopTerminalState(snapshot.terminalState) ||
+    !isLocalOperatingLoopDecision(snapshot.decision) ||
+    !isLocalOperatingLoopRecommendation(snapshot.recommendation) ||
+    typeof snapshot.findingCount !== "number" ||
+    !Number.isSafeInteger(snapshot.findingCount) ||
+    snapshot.findingCount < 0 ||
+    snapshot.findingCount > LOCAL_OPERATING_LOOP_FINDING_ORDER.length ||
+    (snapshot.recommendation === "GO" && snapshot.findingCount !== 0) ||
+    (snapshot.recommendation !== "GO" && snapshot.findingCount === 0) ||
+    (snapshot.workPacketCount !== 0 && snapshot.workPacketCount !== 1) ||
+    (snapshot.workPacketStatus !== "NONE" &&
+      snapshot.workPacketStatus !== "PROPOSED_ONLY") ||
+    snapshot.workPacketExecutionAuthority !== false ||
+    snapshot.artifactCount !== 1 ||
+    snapshot.receiptAuthority !== "DEMONSTRATION_ONLY" ||
+    snapshot.persistence !== "NONE" ||
+    snapshot.programEffect !== "NONE" ||
+    snapshot.notAControlThreadAcceptanceReceipt !== true ||
+    snapshot.decisionScope !== "GENERATE_WORK_PACKET_ONLY" ||
+    snapshot.artifactExecutionAuthority !== false
+  ) {
+    return null;
+  }
+
+  const expectedDecision =
+    localOperatingLoopDecisionByTerminalState[snapshot.terminalState];
+  if (snapshot.decision !== expectedDecision) {
+    return null;
+  }
+
+  if (
+    snapshot.terminalState === "ACCEPTED"
+      ? snapshot.decision !== "ACCEPT" ||
+        snapshot.recommendation !== "GO" ||
+        snapshot.findingCount !== 0 ||
+        snapshot.workPacketCount !== 1 ||
+        snapshot.workPacketStatus !== "PROPOSED_ONLY"
+      : snapshot.decision === "ACCEPT" ||
+        snapshot.workPacketCount !== 0 ||
+        snapshot.workPacketStatus !== "NONE"
+  ) {
+    return null;
+  }
+
+  return snapshot as unknown as LocalOperatingLoopTerminalPresentation;
 }
 
 export function createLocalOperatingLoopBoundaryReceipt(
@@ -1258,6 +1353,10 @@ export function serializeLocalOperatingLoopBoundaryReceipt(
     return null;
   }
 
+  return serializeBoundaryReceiptFields(receipt);
+}
+
+function serializeBoundaryReceiptFields(receipt: LocalOperatingLoopBoundaryReceipt): string {
   return [
     receipt.heading,
     `receipt_version: ${receipt.receipt_version}`,
@@ -1301,6 +1400,37 @@ export function serializeLocalOperatingLoopBoundaryReceipt(
     "",
   ].join("\n");
 }
+
+export function createAdaptedBoundaryReceipt(
+  presentation: unknown,
+  adapted: unknown,
+) {
+  const receipt = createLocalOperatingLoopBoundaryReceipt(presentation);
+  if (!receipt) return null;
+  const fields = parseAdaptedReceipt(adapted, receipt.terminal_state === "ACCEPTED");
+  if (!fields) return null;
+  // Only these allowlisted adapter fields cross the D8 export boundary.
+  const extra = {
+    adapter_version: fields.adapter_version,
+    binding_posture: fields.binding_posture,
+    boundary_receipt_classification: fields.boundary_receipt_classification,
+    ui_output_classification: fields.ui_output_classification,
+    work_packet_classification: fields.work_packet_classification ?? "NONE",
+    packet_version: fields.packet_version ?? "NONE",
+  };
+  return {
+    receipt: { ...receipt, ...extra },
+    text: [
+      serializeBoundaryReceiptFields(receipt).trimEnd(),
+      ...Object.entries(extra).map(([key, value]) => `${key}: ${value}`),
+      "",
+    ].join("\n"),
+  };
+}
+
+export type AdaptedBoundaryReceipt = NonNullable<
+  ReturnType<typeof createAdaptedBoundaryReceipt>
+>["receipt"];
 
 export function createLocalOperatingLoopBoundaryReceiptCopyState(): LocalOperatingLoopBoundaryReceiptCopyState {
   return { status: "IDLE", attemptId: 0 };
@@ -1925,7 +2055,9 @@ export async function classifyLocalOperatingLoopClientResponse(
 
   if (value.ok === false) {
     if (
-      !hasExactKeys(value, ["error", "nonAuthorizations", "ok"]) ||
+      !(hasExactKeys(value, ["error", "nonAuthorizations", "ok"]) ||
+        (hasExactKeys(value, ["error", "nonAuthorizations", "ok", "workPackets"]) &&
+          Array.isArray(value.workPackets) && value.workPackets.length === 0)) ||
       !hasExactNonAuthorizations(value.nonAuthorizations) ||
       !isRecord(value.error) ||
       typeof value.error.code !== "string" ||
@@ -2091,6 +2223,7 @@ async function isSafeLocalOperatingLoopSuccessResponse(
     !hasExactKeys(value, [
       "actor",
       "artifact",
+      "adaptedReceipt",
       "baseSha",
       "contractVersion",
       "decision",
@@ -2104,6 +2237,7 @@ async function isSafeLocalOperatingLoopSuccessResponse(
       "state",
       "workPacket",
     ]) ||
+    !parseAdaptedReceipt(value.adaptedReceipt, value.state === "ACCEPTED") ||
     value.decision !== expectedDecision ||
     !isLocalOperatingLoopRecommendation(value.recommendation) ||
     !isLocalOperatingLoopFindingCodeArray(value.findingCodes) ||

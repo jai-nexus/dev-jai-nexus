@@ -1,6 +1,11 @@
 import { types } from "node:util";
 
 import {
+  D9_ADAPTER_VERSION,
+  D9_PACKET_CLASS,
+  D9_RECEIPT_CLASS,
+  D9_UI_CLASS,
+  LOCAL_SHADOW_PACKET_VERSION,
   LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
   createLocalOperatingLoopBoundaryReceipt,
   type LocalOperatingLoopBoundaryReceipt,
@@ -8,7 +13,7 @@ import {
 } from "./local-operating-loop";
 
 export const BATCH_B_LIFECYCLE_CONTRACT_ADAPTER_VERSION =
-  "d9-batch-b-lifecycle-contract-adapter/v1" as const;
+  D9_ADAPTER_VERSION;
 
 export const BATCH_B_LIFECYCLE_CONTRACT_ADAPTER_RESULT_KINDS = Object.freeze([
   "INVALID_INPUT",
@@ -394,7 +399,7 @@ export function adaptLocalShadowTerminalToBatchBContract(
     recommendation: parsed.terminalPresentation.recommendation,
     workPacketCount: hasWorkPacket ? 1 : 0,
     workPacketVersion: hasWorkPacket
-      ? "local-shadow-work-packet.v1"
+      ? LOCAL_SHADOW_PACKET_VERSION
       : null,
     workPacketStatus: hasWorkPacket ? "PROPOSED_ONLY" : null,
     workPacketDecisionScope: hasWorkPacket
@@ -402,11 +407,11 @@ export function adaptLocalShadowTerminalToBatchBContract(
       : null,
     workPacketExecutionAuthority: hasWorkPacket ? false : null,
     workPacketClassification: hasWorkPacket
-      ? "B9-NR-002 / NON_RECEIPT"
+      ? D9_PACKET_CLASS
       : null,
     boundaryReceiptClassification:
-      "B9-CLASS-014 / DEMONSTRATION_RECEIPT",
-    uiOutputClassification: "B9-NR-009 / NON_RECEIPT",
+      D9_RECEIPT_CLASS,
+    uiOutputClassification: D9_UI_CLASS,
     b9InvalidClaimId: hasWorkPacket ? "B9-INV-011" : null,
     b9InvalidClaim: hasWorkPacket
       ? "Local-shadow ACCEPTED is governance acceptance"

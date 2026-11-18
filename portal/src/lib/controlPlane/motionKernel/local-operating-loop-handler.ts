@@ -1,10 +1,17 @@
 import {
   createHash,
   createHmac,
+  randomBytes,
   timingSafeEqual,
 } from "node:crypto";
 
+import { evaluateDownstreamActiveProgramGuard } from "../programLifecycle/downstream-active-program-guard";
+import { adaptLocalShadowTerminalToBatchBContract } from "./batch-b-lifecycle-contract-adapter";
 import {
+  createLocalOperatingLoopBoundaryReceipt,
+  createLocalOperatingLoopTerminalPresentation,
+  LOCAL_SHADOW_PROGRAM_SNAPSHOT,
+  type AdaptedReceiptFields,
   buildLocalOperatingLoopPacketMaterial,
   buildLocalOperatingLoopWorkPacket,
   canonicalizeLocalOperatingLoopValue,
@@ -26,6 +33,7 @@ const PROOF_SUBKEY_DOMAIN =
   "jai-nexus/local-operating-loop/proof-subkey/v1";
 const VALIDATION_PROOF_PREFIX = "local-loop.validation.v1.";
 const DELIBERATION_PROOF_PREFIX = "local-loop.deliberation.v1.";
+const terminalStates = { ACCEPT: "ACCEPTED", HOLD: "HELD", REJECT: "REJECTED" } as const;
 const PROOF_MAC_PATTERN = /^[a-f0-9]{64}$/;
 
 type LocalOperatingLoopAuthentication =
@@ -44,7 +52,62 @@ type LocalOperatingLoopHandlerDependencies = {
   ) => Promise<LocalOperatingLoopAuthentication>;
 };
 
+type ProgramCommitment = Pick<
+  typeof LOCAL_SHADOW_PROGRAM_SNAPSHOT,
+  "program_lifecycle_id" | "snapshot_version" | "snapshot_hash" | "binding_posture"
+>;
+
+function checkProgramSnapshot(value: unknown) {
+  const expected = LOCAL_SHADOW_PROGRAM_SNAPSHOT;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return { error: "INVALID_EXPECTED_SNAPSHOT" } as const;
+  }
+  const snapshot = value as Record<string, unknown>;
+  if (
+    snapshot.base_sha !== expected.base_sha ||
+    snapshot.snapshot_hash !== expected.snapshot_hash ||
+    snapshot.snapshot_version !== expected.snapshot_version ||
+    snapshot.binding_posture !== expected.binding_posture ||
+    snapshot.authority_granted !== false
+  ) {
+    return { error: "INVALID_EXPECTED_SNAPSHOT" } as const;
+  }
+
+  const guard = evaluateDownstreamActiveProgramGuard({
+    portfolio: snapshot.portfolio,
+    expectedBinding: {
+      programId: expected.program_lifecycle_id,
+      lifecycleVersion: expected.snapshot_version,
+      governingMotionId: expected.governing_motion_id,
+      contractVersion: expected.contract_version,
+    },
+    candidateBinding: {
+      programId: snapshot.program_lifecycle_id,
+      lifecycleVersion: snapshot.snapshot_version,
+      governingMotionId: snapshot.governing_motion_id,
+      contractVersion: snapshot.contract_version,
+    },
+  });
+  if (
+    guard.kind !== "GUARD_SATISFIED" ||
+    snapshot.active_program_count !== expected.active_program_count ||
+    !Array.isArray(snapshot.portfolio) ||
+    snapshot.portfolio.length !== expected.portfolio.length ||
+    Object.keys(snapshot).length !== Object.keys(expected).length
+  ) {
+    return { error: "INELIGIBLE" } as const;
+  }
+  const commitment: ProgramCommitment = {
+    program_lifecycle_id: expected.program_lifecycle_id,
+    snapshot_version: expected.snapshot_version,
+    snapshot_hash: expected.snapshot_hash,
+    binding_posture: expected.binding_posture,
+  };
+  return { commitment } as const;
+}
+
 type ProofEnvelope = {
+  program: ProgramCommitment;
   proofKind: "VALIDATION" | "DELIBERATION";
   contractVersion: typeof LOCAL_OPERATING_LOOP_CONTRACT_VERSION;
   baseSha: typeof LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA;
@@ -63,6 +126,30 @@ type ProofEnvelope = {
 export function createLocalOperatingLoopHandler(
   dependencies: LocalOperatingLoopHandlerDependencies,
 ) {
+  // A proof is redeemable once on its issuing worker. Eviction and worker
+  // restart invalidate outstanding proofs without persistent or network state.
+  const outstanding = new Map<string, string>();
+  function issueProof(prefix: string, envelope: ProofEnvelope, secret: string) {
+    const nonce = randomBytes(16).toString("hex");
+    const proof = signProof(prefix, envelope, secret, nonce);
+    if (outstanding.size >= 4096) {
+      const oldest = outstanding.keys().next();
+      if (!oldest.done) outstanding.delete(oldest.value);
+    }
+    outstanding.set(proof, nonce);
+    return proof;
+  }
+  function redeemProof(
+    proof: string,
+    prefix: string,
+    envelope: ProofEnvelope,
+    secret: string,
+  ) {
+    const nonce = outstanding.get(proof);
+    if (!nonce || !verifyProof(proof, prefix, envelope, secret, nonce)) return false;
+    return outstanding.delete(proof);
+  }
+
   return async function handleLocalOperatingLoopRequest(
     request: Request,
   ): Promise<Response> {
@@ -126,6 +213,15 @@ export function createLocalOperatingLoopHandler(
       );
     }
 
+    const binding = checkProgramSnapshot(parsed.value.programSnapshot);
+    if (binding.error) {
+      return errorResponse(
+        409,
+        binding.error,
+        "The Program 1 documentary binding is unavailable or ineligible.",
+      );
+    }
+    const program = binding.commitment;
     const input = parsed.value.input;
     const motionFingerprint = hashCanonicalValue(
       "jai-nexus/local-operating-loop/motion/v1",
@@ -138,6 +234,7 @@ export function createLocalOperatingLoopHandler(
 
     if (parsed.value.action === "VALIDATE") {
       const envelope = buildValidationEnvelope({
+        program,
         actor,
         motionFingerprint,
         nonAuthorizationScopeHash,
@@ -150,7 +247,7 @@ export function createLocalOperatingLoopHandler(
         actor,
         input,
         motionFingerprint,
-        validationProof: signProof(
+        validationProof: issueProof(
           VALIDATION_PROOF_PREFIX,
           envelope,
           secret,
@@ -161,12 +258,13 @@ export function createLocalOperatingLoopHandler(
 
     if (parsed.value.action === "DELIBERATE") {
       const validationEnvelope = buildValidationEnvelope({
+        program,
         actor,
         motionFingerprint,
         nonAuthorizationScopeHash,
       });
       if (
-        !verifyProof(
+        !redeemProof(
           parsed.value.validationProof,
           VALIDATION_PROOF_PREFIX,
           validationEnvelope,
@@ -177,6 +275,7 @@ export function createLocalOperatingLoopHandler(
       }
 
       const deliberation = buildDeliberationValues({
+        program,
         input,
         actor,
         motionFingerprint,
@@ -195,7 +294,7 @@ export function createLocalOperatingLoopHandler(
         recommendationFingerprint:
           deliberation.recommendationFingerprint,
         candidatePacketHash: deliberation.candidatePacketHash,
-        deliberationProof: signProof(
+        deliberationProof: issueProof(
           DELIBERATION_PROOF_PREFIX,
           deliberation.envelope,
           secret,
@@ -205,13 +304,14 @@ export function createLocalOperatingLoopHandler(
     }
 
     const deliberation = buildDeliberationValues({
+      program,
       input,
       actor,
       motionFingerprint,
       nonAuthorizationScopeHash,
     });
     if (
-      !verifyProof(
+      !redeemProof(
         parsed.value.deliberationProof,
         DELIBERATION_PROOF_PREFIX,
         deliberation.envelope,
@@ -255,16 +355,38 @@ export function createLocalOperatingLoopHandler(
       candidatePacketHash: deliberation.candidatePacketHash,
     });
 
+    const state = terminalStates[parsed.value.decision];
+    const terminalPresentation = createLocalOperatingLoopTerminalPresentation({
+      state,
+      artifact,
+      workPacket,
+      recommendation: deliberation.recommendation,
+      findingCodes: deliberation.findingCodes,
+    });
+    const adapted = adaptLocalShadowTerminalToBatchBContract({
+      contractVersion: LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
+      terminalPresentation,
+      boundaryReceipt: createLocalOperatingLoopBoundaryReceipt(terminalPresentation),
+    });
+    if (adapted.kind !== "ADAPTED") {
+      return errorResponse(409, "D9_ADAPTER_BLOCKED", "The D9 terminal receipt is blocked.");
+    }
+    const adaptedReceipt: AdaptedReceiptFields = {
+      kind: adapted.kind,
+      adapter_version: adapted.adapterVersion,
+      binding_posture: program.binding_posture,
+      authority_granted: LOCAL_SHADOW_PROGRAM_SNAPSHOT.authority_granted,
+      boundary_receipt_classification: adapted.boundaryReceiptClassification,
+      ui_output_classification: adapted.uiOutputClassification,
+      work_packet_classification: adapted.workPacketClassification,
+      packet_version: adapted.workPacketVersion,
+    };
     return successResponse({
       ok: true,
       contractVersion: LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
       baseSha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
-      state:
-        parsed.value.decision === "ACCEPT"
-          ? "ACCEPTED"
-          : parsed.value.decision === "HOLD"
-            ? "HELD"
-            : "REJECTED",
+      state,
+      adaptedReceipt,
       actor,
       input,
       motionFingerprint,
@@ -280,11 +402,13 @@ export function createLocalOperatingLoopHandler(
 }
 
 function buildValidationEnvelope(input: {
+  program: ProgramCommitment;
   actor: string;
   motionFingerprint: string;
   nonAuthorizationScopeHash: string;
 }): ProofEnvelope {
   return {
+    program: input.program,
     proofKind: "VALIDATION",
     contractVersion: LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
     baseSha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
@@ -302,6 +426,7 @@ function buildValidationEnvelope(input: {
 }
 
 function buildDeliberationValues(input: {
+  program: ProgramCommitment;
   input: LocalOperatingLoopInput;
   actor: string;
   motionFingerprint: string;
@@ -328,6 +453,7 @@ function buildDeliberationValues(input: {
       )
     : null;
   const envelope: ProofEnvelope = {
+    program: input.program,
     proofKind: "DELIBERATION",
     contractVersion: LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
     baseSha: LOCAL_OPERATING_LOOP_REQUIRED_BASE_SHA,
@@ -406,8 +532,10 @@ function signProof(
   prefix: string,
   envelope: ProofEnvelope,
   secret: string,
+  nonce: string,
 ): string {
   const mac = createHmac("sha256", deriveProofSubkey(secret))
+    .update(nonce)
     .update(canonicalizeLocalOperatingLoopValue(envelope))
     .digest("hex");
   return `${prefix}${mac}`;
@@ -418,6 +546,7 @@ function verifyProof(
   prefix: string,
   envelope: ProofEnvelope,
   secret: string,
+  nonce: string,
 ): boolean {
   if (!proof.startsWith(prefix)) {
     return false;
@@ -427,7 +556,7 @@ function verifyProof(
     return false;
   }
 
-  const expected = signProof(prefix, envelope, secret).slice(prefix.length);
+  const expected = signProof(prefix, envelope, secret, nonce).slice(prefix.length);
   const presentedBuffer = Buffer.from(presentedHex, "hex");
   const expectedBuffer = Buffer.from(expected, "hex");
   return (
@@ -457,6 +586,7 @@ function errorResponse(
   return jsonResponse(
     {
       ok: false,
+      workPackets: [],
       error: {
         code,
         message,

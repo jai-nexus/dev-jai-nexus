@@ -26,7 +26,8 @@ import {
   clearLocalOperatingLoopBoundaryReceiptCopyState,
   clearLocalOperatingLoopDecisionConfirmation,
   createFounderSafeLocalOperatingLoopTerminalPresentation,
-  createLocalOperatingLoopBoundaryReceipt,
+  createAdaptedBoundaryReceipt,
+  LOCAL_SHADOW_PROGRAM_SNAPSHOT,
   createLocalOperatingLoopBoundaryReceiptCopyState,
   createLocalOperatingLoopDecisionConfirmationPresentation,
   createLocalOperatingLoopProofStatus,
@@ -38,11 +39,10 @@ import {
   recoverLocalOperatingLoopClientFailure,
   recoverLocalOperatingLoopStructuralFailure,
   isLocalOperatingLoopDecisionConfirmationCurrent,
-  serializeLocalOperatingLoopBoundaryReceipt,
   settleLocalOperatingLoopBoundaryReceiptCopyAttempt,
   shouldApplyLocalOperatingLoopResponse,
   type LocalOperatingLoopAction,
-  type LocalOperatingLoopBoundaryReceipt,
+  type AdaptedBoundaryReceipt,
   type LocalOperatingLoopBoundaryReceiptCopyState,
   type LocalOperatingLoopDecision,
   type LocalOperatingLoopDecisionConfirmationContext,
@@ -431,11 +431,8 @@ function LocalOperatingLoopProjectionPanel({
     uiState.state === "REJECTED";
   const terminalPresentation =
     createFounderSafeLocalOperatingLoopTerminalPresentation(uiState);
-  const boundaryReceipt = terminalPresentation
-    ? createLocalOperatingLoopBoundaryReceipt(terminalPresentation)
-    : null;
-  const boundaryReceiptText = terminalPresentation
-    ? serializeLocalOperatingLoopBoundaryReceipt(terminalPresentation)
+  const adaptedExport = terminalPresentation
+    ? createAdaptedBoundaryReceipt(terminalPresentation, uiState.adaptedReceipt)
     : null;
   const confirmationContext =
     useMemo<LocalOperatingLoopDecisionConfirmationContext | null>(
@@ -905,11 +902,11 @@ function LocalOperatingLoopProjectionPanel({
       </div>
 
       {hasTerminalState ? (
-        terminalPresentation ? (
+        terminalPresentation && adaptedExport ? (
           <TerminalPresentation
             presentation={terminalPresentation}
-            boundaryReceipt={boundaryReceipt}
-            boundaryReceiptText={boundaryReceiptText}
+            boundaryReceipt={adaptedExport.receipt}
+            boundaryReceiptText={adaptedExport.text}
           />
         ) : (
           <div
@@ -957,13 +954,14 @@ function buildRequestBody(
   state: LocalOperatingLoopUiState,
 ): LocalOperatingLoopAction | null {
   if (action === "VALIDATE") {
-    return { action, input };
+    return { action, input, programSnapshot: LOCAL_SHADOW_PROGRAM_SNAPSHOT };
   }
   if (action === "DELIBERATE") {
     return state.validationProof
       ? {
           action,
           input,
+          programSnapshot: LOCAL_SHADOW_PROGRAM_SNAPSHOT,
           validationProof: state.validationProof,
         }
       : null;
@@ -973,6 +971,7 @@ function buildRequestBody(
         action: "DECIDE",
         input,
         decision: action,
+        programSnapshot: LOCAL_SHADOW_PROGRAM_SNAPSHOT,
         deliberationProof: state.deliberationProof,
       }
     : null;
@@ -1014,6 +1013,7 @@ function applySuccessResponse(
     findingCodes: response.findingCodes,
     workPacket: response.workPacket,
     artifact: response.artifact,
+    adaptedReceipt: response.adaptedReceipt,
     activeRequestId: null,
   };
 }
@@ -1039,7 +1039,7 @@ function TerminalPresentation({
   boundaryReceiptText,
 }: {
   presentation: LocalOperatingLoopTerminalPresentation;
-  boundaryReceipt: LocalOperatingLoopBoundaryReceipt | null;
+  boundaryReceipt: AdaptedBoundaryReceipt | null;
   boundaryReceiptText: string | null;
 }) {
   return (
@@ -1128,7 +1128,7 @@ function BoundaryReceiptPreview({
   receipt,
   receiptText,
 }: {
-  receipt: LocalOperatingLoopBoundaryReceipt;
+  receipt: AdaptedBoundaryReceipt;
   receiptText: string;
 }) {
   const [copyState, setCopyState] =
@@ -1218,6 +1218,12 @@ function BoundaryReceiptPreview({
 
   const fields = [
     ["receipt_version", receipt.receipt_version],
+    ["adapter_version", receipt.adapter_version],
+    ["binding_posture", receipt.binding_posture],
+    ["boundary_receipt_classification", receipt.boundary_receipt_classification],
+    ["ui_output_classification", receipt.ui_output_classification],
+    ["work_packet_classification", receipt.work_packet_classification],
+    ["packet_version", receipt.packet_version],
     ["evidence_scope", receipt.evidence_scope],
     ["redaction_scope", receipt.redaction_scope],
     [

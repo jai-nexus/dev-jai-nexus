@@ -7,6 +7,7 @@ import {
   LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_COPY_STATUS_COPY,
   LOCAL_OPERATING_LOOP_BOUNDARY_RECEIPT_HEADING,
   LOCAL_OPERATING_LOOP_CONTRACT_VERSION,
+  LOCAL_SHADOW_PROGRAM_SNAPSHOT,
   LOCAL_OPERATING_LOOP_FINDING_ORDER,
   LOCAL_OPERATING_LOOP_NON_AUTHORIZATIONS,
   LOCAL_OPERATING_LOOP_PAGEHIDE_COPY,
@@ -1596,7 +1597,7 @@ async function testBoundaryReceiptUsesSingleValidatedDescriptorSnapshot() {
     "src/lib/controlPlane/motionKernel/local-operating-loop.ts",
   );
   const parserStart = moduleSource.indexOf(
-    "function parseLocalOperatingLoopBoundaryReceiptInput(",
+    "function readReceiptFields(",
   );
   const receiptStart = moduleSource.indexOf(
     "export function createLocalOperatingLoopBoundaryReceipt(",
@@ -1825,11 +1826,11 @@ async function testBoundaryReceiptCopyControlIsTerminalOnlyAndReceiptOnly() {
   );
   assert.match(
     panelSource,
-    /createLocalOperatingLoopBoundaryReceipt\(terminalPresentation\)/,
+    /createAdaptedBoundaryReceipt\(terminalPresentation, uiState\.adaptedReceipt\)/,
   );
   assert.match(
     panelSource,
-    /serializeLocalOperatingLoopBoundaryReceipt\(terminalPresentation\)/,
+    /boundaryReceiptText=\{adaptedExport\.text\}/,
   );
   assert.equal(
     panelSource.match(/Copy redacted boundary receipt/g)?.length,
@@ -2254,7 +2255,7 @@ async function testBoundaryReceiptResetInvalidationAndLifecycleClearCopyStatus()
   );
   assert.match(
     panelSource,
-    /\{hasTerminalState \? \([\s\S]*terminalPresentation \? \(/,
+    /\{hasTerminalState \? \([\s\S]*terminalPresentation && adaptedExport \? \(/,
   );
   assert.match(
     panelSource,
@@ -4472,8 +4473,8 @@ async function testAcceptedPacketAndArtifactDoNotSurviveInvalidation() {
 
 async function testHoldAndRejectNeverProduceWorkPacket() {
   const handler = createAdminHandler();
-  const proofChain = await buildProofChain(handler, genuineGoInput);
   for (const decision of ["HOLD", "REJECT"] as const) {
+    const proofChain = await buildProofChain(handler, genuineGoInput);
     const result = await decide(
       handler,
       genuineGoInput,
@@ -4757,7 +4758,7 @@ async function testActualNextAuthJwtIntegration() {
       "Content-Type": "application/json",
       cookie: `next-auth.session-token=${jwt}`,
     },
-    body: JSON.stringify({ action: "VALIDATE", input: genuineGoInput }),
+    body: JSON.stringify({ action: "VALIDATE", input: genuineGoInput, programSnapshot: LOCAL_SHADOW_PROGRAM_SNAPSHOT }),
   });
   const handler = createLocalOperatingLoopHandler({
     readSecret: () => SYNTHETIC_SECRET,
@@ -4974,11 +4975,10 @@ async function testRejectsNonGoAcceptance() {
   );
 }
 
-async function testTerminalDecisionSemanticsAndDeterministicReplay() {
+async function testSingleUseDecisionProofAndDeterministicTerminalOutput() {
   const handler = createAdminHandler();
-  const proofChain = await buildProofChain(handler, genuineGoInput);
-
   for (const decision of ["HOLD", "REJECT"] as const) {
+    const proofChain = await buildProofChain(handler, genuineGoInput);
     const result = await decide(
       handler,
       genuineGoInput,
@@ -4997,6 +4997,7 @@ async function testTerminalDecisionSemanticsAndDeterministicReplay() {
     );
   }
 
+  const proofChain = await buildProofChain(handler, genuineGoInput);
   const first = await decide(
     handler,
     genuineGoInput,
@@ -5010,7 +5011,10 @@ async function testTerminalDecisionSemanticsAndDeterministicReplay() {
     proofChain.deliberationProof,
   );
   assert.equal(first.status, 200);
-  assert.equal(first.text, replay.text);
+  assert.equal(replay.status, 409);
+  const fresh = await buildProofChain(handler, genuineGoInput);
+  const repeated = await decide(handler, genuineGoInput, "ACCEPT", fresh.deliberationProof);
+  assert.equal(first.text, repeated.text);
   const accepted = successBody(first.body);
   assert.equal(accepted.state, "ACCEPTED");
   if (accepted.state !== "ACCEPTED") {
@@ -5066,7 +5070,7 @@ async function buildSuccessResponseFixtures(
     handler,
     input,
     "HOLD",
-    awaitingDecision.deliberationProof,
+    (await buildProofChain(handler, input)).deliberationProof,
   );
   assert.equal(heldResult.status, 200);
   const held = successBody(heldResult.body);
@@ -5078,7 +5082,7 @@ async function buildSuccessResponseFixtures(
     handler,
     input,
     "REJECT",
-    awaitingDecision.deliberationProof,
+    (await buildProofChain(handler, input)).deliberationProof,
   );
   assert.equal(rejectedResult.status, 200);
   const rejected = successBody(rejectedResult.body);
@@ -5121,7 +5125,7 @@ async function buildNonAcceptResponseFixtures(
     handler,
     input,
     "HOLD",
-    awaitingDecision.deliberationProof,
+    (await buildProofChain(handler, input)).deliberationProof,
   );
   assert.equal(heldResult.status, 200);
   const held = successBody(heldResult.body);
@@ -5133,7 +5137,7 @@ async function buildNonAcceptResponseFixtures(
     handler,
     input,
     "REJECT",
-    awaitingDecision.deliberationProof,
+    (await buildProofChain(handler, input)).deliberationProof,
   );
   assert.equal(rejectedResult.status, 200);
   const rejected = successBody(rejectedResult.body);
@@ -6475,6 +6479,8 @@ async function testProductionSourceAndImportIsolation() {
 
   assert.deepEqual(importSpecifiers(handlerSource), [
     "node:crypto",
+    "../programLifecycle/downstream-active-program-guard",
+    "./batch-b-lifecycle-contract-adapter",
     "./local-operating-loop",
   ]);
   assert.match(handlerSource, /timingSafeEqual\(/);
@@ -6638,7 +6644,9 @@ function jsonRequest(body: unknown): Request {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify(typeof body === "object" && body !== null
+      ? { programSnapshot: LOCAL_SHADOW_PROGRAM_SNAPSHOT, ...body }
+      : body),
   });
 }
 
@@ -6805,7 +6813,7 @@ await testActualNextAuthJwtIntegration();
 await testClientIdentitySpoofResistance();
 await testProofProgressionAndInvalidProofClasses();
 await testRejectsNonGoAcceptance();
-await testTerminalDecisionSemanticsAndDeterministicReplay();
+await testSingleUseDecisionProofAndDeterministicTerminalOutput();
 await testBindsEveryResponseToExactRequestedTransition();
 await testAcceptsServerNormalizedResponsesWithoutProjectionDrift();
 await testRejectsRecommendationAndFindingContradictions();
