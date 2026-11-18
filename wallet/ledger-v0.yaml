@@ -1,0 +1,14 @@
+schema_version: "jai-wallet-ledger.v0"
+as_of: "2026-11-17"
+monthly_allocation_cap_usd: 200.00
+settled_charges_usd:
+  total: 103.49
+  google_workspace: 60.89
+  anthropic_claude_pro: 21.32
+  openai_chatgpt_plus: 21.28
+live_mercury_balance_usd: 96.51
+reserved_december_renewals_usd:
+  min: 70.60
+  max: 94.60
+authorized_layer_2_api_spend_q3m7y26_p1_usd: 0.00
+posture: "JAI_NOT_ACTIVATED / MOCK_INFERENCE_ONLY"
