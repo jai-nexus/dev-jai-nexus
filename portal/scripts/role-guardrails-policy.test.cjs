@@ -257,3 +257,119 @@ test("role_guardrails workflow loads policy from the PR base SHA and never uses 
   assert.doesNotMatch(workflow, /readFileSync\([^)]*rolemap/);
   assert.match(workflow, /node --test portal\/scripts\/role-guardrails-policy\.test\.cjs/);
 });
+
+// --- A3G-001 / A3G-002 repair regressions (PING-Q4M11Y26-P2-A3G-REPAIR-V1) ---
+
+const WORKFLOW_CHANGE = files(".github/workflows/ci.yml");
+const VERIFIER_LINE = `Role: ${P}VERIFIER`;
+
+test("A3G-001: Evidence that exists only inside a code fence or HTML comment fails closed as missing", () => {
+  const hidden = {
+    "closed backtick fence": "```markdown\n## Evidence\n- tsc: exit 0\n```",
+    "unclosed backtick fence": "```\n## Evidence\n- tsc: exit 0",
+    "closed tilde fence": "~~~\n## Evidence\n- tsc: exit 0\n~~~",
+    "unclosed tilde fence": "~~~~\n## Evidence\n- tsc: exit 0\n~~~",
+    "longer backtick fence closed only by a matching fence": "````\n```\n## Evidence\n- tsc: exit 0\n```",
+    "HTML comment": "<!--\n## Evidence\n- tsc: exit 0\n-->",
+    "unterminated HTML comment": "<!-- ## Evidence\n- tsc: exit 0",
+    "inline HTML comment": "<!-- ## Evidence --> text\n- tsc: exit 0",
+  };
+  for (const [name, hiddenBlock] of Object.entries(hidden)) {
+    const prBody = `${VERIFIER_LINE}\n\n## Summary\nx\n\n${hiddenBlock}\n`;
+    assert.equal(extractH2Section(prBody, "Evidence"), null, name);
+    const result = evaluate({ prBody, changed: WORKFLOW_CHANGE });
+    assert.equal(result.ok, false, name);
+    assert.match(result.errors.join("\n"), /no '## Evidence' section/, name);
+  }
+});
+
+test("A3G-001: a fenced or commented fake heading never starts or ends the real Evidence section", () => {
+  const prBody = [
+    VERIFIER_LINE, "", "```", "## Evidence", "- fake: exit 0", "```", "<!-- ## Evidence -->",
+    "## Evidence", "- tsc --noEmit: exit 0", "~~~", "## Governance Boundary", "~~~", "<!--", "## Next", "-->", "- build: exit 0",
+    "## Governance Boundary", "- Merge Authorized: false",
+  ].join("\n");
+  const section = extractH2Section(prBody, "Evidence");
+  assert.match(section, /^- tsc --noEmit: exit 0/);
+  assert.match(section, /- build: exit 0$/);
+  assert.doesNotMatch(section, /fake/);
+  assert.deepEqual(meaningfulEvidenceLines(section), ["tsc --noEmit: exit 0", "build: exit 0"]);
+  assert.equal(evaluate({ prBody, changed: WORKFLOW_CHANGE }).ok, true);
+});
+
+test("A3G-001: fenced output alone cannot satisfy Evidence but may accompany a real line", () => {
+  // Fenced lines deliberately look like real evidence (not like headings), so
+  // only the fence rule can reject them.
+  const fencedOnly = `${VERIFIER_LINE}\n\n## Evidence\n\`\`\`text\nok 1 - policy regressions\ntsc --noEmit: exit 0\n\`\`\`\n~~~\nbuild: exit 0\n~~~\n## Governance Boundary`;
+  const result = evaluate({ prBody: fencedOnly, changed: WORKFLOW_CHANGE });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /only placeholders/);
+  const withBullet = fencedOnly.replace("## Evidence\n", "## Evidence\n- role-guardrails-policy.test.cjs: 13/13 pass\n");
+  assert.equal(evaluate({ prBody: withBullet, changed: WORKFLOW_CHANGE }).ok, true);
+});
+
+test("A3G-002: unfilled template placeholders never count as Evidence", () => {
+  const placeholders = [
+    "- N/A — <why>", "- N/A —", "- N/A -", "- N/A:", "- N/A – explain why", "- n/a (reason)", "N/A",
+    "- <Insert results>", "- <todo>", "- <fill in>", "- tsc: <paste output here>", "- [ ] <reason>",
+    "- `pnpm build`: <result>", "- TODO", "- TBD.", "- none", "- -", "- …", "Evidence:",
+    "Evidence: <Required | N/A — explain why>", "- `pnpm lint`: PASS/FAIL (or N/A — why)",
+  ];
+  for (const line of placeholders) {
+    for (const tail of ["", "\n## Governance Boundary\n- merge: false"]) {
+      const prBody = `${VERIFIER_LINE}\n\n## Evidence\n${line}${tail}`;
+      const result = evaluate({ prBody, changed: WORKFLOW_CHANGE });
+      assert.equal(result.ok, false, JSON.stringify(line + tail));
+      assert.match(result.errors.join("\n"), /empty or contains only placeholders/, line);
+    }
+  }
+});
+
+test("A3G-002: genuine Evidence still passes as the final section or before another H2", () => {
+  const genuine = [
+    "- N/A — policy-only change",
+    "- run: <https://github.com/jai-nexus/dev-jai-nexus/actions/runs/1> passed",
+    "- build<br>exit 0",
+    "- `node --test <file>` on every policy test: 13/13 pass",
+    "- Regressions: none",
+    "1. tsc --noEmit: exit 0",
+    "- [x] pnpm -C portal build: exit 0",
+    "Mail <ops@example.com> confirmed the run",
+  ];
+  for (const line of genuine) {
+    assert.equal(meaningfulEvidenceLines(line).length, 1, line);
+    for (const tail of ["", "\n\n## Governance Boundary\n- Merge Authorized: false"]) {
+      const result = evaluate({ prBody: `${VERIFIER_LINE}\n\n## Evidence\n${line}${tail}`, changed: WORKFLOW_CHANGE });
+      assert.equal(result.ok, true, `${JSON.stringify(line + tail)}: ${result.errors.join("; ")}`);
+    }
+  }
+});
+
+test("A3G-001: Role declarations inside fences or comments never count", () => {
+  const policy = basePolicy();
+  // [hidden block, role resolved when "Role: BUILDER" follows it]. After an
+  // unclosed fence the following line is still code, so no role is found.
+  const hiddenRoles = [
+    ["```\nRole: JAI::DEV::VERIFIER\n```", `${P}BUILDER`],
+    ["~~~\nRole: JAI::DEV::VERIFIER\n~~~", `${P}BUILDER`],
+    ["<!--\nRole: JAI::DEV::VERIFIER\n-->", `${P}BUILDER`],
+    ["```\nRole: JAI::DEV::VERIFIER", null],
+  ];
+  for (const [hidden, roleAfter] of hiddenRoles) {
+    const missing = resolveDeclaredRole(`## Summary\n${hidden}\n`, policy);
+    assert.equal(missing.ok, false, hidden);
+    assert.match(missing.reason, /Missing 'Role:'/, hidden);
+    const followed = resolveDeclaredRole(`${hidden}\nRole: ${P}BUILDER`, policy);
+    assert.deepEqual(followed.ok ? followed.role : null, roleAfter, hidden);
+  }
+  assert.deepEqual(resolveDeclaredRole(`\`\`\`\nRole: ${P}VERIFIER\n\`\`\`\nRole: ${P}BUILDER`, policy), { ok: true, role: `${P}BUILDER` });
+  const conflicting = resolveDeclaredRole(`\`\`\`\nRole: ${P}VERIFIER\n\`\`\`\nRole: ${P}BUILDER\nRole: ${P}ARCHITECT`, policy);
+  assert.equal(conflicting.ok, false);
+  assert.match(conflicting.reason, /Found 2 'Role:' declarations/);
+});
+
+test("an inline triple-backtick span is not a fence and does not hide later sections", () => {
+  const prBody = `${VERIFIER_LINE}\n\n\`\`\`inline\`\`\` sample\n\n## Evidence\n- tsc: exit 0`;
+  assert.equal(extractH2Section(prBody, "Evidence"), "- tsc: exit 0");
+  assert.equal(evaluate({ prBody, changed: WORKFLOW_CHANGE }).ok, true);
+});

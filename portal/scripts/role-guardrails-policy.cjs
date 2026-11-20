@@ -6,35 +6,53 @@
 
 const ROLE_DECLARATION =
   /^[ \t]{0,3}(?:[-*+][ \t]+)?(\*\*|__)?[ \t]*role[ \t]*(?::[ \t]*\1|\1[ \t]*:)(.*)$/i;
-const FENCE = /^[ \t]{0,3}(`{3,}|~{3,})/;
+const FENCE_OPEN = /^[ \t]{0,3}(`{3,}|~{3,})(.*)$/;
+const FENCE_CLOSE = /^[ \t]{0,3}(`{3,}|~{3,})[ \t]*$/;
 const H2_BOUNDARY = /^[ \t]{0,3}##[ \t]+\S/;
 
 function normalizeNewlines(text) {
   return String(text ?? "").replace(/\r\n?/g, "\n");
 }
 
-function stripHtmlComments(text) {
-  return text.replace(/<!--[\s\S]*?(?:-->|$)/g, "");
+// Blanks every HTML comment (an unterminated one runs to the end of the
+// body), keeping newlines so line positions are unchanged.
+function maskHtmlComments(text) {
+  return text.replace(/<!--[\s\S]*?(?:-->|$)/g, (comment) => comment.replace(/[^\n]/g, " "));
+}
+
+// Classifies each line, CommonMark-style, after masking HTML comments:
+// "content", "fence" (an opening or closing fence line), or "code" (inside a
+// fence). A fence closes only on a line holding the same character, at least
+// as many, and nothing else. An unclosed fence runs to the end of the body.
+function scanLines(text) {
+  const out = [];
+  let fence = null;
+  for (const line of maskHtmlComments(normalizeNewlines(text)).split("\n")) {
+    if (fence) {
+      const close = FENCE_CLOSE.exec(line);
+      if (close && close[1][0] === fence[0] && close[1].length >= fence.length) {
+        fence = null;
+        out.push({ text: line, kind: "fence" });
+      } else {
+        out.push({ text: line, kind: "code" });
+      }
+      continue;
+    }
+    const open = FENCE_OPEN.exec(line);
+    // A backtick fence's info string may not contain backticks ("```x```" is inline code).
+    if (open && !(open[1][0] === "`" && open[2].includes("`"))) {
+      fence = open[1];
+      out.push({ text: line, kind: "fence" });
+      continue;
+    }
+    out.push({ text: line, kind: "content" });
+  }
+  return out;
 }
 
 // Lines outside fenced code blocks and HTML comments.
 function declarativeLines(body) {
-  const lines = stripHtmlComments(normalizeNewlines(body)).split("\n");
-  const out = [];
-  let fence = null;
-  for (const line of lines) {
-    const marker = FENCE.exec(line);
-    if (fence) {
-      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null;
-      continue;
-    }
-    if (marker) {
-      fence = marker[1];
-      continue;
-    }
-    out.push(line);
-  }
-  return out;
+  return scanLines(body).filter((line) => line.kind === "content").map((line) => line.text);
 }
 
 function unwrapInlineMarkdown(value) {
@@ -84,48 +102,73 @@ function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Content of the first "## <title>" section, up to the next H2 heading or the
-// end of the body. Returns null when the heading is absent.
+// Content of the first top-level "## <title>" section, up to the next
+// top-level H2 heading or the end of the body. Headings inside fenced code
+// blocks or HTML comments are ignored, both as the section start and as its
+// end. Comments in the returned text are blanked. Returns null when there is
+// no top-level heading.
 function extractH2Section(body, title) {
   const heading = new RegExp(`^[ \\t]{0,3}##[ \\t]+${escapeRegExp(title)}[ \\t]*#*[ \\t]*$`, "i");
-  const lines = normalizeNewlines(body).split("\n");
-  const start = lines.findIndex((line) => heading.test(line));
+  const lines = scanLines(body);
+  const start = lines.findIndex((line) => line.kind === "content" && heading.test(line.text));
   if (start === -1) return null;
   const content = [];
-  let fence = null;
   for (const line of lines.slice(start + 1)) {
-    const marker = FENCE.exec(line);
-    if (fence) {
-      if (marker && marker[1][0] === fence[0] && marker[1].length >= fence.length) fence = null;
-    } else if (marker) {
-      fence = marker[1];
-    } else if (H2_BOUNDARY.test(line)) {
-      break;
-    }
-    content.push(line);
+    if (line.kind === "content" && H2_BOUNDARY.test(line.text)) break;
+    content.push(line.text);
   }
   return content.join("\n").trim();
 }
 
-const PLACEHOLDER_LINES = [
-  /^(?:n\/?a|tbd|todo|none|wip|pending|-+|\.{3}|…)[.:]?$/i,
-  /^evidence[ \t]*:?$/i,
-  /^n\/?a[ \t]*[—–-][ \t]*(?:explain[ \t]+)?why\)?\.?$/i,
-  /PASS\/FAIL/,
-];
+const HTML_TAGS = new Set([
+  "a", "abbr", "b", "blockquote", "br", "code", "del", "details", "div", "em", "hr", "i", "img", "ins",
+  "kbd", "li", "mark", "ol", "p", "pre", "s", "samp", "small", "span", "strong", "sub", "summary", "sup",
+  "table", "tbody", "td", "th", "thead", "tr", "u", "ul",
+]);
 
+// Unfilled angle-bracket template slots such as <why>, <reason>, <Insert ...>,
+// <cmd> or <Required | N/A>. Autolinks, emails, common HTML tags and anything
+// inside inline code spans do not count.
+function templateSlots(line) {
+  const outsideCode = line.replace(/(`+)[\s\S]*?\1/g, " ");
+  const slots = [];
+  for (const match of outsideCode.matchAll(/<([^<>\n]*)>/g)) {
+    const inner = match[1].trim();
+    if (/^[a-z][a-z0-9+.-]*:\S+$/i.test(inner)) continue;
+    if (/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(inner)) continue;
+    const tag = /^\/?([a-z][a-z0-9]*)(?:[ \t][^<>]*)?\/?$/i.exec(inner);
+    if (tag && HTML_TAGS.has(tag[1].toLowerCase())) continue;
+    slots.push(match[0]);
+  }
+  return slots;
+}
+
+// Whole-line placeholders: N/A with nothing after it but punctuation,
+// "why" or "explain why"; TBD/TODO/none/WIP-style stubs; a bare "Evidence:";
+// and template PASS/FAIL lines.
+function isPlaceholderText(text) {
+  const trimmed = text.replace(/[\s.:;,!?—–-]+$/u, "").trim();
+  if (/^(?:n\/?a|tbd|tba|todo|none|wip|pending|placeholder|fill(?:[ \t]+(?:me|in))?|\.{3}|…)$/i.test(trimmed)) return true;
+  if (/^evidence$/i.test(trimmed)) return true;
+  const notApplicable = /^n\/?a[\s:—–-]*(.*)$/i.exec(trimmed);
+  if (notApplicable && /^\(?(?:(?:explain[ \t]+)?(?:why|reason))?\)?$/i.test(notApplicable[1].trim())) return true;
+  return /PASS\/FAIL/.test(trimmed);
+}
+
+// Evidence lines that count: top-level content (not fenced code, not HTML
+// comments, not headings) after bullet and checkbox markers are removed, with
+// no unfilled template slot, and not a placeholder. Fenced output may appear
+// in Evidence but cannot satisfy the requirement on its own.
 function meaningfulEvidenceLines(text) {
   const meaningful = [];
-  for (const rawLine of stripHtmlComments(normalizeNewlines(text)).split("\n")) {
+  for (const { text: rawLine, kind } of scanLines(text)) {
+    if (kind !== "content") continue;
     let line = rawLine.trim();
-    if (!line || FENCE.test(line) || /^#{1,6}([ \t]|$)/.test(line)) continue;
-    line = line
-      .replace(/^(?:[-*+]|\d+[.)])[ \t]+/, "")
-      .replace(/^\[[ xX]\][ \t]*/, "")
-      .replace(/<[^<>\n]*>/g, "")
-      .trim();
-    if (!line || !/[a-z0-9]/i.test(line)) continue;
-    if (PLACEHOLDER_LINES.some((re) => re.test(line))) continue;
+    if (!line || /^#{1,6}([ \t]|$)/.test(line)) continue;
+    line = line.replace(/^(?:[-*+]|\d+[.)])[ \t]+/, "").replace(/^\[[ xX]\][ \t]*/, "").trim();
+    if (templateSlots(line).length > 0) continue;
+    const plain = line.replace(/<\/?[a-z][^<>]*>/gi, " ").replace(/[`*_~]+/g, "").trim();
+    if (!/[a-z0-9]/i.test(plain) || isPlaceholderText(plain)) continue;
     meaningful.push(line);
   }
   return meaningful;
