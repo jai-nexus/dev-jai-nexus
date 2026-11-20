@@ -1,5 +1,7 @@
 name: role_guardrails
 
+# Trigger stays `pull_request`, never `pull_request_target`: this workflow
+# never runs untrusted PR code with base-repo secrets or write tokens.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
@@ -14,194 +16,73 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-      - name: Enforce Role / Path / Evidence
+      - name: Setup Node (22)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Role guardrails policy regressions
+        run: node --test portal/scripts/role-guardrails-policy.test.cjs
+
+      # The rolemap that authorizes a PR comes from the PR's base SHA, never
+      # from the PR's own working tree. A PR cannot grant itself permissions.
+      - name: Enforce Role / Path / Evidence (trusted base policy)
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require("fs");
+            const path = require("path");
+            const policyLib = require(path.join(process.env.GITHUB_WORKSPACE, "portal/scripts/role-guardrails-policy.cjs"));
 
-            function fail(msg) {
-              core.setFailed(msg);
-              throw new Error(msg);
+            function fail(message) {
+              core.setFailed(message);
+              throw new Error(message);
             }
 
             const pr = context.payload.pull_request;
             if (!pr) fail("Not a pull_request event.");
+            const baseSha = pr.base && pr.base.sha;
+            if (!/^[0-9a-f]{40}$/.test(baseSha || "")) fail("PR base SHA is missing or malformed.");
 
-            const body = pr.body || "";
-
-            // --- Helpers ------------------------------------------------------
-
-            function normalizeRole(raw) {
-              if (!raw) return "";
-              let s = raw.trim();
-
-              // Allow user mistakes like "JAI:DEV::VERIFIER" (single colon after JAI)
-              // Canonicalize by splitting on ":" and re-joining.
-              // Example: "JAI:DEV::VERIFIER" -> ["JAI","DEV","VERIFIER"] -> "JAI::DEV::VERIFIER"
-              if (s.includes(":")) {
-                const parts = s.split(":").map(p => p.trim()).filter(Boolean);
-                if (parts.length >= 3 && parts[0].toUpperCase() === "JAI" && parts[1].toUpperCase() === "DEV") {
-                  const tail = parts.slice(2).join("::").toUpperCase();
-                  s = `JAI::DEV::${tail}`;
-                }
-              }
-
-              return s;
-            }
-
-            function readRoleFromBody(bodyText) {
-              // Accept:
-              // - "Role: JAI::DEV::BUILDER"
-              // - "Role: JAI:DEV::VERIFIER" (typo, we'll normalize)
-              // - Anywhere in the body (not just the top)
-              const m = bodyText.match(/^\s*Role\s*:\s*(.+)\s*$/im);
-              return m ? m[1].trim() : "";
-            }
-
-            function extractSectionMarkdown(bodyText, title) {
-              // Supports markdown heading style:
-              // ## Evidence
-              // <content>
-              // ## Risk
-              const re = new RegExp(`^##\\s*${title}\\b[\\t \\r]*\\n([\\s\\S]*?)(?=^##\\s|\\Z)`, "im");
-              const m = bodyText.match(re);
-              if (m) return (m[1] || "").trim();
-
-              // Also support "Evidence:" style
-              const re2 = new RegExp(`^${title}\\s*:\\s*([\\s\\S]*?)(?=^\\S|\\Z)`, "im");
-              const m2 = bodyText.match(re2);
-              if (m2) return (m2[1] || "").trim();
-
-              return "";
-            }
-
-            function hasMeaningfulEvidence(evidenceText) {
-              if (!evidenceText) return false;
-              const lines = evidenceText
-                .split("\n")
-                .map(s => s.trim())
-                .filter(Boolean);
-
-              // Consider these meaningful (so "N/A — policy-only change" passes):
-              // - any non-empty bullet/line that isn't just another section header
-              const filtered = lines.filter(l => {
-                const low = l.toLowerCase();
-                if (low.startsWith("##")) return false;
-                if (low.startsWith("risk")) return false;
-                if (low.startsWith("notes")) return false;
-                if (low.startsWith("handoff")) return false;
-                return true;
-              });
-
-              return filtered.length > 0;
-            }
-
-            // --- Role + rolemap ------------------------------------------------
-
-            const rawRole = readRoleFromBody(body);
-            if (!rawRole) {
-              fail("Missing 'Role:' line in PR body. Add: Role: JAI::DEV::<OPERATOR|ARCHITECT|BUILDER|VERIFIER|LIBRARIAN>");
-            }
-
-            const role = normalizeRole(rawRole);
-            if (!role) {
-              fail("Role line is empty. Use: Role: JAI::DEV::<ROLE>");
-            }
-
-            const rolemapPath = "roles/rolemap.json";
-            if (!fs.existsSync(rolemapPath)) {
-              fail(`Missing ${rolemapPath}. Add rolemap.json to define guardrails.`);
-            }
-
-            let rolemap;
+            let rawPolicy;
             try {
-              rolemap = JSON.parse(fs.readFileSync(rolemapPath, "utf8"));
-            } catch (e) {
-              fail(`Failed to parse ${rolemapPath} as JSON: ${e.message}`);
+              const response = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: "roles/rolemap.json",
+                ref: baseSha,
+                mediaType: { format: "raw" },
+              });
+              rawPolicy = policyLib.decodeContentsResponse(response.data);
+            } catch (error) {
+              fail(`Trusted base policy roles/rolemap.json is unreadable at ${baseSha}: ${error.message}`);
             }
 
-            const prefix = rolemap.rolePrefix || "JAI::DEV::";
-            if (!role.startsWith(prefix)) {
-              fail(`Invalid Role '${role}'. Must start with '${prefix}'. Example: Role: JAI::DEV::BUILDER`);
+            let policy;
+            try {
+              policy = policyLib.loadTrustedPolicy(rawPolicy);
+            } catch (error) {
+              fail(`${error.message} (ref ${baseSha})`);
             }
-
-            // Optional "ship faster" behavior:
-            // Let VERIFIER touch any non-blocked path without tripping "allowedRoles".
-            const verifierBypass = rolemap.verifierBypassAllowedRoles ?? true;
-            const isVerifier = role === `${prefix}VERIFIER`;
-
-            // --- PR changed files ---------------------------------------------
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr.number,
-              per_page: 100
+              per_page: 100,
             });
 
-            const changed = files.map(f => f.filename);
+            const result = policyLib.evaluatePullRequest({
+              policy,
+              body: pr.body || "",
+              files: files.map((file) => ({ filename: file.filename, previous_filename: file.previous_filename })),
+            });
 
-            // Blocked paths (privacy/cleanliness)
-            for (const p of changed) {
-              if (rolemap.blockedExact?.includes(p)) {
-                fail(`Blocked file changed: ${p}`);
-              }
-              for (const pref of (rolemap.blockedPrefixes || [])) {
-                if (p.startsWith(pref)) fail(`Blocked path changed: ${p}`);
-              }
-              // Extra safety: never allow env files anywhere
-              if (p.includes(".env")) fail(`Blocked: env-related file changed: ${p}`);
+            if (!result.ok) {
+              for (const error of result.errors) core.error(error);
+              fail(`Role guardrails failed (${result.errors.length} issue(s)) against base policy ${baseSha}:\n- ${result.errors.join("\n- ")}`);
             }
 
-            // Determine per-file requirements
-            const violations = [];
-            let evidenceRequired = false;
-
-            function matchRule(path) {
-              for (const r of (rolemap.rules || [])) {
-                for (const pref of (r.pathsPrefix || [])) {
-                  if (path.startsWith(pref)) return r;
-                }
-              }
-              return null;
-            }
-
-            for (const p of changed) {
-              const rule = matchRule(p);
-              const allowed = rule ? rule.allowedRoles : (rolemap.defaultAllowedRoles || []);
-              const needsEvidence = rule ? !!rule.evidenceRequired : false;
-
-              if (needsEvidence) evidenceRequired = true;
-
-              // If verifier bypass enabled, skip allowedRoles checks entirely.
-              if (!(isVerifier && verifierBypass)) {
-                if (!allowed.includes(role)) {
-                  violations.push({ file: p, rule: rule ? rule.id : "default", allowed });
-                }
-              }
-            }
-
-            if (violations.length) {
-              const lines = violations.slice(0, 25).map(v =>
-                `- ${v.file} (rule: ${v.rule}) allowed: ${v.allowed.join(", ")}`
-              ).join("\n");
-              fail(`Role '${role}' is not allowed for some changed files:\n${lines}`);
-            }
-
-            // Evidence section check (only when required)
-            if (evidenceRequired) {
-              const sectionTitle = (rolemap.evidenceSectionTitle || "Evidence").trim();
-              const evidenceText = extractSectionMarkdown(body, sectionTitle);
-
-              if (!evidenceText) {
-                fail(`Evidence required, but no '${sectionTitle}' section found in PR body. Add:\n\n## ${sectionTitle}\n- N/A — <why>\n`);
-              }
-
-              if (!hasMeaningfulEvidence(evidenceText)) {
-                fail(`Evidence required, but '${sectionTitle}' section appears empty. Put at least one line (e.g. "- pnpm -C portal build: PASS" or "- N/A — policy-only change").`);
-              }
-            }
-
-            core.info(`Role guardrails passed. role=${role}. verifierBypass=${verifierBypass}. evidenceRequired=${evidenceRequired}. files=${changed.length}`);
+            core.info(`Role guardrails passed. role=${result.role} verifierBypass=${result.verifierBypass} evidenceRequired=${result.evidenceRequired} paths=${result.checkedPaths.length} policyRef=${baseSha}`);

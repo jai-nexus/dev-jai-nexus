@@ -1,0 +1,13 @@
+# Canonical human owner for dev-jai-nexus.
+#
+# B9-CLASS-007: merge and branch deletion are human-only. AI seats
+# (ARCHITECT, BUILDER, VERIFIER) are never code owners.
+#
+# Ruleset 11506548 has require_code_owner_review: false. This file names the
+# owner and routes review requests; it does not block a solo author's own PRs.
+# Turning on code-owner review is a separate human ruleset decision.
+
+*               @JerryIngram
+/.github/**     @JerryIngram
+/roles/**       @JerryIngram
+/.nexus/**      @JerryIngram

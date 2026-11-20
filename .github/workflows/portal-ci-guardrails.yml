@@ -89,6 +89,15 @@ jobs:
           set -euo pipefail
           pnpm install --frozen-lockfile
 
+      - name: Guardrail - role guardrails policy regressions
+        run: node --test portal/scripts/role-guardrails-policy.test.cjs
+
+      - name: Guardrail - required control-plane test runner regressions
+        run: node --test portal/scripts/run-required-control-plane-tests.test.mjs
+
+      - name: Guardrail - required control-plane test manifest check
+        run: node portal/scripts/run-required-control-plane-tests.mjs --check
+
       - name: Guardrail - forbid generated Prisma imports
         shell: pwsh
         run: |
@@ -100,6 +109,13 @@ jobs:
         run: |
           set -euo pipefail
           pnpm exec prisma validate
+
+      # Q4M11Y26-P2:A2 advisory A-1, enforced by A3-G.
+      - name: Guardrail - offline Prisma wrapper regressions
+        run: node --test portal/scripts/prisma-offline.test.mjs
+
+      - name: Guardrail - offline Prisma validate
+        run: node portal/scripts/prisma-offline.mjs validate
 
       - name: Guardrail - Type check
         shell: bash
@@ -134,83 +150,25 @@ jobs:
       - name: CI-B - Package Format 2 regressions
         run: node --test portal/scripts/validate-package-format-2.test.mjs
 
-      - name: Guardrail - bounded control-plane behavioral tests
+      # Kept from the previous loop, independent of the manifest: if the local
+      # operating loop source exists, its test must exist and stay pinned.
+      - name: Guardrail - local operating loop test pairing
         shell: bash
-        working-directory: portal
         run: |
           set -euo pipefail
-          node <<'NODE'
-          const fs = require("node:fs");
-          const path = require("node:path");
-          const { spawnSync } = require("node:child_process");
+          source_file="portal/src/lib/controlPlane/motionKernel/local-operating-loop.ts"
+          test_file="portal/src/lib/controlPlane/motionKernel/local-operating-loop.test.ts"
+          if [[ -f "$source_file" ]]; then
+            [[ -f "$test_file" ]] || { echo "Required test missing: $source_file exists but $test_file does not."; exit 1; }
+            grep -Fq '"motionKernel/local-operating-loop.test.ts"' portal/scripts/control-plane-required-tests-v0.json \
+              || { echo "Required test not pinned in control-plane-required-tests-v0.json: $test_file"; exit 1; }
+          fi
 
-          const testRoot = path.join("src", "lib", "controlPlane");
-          const loopSource = path.join(
-            testRoot,
-            "motionKernel",
-            "local-operating-loop.ts",
-          );
-          const loopTest = path.join(
-            testRoot,
-            "motionKernel",
-            "local-operating-loop.test.ts",
-          );
-
-          function discoverTests(directory) {
-            return fs
-              .readdirSync(directory, { withFileTypes: true })
-              .flatMap((entry) => {
-                const entryPath = path.join(directory, entry.name);
-                if (entry.isDirectory()) {
-                  return discoverTests(entryPath);
-                }
-                return entry.isFile() && entry.name.endsWith(".test.ts")
-                  ? [entryPath]
-                  : [];
-              });
-          }
-
-          if (fs.existsSync(loopSource) && !fs.existsSync(loopTest)) {
-            console.error(
-              `Required test missing: ${loopSource} exists but ${loopTest} does not.`,
-            );
-            process.exit(1);
-          }
-
-          const testFiles = discoverTests(testRoot).sort((left, right) =>
-            Buffer.compare(Buffer.from(left), Buffer.from(right)),
-          );
-
-          if (testFiles.length === 0) {
-            console.error(
-              `No bounded control-plane tests discovered beneath ${testRoot}.`,
-            );
-            process.exit(1);
-          }
-
-          if (fs.existsSync(loopSource) && !testFiles.includes(loopTest)) {
-            console.error(`Required test was not discovered: ${loopTest}`);
-            process.exit(1);
-          }
-
-          console.log(
-            `Discovered ${testFiles.length} control-plane behavioral tests.`,
-          );
-          for (const testFile of testFiles) {
-            console.log(`Running ${JSON.stringify(testFile)}`);
-            const result = spawnSync(
-              "corepack",
-              ["pnpm", "exec", "tsx", testFile],
-              { stdio: "inherit" },
-            );
-            if (result.error) {
-              throw result.error;
-            }
-            if (result.status !== 0) {
-              process.exit(result.status ?? 1);
-            }
-          }
-          NODE
+      # Replaces the ad-hoc discovery loop: --run re-checks the pinned >= 32
+      # manifest, then executes every discovered control-plane *.test.ts
+      # (pinned or not) and fails on any missing, skipped, or failing test.
+      - name: Guardrail - required control-plane behavioral tests
+        run: node portal/scripts/run-required-control-plane-tests.mjs --run
 
       - name: Build portal
         shell: bash

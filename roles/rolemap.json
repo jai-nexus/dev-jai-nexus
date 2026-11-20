@@ -1,6 +1,14 @@
 {
     "repo": "dev-jai-nexus",
     "rolePrefix": "JAI::DEV::",
+    "verifierBypassAllowedRoles": false,
+    "knownRoles": [
+        "JAI::DEV::OPERATOR",
+        "JAI::DEV::ARCHITECT",
+        "JAI::DEV::BUILDER",
+        "JAI::DEV::VERIFIER",
+        "JAI::DEV::LIBRARIAN"
+    ],
     "blockedPrefixes": [
         ".tmp/",
         ".vercel/",
@@ -58,6 +66,30 @@
             "id": "github-workflows",
             "pathsPrefix": [
                 ".github/workflows/"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "github-codeowners",
+            "pathsPrefix": [
+                ".github/CODEOWNERS"
+            ],
+            "allowedRoles": [
+                "JAI::DEV::VERIFIER"
+            ],
+            "evidenceRequired": true
+        },
+        {
+            "id": "ci-guardrail-scripts",
+            "pathsPrefix": [
+                "portal/scripts/role-guardrails-policy.cjs",
+                "portal/scripts/role-guardrails-policy.test.cjs",
+                "portal/scripts/control-plane-required-tests-v0.json",
+                "portal/scripts/run-required-control-plane-tests.mjs",
+                "portal/scripts/run-required-control-plane-tests.test.mjs"
             ],
             "allowedRoles": [
                 "JAI::DEV::VERIFIER"
