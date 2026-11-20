@@ -1,0 +1,84 @@
+motion_id: motion-0249
+governing_motion: motion-0248
+amendment_number: 1
+policy:
+  authority_origin: VERIFIED_HUMAN_OPERATOR
+  decision_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-RATIFY-OPTION-H-AND-AMEND-MOTION-0248-v0"
+  recording_route: "CT-2026-11-19-Q3M7Y26-P2-OPENING-PACKAGE-PR-v0"
+  workflow_role: CONTROL_THREAD
+  execution_role: "JAI::DEV::BUILDER"
+  decision_authority: HUMAN_OPERATOR_CONTROL_THREAD_ONLY
+  advisory_participants: [CHATGPT, CLAUDE, GEMINI]
+  advisory_participation_is_council_vote: false
+  jai_council_votes: 0
+  votes_fabricated: false
+  controlling_prior_motion: motion-0248
+  fixed_four_program_sequence_preserved: true
+  program_2_code: Q3M7Y26-P2
+  program_2_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+  program_1_state: CLOSED_ACCEPTED
+  program_2_before_control_opening: RESERVED_NOT_OPENED
+  active_program_count_before_opening: 0
+  active_program_invariant: "active_program_count <= 1"
+  opening_receipt_posture: CANDIDATE_PENDING_MERGE_AND_CONTROL_ACCEPTANCE
+  opening_effect_when_separately_accepted: PROGRAM_COORDINATION_AND_BATCH_PLANNING_ONLY
+  motion_and_pr_merge_auto_open_program: false
+  lane_execution_from_opening: false
+  lane_execution_requires: EXACT_SEPARATE_SINGLE_REPOSITORY_CONTROL_THREAD_ROUTE
+  topology:
+    batch_a: [A1, A2, A3]
+    batch_b: [B1, B2, B3, B4, B5]
+    batch_c: [C1, C2, C3, C4]
+    peer_lanes: [B2, B3, B4]
+    b5_parent_direct_repository_write: false
+    batch_c_external_technical_prerequisites: [A2, B1]
+    b2_through_b5_holds_freeze_batch_c: false
+  prerequisite_interpretation:
+    decision: "CT-DECISION-2026-11-19-Q3M7Y26-P2-DURABLE-LIFECYCLE-PREREQUISITE-RULING-v0"
+    established: GIT_COMMITTED_DOCUMENTARY_AND_SCHEMA_CEILING
+    not_established: [DURABLE_RUNTIME_DECISION_STORE, DATABASE_BACKED_IDEMPOTENT_RETRY]
+    b1_dependency: A1_FLEET_IDENTITY_ONLY
+  null_result:
+    independently_reproducible_preregistered_null: HUMAN_MAY_ACCEPT_CLOSED_ACCEPTED
+    ordinary_missed_threshold: HOLD_OR_REVISE
+    closed_no_go_reserved_for: [AUTHORITY_BREACH, INTEGRITY_BREACH, UNVERIFIABLE_EVIDENCE]
+    final_disposition_automatic: false
+  economics:
+    layer_1: SUBSCRIPTION_CASH_ALLOCATE_ONCE
+    layer_2: METERED_API_CASH_AUTHORIZED_USD_0_00
+    layer_3: TOKEN_EQUIVALENT_NON_CASH
+    layer_4: FOUNDER_MINUTES_NON_CASH
+    non_cash_summed_as_cash: false
+    monthly_allocation_cap_usd: 200.00
+    authorized_layer_2_usd: 0.00
+    potential_treasury_deposit_is_spend_approval: false
+  shadow_boundaries:
+    simulation: SHADOW_MANUAL_REPLAY_ONLY
+    same_model_correlation_must_be_disclosed: true
+    provider_neutral: true
+    five_slots_imply_five_independent_models: false
+    live_agent_or_council: DORMANT_PRESERVED
+    host_or_clone_root_writes: NOT_AUTHORIZED
+    speculative_forks: CANDIDATE_MOTION_0250_ONLY
+  linear:
+    posture: MIRROR_ONLY
+    project_p1: P-JAI-12
+    project_p2: P-JAI-13
+    pre_staging_waiver: "CT-DECISION-2026-11-19-Q3M7Y26-P2-LINEAR-BACKLOG-PRE-STAGING-AUTHORIZATION-v0"
+    backlog_status_is_opening: false
+  repository:
+    builder_write_repo: jai-nexus/dev-jai-nexus
+    allowed_new_paths: ELEVEN_EXACT_PATHS_IN_CONTROL_THREAD_ROUTE
+    branch: chore/q3m7y26-p2-constitutional-opening-v0
+    merge_authorized: false
+    linear_mutation_authorized: false
+  non_authorizations:
+    - NO_LIVE_PROVIDER_OR_API_SPEND
+    - NO_DATABASE_OR_PRODUCTION_MUTATION
+    - NO_AUTONOMOUS_AGENT_OR_COUNCIL_EXECUTION
+    - NO_CROSS_REPOSITORY_WRITES
+    - NO_PROGRAM_OPENING_FROM_PR_CREATION
+    - NO_AUTOMATIC_BATCH_LANE_EXECUTION
+    - NO_GITHUB_MERGE_WITHOUT_INDEPENDENT_VERIFIER_AND_CONTROL_ACCEPTANCE
+    - NO_JAI_ACTIVATION
+  zero_gates_granted: true

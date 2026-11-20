@@ -1,0 +1,43 @@
+{
+  "motion_id": "motion-0249",
+  "amends_motion": "motion-0248",
+  "status": "HUMAN_RATIFIED_WITH_EXTERNAL_ADVISORY_DELIBERATION",
+  "authority_origin": "VERIFIED_HUMAN_OPERATOR",
+  "decision_id": "CT-DECISION-2026-11-19-Q3M7Y26-P2-RATIFY-OPTION-H-AND-AMEND-MOTION-0248-v0",
+  "result": "NOT_APPLICABLE_NO_JAI_COUNCIL_VOTE",
+  "votes": [],
+  "vote_total": 0,
+  "quorum_asserted": false,
+  "synthetic_votes_created": false,
+  "jai_agent_participation": false,
+  "jai_council_participation": false,
+  "autonomous_provider_dispatch": false,
+  "external_advisory_seats": [
+    {
+      "seat": "JAI::DEV::BUILDER",
+      "platform": "ChatGPT",
+      "role": "advisory",
+      "vote_cast": false,
+      "reported_finding": "Commercial demand check reported 0/10; Option C withdrawn."
+    },
+    {
+      "seat": "JAI::DEV::VERIFIER",
+      "platform": "Claude",
+      "role": "advisory",
+      "vote_cast": false,
+      "reported_finding": "69-repository audit and frozen audit-nexus evidence were considered; 14-lane Option A withdrawn."
+    },
+    {
+      "seat": "JAI::DEV::ARCHITECT",
+      "platform": "Gemini",
+      "role": "advisory",
+      "vote_cast": false,
+      "reported_finding": "Separation of powers keeps audit-nexus a read-only verifier, not a ledger writer."
+    }
+  ],
+  "notes": [
+    "The three external advisory seat summaries are CONTROL_THREAD-supplied deliberation provenance, not authenticated JAI Agent messages.",
+    "Only the VERIFIED_HUMAN_OPERATOR / CONTROL_THREAD ratified Option H and motion-0249.",
+    "No autonomous Council voting, independent-model consensus, or execution authorization is established by this compatibility artifact."
+  ]
+}

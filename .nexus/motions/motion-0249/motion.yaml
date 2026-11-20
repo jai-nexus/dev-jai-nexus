@@ -1,0 +1,106 @@
+motion_id: motion-0249
+version: "0.1"
+protocol_version: "0.3.8"
+title: "Motion 0248 Amendment 1: Pre-Kernel Fleet Substrate Batches A–B, Non-Freezing Null-Result Rule, and Batch C Dependency Scoping"
+subtitle: "human-ratified amendment to the reserved Program 2 planning envelope; no Program opening"
+kind: governance-policy
+program: jai-governance-intelligence-sequential-activation-portfolio-v0
+governing_motion: motion-0248
+amends_motion: motion-0248
+amendment_number: 1
+amendment_posture: "RATIFIED_BY_VERIFIED_HUMAN_OPERATOR / REPOSITORY_INTEGRATION_PENDING"
+main_baseline: "2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8"
+status: ratified
+authority_origin: VERIFIED_HUMAN_OPERATOR
+decision_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-RATIFY-OPTION-H-AND-AMEND-MOTION-0248-v0"
+decision: RATIFY_SINGLE_PROGRAM_OPTION_H_AND_MOTION_0249_AMENDMENT
+decision_route: "HUMAN_OPERATOR_DIRECT / THREE_SEAT_ADVISORY_DELIBERATION / NO_JAI_COUNCIL_VOTE"
+workflow_role: CONTROL_THREAD
+execution_role: "JAI::DEV::BUILDER"
+recording_route: "CT-2026-11-19-Q3M7Y26-P2-OPENING-PACKAGE-PR-v0"
+recording_decision: "CT-DECISION-2026-11-19-Q3M7Y26-P2-AUTHORIZE-OPENING-PACKAGE-BRANCH-AND-PR-v0"
+batch: PRE-PROGRAM
+wave: MOTION-0249-OPENING-PACKAGE
+lane: M0249-RECORD
+nhid: "NOT_ASSIGNED / NUMERICAL_HIERARCHY_ID_COORDINATION_ONLY"
+program_code: Q3M7Y26-P2
+program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_state: RESERVED_NOT_OPENED
+predecessor_program_code: Q3M7Y26-P1
+predecessor_program_state: CLOSED_ACCEPTED
+recognized_active_program_count: 0
+active_program_invariant: "active_program_count <= 1"
+portfolio_program_order:
+  - jai-governance-intelligence-main-state-operating-loop-v0
+  - jai-five-slot-compounded-reasoning-shadow-kernel-v0
+  - jai-founder-developer-workflow-pilot-v0
+  - jai-agent-council-bounded-activation-pilot-v0
+option_selection:
+  selected: "OPTION_H / SINGLE_PROGRAM_PRE_KERNEL_FLEET_SUBSTRATE"
+  withdrawn: ["OPTION_C", "OPTION_A"]
+  speculative_conjecture_chambers: "DORMANT_PRESERVED / CANDIDATE_MOTION_0250"
+program_2_topology:
+  batch_a:
+    lanes: [A1, A2, A3]
+    scope: "canonical fleet registry, hermetic verification, least privilege and CI boundaries"
+  batch_b:
+    lanes: [B1, B2, B3, B4, B5]
+    scope: "append-only Git ledger, fleet export, derived orchestrator view, independent audit, cold reconstruction"
+  batch_c:
+    lanes: [C1, C2, C3, C4]
+    scope: "five-slot contract, deterministic replay, preregistered benchmark, independent cold closeout candidate"
+  repository_write_policy: "one exact repository per separately routed lane; B5 parent has no repository write"
+  batch_c_external_technical_dependencies: [A2, B1]
+  batch_c_not_blocked_by_unresolved: [B2, B3, B4, B5]
+null_result_policy:
+  preregistered_reproducible_null: "ELIGIBLE_FOR_HUMAN_CLOSED_ACCEPTED_DISPOSITION"
+  inconclusive_or_incomplete: "HOLD_OR_REVISE_PENDING_CONTROL_DECISION"
+  closed_no_go_reserved_for: ["AUTHORITY_BREACH", "INTEGRITY_BREACH", "UNVERIFIABLE_EVIDENCE"]
+  automatic_close: false
+durability_prerequisite:
+  decision: "CT-DECISION-2026-11-19-Q3M7Y26-P2-DURABLE-LIFECYCLE-PREREQUISITE-RULING-v0"
+  ceiling: "P1_GIT_COMMITTED_DOCUMENTARY_AND_SCHEMA_ONLY / NO_DB_RUNTIME_DURABILITY"
+  posture: "PROJECT_LEVEL_OPENING_PREREQUISITE / NOT_B1_LANE_DEPENDENCY"
+planning_mirror:
+  project: P-JAI-13
+  status: BACKLOG_ONLY
+  program_opening_authority: false
+  step_3_receipt: "CLAUDE_P2_STEP_3_LINEAR_BATCH_CREATION_MIRROR_RECEIPT_V0_FINAL"
+  step_4_receipt: "CHATGPT_P2_STEP_4_LINEAR_MIRROR_READ_BACK_RECEIPT_V0"
+control_decisions:
+  - "CT-DECISION-2026-11-19-Q3M7Y26-P2-RATIFY-OPTION-H-AND-AMEND-MOTION-0248-v0"
+  - "CT-DECISION-2026-11-19-Q3M7Y26-P2-DURABLE-LIFECYCLE-PREREQUISITE-RULING-v0"
+  - "CT-DECISION-2026-11-19-Q3M7Y26-P2-LINEAR-BACKLOG-PRE-STAGING-AUTHORIZATION-v0"
+  - "CT-DECISION-2026-11-19-WALLET-M12-FUNDING-AND-FOUR-LAYER-COST-RULE-v0"
+economics:
+  monthly_allocation_cap_usd: 200.00
+  authorized_layer_2_metered_api_spend_usd: 0.00
+  layer_3_token_equivalent: NON_CASH
+  layer_4_founder_minutes: NON_CASH
+deliberation:
+  status: THREE_EXTERNAL_ADVISORY_SEATS_REVIEWED
+  advisory_seats: [CHATGPT_BUILDER, CLAUDE_VERIFIER, GEMINI_ARCHITECT]
+  council_votes_cast: 0
+  autonomous_jai_council_participation: false
+  autonomous_jai_agent_participation: false
+  synthetic_votes_created: false
+opening_policy:
+  fresh_main_state_receipt_required: true
+  separate_human_control_acceptance_required: true
+  named_p2_opening_receipt_required: true
+  opening_scope: PROGRAM_COORDINATION_AND_BATCH_PLANNING_ONLY
+  batch_lane_execution_requires_separate_exact_route: true
+  main_integration_alone_not_opening: true
+activation_state:
+  jai: NOT_ACTIVATED
+  agents_and_council: DORMANT_PRESERVED
+  provider_dispatch: NOT_AUTHORIZED
+  database_runtime: NOT_AUTHORIZED
+  automatic_program_opening: NOT_AUTHORIZED
+target:
+  domain: dev.jai.nexus
+  repo: dev-jai-nexus
+auto_ratify:
+  enabled: false
+checks_required: [validate_motion, typecheck]
+checks_optional: [validate_agency]

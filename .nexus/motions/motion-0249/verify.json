@@ -1,0 +1,100 @@
+{
+  "motion_id": "motion-0249",
+  "verification_posture": "BUILDER_LOCAL_VALIDATION_WITH_GENERATED_SNAPSHOT_SCOPE_HOLD",
+  "validation_role": "JAI::DEV::BUILDER",
+  "independent_verifier_role": "JAI::DEV::VERIFIER",
+  "independent_verification": "NOT_YET_PERFORMED",
+  "authority_origin": "VERIFIED_HUMAN_OPERATOR",
+  "baseline_sha": "2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8",
+  "status": "HOLD_SNAPSHOT_DRIFT_OUTSIDE_EXACT_ALLOWLIST",
+  "summary": {
+    "required_ok": false,
+    "schema_and_source_tests_ok": true,
+    "source_test_files_discovered": 32,
+    "fallback_test_cases_passed": 44,
+    "fallback_test_cases_failed": 0,
+    "unresolved_generated_snapshot_check_exit_code": 1,
+    "local_node_version": "v24.22.3",
+    "ci_node_22_execution": "NOT_REPRODUCED_LOCALLY"
+  },
+  "checks": [
+    {
+      "id": "validate_motion",
+      "command": "node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0249/motion.yaml",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "validate_sandbox_fixtures",
+      "command": "node portal/scripts/validate-sandbox-fixtures.mjs",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "json_yaml_parse",
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "The three YAML and two JSON motion-0249 files parsed with the checked-out portal dependencies."
+    },
+    {
+      "id": "portal_lint",
+      "command": "corepack pnpm -C portal lint",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "portal_typecheck",
+      "command": "corepack pnpm -C portal typecheck",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "control_plane_ci_style_launcher",
+      "command": "corepack pnpm exec tsx <each of 32 control-plane test files>",
+      "status": "UNAVAILABLE_BEFORE_TESTS",
+      "exit_code": 1,
+      "note": "tsx CLI IPC server was denied listen EPERM in this sandbox, before any test loaded."
+    },
+    {
+      "id": "control_plane_behavioral_fallback",
+      "command": "node --import tsx --test --test-concurrency=1 <all 32 discovered controlPlane/*.test.ts files>",
+      "status": "PASS",
+      "exit_code": 0,
+      "test_files": 32,
+      "test_cases": 44,
+      "failed": 0,
+      "node_version": "v24.22.3"
+    },
+    {
+      "id": "motion_snapshot_current_check",
+      "command": "node portal/scripts/build-motion-snapshot.mjs --check",
+      "status": "FAIL_SCOPE_BLOCKER",
+      "exit_code": 1,
+      "note": "Generated portal/src/lib/motion/motionSnapshot.json contains 247 motions ending at motion-0248; adding motion-0249 requires a 248-motion snapshot update. That generated path is outside the authorized eleven-file allowlist; no snapshot write performed."
+    },
+    {
+      "id": "exact_file_scope",
+      "command": "git diff --cached --name-only",
+      "status": "PASS",
+      "exit_code": 0,
+      "files_changed": 11,
+      "note": "Exactly eight motion-0249 files and the three authorized docs/reference files are staged; no production, schema, CI, or generated snapshot file changed."
+    },
+    {
+      "id": "git_whitespace",
+      "command": "git diff --cached --check",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "scope_check": "PASS_ELEVEN_AUTHORIZED_PATHS_ONLY",
+  "runtime_observation": "NOT_PERFORMED",
+  "provider_api_spend_usd": "0.00",
+  "program_2_opening": "NOT_ISSUED",
+  "merge_authorized": false,
+  "notes": [
+    "The Builder has not performed an independently authorized Motion Snapshot regeneration. CONTROL_THREAD must resolve the exact scope expansion or explicitly accept the stale-snapshot limitation before publication proceeds.",
+    "No JAI Council, model/provider runtime, database, deployment, or autonomous Agent capability was tested or activated.",
+    "CONTROL_THREAD B9-CLASS-007 acceptance and GitHub integration are still pending."
+  ]
+}

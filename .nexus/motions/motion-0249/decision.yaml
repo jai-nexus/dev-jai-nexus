@@ -1,0 +1,74 @@
+motion_id: motion-0249
+decision_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-RATIFY-OPTION-H-AND-AMEND-MOTION-0248-v0"
+recording_authorization_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-AUTHORIZE-OPENING-PACKAGE-BRANCH-AND-PR-v0"
+decision_date: "2026-11-19"
+status: RATIFIED_BY_VERIFIED_HUMAN_OPERATOR
+result: PASS_AT_DOCUMENTARY_POLICY_CEILING
+ratified_by: VERIFIED_HUMAN_OPERATOR
+recorded_by: "JAI::DEV::BUILDER"
+source_basis: "HUMAN_OPERATOR / CONTROL_THREAD supplied direct ratification"
+decision: RATIFY_SINGLE_PROGRAM_OPTION_H_AND_MOTION_0249_AMENDMENT
+amends: motion-0248
+amendment_title: "Motion 0248 Amendment 1: Pre-Kernel Fleet Substrate Batches A–B, Non-Freezing Null-Result Rule, and Batch C Dependency Scoping"
+program_effect:
+  program_code: Q3M7Y26-P2
+  program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+  predecessor_state: CLOSED_ACCEPTED
+  program_2_state_at_recording: RESERVED_NOT_OPENED
+  program_opened: false
+  batch_opened: false
+  lane_execution_routed: false
+  active_program_count: 0
+  active_program_invariant: "active_program_count <= 1"
+  existing_four_program_sequence_unchanged: true
+ratified_adaptation:
+  selected_path: OPTION_H_SINGLE_PROGRAM
+  batch_a: [A1, A2, A3]
+  batch_b: [B1, B2, B3, B4, B5]
+  batch_c: [C1, C2, C3, C4]
+  parent_b5_has_no_repo_write: true
+  batch_c_external_technical_dependencies: [A2, B1]
+  batch_c_may_proceed_on_b2_b5_hold: true
+  null_result_may_close_accepted_only_by_human: true
+  closed_no_go_integrity_or_authority_only: true
+  option_a_14_lane_design: WITHDRAWN
+  option_c_commercial_design: WITHDRAWN
+  conjecture_chambers_motion_0250: DORMANT_PRESERVED_CANDIDATE
+durability_ruling:
+  decision_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-DURABLE-LIFECYCLE-PREREQUISITE-RULING-v0"
+  p1_ceiling: DOCUMENTARY_SCHEMA_ONLY
+  runtime_db_durability_claim: NONE
+linear_pre_staging:
+  decision_id: "CT-DECISION-2026-11-19-Q3M7Y26-P2-LINEAR-BACKLOG-PRE-STAGING-AUTHORIZATION-v0"
+  source: CHATGPT_P2_LINEAR_PLAN_SPECIFICATION_V0_R1
+  step_3_receipt: CLAUDE_P2_STEP_3_LINEAR_BATCH_CREATION_MIRROR_RECEIPT_V0_FINAL
+  step_4_receipt: CHATGPT_P2_STEP_4_LINEAR_MIRROR_READ_BACK_RECEIPT_V0
+  mirror_ceiling: B9-CLASS-013_ONLY
+  project: P-JAI-13
+  planned_issue_count: 12
+four_layer_cost:
+  decision_id: "CT-DECISION-2026-11-19-WALLET-M12-FUNDING-AND-FOUR-LAYER-COST-RULE-v0"
+  layer_2_authorized_usd: 0.00
+  monthly_cap_usd: 200.00
+  non_cash_not_booked_as_cash: true
+deliberation:
+  external_advisory_seats: [ChatGPT, Claude, Gemini]
+  ratification_origin: VERIFIED_HUMAN_OPERATOR
+  council_voting_occurred: false
+  votes: []
+  synthetic_votes: false
+repository_integration:
+  baseline: "2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8"
+  state: PENDING_OPEN_PR_AND_INDEPENDENT_VERIFICATION
+  merge_authorized_by_recording_route: false
+  independent_verifier: "JAI::DEV::VERIFIER / Claude"
+  independent_verification_receipt: PENDING_B9_CLASS_006
+  control_acceptance_receipt: PENDING_B9_CLASS_007
+next_authorized_action: OPEN_BOUNDED_CONSTITUTIONAL_PACKAGE_PR_FOR_INDEPENDENT_REVIEW
+non_authorizations:
+  - PROGRAM_OPENING_NOT_EFFECTIVE
+  - NO_LIVE_PROVIDER_AGENT_COUNCIL_OR_DATABASE
+  - NO_RUNTIME_PERSISTENCE_OR_PRODUCTION_GATES
+  - NO_GITHUB_MERGE_WITHOUT_SEPARATE_CONTROL_ACCEPTANCE
+  - NO_LAYER_2_API_SPEND
+  - NO_LANE_EXECUTION_FROM_PROGRAM_OPENING
