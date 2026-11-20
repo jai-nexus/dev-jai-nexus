@@ -1,0 +1,10 @@
+# Frozen prior under CT-DECISION-2026-11-20-ALIGN-P2-OPENING-TO-MERGED-FORMAT2-SCHEMA-AND-SET-PRIORS-v0
+document_kind: lane_estimate
+package_format: 2
+corpus_id: corpus-v1
+motion_id: motion-0248
+program_code: Q4M11Y26-P2
+program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_slug: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+lane_coordinate: B2
+prior_estimate_founder_minutes: 35
