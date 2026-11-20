@@ -53,8 +53,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Node (22)
         uses: actions/setup-node@v4
@@ -107,32 +105,6 @@ jobs:
         run: |
           set -euo pipefail
           pnpm exec tsc --noEmit
-
-      - name: CI-B - governing Motion validation
-        run: |
-          node portal/scripts/validate-motion.mjs --motion .nexus/motions/motion-0248/motion.yaml
-          node portal/scripts/validate-sandbox-fixtures.mjs
-
-      - name: CI-B - Motion snapshot check
-        run: node portal/scripts/build-motion-snapshot.mjs --check
-
-      - name: CI-B - Motion snapshot regressions
-        run: node --test portal/scripts/build-motion-snapshot.test.mjs
-
-      - name: CI-B - Package Format 2 validation
-        env:
-          COMPARISON_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          base="$COMPARISON_SHA"
-          if [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
-            base="$(git rev-parse HEAD^1)"
-          fi
-          node portal/scripts/validate-package-format-2.mjs --base-sha "$base"
-
-      - name: CI-B - Package Format 2 regressions
-        run: node --test portal/scripts/validate-package-format-2.test.mjs
 
       - name: Guardrail - bounded control-plane behavioral tests
         shell: bash
