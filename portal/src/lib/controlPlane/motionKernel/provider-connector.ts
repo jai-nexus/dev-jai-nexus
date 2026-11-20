@@ -1,5 +1,6 @@
 import "server-only";
 
+import { evaluateA3InferenceGate } from "./a3-inference-gates";
 import { createMockDeliberationParticipantOutput } from "./live-model-slot-adapter";
 import { normalizeProviderParticipantOutput } from "./provider-output-normalization";
 import {
@@ -16,7 +17,10 @@ export async function runSecureProviderDeliberationConnector(
 ): Promise<ProviderDeliberationConnectorResult> {
   const status = getSafeProviderStatus();
 
-  if (!status.providerConfigured) {
+  const gate = evaluateA3InferenceGate({
+    env: process.env, mode: "env_gated_provider", phase: "provider_dispatch",
+  });
+  if (!gate.allowed || !status.providerConfigured) {
     return {
       status,
       participantOutput: {
@@ -25,11 +29,9 @@ export async function runSecureProviderDeliberationConnector(
         voteValue: status.liveInferenceEnabled ? "blocked" : "revise",
         ratificationRecommendation: "needs_revision",
         requiredRevisions: [
-          "Use mock mode until live provider configuration is complete.",
+          "Use advisory mock mode under the current Layer 2 spend ceiling.",
         ],
-        blockers: status.liveInferenceEnabled
-          ? ["Provider config is missing or incomplete."]
-          : [],
+        blockers: [status.advisoryMessage],
       },
       nonAuthorityDisclaimer:
         "Provider connector returned safe mock fallback; no live provider call was made.",

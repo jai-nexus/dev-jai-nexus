@@ -1,3 +1,5 @@
+import { getServerAuthSession } from "@/auth";
+import { evaluateA3InferenceGate } from "@/lib/controlPlane/motionKernel/a3-inference-gates";
 import { NextResponse } from "next/server";
 
 import {
@@ -12,7 +14,6 @@ import {
   type Motion,
 } from "@/lib/controlPlane/motionKernel";
 import { createMockDeliberationParticipantOutput } from "@/lib/controlPlane/motionKernel/live-model-slot-adapter";
-import { runSecureProviderDeliberationConnector } from "@/lib/controlPlane/motionKernel/provider-connector";
 import { getSafeProviderStatus } from "@/lib/controlPlane/motionKernel/server-provider-config";
 
 export const runtime = "nodejs";
@@ -26,8 +27,26 @@ interface ManualInferenceRequestBody {
   motionBasis?: Motion;
 }
 
+function deny(status: number, error: string) {
+  return NextResponse.json({
+    ok: false, error, persisted: false,
+    nonAuthorizations: ["No autonomous execution.", "Human / CONTROL_THREAD approval remains required."],
+  }, { status });
+}
+
 export async function POST(request: Request) {
+  const session = await getServerAuthSession();
+  if (!session?.user) return deny(401, "unauthorized");
+  const user = session.user;
+  if (!("role" in user) || user.role !== "ADMIN" || typeof user.email !== "string" || !user.email.trim()) {
+    return deny(403, "forbidden");
+  }
+
   const body = await parseBody(request);
+  const requestedMode = body.mode === undefined ? "mock" : body.mode;
+  const gate = evaluateA3InferenceGate({ env: process.env, mode: requestedMode, phase: "request" });
+  if (!gate.allowed) return deny(gate.status, gate.code.toLowerCase());
+
   const motion =
     normalizeMotionBasis(body.motionBasis) ??
     sampleMotionKernelMotions.find(
@@ -37,52 +56,39 @@ export async function POST(request: Request) {
     ? normalizeRoleSlotIds(body.roleSlotIds)
     : motion.roleSlotIds;
   const modelSlotId = normalizeModelSlotId(body.modelSlotId);
-  const requestedMode = normalizeRequestedMode(body.mode);
 
-  const participantResults = await Promise.all(
-    roleSlotIds.map(async (roleSlotId) => {
-      const deliberationRequest = {
-        motion,
-        roleSlotId,
-        modelSlotId,
-        requestedMode,
-        operatorPrompt: [
-          motion.title,
-          motion.summary,
-          motion.controlThread.authorityNote,
-          motion.repoThread.authorityNote,
-        ].join("\n"),
-      };
+  const providerStatus = getSafeProviderStatus();
+  const participantResults = roleSlotIds.map((roleSlotId) => {
+    const deliberationRequest = {
+      motion,
+      roleSlotId,
+      modelSlotId,
+      requestedMode,
+      operatorPrompt: [
+        motion.title,
+        motion.summary,
+        motion.controlThread.authorityNote,
+        motion.repoThread.authorityNote,
+      ].join("\n"),
+    };
 
-      if (requestedMode === "env_gated_provider") {
-        const result =
-          await runSecureProviderDeliberationConnector(deliberationRequest);
-        return {
-          participantOutput: result.participantOutput,
-          connectorStatus: result.status,
-          nonAuthorityDisclaimer: result.nonAuthorityDisclaimer,
-        };
-      }
-
-      return {
-        participantOutput:
-          createMockDeliberationParticipantOutput(deliberationRequest),
-        connectorStatus: getSafeProviderStatus(),
-        nonAuthorityDisclaimer:
-          "Mock mode was selected; no provider connector call was made.",
-      };
-    }),
-  );
+    return {
+      participantOutput:
+        createMockDeliberationParticipantOutput(deliberationRequest),
+      connectorStatus: providerStatus,
+      nonAuthorityDisclaimer:
+        "Mock mode was selected; no provider connector call was made.",
+    };
+  });
   const participantOutputs = participantResults.map(
     (result) => result.participantOutput,
   );
   const aggregateRatification =
     deriveAdvisoryRatificationRecommendation(participantOutputs);
-  const providerStatus = getSafeProviderStatus();
   const historyRecord = buildDeliberationRunHistoryRecord({
     motionId: motion.id,
     motionTitle: motion.title,
-    sourceMode: getHistorySourceMode(requestedMode, providerStatus.mode),
+    sourceMode: "mock",
     connectorStatusSummary: providerStatus,
     participantOutputs,
     aggregateAdvisoryRatification: aggregateRatification,
@@ -106,6 +112,8 @@ export async function POST(request: Request) {
       "No provider secret storage.",
     ],
   });
+  const writeGate = evaluateA3InferenceGate({ env: process.env, mode: requestedMode, phase: "pre_persist" });
+  if (!writeGate.allowed) return deny(writeGate.status, writeGate.code.toLowerCase());
   const persistedHistoryRecord =
     await persistDeliberationRunHistory(historyRecord);
 
@@ -173,12 +181,6 @@ function normalizeModelSlotId(value: unknown): ModelSlotId {
   return "model-slot-mock-deliberator";
 }
 
-function normalizeRequestedMode(
-  value: unknown,
-): "mock" | "env_gated_provider" {
-  return value === "env_gated_provider" ? "env_gated_provider" : "mock";
-}
-
 function normalizeMotionBasis(value: unknown): Motion | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -200,22 +202,6 @@ function normalizeMotionBasis(value: unknown): Motion | null {
     return null;
   }
   return candidate;
-}
-
-function getHistorySourceMode(
-  requestedMode: "mock" | "env_gated_provider",
-  providerMode: ReturnType<typeof getSafeProviderStatus>["mode"],
-) {
-  if (requestedMode === "mock") {
-    return "mock";
-  }
-  if (providerMode === "provider_configured") {
-    return "provider";
-  }
-  if (providerMode === "provider_disabled") {
-    return "provider_disabled";
-  }
-  return "provider_unavailable";
 }
 
 async function parseBody(
