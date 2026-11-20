@@ -1,19 +1,22 @@
 {
   "motion_id": "motion-0249",
-  "verification_posture": "BUILDER_LOCAL_VALIDATION_WITH_GENERATED_SNAPSHOT_SCOPE_HOLD",
+  "verification_posture": "BUILDER_LOCAL_VALIDATION_COMPLETE_PENDING_INDEPENDENT_VERIFICATION",
   "validation_role": "JAI::DEV::BUILDER",
   "independent_verifier_role": "JAI::DEV::VERIFIER",
   "independent_verification": "NOT_YET_PERFORMED",
   "authority_origin": "VERIFIED_HUMAN_OPERATOR",
   "baseline_sha": "2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8",
-  "status": "HOLD_SNAPSHOT_DRIFT_OUTSIDE_EXACT_ALLOWLIST",
+  "status": "PASS_BUILDER_LOCAL_GATES / INDEPENDENT_VERIFICATION_PENDING",
   "summary": {
-    "required_ok": false,
+    "required_ok": true,
     "schema_and_source_tests_ok": true,
     "source_test_files_discovered": 32,
     "fallback_test_cases_passed": 44,
     "fallback_test_cases_failed": 0,
-    "unresolved_generated_snapshot_check_exit_code": 1,
+    "generated_snapshot_check_exit_code": 0,
+    "historical_snapshot_entries_unchanged": 247,
+    "new_motion_entries": 1,
+    "snapshot_determinism_tests_passed": 1,
     "local_node_version": "v24.22.3",
     "ci_node_22_execution": "NOT_REPRODUCED_LOCALLY"
   },
@@ -68,33 +71,41 @@
     {
       "id": "motion_snapshot_current_check",
       "command": "node portal/scripts/build-motion-snapshot.mjs --check",
-      "status": "FAIL_SCOPE_BLOCKER",
-      "exit_code": 1,
-      "note": "Generated portal/src/lib/motion/motionSnapshot.json contains 247 motions ending at motion-0248; adding motion-0249 requires a 248-motion snapshot update. That generated path is outside the authorized eleven-file allowlist; no snapshot write performed."
+      "status": "PASS",
+      "exit_code": 0,
+      "note": "Deterministic snapshot contains 248 motions. All 247 historical entry objects are exactly preserved; motion-0249 is the sole added entry. Top-level source hashes bind all source artifact bytes without using checkout mtimes."
+    },
+    {
+      "id": "snapshot_determinism_regression",
+      "command": "node --test portal/scripts/build-motion-snapshot.test.mjs",
+      "status": "PASS",
+      "exit_code": 0,
+      "test_cases": 1,
+      "note": "Isolated temporary repository proves timestamp-only changes remain stable; changes beyond preview truncation and missing or added motions cause --check to fail closed."
     },
     {
       "id": "exact_file_scope",
-      "command": "git diff --cached --name-only",
+      "command": "git diff --name-only origin/main...HEAD",
       "status": "PASS",
       "exit_code": 0,
-      "files_changed": 11,
-      "note": "Exactly eight motion-0249 files and the three authorized docs/reference files are staged; no production, schema, CI, or generated snapshot file changed."
+      "files_changed": 14,
+      "note": "Exactly eight motion-0249 files, three docs/reference files, generated snapshot, deterministic generator and one focused test are authorized."
     },
     {
       "id": "git_whitespace",
-      "command": "git diff --cached --check",
+      "command": "git diff --check",
       "status": "PASS",
       "exit_code": 0
     }
   ],
-  "scope_check": "PASS_ELEVEN_AUTHORIZED_PATHS_ONLY",
+  "scope_check": "PASS_FOURTEEN_AUTHORIZED_PATHS_ONLY",
   "runtime_observation": "NOT_PERFORMED",
   "provider_api_spend_usd": "0.00",
   "program_2_opening": "NOT_ISSUED",
   "merge_authorized": false,
   "notes": [
-    "The Builder has not performed an independently authorized Motion Snapshot regeneration. CONTROL_THREAD must resolve the exact scope expansion or explicitly accept the stale-snapshot limitation before publication proceeds.",
+    "CONTROL_THREAD's R1 and R2 decisions authorized the generated snapshot, deterministic generator, and optional focused test; no additional path was modified.",
     "No JAI Council, model/provider runtime, database, deployment, or autonomous Agent capability was tested or activated.",
-    "CONTROL_THREAD B9-CLASS-007 acceptance and GitHub integration are still pending."
+    "PR #444 remains unmerged. Independent B9-CLASS-006 verification and CONTROL_THREAD B9-CLASS-007 acceptance are pending."
   ]
 }

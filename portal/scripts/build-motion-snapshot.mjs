@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import yaml from "js-yaml";
 import { fileURLToPath } from "node:url";
 
@@ -128,23 +129,6 @@ function safeParseJson(text) {
   }
 }
 
-async function getMtime(targetPath) {
-  try {
-    const stats = await fs.stat(targetPath);
-    return stats.mtimeMs;
-  } catch {
-    return null;
-  }
-}
-
-function newestTimestamp(timestamps) {
-  const newest = timestamps.reduce((currentMax, value) => {
-    return value && Number.isFinite(value) ? Math.max(currentMax, value) : currentMax;
-  }, 0);
-
-  return newest > 0 ? new Date(newest).toISOString() : null;
-}
-
 function newestIsoTimestamp(values) {
   const newest = values.reduce((currentMax, value) => {
     if (!value) return currentMax;
@@ -153,6 +137,52 @@ function newestIsoTimestamp(values) {
   }, 0);
 
   return newest > 0 ? new Date(newest).toISOString() : FALLBACK_GENERATED_AT;
+}
+
+// Hash bytes and relative paths, never checkout metadata. Keeping the per-motion
+// digests at the top level preserves the 247 pre-existing entry objects verbatim.
+async function hashMotionSources(motionDir) {
+  const hash = createHash("sha256");
+
+  async function visit(directory, relativeDirectory = "") {
+    const children = (await fs.readdir(directory, { withFileTypes: true })).sort((a, b) =>
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+    );
+
+    for (const child of children) {
+      const relativePath = relativeDirectory
+        ? `${relativeDirectory}/${child.name}`
+        : child.name;
+      const absolutePath = path.join(directory, child.name);
+      if (child.isDirectory()) {
+        hash.update(`directory\0${relativePath}\0`);
+        await visit(absolutePath, relativePath);
+      } else if (child.isFile()) {
+        const contents = await fs.readFile(absolutePath);
+        hash.update(`file\0${relativePath}\0${contents.byteLength}\0`);
+        hash.update(contents);
+      } else {
+        throw new Error(`Unsupported motion artifact type: ${relativePath}`);
+      }
+    }
+  }
+
+  await visit(motionDir);
+  return hash.digest("hex");
+}
+
+function sourceTimestamp({ motionYaml, decisionYaml, voteJson }) {
+  return newestIsoTimestamp([
+    motionYaml?.updated_at,
+    motionYaml?.aligned_at,
+    motionYaml?.decided_at,
+    motionYaml?.created_at,
+    decisionYaml?.updated_at,
+    decisionYaml?.decided_at,
+    decisionYaml?.decision_date,
+    voteJson?.updated_at,
+    voteJson?.decided_at,
+  ]);
 }
 
 async function countPanelDirs(panelsPath) {
@@ -377,12 +407,6 @@ async function scanMotion(motionId) {
     detail: panelsPresent ? `${panelCount} panel${panelCount === 1 ? "" : "s"}` : null,
   });
 
-  const timestamps = await Promise.all([
-    ...CORE_ARTIFACT_KEYS.map((artifactKey) => getMtime(path.join(motionDir, artifactKey))),
-    ...SECONDARY_ARTIFACT_KEYS.map((artifactKey) => getMtime(path.join(motionDir, artifactKey))),
-    getMtime(panelsPath),
-  ]);
-
   const item = {
     motion_id: motionId,
     title: asString(motionYaml?.title ?? null) ?? motionId,
@@ -397,7 +421,7 @@ async function scanMotion(motionId) {
     vote_result: voteResult,
     created_at: createdAt,
     decided_at: decidedAt,
-    updated_at: newestTimestamp(timestamps),
+    updated_at: sourceTimestamp({ motionYaml, decisionYaml, voteJson }),
     queue_state: buildQueueState({
       decisionStatus,
       motionStatus,
@@ -418,6 +442,7 @@ async function scanMotion(motionId) {
     : null;
 
   return {
+    sourceHash: await hashMotionSources(motionDir),
     motion_id: motionId,
     item,
     core_artifacts: persistedCoreArtifacts,
@@ -442,7 +467,7 @@ async function scanMotion(motionId) {
   };
 }
 
-async function buildSnapshot() {
+async function buildSnapshot(currentSnapshot) {
   const entries = await fs.readdir(MOTIONS_ROOT, { withFileTypes: true });
   const motionIds = entries
     .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
@@ -450,8 +475,35 @@ async function buildSnapshot() {
     .sort((left, right) => parseMotionNumber(right) - parseMotionNumber(left));
 
   const snapshotEntries = [];
+  const sourceHashes = {};
+  const previousEntries = new Map(
+    Array.isArray(currentSnapshot?.entries)
+      ? currentSnapshot.entries.map((entry) => [entry.motion_id, entry])
+      : [],
+  );
+  const previousHashes = asRecord(currentSnapshot?.source_hashes_sha256);
   for (const motionId of motionIds) {
-    snapshotEntries.push(await scanMotion(motionId));
+    const { sourceHash, ...entry } = await scanMotion(motionId);
+    sourceHashes[motionId] = sourceHash;
+    const previous = previousEntries.get(motionId);
+    if (previous && typeof previous.item?.updated_at === "string") {
+      const withoutTimestamp = ({ item, ...rest }) => ({
+        ...rest,
+        item: { ...item, updated_at: null },
+      });
+      const projectedContentUnchanged =
+        JSON.stringify(withoutTimestamp(previous)) ===
+        JSON.stringify(withoutTimestamp(entry));
+      // Pre-digest snapshots are migrated by comparison of all projected fields.
+      // Once hashes exist, even changes hidden by truncated previews fail closed.
+      if (
+        projectedContentUnchanged &&
+        (previousHashes === null || previousHashes[motionId] === sourceHash)
+      ) {
+        entry.item.updated_at = previous.item.updated_at;
+      }
+    }
+    snapshotEntries.push(entry);
   }
 
   return {
@@ -463,6 +515,7 @@ async function buildSnapshot() {
     motion_count: snapshotEntries.length,
     generator: "portal/scripts/build-motion-snapshot.mjs",
     entries: snapshotEntries,
+    source_hashes_sha256: sourceHashes,
   };
 }
 
@@ -569,10 +622,10 @@ async function run() {
     return;
   }
 
-  const nextSnapshot = await buildSnapshot();
-  const nextText = serializeSnapshot(nextSnapshot);
   const currentText = await safeReadText(SNAPSHOT_PATH);
   const currentSnapshot = parseExistingSnapshotText(currentText);
+  const nextSnapshot = await buildSnapshot(currentSnapshot);
+  const nextText = serializeSnapshot(nextSnapshot);
 
   if (cli.mode === "check") {
     if (currentText === null) {
