@@ -1,0 +1,365 @@
+{
+  "source_sha": "c0921ce771adece93c340f64605df77945cc467e",
+  "authority_granted": false,
+  "curated_fleet": [
+    {
+      "repository_full_name": "jai-nexus/.github",
+      "repository_alias": ".github",
+      "nhid": "1.1.1",
+      "github_repo_id": 1035164879,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/api-nexus",
+      "repository_alias": "api-nexus",
+      "nhid": "1.1.3",
+      "github_repo_id": 1035000590,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/audit-nexus",
+      "repository_alias": "audit-nexus",
+      "nhid": "1.1.4",
+      "github_repo_id": 1035046248,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/codex-core",
+      "repository_alias": "codex-core",
+      "nhid": "1.1.34",
+      "github_repo_id": 1055001407,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "PARK",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/community-nexus",
+      "repository_alias": "community-nexus",
+      "nhid": "1.1.6",
+      "github_repo_id": 1035012510,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "PARK",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/datacontracts-nexus",
+      "repository_alias": "datacontracts-nexus",
+      "nhid": "1.1.7",
+      "github_repo_id": 1035083090,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/dev-jai-nexus",
+      "repository_alias": "dev-jai-nexus",
+      "nhid": "1.1.8",
+      "github_repo_id": 1055000746,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": true
+    },
+    {
+      "repository_full_name": "jai-nexus/docs-nexus",
+      "repository_alias": "docs-nexus",
+      "nhid": "1.1.9",
+      "github_repo_id": 1034995701,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": true
+    },
+    {
+      "repository_full_name": "jai-nexus/integrations-nexus",
+      "repository_alias": "integrations-nexus",
+      "nhid": "1.1.13",
+      "github_repo_id": 1034995312,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "PARK",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai",
+      "repository_alias": "jai",
+      "nhid": "1.1.15",
+      "github_repo_id": 1061010482,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-edge",
+      "repository_alias": "jai-edge",
+      "nhid": "1.1.35",
+      "github_repo_id": 1243903869,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-format",
+      "repository_alias": "jai-format",
+      "nhid": "1.1.16",
+      "github_repo_id": 1035075691,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-nexus",
+      "repository_alias": "jai-nexus",
+      "nhid": "1.1.17",
+      "github_repo_id": 1128991831,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": true
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-nexus-legacy",
+      "repository_alias": "jai-nexus-legacy",
+      "nhid": "1.1.37",
+      "github_repo_id": 1012261943,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "PARK",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-pilot",
+      "repository_alias": "jai-pilot",
+      "nhid": "1.1.18",
+      "github_repo_id": 1111472417,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/jai-vscode",
+      "repository_alias": "jai-vscode",
+      "nhid": "1.1.36",
+      "github_repo_id": 1131022344,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/nexus-core",
+      "repository_alias": "nexus-core",
+      "nhid": "1.1.21",
+      "github_repo_id": 1071910332,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/orchestrator-nexus",
+      "repository_alias": "orchestrator-nexus",
+      "nhid": "1.1.22",
+      "github_repo_id": 1035015595,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "jai-nexus/sot-nexus",
+      "repository_alias": "sot-nexus",
+      "nhid": "1.1.29",
+      "github_repo_id": 1051952132,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": true
+    },
+    {
+      "repository_full_name": "jai-nexus/teacher-copilot",
+      "repository_alias": "teacher-copilot",
+      "nhid": "2.2",
+      "github_repo_id": null,
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "observed_archived": null,
+      "governance_disposition": "DEPRECATED_COMPATIBILITY_RETAINED",
+      "authority_granted": false,
+      "in_root_topology_5": false
+    },
+    {
+      "repository_full_name": "JerryIngram/offbook-ai",
+      "repository_alias": "offbook-ai",
+      "nhid": "2.1",
+      "github_repo_id": 995130231,
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "governance_disposition": "KEEP",
+      "authority_granted": false,
+      "in_root_topology_5": true
+    }
+  ],
+  "retired_unverified_placeholders": [
+    {
+      "repository_full_name": "jai-nexus/actions-nexus",
+      "historical_nhid": "1.1.2",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/chat-service-nexus",
+      "historical_nhid": "1.1.5",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/framework-nexus",
+      "historical_nhid": "1.1.10",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/identity-nexus",
+      "historical_nhid": "1.1.11",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/infra-nexus",
+      "historical_nhid": "1.1.12",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/intelligence-nexus",
+      "historical_nhid": "1.1.14",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/keytrust-nexus",
+      "historical_nhid": "1.1.19",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/memory-nexus",
+      "historical_nhid": "1.1.20",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/modelops-nexus",
+      "historical_nhid": "6.2",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/privacy-nexus",
+      "historical_nhid": "1.1.23",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/public-nexus",
+      "historical_nhid": "1.1.24",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/release-nexus",
+      "historical_nhid": "1.1.25",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/runtime-nexus",
+      "historical_nhid": "1.1.26",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/secureboot-nexus",
+      "historical_nhid": "1.1.27",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/security-nexus",
+      "historical_nhid": "1.1.28",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/sourcetree-ai",
+      "historical_nhid": "1.1.30",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/tools-nexus",
+      "historical_nhid": "1.1.31",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/tools-sot-compliance-nexus",
+      "historical_nhid": "4.3",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/tools-sot-indexer-nexus",
+      "historical_nhid": "4.4",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/tools-sot-stub-indexer",
+      "historical_nhid": "1.1.32",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    },
+    {
+      "repository_full_name": "jai-nexus/workflow-nexus",
+      "historical_nhid": "1.1.33",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY"
+    }
+  ]
+}

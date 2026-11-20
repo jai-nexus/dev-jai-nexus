@@ -34,7 +34,6 @@ type RepoMetadata = {
   owner?: string;
   tier?: number;
   role?: string;
-  status?: ControlPlaneRepoEntry["status"];
   notes?: string;
   project_ids?: string[];
 };
@@ -120,21 +119,18 @@ const REPO_METADATA: Record<string, RepoMetadata> = {
     tier: 1,
     role: "pilot",
     project_ids: ["jai-internal"],
-    notes: "Present in broader registry; current control-plane surfaces keep this planned-only.",
   },
   "jai-nexus/jai-nexus-legacy": {
     label: "JAI Nexus Legacy",
     tier: 2,
     role: "legacy",
-    status: "frozen",
     project_ids: ["jai-internal"],
-    notes: "Legacy placeholder entry for older jai-nexus lineage.",
+    notes: "Parked repository for the older jai-nexus lineage.",
   },
   "JerryIngram/offbook-ai": {
     label: "OffBook AI",
     tier: 1,
     role: "product-app",
-    status: "planned",
     project_ids: ["offbook"],
     notes:
       "External product-app anchor retained in the broader registry. Treat as non-control-plane product coverage, not a core operator repo.",
@@ -477,10 +473,10 @@ function normalizeStatus(
   return "planned";
 }
 
-function resolveCanonicalReposPath(): string {
+function resolveCanonicalReposPath(cwd: string): string {
   const candidates = [
-    path.join(process.cwd(), "config", "repos.yaml"),
-    path.join(process.cwd(), "portal", "config", "repos.yaml"),
+    path.join(cwd, "portal", "config", "repos.yaml"),
+    path.join(cwd, "config", "repos.yaml"),
   ];
 
   const match = candidates.find((candidate) => fs.existsSync(candidate));
@@ -493,8 +489,8 @@ function resolveCanonicalReposPath(): string {
   return match;
 }
 
-function loadCanonicalRepoRows(): CanonicalRepoConfigRow[] {
-  const configPath = resolveCanonicalReposPath();
+function loadCanonicalRepoRows(cwd: string): CanonicalRepoConfigRow[] {
+  const configPath = resolveCanonicalReposPath(cwd);
   const file = fs.readFileSync(configPath, "utf8");
   const parsed = YAML.parse(file) as CanonicalRepoConfigFile;
 
@@ -509,31 +505,38 @@ function buildRepoNotes(row: CanonicalRepoConfigRow, metadata: RepoMetadata): st
     .join(" ");
 }
 
-function buildFullRepoRegistry(): ControlPlaneRepoEntry[] {
-  return loadCanonicalRepoRows()
+type FleetRepoEntry = ControlPlaneRepoEntry & { fleetDisplayIndex: number };
+
+export function buildFullRepoRegistry(rows: readonly CanonicalRepoConfigRow[]): FleetRepoEntry[] {
+  return rows
     .filter((row) => typeof row.repo === "string" && row.repo.includes("/"))
-    .map((row) => {
+    .sort((left, right) => left.repo.toLowerCase().localeCompare(right.repo.toLowerCase(), "en"))
+    .map((row, index) => {
       const metadata = REPO_METADATA[row.repo] ?? {};
       const notes = buildRepoNotes(row, metadata);
 
       return {
+        fleetDisplayIndex: index + 1,
         repo_id: repoIdFromOrgRepo(row.repo),
         org_repo: row.repo,
         label: metadata.label ?? formatRepoLabel(row.repo),
         tier: metadata.tier ?? row.tier ?? 2,
         role: metadata.role ?? row.role ?? "registry",
         owner: metadata.owner ?? row.owner ?? DEFAULT_OWNER,
-        status: metadata.status ?? normalizeStatus(row.status, row.notes),
+        status: normalizeStatus(row.status, row.notes),
         notes,
         project_ids: [...(metadata.project_ids ?? ["jai-internal"])],
       };
-    })
-    .sort((left, right) => left.org_repo.localeCompare(right.org_repo));
+    });
 }
 
-const FULL_REPO_REGISTRY = buildFullRepoRegistry();
+export function loadFullRepoRegistry(cwd = process.cwd()): FleetRepoEntry[] {
+  return buildFullRepoRegistry(loadCanonicalRepoRows(cwd));
+}
 
-function cloneRepoEntry(entry: ControlPlaneRepoEntry): ControlPlaneRepoEntry {
+const FULL_REPO_REGISTRY = loadFullRepoRegistry();
+
+function cloneRepoEntry(entry: FleetRepoEntry): FleetRepoEntry {
   return {
     ...entry,
     project_ids: [...entry.project_ids],
@@ -568,7 +571,7 @@ function cloneConfiguredScopeEntry(
   };
 }
 
-export function getFullRepoRegistry(): ControlPlaneRepoEntry[] {
+export function getFullRepoRegistry(): FleetRepoEntry[] {
   return FULL_REPO_REGISTRY.map(cloneRepoEntry);
 }
 
@@ -586,7 +589,7 @@ export function getConfiguredAgentScopeSubset(): ControlPlaneConfiguredScopeEntr
 
 export function getRepoEntry(
   repoFullName: string,
-): ControlPlaneRepoEntry | undefined {
+): FleetRepoEntry | undefined {
   return FULL_REPO_REGISTRY.find((entry) => entry.org_repo === repoFullName);
 }
 
