@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:jai-nexus:package-format:2:v0",
+  "title": "JAI NEXUS Package Format 2",
+  "oneOf": [
+    {"$ref": "#/$defs/corpus"},
+    {"$ref": "#/$defs/motion"},
+    {"$ref": "#/$defs/amendment"},
+    {"$ref": "#/$defs/program"},
+    {"$ref": "#/$defs/batches"},
+    {"$ref": "#/$defs/lane_contract"},
+    {"$ref": "#/$defs/lane_estimate"},
+    {"$ref": "#/$defs/ledger_event"},
+    {"$ref": "#/$defs/conjecture"}
+  ],
+  "$defs": {
+    "slug": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+    "motion_id": {"type": "string", "pattern": "^motion-[0-9]{4}$"},
+    "program_code": {"type": "string", "pattern": "^Q[1-4]M(?:[1-9]|1[0-2])Y[0-9]{2}-P[1-9][0-9]*$"},
+    "lane": {"type": "string", "pattern": "^[A-Z]+[1-9][0-9]*$"},
+    "path": {
+      "type": "string",
+      "pattern": "^(?!.*(?:^|/)(?:\\.{1,2}|\\.git)(?:/|$))[a-zA-Z0-9._-]+(?:/[a-zA-Z0-9._-]+)*$"
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_blob": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      },
+      "required": ["path", "source_commit", "source_blob"],
+      "additionalProperties": false
+    },
+    "corpus": {
+      "description": "Active registry for Corpus V1. Package format and corpus epoch are independent.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "corpus"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "corpus_label": {"const": "Corpus V1"},
+        "status": {"const": "ACTIVE"},
+        "governance_posture": {"const": "manual governance"},
+        "agent_operability_posture": {"const": "not agent-operable"},
+        "opened_at": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "closed_at": {"const": null},
+        "prior_corpus_id": {"const": null},
+        "motion_numbering_base": {"const": "motion-0001"},
+        "motion_numbering_scope": {"const": "CORPUS_LOCAL"},
+        "snapshot_lineage_scope": {"const": "corpus-v1"},
+        "decision_record_scope": {"const": "corpus-v1"},
+        "future_epoch": {
+          "type": "object",
+          "properties": {"corpus_id": {"const": "corpus-v2"},"status": {"const": "FUTURE_GATED"}},
+          "required": ["corpus_id", "status"],
+          "additionalProperties": false
+        },
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/path"},"minItems": 1,"uniqueItems": true}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "corpus_label",
+        "status",
+        "governance_posture",
+        "agent_operability_posture",
+        "opened_at",
+        "closed_at",
+        "prior_corpus_id",
+        "motion_numbering_base",
+        "motion_numbering_scope",
+        "snapshot_lineage_scope",
+        "decision_record_scope",
+        "future_epoch",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "motion": {
+      "description": "The index in program_sequence plus one gives the Motion-local Program ordinal.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "motion"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "title": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "program_sequence": {"type": "array", "items": {"$ref": "#/$defs/slug"},"minItems": 1,"uniqueItems": true}
+      },
+      "required": ["document_kind", "package_format", "corpus_id", "motion_id", "title", "program_sequence"],
+      "additionalProperties": false
+    },
+    "amendment": {
+      "description": "External M1 scoping amendment profile. Ratification scopes future work and grants zero execution authority.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "amendment"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "amendment_id": {"$ref": "#/$defs/slug"},
+        "governing_motion": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "decision_id": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "authority": {"const": "VERIFIED_HUMAN_OPERATOR / CONTROL_THREAD"},
+        "principal_id": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "parent": {
+          "type": "object",
+          "properties": {
+            "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "path": {"$ref": "#/$defs/path"},
+            "source_tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+          },
+          "required": ["source_commit", "path", "source_tree"],
+          "additionalProperties": false
+        },
+        "legacy_alias": {"$ref": "#/$defs/program_code"},
+        "program_sequence": {"type": "array", "items": {"$ref": "#/$defs/slug"},"minItems": 1,"uniqueItems": true},
+        "objective": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "program_state": {"const": "RESERVED_NOT_OPENED"},
+        "active_program_limit": {"const": 1},
+        "execution_posture": {"const": ["SHADOW", "MANUAL", "REPLAY"]},
+        "same_model_disclosure_required": {"const": true},
+        "independent_consensus_from_shared_model": {"const": false},
+        "autonomous_provider_execution": {"const": false},
+        "authority_granted": {"const": false},
+        "topology": {
+          "type": "object",
+          "properties": {
+            "option": {"const": "H"},
+            "batch_a": {"const": ["A1", "A2", "A3"]},
+            "batch_b": {"const": ["B1", "B2", "B3", "B4", "B5"]},
+            "batch_c": {"const": ["C1", "C2", "C3", "C4"]},
+            "batch_c_external_technical_dependencies": {"const": ["A2", "B1"]},
+            "batch_c_internal_dependencies": {"const": {"C1": [],"C2": ["C1"],"C3": ["C1", "C2"],"C4": ["C1", "C2", "C3"]}},
+            "isolation": {"type": "string", "minLength": 1,"pattern": "\\S"}
+          },
+          "required": [
+            "option",
+            "batch_a",
+            "batch_b",
+            "batch_c",
+            "batch_c_external_technical_dependencies",
+            "batch_c_internal_dependencies",
+            "isolation"
+          ],
+          "additionalProperties": false
+        },
+        "null_result": {
+          "type": "object",
+          "properties": {
+            "automatic_freeze": {"const": false},
+            "verified_preregistered_negative": {"const": "ELIGIBLE_FOR_HUMAN_CLOSED_ACCEPTED"},
+            "incomplete_or_inconclusive": {"const": "HOLD_OR_REVISE"},
+            "closed_no_go": {"const": ["INTEGRITY_BREACH", "AUTHORITY_BREACH", "CONSTITUTIONAL_BOUNDARY_BREACH"]},
+            "closeout": {"type": "string", "minLength": 1,"pattern": "\\S"}
+          },
+          "required": [
+            "automatic_freeze",
+            "verified_preregistered_negative",
+            "incomplete_or_inconclusive",
+            "closed_no_go",
+            "closeout"
+          ],
+          "additionalProperties": false
+        },
+        "cost": {
+          "type": "object",
+          "properties": {
+            "L1": {"const": "SUBSCRIPTION_CASH_ALLOCATION"},
+            "L2": {"const": "METERED_PROVIDER_API_CASH"},
+            "L3": {"const": "TOKEN_EQUIVALENT_NON_CASH"},
+            "L4": {"const": "FOUNDER_TIME_NON_CASH"},
+            "monthly_allocation_cap_usd": {"const": 200},
+            "authorized_layer_2_api_spend_usd": {"const": 0}
+          },
+          "required": ["L1", "L2", "L3", "L4", "monthly_allocation_cap_usd", "authorized_layer_2_api_spend_usd"],
+          "additionalProperties": false
+        },
+        "task_complexity": {"const": ["T1_ATOMIC", "T2_COMPOSABLE", "T3_CROSS_DOMAIN", "T4_PARADOX"]}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "amendment_id",
+        "governing_motion",
+        "decision_id",
+        "authority",
+        "principal_id",
+        "parent",
+        "legacy_alias",
+        "program_sequence",
+        "objective",
+        "program_state",
+        "active_program_limit",
+        "execution_posture",
+        "same_model_disclosure_required",
+        "independent_consensus_from_shared_model",
+        "autonomous_provider_execution",
+        "authority_granted",
+        "topology",
+        "null_result",
+        "cost",
+        "task_complexity"
+      ],
+      "additionalProperties": false
+    },
+    "program": {
+      "description": "The composite key is (corpus_id, motion_id, program_code). The slug selects its directory.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "program"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "status": {
+          "enum": [
+            "RESERVED_NOT_OPENED",
+            "OPEN",
+            "CLOSED_ACCEPTED",
+            "CLOSED_NO_GO",
+            "CANCELLED",
+            "FAILED",
+            "UNRESOLVED_HOLD"
+          ]
+        },
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/source"},"minItems": 1,"uniqueItems": true}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "status",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "batches": {
+      "description": "Organizational groupings. Dependencies determine the Ready Frontier.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "batches"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "batches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "batch_id": {"type": "string", "pattern": "^[A-Z]+$"},
+              "lanes": {"type": "array", "items": {"$ref": "#/$defs/lane"},"minItems": 1,"uniqueItems": true}
+            },
+            "required": ["batch_id", "lanes"],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "batches"
+      ],
+      "additionalProperties": false
+    },
+    "lane_contract": {
+      "description": "Immutable execution contract. Dependencies are Motion- and Program-local lane coordinates. Each role namespace has one principal.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "lane_contract"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "lane_coordinate": {"$ref": "#/$defs/lane"},
+        "write_repo": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9]+(?:[._-][a-z0-9]+)*$"},
+        "depends_on": {"type": "array", "items": {"$ref": "#/$defs/lane"},"minItems": 0,"uniqueItems": true},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/source"},"minItems": 1,"uniqueItems": true},
+        "writers": {
+          "type": "object",
+          "minProperties": 1,
+          "patternProperties": {"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$": {"type": "string", "minLength": 1,"pattern": "\\S"}},
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "lane_coordinate",
+        "write_repo",
+        "depends_on",
+        "evidence",
+        "writers"
+      ],
+      "additionalProperties": false
+    },
+    "lane_estimate": {
+      "description": "Pre-execution estimate in founder minutes.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "lane_estimate"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "lane_coordinate": {"$ref": "#/$defs/lane"},
+        "prior_estimate_founder_minutes": {"type": "number", "minimum": 0}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "lane_coordinate",
+        "prior_estimate_founder_minutes"
+      ],
+      "additionalProperties": false
+    },
+    "ledger_event": {
+      "description": "One immutable event per UTC/ULID. Minutes and rework are increments. Status is observed. A valid record grants no authority.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "ledger_event"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "motion_id": {"$ref": "#/$defs/motion_id"},
+        "program_code": {"$ref": "#/$defs/program_code"},
+        "program_id": {"$ref": "#/$defs/slug"},
+        "program_slug": {"$ref": "#/$defs/slug"},
+        "lane_coordinate": {"$ref": "#/$defs/lane"},
+        "event_id": {"type": "string", "pattern": "^[0-7][0-9A-HJKMNP-TV-Z]{25}$"},
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        },
+        "writer_role": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+        "actor_id": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "principal_id": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "receipt_class": {
+          "enum": [
+            "B9-CLASS-001 / ACKNOWLEDGEMENT_RECEIPT",
+            "B9-CLASS-002 / OBSERVATION_RECEIPT",
+            "B9-CLASS-003 / VALIDATION_RECEIPT",
+            "B9-CLASS-004 / DELIVERY_RECEIPT",
+            "B9-CLASS-005 / DECISION_RECEIPT",
+            "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT",
+            "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT",
+            "B9-CLASS-008 / REPOSITORY_INTEGRATION_RECEIPT",
+            "B9-CLASS-009 / EXECUTION_RECEIPT",
+            "B9-CLASS-010 / EXTERNAL_EFFECT_RECEIPT",
+            "B9-CLASS-011 / LIFECYCLE_TRANSITION_RECEIPT",
+            "B9-CLASS-012 / RUNTIME_ACTIVATION_RECEIPT",
+            "B9-CLASS-013 / MIRROR_RECEIPT",
+            "B9-CLASS-014 / DEMONSTRATION_RECEIPT"
+          ]
+        },
+        "authority_granted": {"const": false},
+        "contract_source": {"$ref": "#/$defs/source"},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/source"},"minItems": 1,"uniqueItems": true},
+        "prev_ledger_entry_hash": {"oneOf": [{"const": null},{"type": "string", "pattern": "^[a-f0-9]{64}$"}]},
+        "lane_status": {
+          "enum": ["PLANNED", "IN_PROGRESS", "HOLD", "REWORK", "DELIVERED", "VERIFIED", "ACCEPTED", "CLOSED"]
+        },
+        "observed_founder_minutes": {"type": "number", "minimum": 0},
+        "rework_count_delta": {"type": "integer", "minimum": 0}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "motion_id",
+        "program_code",
+        "program_id",
+        "program_slug",
+        "lane_coordinate",
+        "event_id",
+        "timestamp",
+        "writer_role",
+        "actor_id",
+        "principal_id",
+        "receipt_class",
+        "authority_granted",
+        "contract_source",
+        "evidence",
+        "prev_ledger_entry_hash",
+        "lane_status",
+        "observed_founder_minutes",
+        "rework_count_delta"
+      ],
+      "additionalProperties": false
+    },
+    "conjecture": {
+      "description": "Chamber A preserves conjectures and their falsification evidence.",
+      "type": "object",
+      "properties": {
+        "document_kind": {"const": "conjecture"},
+        "package_format": {"const": 2},
+        "corpus_id": {"const": "corpus-v1"},
+        "conjecture_id": {"$ref": "#/$defs/slug"},
+        "authority_granted": {"const": false},
+        "epistemic_status": {"enum": ["PROJECTED", "UNPROBED", "INDETERMINATE", "FALSIFIED_USEFUL", "DORMANT_PRESERVED"]},
+        "simulation_fidelity": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "dependency_realism": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "hypothesis": {"type": "string", "minLength": 1,"pattern": "\\S"},
+        "observation": {"type": "string", "minLength": 1,"pattern": "\\S"}
+      },
+      "required": [
+        "document_kind",
+        "package_format",
+        "corpus_id",
+        "conjecture_id",
+        "authority_granted",
+        "epistemic_status",
+        "simulation_fidelity",
+        "dependency_realism",
+        "hypothesis",
+        "observation"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

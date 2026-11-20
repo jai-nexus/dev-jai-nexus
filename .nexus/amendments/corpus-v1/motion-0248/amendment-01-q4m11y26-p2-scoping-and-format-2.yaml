@@ -1,0 +1,56 @@
+document_kind: amendment
+package_format: 2
+corpus_id: corpus-v1
+motion_id: motion-0248
+governing_motion: corpus-v1/motion-0248
+amendment_id: amendment-01-q4m11y26-p2-scoping-and-format-2
+decision_id: CT-DECISION-2026-11-19-RATIFY-PACKAGE-FORMAT-2-AND-M1-EXTERNAL-TOPOLOGY-v0
+authority: VERIFIED_HUMAN_OPERATOR / CONTROL_THREAD
+principal_id: Jerry Ingram
+parent:
+  source_commit: 2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8
+  path: .nexus/motions/motion-0248
+  source_tree: 5082a21a70175c70bfe95ed25e07cd8fcf687e7d
+program_code: Q4M11Y26-P2
+legacy_alias: Q3M7Y26-P2
+program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_slug: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_sequence:
+  - jai-governance-intelligence-main-state-operating-loop-v0
+  - jai-five-slot-compounded-reasoning-shadow-kernel-v0
+  - jai-founder-developer-workflow-pilot-v0
+  - jai-agent-council-bounded-activation-pilot-v0
+objective: Evaluate the Five-Slot Shadow Kernel against pre-registered alternatives using independently verifiable decision evidence and measured founder time.
+program_state: RESERVED_NOT_OPENED
+active_program_limit: 1
+execution_posture: [SHADOW, MANUAL, REPLAY]
+same_model_disclosure_required: true
+independent_consensus_from_shared_model: false
+autonomous_provider_execution: false
+authority_granted: false
+topology:
+  option: H
+  batch_a: [A1, A2, A3]
+  batch_b: [B1, B2, B3, B4, B5]
+  batch_c: [C1, C2, C3, C4]
+  batch_c_external_technical_dependencies: [A2, B1]
+  batch_c_internal_dependencies:
+    C1: []
+    C2: [C1]
+    C3: [C1, C2]
+    C4: [C1, C2, C3]
+  isolation: Unresolved B2–B5 fleet integration must be disclosed and can affect whole-Program closeout. Batch C local replay requires A2 and B1.
+null_result:
+  automatic_freeze: false
+  verified_preregistered_negative: ELIGIBLE_FOR_HUMAN_CLOSED_ACCEPTED
+  incomplete_or_inconclusive: HOLD_OR_REVISE
+  closed_no_go: [INTEGRITY_BREACH, AUTHORITY_BREACH, CONSTITUTIONAL_BOUNDARY_BREACH]
+  closeout: Independent verification and separate human adjudication are required for an honestly completed experiment.
+cost:
+  L1: SUBSCRIPTION_CASH_ALLOCATION
+  L2: METERED_PROVIDER_API_CASH
+  L3: TOKEN_EQUIVALENT_NON_CASH
+  L4: FOUNDER_TIME_NON_CASH
+  monthly_allocation_cap_usd: 200.00
+  authorized_layer_2_api_spend_usd: 0.00
+task_complexity: [T1_ATOMIC, T2_COMPOSABLE, T3_CROSS_DOMAIN, T4_PARADOX]
