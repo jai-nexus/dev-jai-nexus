@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { dirname, relative, resolve } from "node:path";
+import path, { resolve } from "node:path";
 
 import ts from "typescript";
 
@@ -72,6 +72,10 @@ type CompilerContext = Readonly<{
 }>;
 
 const ROOT = resolve(import.meta.dirname, "../../../../..");
+
+function repoRelativePath(file: string, root = ROOT, paths = path): string {
+  return paths.relative(root, file).replace(/\\/g, "/");
+}
 const ENTRY_KEYS = Object.freeze(["id", "path", "symbol", "surfaceClass", "effectClass", "triggerClass", "guardEvidence", "canonicalBoundary", "disposition", "replacement", "writeCapable", "evidencePosture", "authorityEffect", "mutationAuthorized"]);
 const WRITE_METHODS = Object.freeze(["create", "createMany", "update", "updateMany", "upsert", "delete", "deleteMany"]);
 const RAW_METHODS = Object.freeze(["$queryRaw", "$queryRawUnsafe", "$executeRaw", "$executeRawUnsafe"]);
@@ -130,9 +134,9 @@ function migrationFiles(directory: string): string[] {
 
 function collectRepositorySources(): readonly Source[] {
   const productionFiles = sourceFiles(resolve(ROOT, "portal/src")).sort();
-  const sources: Source[] = productionFiles.map((file) => Object.freeze({ path: relative(ROOT, file), text: readFileSync(file, "utf8"), kind: "TS" as const }));
+  const sources: Source[] = productionFiles.map((file) => Object.freeze({ path: repoRelativePath(file), text: readFileSync(file, "utf8"), kind: "TS" as const }));
   sources.push(Object.freeze({ path: "portal/prisma/schema.prisma", text: readFileSync(resolve(ROOT, "portal/prisma/schema.prisma"), "utf8"), kind: "PRISMA" }));
-  for (const file of migrationFiles(resolve(ROOT, "portal/prisma/migrations")).sort()) sources.push(Object.freeze({ path: relative(ROOT, file), text: readFileSync(file, "utf8"), kind: "SQL" }));
+  for (const file of migrationFiles(resolve(ROOT, "portal/prisma/migrations")).sort()) sources.push(Object.freeze({ path: repoRelativePath(file), text: readFileSync(file, "utf8"), kind: "SQL" }));
   return Object.freeze(sources);
 }
 
@@ -213,7 +217,7 @@ function createCompilerContext(sources: readonly Source[]): CompilerContext {
     fileExists: (fileName) => absoluteSources.has(resolve(fileName)) || defaultHost.fileExists(fileName),
     directoryExists: (directoryName) => {
       const absoluteDirectory = resolve(directoryName);
-      return [...absoluteSources.keys()].some((fileName) => fileName.startsWith(`${absoluteDirectory}/`)) || defaultHost.directoryExists?.(directoryName) || false;
+      return [...absoluteSources.keys()].some((fileName) => fileName.startsWith(absoluteDirectory + path.sep)) || defaultHost.directoryExists?.(directoryName) || false;
     },
     readFile: (fileName) => absoluteSources.get(resolve(fileName))?.text ?? defaultHost.readFile(fileName),
     getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
@@ -560,11 +564,11 @@ function inspectTypeScriptSource(source: Source, declarations: readonly Declarat
   return Object.freeze({ effects: Object.freeze(effects), calls: Object.freeze(calls) });
 }
 
-function moduleTargetPath(fromPath: string, specifier: string, sourcePaths: readonly string[]): string | null {
+function moduleTargetPath(fromPath: string, specifier: string, sourcePaths: readonly string[], root = ROOT, paths = path): string | null {
   const base = specifier.startsWith("@/")
     ? `portal/src/${specifier.slice(2)}`
     : specifier.startsWith(".")
-      ? relative(ROOT, resolve(ROOT, dirname(fromPath), specifier))
+      ? repoRelativePath(paths.resolve(root, paths.dirname(fromPath), specifier), root, paths)
       : null;
   if (!base) return null;
   for (const candidate of [base, `${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`]) if (sourcePaths.includes(candidate)) return candidate;
@@ -965,6 +969,13 @@ for (const entry of PROGRAM_LIFECYCLE_MUTATION_SEAM_REGISTRY) {
   assert.equal(entry.disposition === "FORMALLY_DEPRECATED_AND_UNREACHABLE", entry.replacement !== null);
   if (entry.writeCapable) assert.ok(["PERSISTENCE_BOUNDARY", "RAW_SQL_PERSISTENCE", "LIFECYCLE_TRANSACTION"].includes(entry.effectClass));
   if (["NONE", "IN_MEMORY_DRAFT", "DECLARATIVE"].includes(entry.effectClass)) assert.equal(entry.writeCapable, false);
+}
+
+const example = "portal/src/lib/controlPlane/example.ts";
+for (const [paths, root] of [[path.posix, "/opt/dev-jai-nexus"], [path.win32, "C:\\work\\dev-jai-nexus"]] as const) {
+  assert.equal(repoRelativePath(paths.join(root, example), root, paths), example);
+  const importer = paths.join("portal", "src", "lib", "controlPlane", "nested", "consumer.ts");
+  assert.equal(moduleTargetPath(importer, "../example", [example], root, paths), example);
 }
 
 const live = scanSources(collectRepositorySources());
