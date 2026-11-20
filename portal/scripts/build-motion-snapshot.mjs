@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import yaml from "js-yaml";
 import { fileURLToPath } from "node:url";
@@ -7,15 +9,60 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, "../..");
-const MOTIONS_ROOT = path.join(REPO_ROOT, ".nexus", "motions");
 const SNAPSHOT_PATH = path.join(
-  REPO_ROOT,
   "portal",
   "src",
   "lib",
   "motion",
   "motionSnapshot.json",
 );
+
+// Git objects at the accepted Corpus V1 baseline (2a6fbfc7). Both objects
+// travel with a depth-one checkout of the unchanged historical substrate.
+export const HISTORICAL_TREE = "efacb71341c16dd10da5de402721cbdf5a58f505";
+const HISTORICAL_SNAPSHOT = "467ba2be1cdbc8f3941a4a978603f4a7084c7104";
+
+function git(root, args) {
+  return execFileSync("git", ["--no-replace-objects", ...args], {
+    cwd: root, maxBuffer: 16 * 1024 * 1024,
+    env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_NO_LAZY_FETCH: "1" },
+  });
+}
+
+export async function verifyHistoricalMotions(root) {
+  const motions = path.join(root, ".nexus", "motions");
+  const rows = git(root, ["ls-tree", "-r", "-z", HISTORICAL_TREE]).toString().split("\0").filter(Boolean);
+  const expected = new Map(rows.map(row => {
+    const [, oid, name] = /^100644 blob ([a-f0-9]{40})\t(.+)$/.exec(row);
+    return [name, oid];
+  }));
+  const historical = new Set([...expected.keys()].map(name => name.split("/")[0]));
+  const ignored = new Set(git(root, [
+    "ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--", ".nexus/motions/",
+  ]).toString().split("\0"));
+  for (const id of historical) {
+    const dir = path.join(motions, id);
+    if (!(await fs.lstat(dir)).isDirectory()) throw new Error(`Historical Motion directory missing: ${id}`);
+    const entries = await fs.readdir(dir, { recursive: true, withFileTypes: true });
+    await Promise.all(entries.filter(entry => !entry.isDirectory()).map(async entry => {
+      const file = path.join(entry.parentPath, entry.name);
+      const name = path.relative(motions, file).split(path.sep).join("/");
+      const oid = expected.get(name);
+      if (!oid && ignored.has(`.nexus/motions/${name}`)) return;
+      if (!entry.isFile() || !oid) throw new Error(`Unexpected historical Motion artifact: ${name}`);
+      const bytes = await fs.readFile(file);
+      const actual = createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+      // Git may expand LF on checkout. In that case compare the actual
+      // checkout representation of the accepted blob, including its filters.
+      if (actual !== oid && !bytes.equals(git(root, [
+        "cat-file", "--filters", `--path=.nexus/motions/${name}`, oid,
+      ]))) throw new Error(`Historical Motion content drift: ${name}`);
+      expected.delete(name);
+    }));
+  }
+  if (expected.size) throw new Error(`Missing historical Motion artifact: ${expected.keys().next().value}`);
+  return historical;
+}
 
 const CORE_ARTIFACT_KEYS = [
   "motion.yaml",
@@ -126,23 +173,6 @@ function safeParseJson(text) {
   } catch {
     return null;
   }
-}
-
-async function getMtime(targetPath) {
-  try {
-    const stats = await fs.stat(targetPath);
-    return stats.mtimeMs;
-  } catch {
-    return null;
-  }
-}
-
-function newestTimestamp(timestamps) {
-  const newest = timestamps.reduce((currentMax, value) => {
-    return value && Number.isFinite(value) ? Math.max(currentMax, value) : currentMax;
-  }, 0);
-
-  return newest > 0 ? new Date(newest).toISOString() : null;
 }
 
 function newestIsoTimestamp(values) {
@@ -287,8 +317,8 @@ function buildHandoffPack({ motionId, artifactPaths, secondaryArtifacts }) {
   return lines.join("\n");
 }
 
-async function scanMotion(motionId) {
-  const motionDir = path.join(MOTIONS_ROOT, motionId);
+async function scanMotion(motionsRoot, motionId, recordedTime) {
+  const motionDir = path.join(motionsRoot, motionId);
 
   const coreArtifacts = await Promise.all(
     CORE_ARTIFACT_KEYS.map(async (artifactKey) => {
@@ -377,12 +407,6 @@ async function scanMotion(motionId) {
     detail: panelsPresent ? `${panelCount} panel${panelCount === 1 ? "" : "s"}` : null,
   });
 
-  const timestamps = await Promise.all([
-    ...CORE_ARTIFACT_KEYS.map((artifactKey) => getMtime(path.join(motionDir, artifactKey))),
-    ...SECONDARY_ARTIFACT_KEYS.map((artifactKey) => getMtime(path.join(motionDir, artifactKey))),
-    getMtime(panelsPath),
-  ]);
-
   const item = {
     motion_id: motionId,
     title: asString(motionYaml?.title ?? null) ?? motionId,
@@ -397,7 +421,7 @@ async function scanMotion(motionId) {
     vote_result: voteResult,
     created_at: createdAt,
     decided_at: decidedAt,
-    updated_at: newestTimestamp(timestamps),
+    updated_at: recordedTime ?? newestIsoTimestamp([motionYaml?.aligned_at, decidedAt, createdAt]),
     queue_state: buildQueueState({
       decisionStatus,
       motionStatus,
@@ -442,8 +466,12 @@ async function scanMotion(motionId) {
   };
 }
 
-async function buildSnapshot() {
-  const entries = await fs.readdir(MOTIONS_ROOT, { withFileTypes: true });
+async function buildSnapshot(root) {
+  const motionsRoot = path.join(root, ".nexus", "motions");
+  await verifyHistoricalMotions(root);
+  const original = JSON.parse(git(root, ["cat-file", "blob", HISTORICAL_SNAPSHOT]));
+  const historicalTimes = new Map(original.entries.map(entry => [entry.motion_id, entry.item.updated_at]));
+  const entries = await fs.readdir(motionsRoot, { withFileTypes: true });
   const motionIds = entries
     .filter((entry) => entry.isDirectory() && /^motion-\d+$/i.test(entry.name))
     .map((entry) => entry.name)
@@ -451,7 +479,7 @@ async function buildSnapshot() {
 
   const snapshotEntries = [];
   for (const motionId of motionIds) {
-    snapshotEntries.push(await scanMotion(motionId));
+    snapshotEntries.push(await scanMotion(motionsRoot, motionId, historicalTimes.get(motionId)));
   }
 
   return {
@@ -504,8 +532,8 @@ function buildDriftReport(currentSnapshot, nextSnapshot) {
   const nextSummary = buildSnapshotSummary(nextSnapshot);
   const currentIds = new Set(currentSummary.motion_ids);
   const nextIds = new Set(nextSummary.motion_ids);
-  const missingMotionIds = nextSummary.motion_ids.filter((motionId) => !currentIds.has(motionId));
-  const unexpectedMotionIds = currentSummary.motion_ids.filter((motionId) => !nextIds.has(motionId));
+  const missingMotionIds = currentSummary.motion_ids.filter((motionId) => !nextIds.has(motionId));
+  const unexpectedMotionIds = nextSummary.motion_ids.filter((motionId) => !currentIds.has(motionId));
 
   const mismatchedMotionIds = [];
   if (Array.isArray(currentSnapshot?.entries) && Array.isArray(nextSnapshot?.entries)) {
@@ -529,13 +557,13 @@ function buildDriftReport(currentSnapshot, nextSnapshot) {
   };
 }
 
-function printSnapshotSummary({ mode, status, snapshotPath, currentSnapshot, nextSnapshot }) {
+function printSnapshotSummary({ mode, status, currentSnapshot, nextSnapshot }) {
   const currentSummary = currentSnapshot ? buildSnapshotSummary(currentSnapshot) : null;
   const nextSummary = buildSnapshotSummary(nextSnapshot);
 
   console.log(`mode: ${mode}`);
   console.log(`status: ${status}`);
-  console.log(`snapshot_path: ${path.relative(REPO_ROOT, snapshotPath).replace(/\\/g, "/")}`);
+  console.log(`snapshot_path: ${SNAPSHOT_PATH.split(path.sep).join("/")}`);
   if (currentSummary) {
     console.log(`snapshot_count_before: ${currentSummary.motion_count}`);
   }
@@ -562,16 +590,17 @@ function printDriftReport(report) {
   );
 }
 
-async function run() {
-  const cli = parseCli(process.argv.slice(2));
+export async function run(root = REPO_ROOT, args = process.argv.slice(2)) {
+  const cli = parseCli(args);
   if (cli.mode === "help") {
     printUsage();
     return;
   }
 
-  const nextSnapshot = await buildSnapshot();
+  const snapshotPath = path.join(root, SNAPSHOT_PATH);
+  const nextSnapshot = await buildSnapshot(root);
   const nextText = serializeSnapshot(nextSnapshot);
-  const currentText = await safeReadText(SNAPSHOT_PATH);
+  const currentText = await safeReadText(snapshotPath);
   const currentSnapshot = parseExistingSnapshotText(currentText);
 
   if (cli.mode === "check") {
@@ -579,37 +608,35 @@ async function run() {
       printSnapshotSummary({
         mode: "check",
         status: "stale",
-        snapshotPath: SNAPSHOT_PATH,
         currentSnapshot: null,
         nextSnapshot,
       });
       console.log("drift: committed snapshot file is missing");
-      process.exit(1);
+      throw new Error("Committed snapshot missing");
     }
 
     if (normalizeNewlines(currentText) === normalizeNewlines(nextText)) {
       printSnapshotSummary({
         mode: "check",
         status: "current",
-        snapshotPath: SNAPSHOT_PATH,
         currentSnapshot,
         nextSnapshot,
       });
+      console.log(`MOTION_COUNT: ${nextSnapshot.motion_count}\nHISTORICAL_MOTION_DIFF: 0\nMOTION_SNAPSHOT_FILE_CHANGED: NO`);
       return;
     }
 
     printSnapshotSummary({
       mode: "check",
       status: "stale",
-      snapshotPath: SNAPSHOT_PATH,
       currentSnapshot,
       nextSnapshot,
     });
     printDriftReport(buildDriftReport(currentSnapshot, nextSnapshot));
-    process.exit(1);
+    throw new Error("Committed snapshot differs from canonical Motion content");
   }
 
-  await fs.writeFile(SNAPSHOT_PATH, nextText, "utf8");
+  await fs.writeFile(snapshotPath, nextText, "utf8");
   const status =
     currentText !== null && normalizeNewlines(currentText) === normalizeNewlines(nextText)
       ? "current"
@@ -618,13 +645,12 @@ async function run() {
   printSnapshotSummary({
     mode: "write",
     status,
-    snapshotPath: SNAPSHOT_PATH,
     currentSnapshot,
     nextSnapshot,
   });
 }
 
-run().catch((error) => {
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) run().catch((error) => {
   console.error("[build-motion-snapshot] FAILED");
   console.error(error instanceof Error ? error.message : error);
   process.exit(1);

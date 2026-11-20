@@ -1,0 +1,20 @@
+document_kind: corpus
+package_format: 2
+corpus_id: corpus-v1
+corpus_label: Corpus V1
+status: ACTIVE
+governance_posture: manual governance
+agent_operability_posture: not agent-operable
+opened_at: historical / already active
+closed_at: null
+prior_corpus_id: null
+motion_numbering_base: motion-0001
+motion_numbering_scope: CORPUS_LOCAL
+snapshot_lineage_scope: corpus-v1
+decision_record_scope: corpus-v1
+future_epoch:
+  corpus_id: corpus-v2
+  status: FUTURE_GATED
+sources:
+  - .nexus/canon/corpus/corpus-model-v0.md
+  - .nexus/canon/corpus-namespace-snapshot-model-v0.md
