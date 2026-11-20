@@ -1,0 +1,375 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const { readFileSync } = require("node:fs");
+const path = require("node:path");
+const test = require("node:test");
+
+const policyLib = require("./role-guardrails-policy.cjs");
+const {
+  decodeContentsResponse,
+  evaluatePullRequest,
+  extractH2Section,
+  loadTrustedPolicy,
+  meaningfulEvidenceLines,
+  parseRoleDeclarations,
+  resolveDeclaredRole,
+  validatePolicy,
+} = policyLib;
+
+const repoRoot = path.resolve(__dirname, "../..");
+const P = "JAI::DEV::";
+
+// Fixture shaped like roles/rolemap.json at 002a2f7 (no verifierBypassAllowedRoles key).
+function basePolicy(overrides = {}) {
+  return {
+    repo: "fixture",
+    rolePrefix: P,
+    blockedPrefixes: ["vault/", "node_modules/"],
+    blockedExact: [".env", "portal/dev.db"],
+    rules: [
+      { id: "role-system", pathsPrefix: ["roles/"], allowedRoles: [`${P}OPERATOR`, `${P}ARCHITECT`, `${P}BUILDER`, `${P}VERIFIER`, `${P}LIBRARIAN`], evidenceRequired: false },
+      { id: "github-workflows", pathsPrefix: [".github/workflows/"], allowedRoles: [`${P}VERIFIER`], evidenceRequired: true },
+      { id: "builder-only", pathsPrefix: ["portal/builder-only/"], allowedRoles: [`${P}BUILDER`], evidenceRequired: true },
+      { id: "portal-docs", pathsPrefix: ["portal/docs/"], allowedRoles: [`${P}LIBRARIAN`, `${P}BUILDER`, `${P}VERIFIER`], evidenceRequired: false },
+    ],
+    defaultAllowedRoles: [`${P}BUILDER`, `${P}VERIFIER`],
+    evidenceSectionTitle: "Evidence",
+    ...overrides,
+  };
+}
+
+const EVIDENCE = "## Evidence\n- node --test: 12/12 pass\n\n## Governance Boundary\n- Merge Authorized: false\n";
+const body = (role, evidence = EVIDENCE) => `## Summary\nWork.\n\n${role}\n\n${evidence}`;
+const files = (...names) => names.map((filename) => ({ filename }));
+
+function evaluate({ policy = basePolicy(), prBody, changed }) {
+  return evaluatePullRequest({ policy, body: prBody, files: changed });
+}
+
+test("verifier bypass is default-deny: absent and false deny, only literal true allows", () => {
+  const prBody = body(`Role: ${P}VERIFIER`);
+  const changed = files("portal/builder-only/a.ts");
+  const absent = evaluate({ prBody, changed });
+  assert.equal(absent.ok, false);
+  assert.equal(absent.verifierBypass, false);
+  assert.match(absent.errors.join("\n"), /not allowed to change portal\/builder-only\/a\.ts/);
+
+  const disabled = evaluate({ policy: basePolicy({ verifierBypassAllowedRoles: false }), prBody, changed });
+  assert.equal(disabled.ok, false);
+
+  const enabled = evaluate({ policy: basePolicy({ verifierBypassAllowedRoles: true }), prBody, changed });
+  assert.equal(enabled.ok, true, enabled.errors.join("\n"));
+  assert.equal(enabled.verifierBypass, true);
+
+  for (const truthy of ["true", 1, "yes"]) {
+    assert.equal(validatePolicy(basePolicy({ verifierBypassAllowedRoles: truthy })).ok, false, `non-boolean ${JSON.stringify(truthy)} must invalidate the policy`);
+    assert.equal(evaluate({ policy: basePolicy({ verifierBypassAllowedRoles: truthy }), prBody, changed }).ok, false);
+  }
+});
+
+test("non-verifier workflow edits are rejected; verifier workflow edits pass", () => {
+  const builder = evaluate({ prBody: body(`Role: ${P}BUILDER`), changed: files(".github/workflows/ci.yml") });
+  assert.equal(builder.ok, false);
+  assert.match(builder.errors.join("\n"), /BUILDER' is not allowed to change \.github\/workflows\/ci\.yml \(rule: github-workflows/);
+
+  const verifier = evaluate({ prBody: body(`Role: ${P}VERIFIER`), changed: files(".github/workflows/ci.yml") });
+  assert.equal(verifier.ok, true, verifier.errors.join("\n"));
+  assert.equal(verifier.evidenceRequired, true);
+});
+
+test("a PR that edits its own rolemap to self-grant is judged by the trusted base policy", () => {
+  const trusted = basePolicy();
+  const proposed = structuredClone(trusted);
+  proposed.rules.find((r) => r.id === "github-workflows").allowedRoles.push(`${P}BUILDER`);
+  const prBody = body(`Role: ${P}BUILDER`);
+  const changed = files("roles/rolemap.json", ".github/workflows/ci.yml");
+
+  assert.equal(evaluate({ policy: proposed, prBody, changed }).ok, true, "control: the PR's own proposed policy would admit it");
+  const judged = evaluate({ policy: trusted, prBody, changed });
+  assert.equal(judged.ok, false);
+  assert.deepEqual(judged.errors.filter((e) => e.includes("not allowed")).length, 1);
+});
+
+test("renames are checked against both the old and the new path", () => {
+  const result = evaluate({
+    prBody: body(`Role: ${P}BUILDER`),
+    changed: [{ filename: "portal/docs/moved.yml", previous_filename: ".github/workflows/ci.yml" }],
+  });
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.checkedPaths, ["portal/docs/moved.yml", ".github/workflows/ci.yml"]);
+});
+
+test("role declarations: plain, backticked, bold, bulleted, lowercase, and CRLF forms parse to one role", () => {
+  const policy = basePolicy();
+  const forms = [
+    [`Role: ${P}VERIFIER`, `${P}VERIFIER`],
+    ["Role: `JAI::DEV::BUILDER`", `${P}BUILDER`],
+    ["**Role:** JAI::DEV::BUILDER", `${P}BUILDER`],
+    ["**Role**: `JAI::DEV::ARCHITECT`", `${P}ARCHITECT`],
+    ["__Role:__ JAI::DEV::LIBRARIAN", `${P}LIBRARIAN`],
+    ["- Role: JAI::DEV::OPERATOR", `${P}OPERATOR`],
+    ["role:   jai::dev::verifier  ", `${P}VERIFIER`],
+  ];
+  for (const [line, expected] of forms) {
+    for (const eol of ["\n", "\r\n"]) {
+      const text = ["## Summary", "x", "", line, "", "## Evidence", "- ok"].join(eol);
+      assert.deepEqual(resolveDeclaredRole(text, policy), { ok: true, role: expected }, JSON.stringify({ line, eol }));
+    }
+  }
+});
+
+test("missing, duplicate, conflicting, malformed, unknown, and wrong-prefix roles are rejected", () => {
+  const policy = basePolicy();
+  const cases = [
+    ["## Summary\nno role here", /Missing 'Role:'/],
+    [`Role: ${P}BUILDER\n\nRole: ${P}BUILDER`, /2 'Role:' declarations/],
+    [`Role: ${P}BUILDER\n**Role:** ${P}VERIFIER`, /2 'Role:' declarations/],
+    ["Role:", /Malformed Role ""/],
+    ["Role: JAI::DEV::<OPERATOR|ARCHITECT|BUILDER|VERIFIER|LIBRARIAN>", /Malformed Role/],
+    ["Role: JAI:DEV::VERIFIER", /Malformed Role/],
+    [`Role: ${P}VERIFIER (cross-verified)`, /Malformed Role/],
+    ["Role: JAI::DEV::JANITOR", /Unknown Role/],
+    ["Role: JAI::COUNCIL::BUILDER", /Malformed Role/],
+  ];
+  for (const [text, expected] of cases) {
+    const result = resolveDeclaredRole(text, policy);
+    assert.equal(result.ok, false, text);
+    assert.match(result.reason, expected, text);
+  }
+});
+
+test("role lines inside fenced code blocks and HTML comments are not declarations", () => {
+  const policy = basePolicy();
+  const fenced = "```\nRole: JAI::DEV::BUILDER\n```\n<!-- Role: JAI::DEV::VERIFIER -->";
+  assert.deepEqual(parseRoleDeclarations(fenced), []);
+  assert.equal(resolveDeclaredRole(fenced, policy).ok, false);
+  const withReal = `${fenced}\nRole: ${P}VERIFIER`;
+  assert.deepEqual(resolveDeclaredRole(withReal, policy), { ok: true, role: `${P}VERIFIER` });
+});
+
+test("Evidence passes as the final section or before another H2, with H3 kept inside", () => {
+  const final = `Role: ${P}VERIFIER\n\n## Evidence\n- tsc --noEmit: exit 0`;
+  assert.equal(extractH2Section(final, "Evidence"), "- tsc --noEmit: exit 0");
+  assert.equal(evaluate({ prBody: final, changed: files(".github/workflows/ci.yml") }).ok, true, "final-section Evidence (no 'Z' anywhere) must pass");
+
+  const mid = `Role: ${P}VERIFIER\n\n## Evidence\n- build: exit 0\n### Detail\n- 33/33\n## Governance Boundary\n- merge: false`;
+  assert.equal(extractH2Section(mid, "Evidence"), "- build: exit 0\n### Detail\n- 33/33");
+  assert.equal(evaluate({ prBody: mid, changed: files(".github/workflows/ci.yml") }).ok, true);
+
+  const crlf = mid.replace(/\n/g, "\r\n");
+  assert.equal(evaluate({ prBody: crlf, changed: files(".github/workflows/ci.yml") }).ok, true);
+
+  const fencedHeading = `Role: ${P}VERIFIER\n\n## Evidence\n\`\`\`\n## not a heading\nexit 0\n\`\`\`\n## Next`;
+  assert.match(extractH2Section(fencedHeading, "Evidence"), /## not a heading\nexit 0/);
+});
+
+test("missing, empty, and placeholder-only Evidence fail only when a rule requires evidence", () => {
+  const changed = files(".github/workflows/ci.yml");
+  const role = `Role: ${P}VERIFIER`;
+  const failing = [
+    [`${role}\n\n## Summary\nno evidence`, /no '## Evidence' section/],
+    [`${role}\n\n## Evidence\n\n## Governance Boundary\n- x`, /empty or contains only placeholders/],
+    [`${role}\n\n## Evidence`, /empty or contains only placeholders/],
+    [`${role}\n\n## Evidence\n- <Insert exact local test counts>\n## Governance Boundary`, /only placeholders/],
+    [`${role}\n\n## Evidence\nEvidence: <Required | N/A — explain why>\n- \`pnpm lint\`: PASS/FAIL (or N/A — why)\n- N/A\n- TBD\n<!-- fill me -->`, /only placeholders/],
+    [`${role}\n\n### Evidence\n- exit 0`, /no '## Evidence' section/],
+  ];
+  for (const [prBody, expected] of failing) {
+    const result = evaluate({ prBody, changed });
+    assert.equal(result.ok, false, prBody);
+    assert.match(result.errors.join("\n"), expected, prBody);
+  }
+  assert.deepEqual(meaningfulEvidenceLines("- N/A — policy-only change"), ["N/A — policy-only change"]);
+
+  const noEvidenceNeeded = evaluate({ prBody: `Role: ${P}LIBRARIAN`, changed: files("portal/docs/readme.md") });
+  assert.equal(noEvidenceNeeded.ok, true, noEvidenceNeeded.errors.join("\n"));
+  assert.equal(noEvidenceNeeded.evidenceRequired, false);
+});
+
+test("blocked paths fail for every role, even with verifier bypass enabled", () => {
+  const policy = basePolicy({ verifierBypassAllowedRoles: true });
+  for (const blocked of [".env", "portal/dev.db", "vault/secret.txt", "portal/.env.local", "config/.env.production"]) {
+    const result = evaluate({ policy, prBody: body(`Role: ${P}VERIFIER`), changed: files(blocked) });
+    assert.equal(result.ok, false, blocked);
+    assert.match(result.errors.join("\n"), /Blocked/, blocked);
+  }
+});
+
+test("unreadable or invalid base policy fails closed", () => {
+  assert.throws(() => decodeContentsResponse([{ type: "file" }]), /not a readable file/);
+  assert.throws(() => decodeContentsResponse({ type: "file", encoding: "none", content: "" }), /not a readable file/);
+  assert.throws(() => decodeContentsResponse({ type: "dir" }), /not a readable file/);
+  assert.throws(() => decodeContentsResponse(undefined), /not a readable file/);
+  const encoded = Buffer.from(JSON.stringify(basePolicy())).toString("base64");
+  assert.equal(loadTrustedPolicy(decodeContentsResponse({ type: "file", encoding: "base64", content: encoded })).rolePrefix, P);
+
+  assert.throws(() => loadTrustedPolicy(""), /empty/);
+  assert.throws(() => loadTrustedPolicy(undefined), /empty/);
+  assert.throws(() => loadTrustedPolicy("{not json"), /not valid JSON/);
+  assert.throws(() => loadTrustedPolicy("[]"), /invalid/);
+  assert.throws(() => loadTrustedPolicy(JSON.stringify({ ...basePolicy(), rules: [] })), /rules must be a non-empty array/);
+  assert.throws(() => loadTrustedPolicy(JSON.stringify({ ...basePolicy(), rolePrefix: "" })), /rolePrefix/);
+  assert.throws(() => loadTrustedPolicy(JSON.stringify(basePolicy({ knownRoles: ["OTHER::X::Y"] }))), /does not start with/);
+
+  const invalid = evaluatePullRequest({ policy: { rules: "nope" }, body: `Role: ${P}VERIFIER`, files: files("a.ts") });
+  assert.equal(invalid.ok, false);
+  assert.match(invalid.errors[0], /^Trusted policy invalid/);
+});
+
+test("repository rolemap: valid, default-deny, VERIFIER-only workflows, CODEOWNERS, and CI guardrail scripts", () => {
+  const policy = loadTrustedPolicy(readFileSync(path.join(repoRoot, "roles/rolemap.json"), "utf8"));
+  assert.equal(policy.verifierBypassAllowedRoles, false);
+  for (const [id, prefix] of [["github-workflows", ".github/workflows/"], ["github-codeowners", ".github/CODEOWNERS"], ["ci-guardrail-scripts", "portal/scripts/role-guardrails-policy.cjs"]]) {
+    const rule = policy.rules.find((r) => r.id === id);
+    assert.ok(rule, id);
+    assert.ok(rule.pathsPrefix.includes(prefix), id);
+    assert.deepEqual(rule.allowedRoles, [`${P}VERIFIER`], id);
+    assert.equal(rule.evidenceRequired, true, id);
+  }
+
+  const a3g = files(
+    "roles/rolemap.json", ".github/workflows/role-guardrails.yml", ".github/workflows/portal-ci-guardrails.yml", ".github/CODEOWNERS",
+    "portal/scripts/role-guardrails-policy.cjs", "portal/scripts/role-guardrails-policy.test.cjs", "portal/scripts/control-plane-required-tests-v0.json",
+    "portal/scripts/run-required-control-plane-tests.mjs", "portal/scripts/run-required-control-plane-tests.test.mjs",
+    "docs/reference/q4m11y26-p2-a3-security-boundary-drill-and-reach-v0.md",
+  );
+  const asVerifier = evaluatePullRequest({ policy, body: body(`Role: ${P}VERIFIER`), files: a3g });
+  assert.equal(asVerifier.ok, true, asVerifier.errors.join("\n"));
+  const asBuilder = evaluatePullRequest({ policy, body: body(`Role: ${P}BUILDER`), files: a3g });
+  assert.equal(asBuilder.ok, false);
+
+  const a3iShaped = files(
+    "portal/src/app/operator/motion-control/manual-inference/route.ts",
+    "portal/src/app/operator/motion-control/manual-inference/route.test.ts",
+    "docs/reference/q4m11y26-p2-a3-inference-and-kill-switch-drill-v0.md",
+  );
+  const builder = evaluatePullRequest({ policy, body: body(`Role: ${P}BUILDER`), files: a3iShaped });
+  assert.equal(builder.ok, true, builder.errors.join("\n"));
+});
+
+test("role_guardrails workflow loads policy from the PR base SHA and never uses pull_request_target", () => {
+  const workflow = readFileSync(path.join(repoRoot, ".github/workflows/role-guardrails.yml"), "utf8");
+  assert.doesNotMatch(workflow, /^\s*pull_request_target\s*:/m, "pull_request_target must not be a trigger");
+  assert.match(workflow, /^on:\r?\n {2}pull_request:\r?\n/m);
+  assert.match(workflow, /ref:\s*baseSha/);
+  assert.match(workflow, /baseSha = pr\.base && pr\.base\.sha/);
+  assert.doesNotMatch(workflow, /readFileSync\([^)]*rolemap/);
+  assert.match(workflow, /node --test portal\/scripts\/role-guardrails-policy\.test\.cjs/);
+});
+
+// --- A3G-001 / A3G-002 repair regressions (PING-Q4M11Y26-P2-A3G-REPAIR-V1) ---
+
+const WORKFLOW_CHANGE = files(".github/workflows/ci.yml");
+const VERIFIER_LINE = `Role: ${P}VERIFIER`;
+
+test("A3G-001: Evidence that exists only inside a code fence or HTML comment fails closed as missing", () => {
+  const hidden = {
+    "closed backtick fence": "```markdown\n## Evidence\n- tsc: exit 0\n```",
+    "unclosed backtick fence": "```\n## Evidence\n- tsc: exit 0",
+    "closed tilde fence": "~~~\n## Evidence\n- tsc: exit 0\n~~~",
+    "unclosed tilde fence": "~~~~\n## Evidence\n- tsc: exit 0\n~~~",
+    "longer backtick fence closed only by a matching fence": "````\n```\n## Evidence\n- tsc: exit 0\n```",
+    "HTML comment": "<!--\n## Evidence\n- tsc: exit 0\n-->",
+    "unterminated HTML comment": "<!-- ## Evidence\n- tsc: exit 0",
+    "inline HTML comment": "<!-- ## Evidence --> text\n- tsc: exit 0",
+  };
+  for (const [name, hiddenBlock] of Object.entries(hidden)) {
+    const prBody = `${VERIFIER_LINE}\n\n## Summary\nx\n\n${hiddenBlock}\n`;
+    assert.equal(extractH2Section(prBody, "Evidence"), null, name);
+    const result = evaluate({ prBody, changed: WORKFLOW_CHANGE });
+    assert.equal(result.ok, false, name);
+    assert.match(result.errors.join("\n"), /no '## Evidence' section/, name);
+  }
+});
+
+test("A3G-001: a fenced or commented fake heading never starts or ends the real Evidence section", () => {
+  const prBody = [
+    VERIFIER_LINE, "", "```", "## Evidence", "- fake: exit 0", "```", "<!-- ## Evidence -->",
+    "## Evidence", "- tsc --noEmit: exit 0", "~~~", "## Governance Boundary", "~~~", "<!--", "## Next", "-->", "- build: exit 0",
+    "## Governance Boundary", "- Merge Authorized: false",
+  ].join("\n");
+  const section = extractH2Section(prBody, "Evidence");
+  assert.match(section, /^- tsc --noEmit: exit 0/);
+  assert.match(section, /- build: exit 0$/);
+  assert.doesNotMatch(section, /fake/);
+  assert.deepEqual(meaningfulEvidenceLines(section), ["tsc --noEmit: exit 0", "build: exit 0"]);
+  assert.equal(evaluate({ prBody, changed: WORKFLOW_CHANGE }).ok, true);
+});
+
+test("A3G-001: fenced output alone cannot satisfy Evidence but may accompany a real line", () => {
+  // Fenced lines deliberately look like real evidence (not like headings), so
+  // only the fence rule can reject them.
+  const fencedOnly = `${VERIFIER_LINE}\n\n## Evidence\n\`\`\`text\nok 1 - policy regressions\ntsc --noEmit: exit 0\n\`\`\`\n~~~\nbuild: exit 0\n~~~\n## Governance Boundary`;
+  const result = evaluate({ prBody: fencedOnly, changed: WORKFLOW_CHANGE });
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /only placeholders/);
+  const withBullet = fencedOnly.replace("## Evidence\n", "## Evidence\n- role-guardrails-policy.test.cjs: 13/13 pass\n");
+  assert.equal(evaluate({ prBody: withBullet, changed: WORKFLOW_CHANGE }).ok, true);
+});
+
+test("A3G-002: unfilled template placeholders never count as Evidence", () => {
+  const placeholders = [
+    "- N/A — <why>", "- N/A —", "- N/A -", "- N/A:", "- N/A – explain why", "- n/a (reason)", "N/A",
+    "- <Insert results>", "- <todo>", "- <fill in>", "- tsc: <paste output here>", "- [ ] <reason>",
+    "- `pnpm build`: <result>", "- TODO", "- TBD.", "- none", "- -", "- …", "Evidence:",
+    "Evidence: <Required | N/A — explain why>", "- `pnpm lint`: PASS/FAIL (or N/A — why)",
+  ];
+  for (const line of placeholders) {
+    for (const tail of ["", "\n## Governance Boundary\n- merge: false"]) {
+      const prBody = `${VERIFIER_LINE}\n\n## Evidence\n${line}${tail}`;
+      const result = evaluate({ prBody, changed: WORKFLOW_CHANGE });
+      assert.equal(result.ok, false, JSON.stringify(line + tail));
+      assert.match(result.errors.join("\n"), /empty or contains only placeholders/, line);
+    }
+  }
+});
+
+test("A3G-002: genuine Evidence still passes as the final section or before another H2", () => {
+  const genuine = [
+    "- N/A — policy-only change",
+    "- run: <https://github.com/jai-nexus/dev-jai-nexus/actions/runs/1> passed",
+    "- build<br>exit 0",
+    "- `node --test <file>` on every policy test: 13/13 pass",
+    "- Regressions: none",
+    "1. tsc --noEmit: exit 0",
+    "- [x] pnpm -C portal build: exit 0",
+    "Mail <ops@example.com> confirmed the run",
+  ];
+  for (const line of genuine) {
+    assert.equal(meaningfulEvidenceLines(line).length, 1, line);
+    for (const tail of ["", "\n\n## Governance Boundary\n- Merge Authorized: false"]) {
+      const result = evaluate({ prBody: `${VERIFIER_LINE}\n\n## Evidence\n${line}${tail}`, changed: WORKFLOW_CHANGE });
+      assert.equal(result.ok, true, `${JSON.stringify(line + tail)}: ${result.errors.join("; ")}`);
+    }
+  }
+});
+
+test("A3G-001: Role declarations inside fences or comments never count", () => {
+  const policy = basePolicy();
+  // [hidden block, role resolved when "Role: BUILDER" follows it]. After an
+  // unclosed fence the following line is still code, so no role is found.
+  const hiddenRoles = [
+    ["```\nRole: JAI::DEV::VERIFIER\n```", `${P}BUILDER`],
+    ["~~~\nRole: JAI::DEV::VERIFIER\n~~~", `${P}BUILDER`],
+    ["<!--\nRole: JAI::DEV::VERIFIER\n-->", `${P}BUILDER`],
+    ["```\nRole: JAI::DEV::VERIFIER", null],
+  ];
+  for (const [hidden, roleAfter] of hiddenRoles) {
+    const missing = resolveDeclaredRole(`## Summary\n${hidden}\n`, policy);
+    assert.equal(missing.ok, false, hidden);
+    assert.match(missing.reason, /Missing 'Role:'/, hidden);
+    const followed = resolveDeclaredRole(`${hidden}\nRole: ${P}BUILDER`, policy);
+    assert.deepEqual(followed.ok ? followed.role : null, roleAfter, hidden);
+  }
+  assert.deepEqual(resolveDeclaredRole(`\`\`\`\nRole: ${P}VERIFIER\n\`\`\`\nRole: ${P}BUILDER`, policy), { ok: true, role: `${P}BUILDER` });
+  const conflicting = resolveDeclaredRole(`\`\`\`\nRole: ${P}VERIFIER\n\`\`\`\nRole: ${P}BUILDER\nRole: ${P}ARCHITECT`, policy);
+  assert.equal(conflicting.ok, false);
+  assert.match(conflicting.reason, /Found 2 'Role:' declarations/);
+});
+
+test("an inline triple-backtick span is not a fence and does not hide later sections", () => {
+  const prBody = `${VERIFIER_LINE}\n\n\`\`\`inline\`\`\` sample\n\n## Evidence\n- tsc: exit 0`;
+  assert.equal(extractH2Section(prBody, "Evidence"), "- tsc: exit 0");
+  assert.equal(evaluate({ prBody, changed: WORKFLOW_CHANGE }).ok, true);
+});
