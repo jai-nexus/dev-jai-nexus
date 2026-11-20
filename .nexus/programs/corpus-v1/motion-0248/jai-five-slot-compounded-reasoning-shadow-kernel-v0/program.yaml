@@ -1,0 +1,16 @@
+# Proposed main-state record. Effective only upon verified CONTROL_THREAD merge acceptance.
+document_kind: program
+package_format: 2
+corpus_id: corpus-v1
+motion_id: motion-0248
+program_code: Q4M11Y26-P2
+program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_slug: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+status: OPEN
+evidence:
+  - path: .nexus/amendments/corpus-v1/motion-0248/amendment-01-q4m11y26-p2-scoping-and-format-2.yaml
+    source_commit: 3ac8e9b0974a85ac953c6cf6a9a86aef0e99c467
+    source_blob: b8557877d6fe978998beb08a078fac6394690cdc
+  - path: docs/reference/q3m7y26-p1-f15-program-closeout-receipt-v0.md
+    source_commit: 2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8
+    source_blob: c5d3dfd0d42c69c38c9b68da3073610d98521995

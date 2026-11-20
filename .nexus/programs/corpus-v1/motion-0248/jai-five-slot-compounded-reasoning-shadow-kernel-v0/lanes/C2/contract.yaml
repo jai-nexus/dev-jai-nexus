@@ -1,0 +1,20 @@
+# JAI-285 | Deterministic Five-Slot Receipt-Backed Replay Kernel
+# Execution requires a separate CONTROL_THREAD route.
+document_kind: lane_contract
+package_format: 2
+corpus_id: corpus-v1
+motion_id: motion-0248
+program_code: Q4M11Y26-P2
+program_id: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+program_slug: jai-five-slot-compounded-reasoning-shadow-kernel-v0
+lane_coordinate: C2
+write_repo: jai-nexus/dev-jai-nexus
+depends_on: [A2, B1, C1]
+evidence:
+  - path: .nexus/amendments/corpus-v1/motion-0248/amendment-01-q4m11y26-p2-scoping-and-format-2.yaml
+    source_commit: 3ac8e9b0974a85ac953c6cf6a9a86aef0e99c467
+    source_blob: b8557877d6fe978998beb08a078fac6394690cdc
+writers:
+  builder: ChatGPT / Codex
+  verifier: Claude
+  control-thread: Jerry Ingram

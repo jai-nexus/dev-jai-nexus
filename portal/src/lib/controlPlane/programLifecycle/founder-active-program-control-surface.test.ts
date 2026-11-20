@@ -7,8 +7,8 @@ import {
 import { FROZEN_PROGRAM_PROTECTION_ACTION_CLASSES } from "./frozen-program-protection-boundary";
 
 const expectedRegistry = [
-  { id: "jai-governance-intelligence-main-state-operating-loop-v0", title: "Main-State Reconciliation and Minimum Viable Operating Loop v0", coordinate: "Q3M7Y26-P1", lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY", displayPosture: "ACTIVE — PLANNING ONLY", authority: "NONE" },
-  { id: "jai-five-slot-compounded-reasoning-shadow-kernel-v0", title: "Five-Slot Compounded Reasoning Shadow Kernel v0", coordinate: null, lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN", displayPosture: "FROZEN — NOT OPEN", authority: "NONE" },
+  { id: "jai-governance-intelligence-main-state-operating-loop-v0", title: "Main-State Reconciliation and Minimum Viable Operating Loop v0", coordinate: "Q3M7Y26-P1", lifecycleState: "CLOSED_ACCEPTED", displayPosture: "Closed after ACTIVE — PLANNING ONLY", closeoutMainSha: "2a6fbfc7828e20c41fb4fcc8d0ff949b4f62aab8", authority: "NONE" },
+  { id: "jai-five-slot-compounded-reasoning-shadow-kernel-v0", title: "Five-Slot Compounded Reasoning Shadow Kernel v0", coordinate: "Q4M11Y26-P2", governing_motion_id: "motion-0248", activeExecutionLanes: 0, lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN", displayPosture: "OPENING_CANDIDATE / RESERVED_PENDING_OPENING_MERGE", authority: "NONE" },
   { id: "jai-founder-developer-workflow-pilot-v0", title: "Founder Developer Workflow Pilot v0", coordinate: null, lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN", displayPosture: "FROZEN — NOT OPEN", authority: "NONE" },
   { id: "jai-agent-council-bounded-activation-pilot-v0", title: "Bounded JAI Agent and Council Activation Pilot v0", coordinate: null, lifecycleState: "NOT_ROUTED / NOT_OPEN / DOWNSTREAM_FROZEN", displayPosture: "FROZEN — NOT OPEN", authority: "NONE" },
 ] as const;
@@ -32,8 +32,7 @@ function assertC10(result: ReturnType<typeof buildFounderActiveProgramControlSur
   assert.equal(result.mutationAuthorized, false);
   assert.equal(result.mutationPerformed, false);
   assert.equal(result.guardSatisfied, false);
-  assert.deepEqual(result.activeProgram, { programId: expectedRegistry[0].id, lifecycleState: "OPEN_FOR_BATCH_PLANNING_ONLY" });
-  assert.deepEqual(Reflect.ownKeys(result.activeProgram ?? {}), ["programId", "lifecycleState"]);
+  assert.equal(result.activeProgram, null);
   assert.deepEqual(Reflect.ownKeys(result.bindingComparison ?? {}), comparisonKeys);
   assert.equal(result.bindingComparison?.kind, "INVALID_EXPECTED_SNAPSHOT");
   assert.equal(result.bindingComparison?.structurallyEqual, false);
@@ -49,11 +48,11 @@ const model = buildFounderActiveProgramControlSurface();
 const later = buildFounderActiveProgramControlSurface();
 assert.deepEqual(Reflect.ownKeys(model), modelKeys);
 assert.deepEqual(model.portfolio, expectedRegistry);
-assert.equal(model.portfolio.filter((row) => row.lifecycleState === "OPEN_FOR_BATCH_PLANNING_ONLY").length, 1);
-assert.deepEqual(model.portfolio.slice(1).map((row) => row.displayPosture), ["FROZEN — NOT OPEN", "FROZEN — NOT OPEN", "FROZEN — NOT OPEN"]);
+assert.equal(model.portfolio.filter((row) => row.authority !== "NONE").length, 0);
+assert.deepEqual(model.portfolio.slice(1).map((row) => row.displayPosture), ["OPENING_CANDIDATE / RESERVED_PENDING_OPENING_MERGE", "FROZEN — NOT OPEN", "FROZEN — NOT OPEN"]);
 assert.equal(model.sourcePosture, "SUPPLIED_DOCUMENTARY_SNAPSHOT");
-assert.equal(model.sourceArtifact, "A5 Active and Frozen Program Registry v0");
-assert.equal(model.sourceRef, "c645be4d27cca2b2a0eb0f81d413f27df3493b00");
+assert.equal(model.sourceArtifact, "P1 closeout and P2 opening candidate (main baseline)");
+assert.equal(model.sourceRef, "3ac8e9b0974a85ac953c6cf6a9a86aef0e99c467");
 assert.equal(model.bindingAvailability, "UNAVAILABLE");
 assert.equal(model.eligibilityClassification, "INELIGIBLE");
 assert.equal(model.classificationOnly, true);
