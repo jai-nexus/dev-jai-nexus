@@ -125,6 +125,10 @@ jobs:
       - name: Guardrail - motion-factory spend lock
         run: node --test portal/scripts/motion-factory.test.mjs
 
+      # Q4M11Y26-P2:A3-D: runtime slot dispatch (advisory V-1c) locked at USD 0.00.
+      - name: Guardrail - runtime slot dispatch spend lock
+        run: pnpm -C portal exec tsx ../runtime/slotDispatch.test.ts
+
       - name: Guardrail - Type check
         shell: bash
         working-directory: portal

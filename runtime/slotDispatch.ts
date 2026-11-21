@@ -11,6 +11,34 @@ const SLOT_CONFIG_PATH = path.join(process.cwd(), ".nexus", "model-slots.yaml");
 const OPENAI_ENV_VAR_NAME = "OPENAI_API_KEY";
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
+// Q4M11Y26-P2:A3-D. Program 2 Layer 2 API spend is code-locked at USD 0.00.
+// Live provider dispatch throws SlotDispatchSpendLockError before any
+// credential is read or request is sent, whatever OPENAI_API_KEY or
+// JAI_LAYER2_AUTHORIZED_API_SPEND_USD contain. It throws rather than returning
+// a failure so run-slot-dispatch.ts stops before it writes an output artifact
+// or a run-ledger entry. Slot config resolution and the existing non-dispatch
+// refusals (selector slots, unsupported providers) still work offline.
+// Lifting the lock requires a code change under its own CONTROL_THREAD route.
+export const SLOT_DISPATCH_LAYER2_AUTHORIZED_API_SPEND_USD = "0.00";
+
+export class SlotDispatchSpendLockError extends Error {
+  readonly code = "PROVIDER_SPEND_NOT_AUTHORIZED";
+
+  constructor(provider: string, slot: string) {
+    super(
+      `Live ${provider} dispatch for slot ${slot} is not authorized: ` +
+        `Layer 2 API spend is code-locked at USD ${SLOT_DISPATCH_LAYER2_AUTHORIZED_API_SPEND_USD}. ` +
+        "No credential was read and no request was sent.",
+    );
+    this.name = "SlotDispatchSpendLockError";
+  }
+}
+
+// Always throws: no live provider dispatch is authorized at USD 0.00.
+function assertSlotDispatchSpendLock(taskContract: ResolvedTaskContract): void {
+  throw new SlotDispatchSpendLockError(taskContract.provider, taskContract.slot);
+}
+
 type ParsedSlotConfig = {
   provider?: string;
   model?: string;
@@ -119,6 +147,7 @@ export async function dispatchSlot(
     };
   }
 
+  assertSlotDispatchSpendLock(resolvedTaskContract);
   return dispatchOpenAI(resolvedTaskContract);
 }
 
@@ -187,6 +216,7 @@ function parseYamlScalar(rawValue: string): string {
 async function dispatchOpenAI(
   taskContract: ResolvedTaskContract,
 ): Promise<DispatchResult> {
+  assertSlotDispatchSpendLock(taskContract);
   const apiKey = process.env[OPENAI_ENV_VAR_NAME];
   if (!apiKey) {
     return {
