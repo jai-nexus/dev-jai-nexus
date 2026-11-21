@@ -39,7 +39,7 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   const source = { path: parent, source_commit: baseline, source_blob: git("rev-parse", baseline + ":" + parent) };
   const program = { document_kind: "program", ...identity, status: "RESERVED_NOT_OPENED", evidence: [source] };
   const lane = { document_kind: "lane_contract", ...identity, lane_coordinate: "A1", write_repo: "jai-nexus/dev-jai-nexus",
-    depends_on: [], writers: { builder: "fixture-builder", verifier: "fixture-verifier" }, evidence: [source] };
+    depends_on: [], writers: { builder: "ChatGPT / Codex", verifier: "Claude", "control-thread": "Jerry Ingram" }, evidence: [source] };
   const contract = dir + "/lanes/A1/contract.yaml";
   const ideaFile = ".nexus/conjectures/fixture-hypothesis.yaml";
   const idea = { document_kind: "conjecture", ...env, conjecture_id: "fixture-hypothesis", authority_granted: false,
@@ -113,7 +113,7 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   const established = commit("fixture execution contracts");
   const event = { document_kind: "ledger_event", ...identity, lane_coordinate: "A1",
     event_id: "00000000010000000000000000", timestamp: "1970-01-01T00:00:00.001Z", writer_role: "builder",
-    actor_id: "fixture-builder", principal_id: "fixture-builder", receipt_class: "B9-CLASS-004 / DELIVERY_RECEIPT",
+    actor_id: "JAI::DEV::BUILDER::GPT-6.2-ASTRA::EXTRA-HIGH::2026-11-20", principal_id: lane.writers.builder, receipt_class: "B9-CLASS-004 / DELIVERY_RECEIPT",
     authority_granted: false, contract_source: { path: contract, source_commit: established, source_blob: git("rev-parse", established + ":" + contract) },
     evidence: [source], prev_ledger_entry_hash: null, lane_status: "DELIVERED", observed_founder_minutes: 8, rework_count_delta: 0 };
   function eventPath(e) {
@@ -124,16 +124,39 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   write(receipt, event);
   await t.test("valid append-only ledger addition", async () => assert.equal((await check(established)).documents, 10));
   await rejectChange("writer namespace belongs to one principal", receipt, { ...event, principal_id: "other" }, /Unbound writer principal/);
+  await rejectChange("builder cannot label an event with the verifier seat", receipt,
+    { ...event, actor_id: event.actor_id.replace("BUILDER", "VERIFIER") }, /Invalid writer seat/);
+  await rejectChange("a role alone is not an actor instance", receipt,
+    { ...event, actor_id: "JAI::DEV::BUILDER" }, /Invalid writer seat/);
+  await rejectChange("acceptance requires the human control writer", receipt,
+    { ...event, receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" }, /Human control principal/);
   await rejectChange("ULID encodes timestamp", receipt, { ...event, timestamp: "1970-01-01T00:00:00.002Z" }, /identity\/path mismatch/);
   const wrongTime = { ...event, event_id: "00000000030000000000000001" };
   await rejectChange("canonical filename still requires matching ULID time", eventPath(wrongTime), wrongTime, /ULID timestamp mismatch/);
   await rejectChange("independent receipt class cannot be self-issued", receipt, { ...event, receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" }, /Independent verifier/);
-  commit("fixture delivery receipt");
+  const delivered = commit("fixture delivery receipt");
+  await t.test("verification and human acceptance start separate principal-bound streams", async () => {
+    const verify = { ...event, writer_role: "verifier", actor_id: "JAI::DEV::VERIFIER::CLAUDE::HIGH::2026-11-20",
+      principal_id: "Claude", event_id: "00000000010000000000000001",
+      receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" };
+    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::DEV::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
+      principal_id: "Jerry Ingram", event_id: "00000000010000000000000002",
+      receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" };
+    try {
+      write(eventPath(verify), verify);
+      write(eventPath(accept), accept);
+      assert.equal((await check(delivered)).documents, 12);
+      write(eventPath(accept), { ...accept, actor_id: event.actor_id });
+      await assert.rejects(check(delivered), /Invalid writer seat/);
+    } finally {
+      for (const record of [verify, accept]) fs.rmSync(absolute(eventPath(record)), { force: true });
+    }
+  });
   await rejectChange("modified established contract", contract, { ...lane, write_repo: "fixture/other" }, /Immutable historical record changed/);
   await rejectChange("deleted established contract", contract, null, /Immutable historical record changed/);
   await rejectChange("modified receipt", receipt, { ...event, rework_count_delta: 4 }, /Immutable historical record changed/);
   await rejectChange("deleted receipt", receipt, null, /Immutable historical record changed/);
-  const next = { ...event, timestamp: "1970-01-01T00:00:00.002Z", event_id: "00000000020000000000000000", prev_ledger_entry_hash: receiptHash(event) };
+  const next = { ...event, lane_status: "HOLD", timestamp: "1970-01-01T00:00:00.002Z", event_id: "00000000020000000000000000", prev_ledger_entry_hash: receiptHash(event) };
   await rejectChange("conflicting ledger predecessor", eventPath(next), { ...next, prev_ledger_entry_hash: null }, /Broken ledger predecessor/);
   write(eventPath(next), next);
   await t.test("append to an established stream and repeat", async () => {
@@ -141,6 +164,29 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
     assert.equal(first.documents, 11);
     assert.deepEqual(await check(established), first);
   });
+  const revised = commit("bounded revision as a new receipt");
+  const compensation = { ...next, timestamp: "1970-01-01T00:00:00.003Z", event_id: "00000000030000000000000000",
+    lane_status: event.lane_status, rework_count_delta: 1, prev_ledger_entry_hash: receiptHash(next),
+    evidence: [{ path: eventPath(next), source_commit: revised, source_blob: git("rev-parse", revised + ":" + eventPath(next)) }] };
+  write(eventPath(compensation), compensation);
+  const compensated = commit("compensate by append");
+  await t.test("compensation binds the superseded blob and preserves both prior blobs", async () => {
+    assert.equal((await check(delivered)).documents, 12);
+    for (const [name, sha] of [[receipt, delivered], [eventPath(next), revised]])
+      assert.equal(git("rev-parse", compensated + ":" + name), git("rev-parse", sha + ":" + name));
+  });
+  for (const operation of ["edit", "delete"]) {
+    await t.test(operation + " followed by restoration cannot hide a receipt rewrite", async () => {
+      if (operation === "edit") write(receipt, { ...event, observed_founder_minutes: 100 });
+      else fs.unlinkSync(absolute(receipt));
+      commit("fixture " + operation);
+      write(receipt, event);
+      commit("restore receipt bytes");
+      assert.equal(git("rev-parse", "HEAD:" + receipt), git("rev-parse", delivered + ":" + receipt));
+      await assert.rejects(check(compensated), /Immutable historical record changed: .nexus\/ledger/);
+      git("checkout", "--quiet", "--detach", compensated);
+    });
+  }
   await t.test("a later revert cannot conceal a contract rewrite", async () => {
     write(contract, { ...lane, write_repo: "fixture/other" });
     commit("fixture contract overwrite");
