@@ -3,13 +3,15 @@
 | Field | Value |
 | -- | -- |
 | Program / lane | `Q4M11Y26-P2:A3` (JAI-277) — Least-Privilege, CI, Inference and Kill-Switch Boundaries |
-| Packets | A3-G governance guardrails, A3-I manual-inference gates, A3-C residual spend locks and credential-reach drill |
+| Packets | A3-G governance guardrails, A3-I manual-inference gates, A3-C residual spend locks and credential-reach drill, A3-D runtime slot dispatch lock and A3 exit reconciliation |
 | A3-G baseline | `jai-nexus/dev-jai-nexus@002a2f7256c593d57a7840066cb4b5010a2b14a2` |
 | A3-G route | `PING-Q4M11Y26-P2-A3G-EXEC-V1` (B9-CLASS-004) |
 | A3-G author | `JAI::DEV::VERIFIER` (Claude), exclusive steward of `.github/workflows/**` and `roles/rolemap.json` |
 | A3-G cross-verifier | `JAI::COUNCIL::BUILDER` (ChatGPT), B9-CLASS-006; no self-verification |
 | A3-C baseline | `jai-nexus/dev-jai-nexus@7ce8f669aa5a03650a341944de9a39f046093149` (A3-I merge) |
 | A3-C route | `PING-Q4M11Y26-P2-A3C-EXEC-V1` (B9-CLASS-004 / B9-CLASS-010); author `JAI::DEV::VERIFIER` (Claude); cross-verifier `JAI::COUNCIL::BUILDER` (ChatGPT) |
+| A3-D baseline | `jai-nexus/dev-jai-nexus@cef4863e7ded74059b5c5341d39bdfc53098bcdc` (A3-C squash merge of PR #452 at `2026-11-21T01:59:05Z`; parent `7ce8f669`; tree `464caefb`, identical to the cross-verified PR head) |
+| A3-D route | `PING-Q4M11Y26-P2-A3D-EXEC-V1` (B9-CLASS-004); author `JAI::DEV::VERIFIER` (Claude); cross-verifier `JAI::COUNCIL::BUILDER` (ChatGPT) |
 | Merge | Human only (B9-CLASS-007). `merge_authorized: false` for every AI seat |
 
 ## 1. Packets
@@ -23,6 +25,9 @@
 - **A3-C:** closes A3-I verification advisories V-1a (wave planner), V-1b (`motion-factory.mjs`)
   and V-5 (runner fixtures on Node 22.14; 34th manifest pin), and runs the V-6
   credential-reach drill. See sections 5A and 5B.
+- **A3-D:** locks `runtime/slotDispatch.ts` (advisory V-1c), registers its regression suite in
+  `portal_guardrails`, audits the whole repository for provider call sites, and records the
+  CONTROL_THREAD ruling on CRED-1. See sections 5A, 5C and 5D.
 
 ## 2. Defects closed by A3-G
 
@@ -103,10 +108,12 @@ Vercel access and records the audit as reported.
 6. **The session credential is the human owner's identity, scoped only by the session proxy**
    (section 5B). Within `dev-jai-nexus` it holds `admin`. Rulesets without bypass actors still
    apply to admins, but an admin can edit the ruleset itself, so human-only merge for AI seats
-   (B9-CLASS-007) rests on seat discipline, not on credential scope.
-7. **One known provider path is not locked:** `runtime/slotDispatch.ts`, used by the
-   operator CLI `runtime/run-slot-dispatch.ts`, sends OpenAI Responses requests with an env key.
-   It is outside `portal/` (not deployed) and outside the A3-C allowlist (section 5A).
+   (B9-CLASS-007) rests on seat discipline, not on credential scope. CONTROL_THREAD accepted this
+   posture for A3 under ruling CRED-1 (section 5D); the technical fact is unchanged.
+7. **Provider-path coverage is search-based** (section 5C). The audit matches SDK imports,
+   provider API hosts and provider credential names. A provider endpoint assembled at runtime
+   from configuration, or a new SDK added later, would not be found by these patterns. The
+   per-file regression suites only cover the call sites that exist today.
 
 ## 5. B9-CLASS-002 local A3-I drills
 
@@ -126,18 +133,21 @@ The code-level Layer 2 ceiling is **USD 0.00**. The gates cover future dispatch 
 ## 5A. A3-C residual Layer 2 spend locks and runner fix
 
 A repository search for provider SDK imports and provider API hosts at the A3-C baseline
-found four paid paths. Status after A3-C:
+found four paid paths. Status after A3-C and A3-D:
 
 | Path | Lock | Regression |
 | --- | --- | --- |
 | Manual-inference route and provider connector | A3-I gates (USD 0.00 ceiling, kill switch, write flag) | `a3-inference-gates.test.ts` (pinned #34) |
 | `POST /api/internal/agents/plan-wave` and `planWaveWithAgent()` (V-1a) | Internal token kept at entry. The OpenAI SDK import and client were removed; the planner returns only a deterministic offline stub, labelled not provider-generated, with `generation.layer2ApiSpendUsd: "0.00"`. `providerMode: "live_provider"` gets HTTP 403 from the route, and the planner throws `PlannerSpendLockError` on its own. | `portal/src/lib/waves/agentPlanner.test.ts` |
 | `portal/scripts/motion-factory.mjs` (V-1b) | Paid modes (`draft`/`promote` without `--no-api`, `revise`, `evidence`, including `--preview`) exit 3 at command dispatch before any key is read. `requireApiKey` and all four provider call sites (three OpenAI Responses, one shared Anthropic Messages) repeat the check. `status` reports dispatch disabled independently of key presence. `context`, `status` and `--no-api` modes stay offline. | `portal/scripts/motion-factory.test.mjs` |
-| `runtime/slotDispatch.ts` via `runtime/run-slot-dispatch.ts` | **Not locked** (outside the A3-C allowlist) | none; needs its own route |
+| `runtime/slotDispatch.ts` via `runtime/run-slot-dispatch.ts` (V-1c, A3-D) | `dispatchSlot()` throws `SlotDispatchSpendLockError` (`PROVIDER_SPEND_NOT_AUTHORIZED`) where live dispatch would begin, and `dispatchOpenAI()` repeats the lock as its first statement, before `OPENAI_API_KEY` is read or the request is sent. The lock throws instead of returning a failure, so the CLI exits non-zero before it writes an output artifact or appends a run-ledger entry. Slot resolution and the existing selector and unsupported-provider refusals still work offline. | `runtime/slotDispatch.test.ts` |
 
-Both new suites run with fake keys, an env attempt to raise the ceiling
-(`JAI_LAYER2_AUTHORIZED_API_SPEND_USD`), and network traps, and both run in `portal_guardrails`.
-The ceiling is a code constant in each file; no environment variable can raise it.
+All three suites (planner, motion-factory, slot dispatch) run with fake keys, an env attempt to
+raise the ceiling (`JAI_LAYER2_AUTHORIZED_API_SPEND_USD`), and network traps with positive
+controls, and all three run in `portal_guardrails`. The ceiling is a code constant in each file;
+no environment variable can raise it. The slot dispatch suite also proves `process.env` holds
+no read of the key, and runs the real CLI end to end in a temporary repository to show it
+writes no output and no ledger entry; it leaves no files behind.
 
 V-5: `run-required-control-plane-tests.test.mjs` now runs its `.test.ts` fixtures under `tsx`, as
 production `--run` does. With Node's type stripping turned off (the Node 22.14 default) the old
@@ -165,16 +175,68 @@ be assumed org-wide. Within `dev-jai-nexus` it is `admin`, so least privilege is
 Moving AI seats to a dedicated repository-scoped credential (contents and pull requests
 write, no admin) is a separate human B9-CLASS-010 decision.
 
+## 5C. A3-D full-repository provider call-site audit
+
+Read-only search of the A3-D tree (baseline `cef4863e` plus the A3-D change), excluding
+`node_modules`, the generated motion snapshot, `.nexus/` and Markdown.
+
+- Required patterns over `portal/**`, `runtime/**` and `scripts/**`: `api.openai.com`,
+  `api.anthropic.com`, `from "openai"`, `import("openai")`, `@anthropic-ai`, `OPENAI_API_KEY`,
+  `ANTHROPIC_API_KEY`. Result: 34 matches in 8 files, none in `scripts/`.
+- Broader sweep over the whole repository: other provider SDK packages (Google, Mistral, Groq,
+  Cohere, Vercel AI SDK, Replicate, Together), other provider hosts (Google Generative Language,
+  Mistral, Groq, OpenRouter, Together, Cohere, Replicate, Bedrock, Azure OpenAI), and other
+  provider credential names. Result: no additional call site.
+
+| Network dispatch site | Lock |
+| --- | --- |
+| `portal/scripts/motion-factory.mjs`: three OpenAI Responses `fetch` calls and one Anthropic Messages `fetch` | A3-C spend lock in each helper and at command dispatch |
+| `portal/src/lib/controlPlane/motionKernel/provider-connector.ts`: `import("openai")` | A3-I `provider_dispatch` gate (always denied) before credential access |
+| `runtime/slotDispatch.ts`: OpenAI Responses `fetch` | A3-D spend lock in `dispatchSlot()` and `dispatchOpenAI()` |
+
+The other matches are credential reads that run only after those locks (`requireApiKey`,
+`generateNarrativeWithOpenAI`, `dispatchOpenAI`); `motion-factory status` key-presence booleans,
+which never dispatch; the A3-I-gated `JAI_MODEL_SLOT_API_KEY` connector credential; comments
+and messages; and fake-key test fixtures. **Result: zero unlocked paid Layer 2 call sites among
+the identified in-repository code paths** (limit: section 4, item 7).
+
+## 5D. CONTROL_THREAD ruling on CRED-1
+
+**Ruling:** `ACCEPTED_SOLO_OPERATOR_SESSION_PROXY_POSTURE`, issued by Jerry Ingram via
+CONTROL_THREAD on 2026-11-20 and recorded here by A3-D.
+
+**Technical facts, unchanged by the ruling.** The `jai-nexus/jai-nexus-legacy` HTTP 403
+(section 5B) proves single-repository write isolation at the managed AI session Git proxy layer.
+The credential behind that proxy, described by CONTROL_THREAD as the GitHub OAuth connector,
+authenticates as the human owner `JerryIngram` and holds `admin` on `dev-jai-nexus`. It is not
+repository-scoped.
+
+**What CONTROL_THREAD accepts.** For `Q4M11Y26-P2:A3` (JAI-277), under the USD 0.00
+solo-founder operating model, this three-layer control boundary satisfies the
+one-repository write exit item:
+
+1. the session proxy's single-repository enforcement (HTTP 403 outside the authorized set);
+2. ruleset `11506548` (`main-protection`), with no bypass actors, requiring `role_guardrails`
+   and `portal_guardrails`;
+3. B9-CLASS-007 human-only merge adjudication.
+
+Layer 1 lives outside the repository. Layer 2 can be edited by an `admin` credential. Layer 3 is
+procedural. The ruling accepts these properties; it does not remove them.
+
+**Standing requirement.** A dedicated credential (fine-grained personal access token or GitHub
+App, scoped to this repository's contents and pull requests, without admin) is required
+before any unattended or non-proxy CLI automation is authorized.
+
 ## 6. A3 checkable exit coverage
 
 | JAI-277 exit item | Evidence |
 | --- | --- |
 | Required manifest floor and skip detection | A3-G runner regression suite; 34 pinned since A3-C, Node 22.14-compatible fixtures |
 | Protected branch settings and CODEOWNERS | B9-CLASS-010 ruleset observation in section 3.2. CODEOWNERS remains advisory. |
-| One-repository write permission against an unauthorized repository | **PASS at the session boundary** (section 5B): HTTP 403 for `jai-nexus-legacy`, push permitted for `dev-jai-nexus`. Enforced by the session proxy; the credential is not repository-scoped and is `admin` on `dev-jai-nexus`. |
-| Non-ADMIN, provider and unauthorized spend paths | Manual-inference (A3-I, section 5), wave planner and motion-factory (A3-C, section 5A) locked at USD 0.00. **Partial:** `runtime/slotDispatch.ts` remains unlocked. Vercel holds no provider keys (operator audit, section 3.2). |
+| One-repository write permission against an unauthorized repository | **PASS at the session boundary** (section 5B): HTTP 403 for `jai-nexus-legacy`, push permitted for `dev-jai-nexus`. Enforced by the session proxy; the credential is not repository-scoped and is `admin` on `dev-jai-nexus`. Accepted for A3 by CONTROL_THREAD ruling CRED-1 (section 5D), with a dedicated credential required before unattended or non-proxy automation. |
+| Non-ADMIN, provider and unauthorized spend paths | **PASS for all identified in-repository code paths** (section 5C): manual-inference (A3-I), wave planner and motion-factory (A3-C), runtime slot dispatch (A3-D), all locked at USD 0.00 with CI regression suites. Vercel holds no provider keys (operator audit, section 3.2). Coverage is search-based (section 4, item 7). |
 | Kill switch before manual-inference persistence | B9-CLASS-002 mid-request flip in section 5 |
 
 ## 7. Authority boundary
 
-These records grant zero execution, provider-spend, routing or acceptance authority. Independent B9-CLASS-006 verification and human B9-CLASS-007 acceptance remain separate decisions for A3-I and A3-C.
+These records grant zero execution, provider-spend, routing or acceptance authority. Independent B9-CLASS-006 verification and human B9-CLASS-007 acceptance remain separate decisions for A3-I, A3-C and A3-D.
