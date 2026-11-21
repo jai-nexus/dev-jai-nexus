@@ -27,7 +27,7 @@ Call `validatePacket(packet, { currentBaseSha, replyTo, attestedRecipient })` wi
 | Delivery mode | Destination and check |
 | --- | --- |
 | `PLANE_BROADCAST` | A plane such as `JAI::DEV`. Mutations must be false. |
-| `ROLE_ANYCAST` | A three-part seat such as `JAI::DEV::BUILDER`. The rolemap supplies the DEV seat names. |
+| `ROLE_ANYCAST` | A three-part seat such as `JAI::COUNCIL::AUDITOR`. The packet vocabulary includes the repository's rolemap seats and the COUNCIL, DEV, AGENT, EXT, OPS, SECURITY and RUNTIME planes. |
 | `INSTANCE_UNICAST` | A six-part session ID matching the recipient attested outside the packet. Model and effort follow the role, then a calendar date with optional two-digit instance suffix. An `UNDECLARED` field prevents attested unicast. |
 
 The addressing layer checks shape, correlation and scope. Callers must authenticate the principal and obtain a separate, repository-specific route before permitting writes. The read-only `importLegacyPing` projection keeps the old envelope ID and protocol and discards legacy action claims. Hashes and addresses grant zero spend, verification, integration or lifecycle authority.
@@ -40,7 +40,9 @@ The canonical file is `.nexus/ledger/<corpus>/<motion>/<program_slug>/<lane>/<wr
 | --- | --- | --- |
 | builder | `JAI::DEV::BUILDER` | ChatGPT / Codex |
 | verifier | `JAI::DEV::VERIFIER` | Claude |
-| control-thread | `JAI::DEV::OPERATOR` | Jerry Ingram |
+| control-thread | `JAI::OPS::OPERATOR` | Jerry Ingram |
+
+Each lane's frozen `writers` map supplies its own principal IDs. For B9-CLASS-006, the validator also compares the verifier session's declared model with the builder sessions recorded for that lane. Matching known vendor families (OpenAI, Anthropic or Google) fail the independence check. Unrecognized and undeclared models supply no evidence of family independence.
 
 `appendReceipt(request, writer)` takes a local bare Git repository, an existing proposal branch, expected main and proposal SHAs, and a complete Format 2 event. Supply the writer role, actor and principal from the authenticated route context separately. The writer validates the candidate in a private checkout against the frozen contract, source blobs and preceding Git history. A single Git ref transaction verifies main and compares and swaps the proposal head. A stale head or competing update fails. The caller must refresh the trusted main ref before preparing a packet and check the remote base again at publication. There is no cross-host transaction.
 

@@ -39,7 +39,7 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   const source = { path: parent, source_commit: baseline, source_blob: git("rev-parse", baseline + ":" + parent) };
   const program = { document_kind: "program", ...identity, status: "RESERVED_NOT_OPENED", evidence: [source] };
   const lane = { document_kind: "lane_contract", ...identity, lane_coordinate: "A1", write_repo: "jai-nexus/dev-jai-nexus",
-    depends_on: [], writers: { builder: "ChatGPT / Codex", verifier: "Claude", "control-thread": "Jerry Ingram" }, evidence: [source] };
+    depends_on: [], writers: { builder: "Fixture builder", verifier: "Fixture reviewer", "control-thread": "Fixture operator" }, evidence: [source] };
   const contract = dir + "/lanes/A1/contract.yaml";
   const ideaFile = ".nexus/conjectures/fixture-hypothesis.yaml";
   const idea = { document_kind: "conjecture", ...env, conjecture_id: "fixture-hypothesis", authority_granted: false,
@@ -135,18 +135,20 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   await rejectChange("canonical filename still requires matching ULID time", eventPath(wrongTime), wrongTime, /ULID timestamp mismatch/);
   await rejectChange("independent receipt class cannot be self-issued", receipt, { ...event, receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" }, /Independent verifier/);
   const delivered = commit("fixture delivery receipt");
-  await t.test("verification and human acceptance start separate principal-bound streams", async () => {
-    const verify = { ...event, writer_role: "verifier", actor_id: "JAI::DEV::VERIFIER::CLAUDE::HIGH::2026-11-20",
-      principal_id: "Claude", event_id: "00000000010000000000000001",
-      receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" };
-    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::DEV::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
-      principal_id: "Jerry Ingram", event_id: "00000000010000000000000002",
+  const verify = { ...event, writer_role: "verifier", actor_id: "JAI::DEV::VERIFIER::CLAUDE::HIGH::2026-11-20",
+    principal_id: lane.writers.verifier, event_id: "00000000010000000000000001",
+    receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" };
+  await rejectChange("distinct contract principals cannot verify within the same declared model family",
+    eventPath(verify), { ...verify, actor_id: verify.actor_id.replace("CLAUDE", "CODEX") }, /shares builder model family/);
+  await t.test("verification and human acceptance use the frozen lane's own principals", async () => {
+    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::OPS::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
+      principal_id: lane.writers["control-thread"], event_id: "00000000010000000000000002",
       receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" };
     try {
       write(eventPath(verify), verify);
       write(eventPath(accept), accept);
       assert.equal((await check(delivered)).documents, 12);
-      write(eventPath(accept), { ...accept, actor_id: event.actor_id });
+      write(eventPath(accept), { ...accept, actor_id: accept.actor_id.replace("OPS", "DEV") });
       await assert.rejects(check(delivered), /Invalid writer seat/);
     } finally {
       for (const record of [verify, accept]) fs.rmSync(absolute(eventPath(record)), { force: true });

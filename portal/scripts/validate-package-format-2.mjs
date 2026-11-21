@@ -240,13 +240,31 @@ export function parseSessionId(id) {
   return { seat, session: true, declared: !parts.includes("UNDECLARED") };
 }
 
-const writerBindings = new Map([
-  ["builder", ["JAI::DEV::BUILDER", "ChatGPT / Codex"]],
-  ["verifier", ["JAI::DEV::VERIFIER", "Claude"]],
-  ["control-thread", ["JAI::DEV::OPERATOR", "Jerry Ingram"]],
+const writerSeats = new Map([
+  ["builder", "JAI::DEV::BUILDER"],
+  ["verifier", "JAI::DEV::VERIFIER"],
+  ["control-thread", "JAI::OPS::OPERATOR"],
 ]);
 
+// Classify the session's model field independently of the contract principal's name.
+function modelFamily(actorId) {
+  const model = actorId.split("::")[3];
+  if (/^(?:OPENAI|GPT|CHATGPT|CODEX|O[134])(?:[._-]|$)/.test(model)) return "OpenAI";
+  if (/^(?:ANTHROPIC|CLAUDE)(?:[._-]|$)/.test(model)) return "Anthropic";
+  if (/^(?:GOOGLE|GEMINI)(?:[._-]|$)/.test(model)) return "Google";
+  return undefined;
+}
+
 function checkEvents(root, events, contracts) {
+  const builderFamilies = new Map();
+  for (const event of events) {
+    if (event.writer_role !== "builder") continue;
+    const family = modelFamily(event.actor_id);
+    if (!family) continue;
+    const key = laneKey(event);
+    if (!builderFamilies.has(key)) builderFamilies.set(key, new Set());
+    builderFamilies.get(key).add(family);
+  }
   const previous = new Map();
   const ids = new Map();
   const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -260,13 +278,13 @@ function checkEvents(root, events, contracts) {
     const lane = contracts.get(laneKey(event));
     requireThat(lane && Object.hasOwn(lane.writers, event.writer_role) && lane.writers[event.writer_role] === event.principal_id,
       "Unbound writer principal: " + file);
-    const binding = writerBindings.get(event.writer_role);
     const actor = parseSessionId(event.actor_id);
-    requireThat(binding && actor.session && actor.seat === binding[0] && event.principal_id === binding[1],
-      "Invalid writer seat or principal: " + file);
+    requireThat(actor.session && actor.seat === writerSeats.get(event.writer_role), "Invalid writer seat: " + file);
     if (event.receipt_class.startsWith("B9-CLASS-006")) {
       requireThat(event.writer_role === "verifier" && Object.hasOwn(lane.writers, "builder") &&
         lane.writers.builder !== event.principal_id, "Independent verifier required: " + file);
+      requireThat(!builderFamilies.get(laneKey(event))?.has(modelFamily(event.actor_id)),
+        "Verifier shares builder model family: " + file);
     }
     if (event.receipt_class.startsWith("B9-CLASS-007")) requireThat(event.writer_role === "control-thread", "Human control principal required: " + file);
     bindSource(root, event.contract_source);

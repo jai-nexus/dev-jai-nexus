@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 import rolemap from "../../../../../roles/rolemap.json";
 import { importLegacyPing, parseAddress, validatePacket } from "./packetContract";
 
@@ -11,6 +14,30 @@ const ping = { protocol: "JAI::PING:1.1", packet_id: "PING-B1", in_reply_to: nul
   repo_mutations_authorized: true, action_scope: ["inspect receipt"], authority_from_address: false,
   layer_2_spend_usd: 0, verifier_authority: false, merge_authorized: false };
 const context = { currentBaseSha: sha };
+
+test("packet module initializes and parses in an isolated runtime without Node modules", () => {
+  const source = readFileSync(new URL("./packetContract.ts", import.meta.url), "utf8");
+  const compiled = ts.transpileModule(source, { compilerOptions: {
+    module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
+  } }).outputText;
+  const sandbox = { exports: {} as typeof import("./packetContract"),
+    require(name: string): never { throw new Error("Unexpected runtime dependency: " + name); } };
+  runInNewContext(compiled, sandbox);
+  assert.equal(sandbox.exports.parseAddress(instance).seat, seat);
+});
+
+test("ratified planes accept broadcasts and canonical seats accept addressed packets", () => {
+  for (const plane of ["COUNCIL", "DEV", "AGENT", "EXT", "OPS", "SECURITY", "RUNTIME"]) {
+    validatePacket({ ...ping, to: "JAI::" + plane, delivery_mode: "PLANE_BROADCAST", repo_mutations_authorized: false }, context);
+  }
+  for (const plane of ["COUNCIL", "DEV"]) {
+    for (const role of ["ARCHITECT", "BUILDER", "AUDITOR", "VERIFIER", "OPERATOR", "LIBRARIAN", "AUDIT", "FORMAT", "EXECUTOR", "BENCH", "DIRECT"])
+      validatePacket({ ...ping, to: ["JAI", plane, role].join("::") }, context);
+  }
+  for (const to of ["JAI::OPS::OPERATOR", "JAI::SECURITY::AUDIT", "JAI::RUNTIME::EXECUTOR",
+    "JAI::AGENT::BENCH", "JAI::EXT::DIRECT"]) validatePacket({ ...ping, to }, context);
+  assert.throws(() => validatePacket({ ...ping, to: "JAI::UNKNOWN::AUDITOR" }, context));
+});
 
 test("positional seats retain every known dev role and validate dated sessions", () => {
   for (const role of rolemap.knownRoles) assert.equal(parseAddress(role).seat, role);
