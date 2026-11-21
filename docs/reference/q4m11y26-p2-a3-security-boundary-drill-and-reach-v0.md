@@ -3,14 +3,16 @@
 | Field | Value |
 | -- | -- |
 | Program / lane | `Q4M11Y26-P2:A3` (JAI-277) — Least-Privilege, CI, Inference and Kill-Switch Boundaries |
-| Packets | A3-G governance guardrails and A3-I manual-inference gates |
+| Packets | A3-G governance guardrails, A3-I manual-inference gates, A3-C residual spend locks and credential-reach drill |
 | A3-G baseline | `jai-nexus/dev-jai-nexus@002a2f7256c593d57a7840066cb4b5010a2b14a2` |
 | A3-G route | `PING-Q4M11Y26-P2-A3G-EXEC-V1` (B9-CLASS-004) |
 | A3-G author | `JAI::DEV::VERIFIER` (Claude), exclusive steward of `.github/workflows/**` and `roles/rolemap.json` |
 | A3-G cross-verifier | `JAI::COUNCIL::BUILDER` (ChatGPT), B9-CLASS-006; no self-verification |
+| A3-C baseline | `jai-nexus/dev-jai-nexus@7ce8f669aa5a03650a341944de9a39f046093149` (A3-I merge) |
+| A3-C route | `PING-Q4M11Y26-P2-A3C-EXEC-V1` (B9-CLASS-004 / B9-CLASS-010); author `JAI::DEV::VERIFIER` (Claude); cross-verifier `JAI::COUNCIL::BUILDER` (ChatGPT) |
 | Merge | Human only (B9-CLASS-007). `merge_authorized: false` for every AI seat |
 
-## 1. Two-packet split
+## 1. Packets
 
 - **A3-G:** repository-enforced guardrails. That means the rolemap, the
   `role_guardrails` and `portal_guardrails` workflows, CODEOWNERS, a pinned required-test
@@ -18,6 +20,9 @@
 - **A3-I:** runtime inference and kill-switch gates on the
   manual-inference route (ADMIN, budget and provider checks), plus the observed drills.
   The Builder executed the local drills below under `PING-Q4M11Y26-P2-A3I-EXEC-V1`. Independent verification belongs to Claude.
+- **A3-C:** closes A3-I verification advisories V-1a (wave planner), V-1b (`motion-factory.mjs`)
+  and V-5 (runner fixtures on Node 22.14; 34th manifest pin), and runs the V-6
+  credential-reach drill. See sections 5A and 5B.
 
 ## 2. Defects closed by A3-G
 
@@ -65,6 +70,14 @@ Historical A3-G observation from the GitHub REST API at `2026-11-20T21:32:20Z`:
 
 **B9-CLASS-007 integration.** GitHub records the human-accepted A3-G PR as merged to main at `2026-11-20T22:31:18Z`. Its merge commit and the verified A3-I base are `5189469e500aa0346fc33cd4f89c139b21c975cb`. [PR #450](https://github.com/jai-nexus/dev-jai-nexus/pull/450)
 
+**Human operator Vercel environment audit (B9-CLASS-010; supplied by the operator, not
+observed by this session).** On 2026-11-20 Jerry Ingram reviewed the Vercel project for all
+environments, values redacted, and reported exactly nine variables: `SOT_INGEST_TOKEN`,
+`DATABASE_URL`, `DIRECT_URL`, `NEXTAUTH_URL`, `JAI_INTERNAL_API_BASE`, `NEXTAUTH_SECRET`,
+`JAI_CONTEXT_API_KEY`, `JAI_INTERNAL_API_TOKEN` and `NODE_ENV`. No AI provider key
+(`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `JAI_MODEL_SLOT_*`) is configured. This session has no
+Vercel access and records the audit as reported.
+
 **B9-CLASS-010 ruleset observation.** During A3-I, a read of `repos/jai-nexus/dev-jai-nexus/rulesets/11506548` returned active enforcement on the default branch. The required contexts are `role_guardrails`, `portal_guardrails`, `Vercel`, and `Vercel Preview Comments`. The pull-request rule reports `require_code_owner_review: false`. [main-protection](https://github.com/jai-nexus/dev-jai-nexus/rules/11506548)
 
 ## 4. Residual limits (true after A3-G)
@@ -84,9 +97,16 @@ Historical A3-G observation from the GitHub REST API at `2026-11-20T21:32:20Z`:
    identities separate depends on seat discipline and B9-CLASS-006.
 3. **Manifest floor:** a PR that deletes a test and its manifest entry still passes while at
    least 32 remain. Manifest edits are VERIFIER-only, with the same circularity as item 1.
-4. **Skip detection covers `node:test` output only.** 31 of the 33 pinned files are plain-assert
+4. **Skip detection covers `node:test` output only.** 31 of the 34 pinned files are plain-assert
    scripts. An early `return` or `process.exit(0)` inside them cannot be detected.
 5. **CODEOWNERS is advisory** while `require_code_owner_review` is `false`.
+6. **The session credential is the human owner's identity, scoped only by the session proxy**
+   (section 5B). Within `dev-jai-nexus` it holds `admin`. Rulesets without bypass actors still
+   apply to admins, but an admin can edit the ruleset itself, so human-only merge for AI seats
+   (B9-CLASS-007) rests on seat discipline, not on credential scope.
+7. **One known provider path is not locked:** `runtime/slotDispatch.ts`, used by the
+   operator CLI `runtime/run-slot-dispatch.ts`, sends OpenAI Responses requests with an env key.
+   It is outside `portal/` (not deployed) and outside the A3-C allowlist (section 5A).
 
 ## 5. B9-CLASS-002 local A3-I drills
 
@@ -103,16 +123,58 @@ The Builder exercised the manual-inference POST and provider connector with synt
 
 The code-level Layer 2 ceiling is **USD 0.00**. The gates cover future dispatch through the in-repo manual-inference path and the call to persist `DeliberationRunHistory`. The write check reads the process environment immediately before persistence. Operational reach ends at that boundary. External provider account revocation, cancellation of already-in-flight network packets or writes, and enforcement of cross-repository credentials were outside the drill.
 
+## 5A. A3-C residual Layer 2 spend locks and runner fix
+
+A repository search for provider SDK imports and provider API hosts at the A3-C baseline
+found four paid paths. Status after A3-C:
+
+| Path | Lock | Regression |
+| --- | --- | --- |
+| Manual-inference route and provider connector | A3-I gates (USD 0.00 ceiling, kill switch, write flag) | `a3-inference-gates.test.ts` (pinned #34) |
+| `POST /api/internal/agents/plan-wave` and `planWaveWithAgent()` (V-1a) | Internal token kept at entry. The OpenAI SDK import and client were removed; the planner returns only a deterministic offline stub, labelled not provider-generated, with `generation.layer2ApiSpendUsd: "0.00"`. `providerMode: "live_provider"` gets HTTP 403 from the route, and the planner throws `PlannerSpendLockError` on its own. | `portal/src/lib/waves/agentPlanner.test.ts` |
+| `portal/scripts/motion-factory.mjs` (V-1b) | Paid modes (`draft`/`promote` without `--no-api`, `revise`, `evidence`, including `--preview`) exit 3 at command dispatch before any key is read. `requireApiKey` and all four provider call sites (three OpenAI Responses, one shared Anthropic Messages) repeat the check. `status` reports dispatch disabled independently of key presence. `context`, `status` and `--no-api` modes stay offline. | `portal/scripts/motion-factory.test.mjs` |
+| `runtime/slotDispatch.ts` via `runtime/run-slot-dispatch.ts` | **Not locked** (outside the A3-C allowlist) | none; needs its own route |
+
+Both new suites run with fake keys, an env attempt to raise the ceiling
+(`JAI_LAYER2_AUTHORIZED_API_SPEND_USD`), and network traps, and both run in `portal_guardrails`.
+The ceiling is a code constant in each file; no environment variable can raise it.
+
+V-5: `run-required-control-plane-tests.test.mjs` now runs its `.test.ts` fixtures under `tsx`, as
+production `--run` does. With Node's type stripping turned off (the Node 22.14 default) the old
+suite passed 8/10 and the new one passes 10/10. The manifest pins
+`motionKernel/a3-inference-gates.test.ts` as its 34th entry (`required=34 discovered=34 unpinned=0`).
+
+## 5B. A3-C credential-reach drill (B9-CLASS-010, advisory V-6)
+
+Authorized non-destructive probe from this session's `dev-jai-nexus`-scoped Git path. Ref:
+`refs/heads/drill/b9-class-010-deny-probe`. Secrets redacted; HTTP status lines only were captured.
+
+| UTC | Target | Action | Observed |
+| --- | --- | --- | --- |
+| 2026-11-21T01:40:57Z | `jai-nexus/jai-nexus-legacy` (parked, unauthorized) | `git push --dry-run` | First request `GET …/info/refs?service=git-receive-pack` returned **HTTP 403** from the session git proxy ("not in this session's authorized repository set"; no credential injected). Git exit 128. |
+| 2026-11-21T01:40:57Z | `jai-nexus/dev-jai-nexus` (positive control) | `git push --dry-run` | Receive-pack and upload-pack **HTTP 200**; dry run reported the branch would be created. Afterwards `ls-remote` shows the probe ref absent. |
+| 2026-11-21T01:41:10Z | both, read-only API | `GET repos/jai-nexus/{repo}` | `jai-nexus-legacy`: **HTTP 403** from the session layer. `dev-jai-nexus`: permissions `admin, maintain, push, triage, pull` = true. `GET /user` resolves to `JerryIngram` (User). |
+
+The A3-C branch itself was then pushed to `dev-jai-nexus` through the same path.
+
+**Disposition: PASS at the session boundary.** This session cannot write to, or read,
+`jai-nexus-legacy`, while `dev-jai-nexus` push works. The enforcement point is the session's
+Git/API proxy, not a single-repository credential: the underlying credential is the human
+owner's user identity. Its reach outside this session cannot be observed from here and should
+be assumed org-wide. Within `dev-jai-nexus` it is `admin`, so least privilege is **not** met.
+Moving AI seats to a dedicated repository-scoped credential (contents and pull requests
+write, no admin) is a separate human B9-CLASS-010 decision.
+
 ## 6. A3 checkable exit coverage
 
 | JAI-277 exit item | Evidence |
 | --- | --- |
-| Required manifest floor and skip detection | A3-G runner regression suite |
+| Required manifest floor and skip detection | A3-G runner regression suite; 34 pinned since A3-C, Node 22.14-compatible fixtures |
 | Protected branch settings and CODEOWNERS | B9-CLASS-010 ruleset observation in section 3.2. CODEOWNERS remains advisory. |
-| One-repository write permission against an unauthorized repository | External credential drill remains unverified. |
-| Non-ADMIN, provider and unauthorized spend paths | B9-CLASS-002 local denials in section 5 |
+| One-repository write permission against an unauthorized repository | **PASS at the session boundary** (section 5B): HTTP 403 for `jai-nexus-legacy`, push permitted for `dev-jai-nexus`. Enforced by the session proxy; the credential is not repository-scoped and is `admin` on `dev-jai-nexus`. |
+| Non-ADMIN, provider and unauthorized spend paths | Manual-inference (A3-I, section 5), wave planner and motion-factory (A3-C, section 5A) locked at USD 0.00. **Partial:** `runtime/slotDispatch.ts` remains unlocked. Vercel holds no provider keys (operator audit, section 3.2). |
 | Kill switch before manual-inference persistence | B9-CLASS-002 mid-request flip in section 5 |
 
 ## 7. Authority boundary
 
-These records grant zero execution, provider-spend, routing or acceptance authority. Independent B9-CLASS-006 verification and human B9-CLASS-007 acceptance remain separate decisions for A3-I.
+These records grant zero execution, provider-spend, routing or acceptance authority. Independent B9-CLASS-006 verification and human B9-CLASS-007 acceptance remain separate decisions for A3-I and A3-C.

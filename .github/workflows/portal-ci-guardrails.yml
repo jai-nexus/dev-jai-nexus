@@ -117,6 +117,14 @@ jobs:
       - name: Guardrail - offline Prisma validate
         run: node portal/scripts/prisma-offline.mjs validate
 
+      # Q4M11Y26-P2:A3-C: the remaining Layer 2 provider paths stay locked at
+      # USD 0.00 (advisory V-1a wave planner, V-1b motion-factory).
+      - name: Guardrail - wave planner spend lock
+        run: pnpm -C portal exec tsx src/lib/waves/agentPlanner.test.ts
+
+      - name: Guardrail - motion-factory spend lock
+        run: node --test portal/scripts/motion-factory.test.mjs
+
       - name: Guardrail - Type check
         shell: bash
         working-directory: portal
