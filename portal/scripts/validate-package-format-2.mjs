@@ -165,6 +165,18 @@ function canonicalPath(doc) {
   }
 }
 
+// The writer must validate every identity before using it as a Git path.
+const ledgerSchema = JSON.parse(fs.readFileSync(path.join(ROOT, SCHEMA), "utf8"));
+const ledgerAjv = new Ajv2020({ strict: true, ownProperties: true });
+addFormats(ledgerAjv);
+ledgerAjv.addSchema(ledgerSchema);
+const checkLedgerEvent = ledgerAjv.getSchema(ledgerSchema.$id + "#/$defs/ledger_event");
+
+export function ledgerEventPath(event) {
+  requireThat(checkLedgerEvent(event), "Invalid ledger event: " + ledgerAjv.errorsText(checkLedgerEvent.errors));
+  return canonicalPath(event);
+}
+
 function unique(map, key, value) {
   requireThat(!map.has(key), "Duplicate canonical identity: " + key);
   map.set(key, value);
@@ -196,11 +208,14 @@ function bindSource(root, source) {
 }
 
 // RFC 8785 ordering for the schema's finite JSON scalar/array/object domain.
-function canonicalJson(value) {
-  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
+export function canonicalJson(value) {
+  if (Array.isArray(value)) return "[" + Array.from(value, canonicalJson).join(",") + "]";
   if (value && typeof value === "object") {
-    return "{" + Object.keys(value).sort().map(key => JSON.stringify(key) + ":" + canonicalJson(value[key])).join(",") + "}";
+    requireThat([Object.prototype, null].includes(Object.getPrototypeOf(value)), "Expected plain JSON object");
+    return "{" + Object.keys(value).sort().map(key => canonicalJson(key) + ":" + canonicalJson(value[key])).join(",") + "}";
   }
+  requireThat(value === null || typeof value === "boolean" || Number.isFinite(value) ||
+    (typeof value === "string" && value.isWellFormed()), "Invalid JCS scalar");
   return JSON.stringify(value);
 }
 
@@ -208,7 +223,52 @@ export function receiptHash(event) {
   return createHash("sha256").update("JAI-RECEIPT-v1\0").update(canonicalJson(event)).digest("hex");
 }
 
+// Actor strings label observations. Authentication and human acceptance are external.
+export function parseSessionId(id) {
+  const parts = typeof id === "string" ? id.split("::") : [];
+  const [prefix, plane, role, model, effort, instance] = parts;
+  const token = /^[A-Z0-9]+(?:[._-][A-Z0-9]+)*$/;
+  requireThat(prefix === "JAI" && [3, 6].includes(parts.length) &&
+    /^[A-Z][A-Z0-9_]*$/.test(plane) && /^[A-Z][A-Z0-9_]*$/.test(role), "Invalid positional JAI seat");
+  const seat = parts.slice(0, 3).join("::");
+  if (parts.length === 3) return { seat, session: false, declared: false };
+  requireThat(token.test(model) && token.test(effort) && /^\d{4}-\d{2}-\d{2}(?:\.\d{2})?$/.test(instance),
+    "Invalid positional JAI session");
+  const date = instance.slice(0, 10);
+  const time = Date.parse(date + "T00:00:00Z");
+  requireThat(Number.isFinite(time) && new Date(time).toISOString().slice(0, 10) === date, "Invalid session date");
+  return { seat, session: true, declared: !parts.includes("UNDECLARED") };
+}
+
+const writerSeats = new Map([
+  ["builder", "JAI::DEV::BUILDER"],
+  ["verifier", "JAI::DEV::VERIFIER"],
+  ["control-thread", "JAI::DEV::OPERATOR"],
+]);
+
+export function assertWriterSeat(role, actorId) {
+  const actor = parseSessionId(actorId);
+  requireThat(actor.session && actor.seat === writerSeats.get(role), "Invalid writer seat: " + actorId);
+}
+
+// Classify the session's model field independently of the contract principal's name.
+function modelFamily(actorId) {
+  const model = actorId.split("::")[3];
+  if (/^(?:OPENAI|GPT|CHATGPT|CODEX|ASTRA|O[134])(?:[._-]|$)/.test(model)) return "OpenAI";
+  if (/^(?:ANTHROPIC|CLAUDE|OPUS|SONNET|HAIKU|FABLE)(?:[._-]|$)/.test(model)) return "Anthropic";
+  if (/^(?:GOOGLE|GEMINI)(?:[._-]|$)/.test(model)) return "Google";
+  return undefined;
+}
+
 function checkEvents(root, events, contracts) {
+  const builderFamilies = new Map();
+  for (const event of events) {
+    if (event.writer_role !== "builder") continue;
+    const family = modelFamily(event.actor_id);
+    const key = laneKey(event);
+    if (!builderFamilies.has(key)) builderFamilies.set(key, new Set());
+    builderFamilies.get(key).add(family);
+  }
   const previous = new Map();
   const ids = new Map();
   const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -222,8 +282,15 @@ function checkEvents(root, events, contracts) {
     const lane = contracts.get(laneKey(event));
     requireThat(lane && Object.hasOwn(lane.writers, event.writer_role) && lane.writers[event.writer_role] === event.principal_id,
       "Unbound writer principal: " + file);
+    assertWriterSeat(event.writer_role, event.actor_id);
     if (event.receipt_class.startsWith("B9-CLASS-006")) {
-      requireThat(event.writer_role === "verifier" && lane.writers.builder !== event.principal_id, "Independent verifier required: " + file);
+      requireThat(event.writer_role === "verifier" && Object.hasOwn(lane.writers, "builder") &&
+        lane.writers.builder !== event.principal_id, "Independent verifier required: " + file);
+      const builders = builderFamilies.get(laneKey(event));
+      const verifier = modelFamily(event.actor_id);
+      requireThat(verifier && builders?.size && !builders.has(undefined),
+        "Recognized builder and verifier model families required: " + file);
+      requireThat(!builders.has(verifier), "Verifier shares builder model family: " + file);
     }
     if (event.receipt_class.startsWith("B9-CLASS-007")) requireThat(event.writer_role === "control-thread", "Human control principal required: " + file);
     bindSource(root, event.contract_source);
