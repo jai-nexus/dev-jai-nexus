@@ -1,0 +1,466 @@
+{
+  "schema_version": "JAI-FLEET-SNAPSHOT-v0",
+  "program_coordinate": "Q4M11Y26-P2:B2",
+  "authority_granted": false,
+  "source_provenance": {
+    "source_repository": "jai-nexus/dev-jai-nexus",
+    "a1_source_sha": "c0921ce771adece93c340f64605df77945cc467e",
+    "cutoff_date": "2026-11-20",
+    "input_digests": {
+      "config/repos.yaml": "dafbadb4622ea10f65287e94c789ac29d9659451099629ec5293cafa0126318b",
+      "portal/config/repos.yaml": "a7064f7da78be7a6e7fb801c889f1f7ed323bd7743191957a0c8935660c568be",
+      "portal/src/lib/controlPlane/__fixtures__/q4m11y26-p2-a1-fleet-identity-v0.json": "5271438393a6ce090292f1f980569689ec2ab6bc7ab533ca142df818dd543351"
+    }
+  },
+  "organization_meta": {
+    "nh_id": "1.1",
+    "repo": "jai-nexus",
+    "role": "meta"
+  },
+  "repositories": [
+    {
+      "repo_id": "JerryIngram/offbook-ai",
+      "alias": "offbook-ai",
+      "canonical_git_url": "https://github.com/JerryIngram/offbook-ai.git",
+      "nhid": "2.1",
+      "github_repo_id": 995130231,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": true,
+      "root_topology_status": "planned",
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/.github",
+      "alias": ".github",
+      "canonical_git_url": "https://github.com/jai-nexus/.github.git",
+      "nhid": "1.1.1",
+      "github_repo_id": 1035164879,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/api-nexus",
+      "alias": "api-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/api-nexus.git",
+      "nhid": "1.1.3",
+      "github_repo_id": 1035000590,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/audit-nexus",
+      "alias": "audit-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/audit-nexus.git",
+      "nhid": "1.1.4",
+      "github_repo_id": 1035046248,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/codex-core",
+      "alias": "codex-core",
+      "canonical_git_url": "https://github.com/jai-nexus/codex-core.git",
+      "nhid": "1.1.34",
+      "github_repo_id": 1055001407,
+      "lifecycle_state": "PARKED",
+      "governance_disposition": "PARK",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "frozen",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/community-nexus",
+      "alias": "community-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/community-nexus.git",
+      "nhid": "1.1.6",
+      "github_repo_id": 1035012510,
+      "lifecycle_state": "PARKED",
+      "governance_disposition": "PARK",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "frozen",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/datacontracts-nexus",
+      "alias": "datacontracts-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/datacontracts-nexus.git",
+      "nhid": "1.1.7",
+      "github_repo_id": 1035083090,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/dev-jai-nexus",
+      "alias": "dev-jai-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/dev-jai-nexus.git",
+      "nhid": "1.1.8",
+      "github_repo_id": 1055000746,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": true,
+      "root_topology_status": "active",
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/docs-nexus",
+      "alias": "docs-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/docs-nexus.git",
+      "nhid": "1.1.9",
+      "github_repo_id": 1034995701,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": true,
+      "root_topology_status": "active",
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/integrations-nexus",
+      "alias": "integrations-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/integrations-nexus.git",
+      "nhid": "1.1.13",
+      "github_repo_id": 1034995312,
+      "lifecycle_state": "PARKED",
+      "governance_disposition": "PARK",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "frozen",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai",
+      "alias": "jai",
+      "canonical_git_url": "https://github.com/jai-nexus/jai.git",
+      "nhid": "1.1.15",
+      "github_repo_id": 1061010482,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-edge",
+      "alias": "jai-edge",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-edge.git",
+      "nhid": "1.1.35",
+      "github_repo_id": 1243903869,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-format",
+      "alias": "jai-format",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-format.git",
+      "nhid": "1.1.16",
+      "github_repo_id": 1035075691,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-nexus",
+      "alias": "jai-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-nexus.git",
+      "nhid": "1.1.17",
+      "github_repo_id": 1128991831,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": true,
+      "root_topology_status": "active",
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-nexus-legacy",
+      "alias": "jai-nexus-legacy",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-nexus-legacy.git",
+      "nhid": "1.1.37",
+      "github_repo_id": 1012261943,
+      "lifecycle_state": "PARKED",
+      "governance_disposition": "PARK",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "frozen",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-pilot",
+      "alias": "jai-pilot",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-pilot.git",
+      "nhid": "1.1.18",
+      "github_repo_id": 1111472417,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/jai-vscode",
+      "alias": "jai-vscode",
+      "canonical_git_url": "https://github.com/jai-nexus/jai-vscode.git",
+      "nhid": "1.1.36",
+      "github_repo_id": 1131022344,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/nexus-core",
+      "alias": "nexus-core",
+      "canonical_git_url": "https://github.com/jai-nexus/nexus-core.git",
+      "nhid": "1.1.21",
+      "github_repo_id": 1071910332,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/orchestrator-nexus",
+      "alias": "orchestrator-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/orchestrator-nexus.git",
+      "nhid": "1.1.22",
+      "github_repo_id": 1035015595,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/sot-nexus",
+      "alias": "sot-nexus",
+      "canonical_git_url": "https://github.com/jai-nexus/sot-nexus.git",
+      "nhid": "1.1.29",
+      "github_repo_id": 1051952132,
+      "lifecycle_state": "LIVE",
+      "governance_disposition": "KEEP",
+      "observed_presence": "LIVE_VERIFIED",
+      "observed_archived": false,
+      "portal_status": "active",
+      "in_root_topology_5": true,
+      "root_topology_status": "active",
+      "authority_granted": false
+    },
+    {
+      "repo_id": "jai-nexus/teacher-copilot",
+      "alias": "teacher-copilot",
+      "canonical_git_url": "https://github.com/jai-nexus/teacher-copilot.git",
+      "nhid": "2.2",
+      "github_repo_id": null,
+      "lifecycle_state": "ARCHIVED",
+      "governance_disposition": "DEPRECATED_COMPATIBILITY_RETAINED",
+      "observed_presence": "UNVERIFIED_ACCESS",
+      "observed_archived": null,
+      "portal_status": "deprecated",
+      "in_root_topology_5": false,
+      "root_topology_status": null,
+      "authority_granted": false
+    }
+  ],
+  "retired_unverified_placeholders": [
+    {
+      "repo_id": "jai-nexus/actions-nexus",
+      "historical_nhid": "1.1.2",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/chat-service-nexus",
+      "historical_nhid": "1.1.5",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/framework-nexus",
+      "historical_nhid": "1.1.10",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/identity-nexus",
+      "historical_nhid": "1.1.11",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/infra-nexus",
+      "historical_nhid": "1.1.12",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/intelligence-nexus",
+      "historical_nhid": "1.1.14",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/keytrust-nexus",
+      "historical_nhid": "1.1.19",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/memory-nexus",
+      "historical_nhid": "1.1.20",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/modelops-nexus",
+      "historical_nhid": "6.2",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/privacy-nexus",
+      "historical_nhid": "1.1.23",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/public-nexus",
+      "historical_nhid": "1.1.24",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/release-nexus",
+      "historical_nhid": "1.1.25",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/runtime-nexus",
+      "historical_nhid": "1.1.26",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/secureboot-nexus",
+      "historical_nhid": "1.1.27",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/security-nexus",
+      "historical_nhid": "1.1.28",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/sourcetree-ai",
+      "historical_nhid": "1.1.30",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/tools-nexus",
+      "historical_nhid": "1.1.31",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/tools-sot-compliance-nexus",
+      "historical_nhid": "4.3",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/tools-sot-indexer-nexus",
+      "historical_nhid": "4.4",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/tools-sot-stub-indexer",
+      "historical_nhid": "1.1.32",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    },
+    {
+      "repo_id": "jai-nexus/workflow-nexus",
+      "historical_nhid": "1.1.33",
+      "governance_disposition": "DROPPED_FROM_ACTIVE_REGISTRY",
+      "observed_presence": "UNVERIFIED_ACCESS"
+    }
+  ],
+  "snapshot_digest": "sha256:830e00922820641bd28507b716534b5d4225bcfb2829350165f1295a3f4c9ee3"
+}
