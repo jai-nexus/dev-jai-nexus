@@ -15,16 +15,16 @@ export type Packet = {
   merge_authorized: false;
 };
 
-const planes = new Set(["COUNCIL", "DEV", "AGENT", "EXT", "OPS", "SECURITY", "RUNTIME"]);
-const roles = new Set(["ARCHITECT", "BUILDER", "AUDITOR", "VERIFIER", "OPERATOR", "LIBRARIAN",
-  "AUDIT", "FORMAT", "EXECUTOR", "BENCH", "DIRECT"]);
+const seatSegment = /^[A-Z][A-Z0-9_]*$/;
+const repositorySeats = new Set(["JAI::DEV::BUILDER", "JAI::DEV::VERIFIER", "JAI::DEV::OPERATOR",
+  "JAI::DEV::ARCHITECT", "JAI::DEV::LIBRARIAN"]);
 const idPattern = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 
 export function parseAddress(id: string) {
   const parts = id.split("::");
   const [prefix, plane, role, model, effort, instance] = parts;
   const seat = parts.slice(0, 3).join("::");
-  if (prefix !== "JAI" || !planes.has(plane) || !roles.has(role))
+  if (prefix !== "JAI" || !seatSegment.test(plane) || !seatSegment.test(role))
     throw new Error("Unknown seat");
   if (parts.length === 3) return { seat, session: false, declared: false };
   const token = /^[A-Z0-9]+(?:[._-][A-Z0-9]+)*$/;
@@ -34,7 +34,7 @@ export function parseAddress(id: string) {
   const time = Date.parse(date + "T00:00:00Z");
   if (!Number.isFinite(time) || new Date(time).toISOString().slice(0, 10) !== date)
     throw new Error("Invalid session date");
-  return { seat, session: true, declared: model !== "UNDECLARED" && effort !== "UNDECLARED" };
+  return { seat, session: true, declared: !parts.includes("UNDECLARED") };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -69,9 +69,11 @@ export function validatePacket(value: unknown, context: {
     throw new Error("Missing or conflicting non-authorizations");
   if (typeof value.from !== "string" || typeof value.to !== "string") throw new Error("Missing addresses");
   parseAddress(value.from);
+  if (value.repo_mutations_authorized && !repositorySeats.has(parseAddress(value.to).seat))
+    throw new Error("Repository mutation requires a repository role");
   switch (value.delivery_mode) {
     case "PLANE_BROADCAST":
-      if (!value.to.startsWith("JAI::") || !planes.has(value.to.slice(5)) || value.repo_mutations_authorized)
+      if (!value.to.startsWith("JAI::") || !seatSegment.test(value.to.slice(5)) || value.repo_mutations_authorized)
         throw new Error("Broadcast requires a plane and read-only scope");
       break;
     case "ROLE_ANYCAST":

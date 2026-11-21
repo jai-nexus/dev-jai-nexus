@@ -5,6 +5,7 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import rolemap from "../../../../../roles/rolemap.json";
 import { importLegacyPing, parseAddress, validatePacket } from "./packetContract";
+import { parseSessionId } from "../../../../scripts/validate-package-format-2.mjs";
 
 const sha = "a".repeat(40);
 const seat = "JAI::DEV::BUILDER";
@@ -32,18 +33,34 @@ test("ratified planes accept broadcasts and canonical seats accept addressed pac
   }
   for (const plane of ["COUNCIL", "DEV"]) {
     for (const role of ["ARCHITECT", "BUILDER", "AUDITOR", "VERIFIER", "OPERATOR", "LIBRARIAN", "AUDIT", "FORMAT", "EXECUTOR", "BENCH", "DIRECT"])
-      validatePacket({ ...ping, to: ["JAI", plane, role].join("::") }, context);
+      validatePacket({ ...ping, to: ["JAI", plane, role].join("::"), repo_mutations_authorized: false }, context);
   }
   for (const to of ["JAI::OPS::OPERATOR", "JAI::SECURITY::AUDIT", "JAI::RUNTIME::EXECUTOR",
-    "JAI::AGENT::BENCH", "JAI::EXT::DIRECT"]) validatePacket({ ...ping, to }, context);
-  assert.throws(() => validatePacket({ ...ping, to: "JAI::UNKNOWN::AUDITOR" }, context));
+    "JAI::AGENT::BENCH", "JAI::EXT::DIRECT", "JAI::DOCS::ARCHIVIST", "JAI::AUDIT::RISK_REVIEWER",
+    "JAI::AGENT::SYNTHESIZER", "JAI::SECURITY::GATE_REVIEWER"]) {
+    validatePacket({ ...ping, to, repo_mutations_authorized: false }, context);
+    assert.throws(() => validatePacket({ ...ping, to }, context), /repository role/);
+  }
+  for (const to of rolemap.knownRoles) validatePacket({ ...ping, to }, context);
+});
+
+test("packet and ledger parsers agree on structural seats and undeclared session fields", () => {
+  for (const part of ["DEV", "BUILDER", "GPT-6.2-ASTRA", "EXTRA-HIGH"]) {
+    const id = instance.replace(part, "UNDECLARED");
+    assert.deepEqual(parseAddress(id), parseSessionId(id));
+    assert.equal(parseAddress(id).declared, false);
+  }
+  for (const id of ["JAI::7OPS::VERIFIER", "JAI::DOCS::RISK-REVIEWER", "JAI::A.B::READER"]) {
+    assert.throws(() => parseAddress(id));
+    assert.throws(() => parseSessionId(id));
+  }
 });
 
 test("positional seats retain every known dev role and validate dated sessions", () => {
   for (const role of rolemap.knownRoles) assert.equal(parseAddress(role).seat, role);
   assert.deepEqual(parseAddress(instance), { seat, session: true, declared: true });
   for (const id of [seat + "::GPT", instance + "::EXTRA", instance.replace("11-20", "02-30"),
-    instance.replace(".02", ".2"), instance.replace("BUILDER", "MADE_UP"), instance.replace("EXTRA-HIGH", "")])
+    instance.replace(".02", ".2"), instance.replace("BUILDER", "9MADE_UP"), instance.replace("EXTRA-HIGH", "")])
     assert.throws(() => parseAddress(id));
 });
 

@@ -229,7 +229,7 @@ export function parseSessionId(id) {
   const [prefix, plane, role, model, effort, instance] = parts;
   const token = /^[A-Z0-9]+(?:[._-][A-Z0-9]+)*$/;
   requireThat(prefix === "JAI" && [3, 6].includes(parts.length) &&
-    token.test(plane) && token.test(role), "Invalid positional JAI seat");
+    /^[A-Z][A-Z0-9_]*$/.test(plane) && /^[A-Z][A-Z0-9_]*$/.test(role), "Invalid positional JAI seat");
   const seat = parts.slice(0, 3).join("::");
   if (parts.length === 3) return { seat, session: false, declared: false };
   requireThat(token.test(model) && token.test(effort) && /^\d{4}-\d{2}-\d{2}(?:\.\d{2})?$/.test(instance),
@@ -243,14 +243,19 @@ export function parseSessionId(id) {
 const writerSeats = new Map([
   ["builder", "JAI::DEV::BUILDER"],
   ["verifier", "JAI::DEV::VERIFIER"],
-  ["control-thread", "JAI::OPS::OPERATOR"],
+  ["control-thread", "JAI::DEV::OPERATOR"],
 ]);
+
+export function assertWriterSeat(role, actorId) {
+  const actor = parseSessionId(actorId);
+  requireThat(actor.session && actor.seat === writerSeats.get(role), "Invalid writer seat: " + actorId);
+}
 
 // Classify the session's model field independently of the contract principal's name.
 function modelFamily(actorId) {
   const model = actorId.split("::")[3];
-  if (/^(?:OPENAI|GPT|CHATGPT|CODEX|O[134])(?:[._-]|$)/.test(model)) return "OpenAI";
-  if (/^(?:ANTHROPIC|CLAUDE)(?:[._-]|$)/.test(model)) return "Anthropic";
+  if (/^(?:OPENAI|GPT|CHATGPT|CODEX|ASTRA|O[134])(?:[._-]|$)/.test(model)) return "OpenAI";
+  if (/^(?:ANTHROPIC|CLAUDE|OPUS|SONNET|HAIKU|FABLE)(?:[._-]|$)/.test(model)) return "Anthropic";
   if (/^(?:GOOGLE|GEMINI)(?:[._-]|$)/.test(model)) return "Google";
   return undefined;
 }
@@ -260,7 +265,6 @@ function checkEvents(root, events, contracts) {
   for (const event of events) {
     if (event.writer_role !== "builder") continue;
     const family = modelFamily(event.actor_id);
-    if (!family) continue;
     const key = laneKey(event);
     if (!builderFamilies.has(key)) builderFamilies.set(key, new Set());
     builderFamilies.get(key).add(family);
@@ -278,13 +282,15 @@ function checkEvents(root, events, contracts) {
     const lane = contracts.get(laneKey(event));
     requireThat(lane && Object.hasOwn(lane.writers, event.writer_role) && lane.writers[event.writer_role] === event.principal_id,
       "Unbound writer principal: " + file);
-    const actor = parseSessionId(event.actor_id);
-    requireThat(actor.session && actor.seat === writerSeats.get(event.writer_role), "Invalid writer seat: " + file);
+    assertWriterSeat(event.writer_role, event.actor_id);
     if (event.receipt_class.startsWith("B9-CLASS-006")) {
       requireThat(event.writer_role === "verifier" && Object.hasOwn(lane.writers, "builder") &&
         lane.writers.builder !== event.principal_id, "Independent verifier required: " + file);
-      requireThat(!builderFamilies.get(laneKey(event))?.has(modelFamily(event.actor_id)),
-        "Verifier shares builder model family: " + file);
+      const builders = builderFamilies.get(laneKey(event));
+      const verifier = modelFamily(event.actor_id);
+      requireThat(verifier && builders?.size && !builders.has(undefined),
+        "Recognized builder and verifier model families required: " + file);
+      requireThat(!builders.has(verifier), "Verifier shares builder model family: " + file);
     }
     if (event.receipt_class.startsWith("B9-CLASS-007")) requireThat(event.writer_role === "control-thread", "Human control principal required: " + file);
     bindSource(root, event.contract_source);

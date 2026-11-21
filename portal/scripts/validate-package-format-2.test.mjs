@@ -134,21 +134,45 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   const wrongTime = { ...event, event_id: "00000000030000000000000001" };
   await rejectChange("canonical filename still requires matching ULID time", eventPath(wrongTime), wrongTime, /ULID timestamp mismatch/);
   await rejectChange("independent receipt class cannot be self-issued", receipt, { ...event, receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" }, /Independent verifier/);
-  const delivered = commit("fixture delivery receipt");
   const verify = { ...event, writer_role: "verifier", actor_id: "JAI::DEV::VERIFIER::CLAUDE::HIGH::2026-11-20",
     principal_id: lane.writers.verifier, event_id: "00000000010000000000000001",
     receipt_class: "B9-CLASS-006 / INDEPENDENT_VERIFICATION_RECEIPT" };
   await rejectChange("distinct contract principals cannot verify within the same declared model family",
-    eventPath(verify), { ...verify, actor_id: verify.actor_id.replace("CLAUDE", "CODEX") }, /shares builder model family/);
+    eventPath(verify), { ...verify, actor_id: verify.actor_id.replace("CLAUDE", "ASTRA") }, /shares builder model family/);
+  for (const model of ["UNDECLARED", "UNKNOWN_MODEL"]) {
+    await rejectChange("reject verifier model " + model, eventPath(verify),
+      { ...verify, actor_id: verify.actor_id.replace("CLAUDE", model) }, /Recognized builder and verifier/);
+  }
+  await t.test("verification needs recorded builder evidence with a recognized family", async () => {
+    write(eventPath(verify), verify);
+    try {
+      fs.unlinkSync(absolute(receipt));
+      await assert.rejects(check(established), /Recognized builder and verifier/);
+      for (const model of ["UNDECLARED", "UNKNOWN_MODEL"]) {
+        write(receipt, { ...event, actor_id: event.actor_id.replace("GPT-6.2-ASTRA", model) });
+        await assert.rejects(check(established), /Recognized builder and verifier/);
+      }
+      for (const model of ["OPUS", "SONNET", "HAIKU", "FABLE"]) {
+        write(receipt, { ...event, actor_id: event.actor_id.replace("GPT-6.2-ASTRA", model) });
+        await assert.rejects(check(established), /shares builder model family/);
+      }
+      write(receipt, { ...event, actor_id: event.actor_id.replace("GPT-6.2-ASTRA", "GEMINI") });
+      await check(established);
+    } finally {
+      write(receipt, event);
+      fs.unlinkSync(absolute(eventPath(verify)));
+    }
+  });
+  const delivered = commit("fixture delivery receipt");
   await t.test("verification and human acceptance use the frozen lane's own principals", async () => {
-    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::OPS::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
+    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::DEV::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
       principal_id: lane.writers["control-thread"], event_id: "00000000010000000000000002",
       receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" };
     try {
       write(eventPath(verify), verify);
       write(eventPath(accept), accept);
       assert.equal((await check(delivered)).documents, 12);
-      write(eventPath(accept), { ...accept, actor_id: accept.actor_id.replace("OPS", "DEV") });
+      write(eventPath(accept), { ...accept, actor_id: accept.actor_id.replace("DEV", "OPS") });
       await assert.rejects(check(delivered), /Invalid writer seat/);
     } finally {
       for (const record of [verify, accept]) fs.rmSync(absolute(eventPath(record)), { force: true });
