@@ -34,19 +34,19 @@ The addressing layer checks shape, correlation and scope. Callers must authentic
 
 ## Append and replay a receipt
 
-The canonical file is `.nexus/ledger/<corpus>/<motion>/<program_slug>/<lane>/<writer_role>/<UTC>-<ULID>.json`. Event IDs are unique across streams. Within one stream, order is UTC then ULID. The ULID encodes the timestamp in milliseconds. The first predecessor is null. Every subsequent predecessor is the SHA-256 of UTF-8 `JAI-RECEIPT-v1`, one NUL byte, and the preceding event's canonical JSON, including its full actor session ID. The writer and validator share the same canonicalizer. Tests cover UTF-16 property order, nested objects in arrays, number serialization and escaped Unicode strings. [JCS, RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html) · [Writer API](../../portal/src/lib/controlPlane/receiptLedger/receiptLedger.ts)
+The canonical file is `.nexus/ledger/<corpus>/<motion>/<program_slug>/<lane>/<writer_role>/<UTC>-<ULID>.json`. Event IDs are unique across streams. Within one stream, order is UTC then ULID. The ULID encodes the timestamp in milliseconds. The first predecessor is null. Every subsequent predecessor is the SHA-256 of UTF-8 `JAI-RECEIPT-v1`, one NUL byte, and the preceding event's canonical JSON, including its actor_id attribution label. The writer and validator share the same canonicalizer. Tests cover UTF-16 property order, nested objects in arrays, number serialization and escaped Unicode strings. [JCS, RFC 8785](https://www.rfc-editor.org/rfc/rfc8785.html) · [Writer API](../../portal/src/lib/controlPlane/receiptLedger/receiptLedger.ts)
 
-| Stream | Tier 1 seat | Frozen B1 principal |
+| Stream | Actor identity rule | Frozen B1 principal |
 | --- | --- | --- |
 | builder | `JAI::DEV::BUILDER` | ChatGPT / Codex |
 | verifier | `JAI::DEV::VERIFIER` | Claude |
-| control-thread | `JAI::DEV::OPERATOR` | Jerry Ingram |
+| control-thread | `actor_id === lane.writers["control-thread"]` | Jerry Ingram |
 
-Each lane's frozen `writers` map supplies its own principal IDs. Ledger writers require six-part session IDs. B9-CLASS-006 requires at least one builder session recorded for the lane and a recognized model family for the verifier and every recorded builder. The verifier's family must differ from every builder family. Recognized families are OpenAI (including ASTRA), Anthropic (including CLAUDE, OPUS, SONNET, HAIKU and FABLE), and Google (including GEMINI).
+Each lane's frozen `writers` map supplies its own principal IDs. Builder and verifier receipts require six-part session IDs. PERM-007 reserves human acceptance, HOLD and REVISE for the human control authority. A portable operator seat cannot issue those receipts. B9-CLASS-006 requires at least one builder session recorded for the lane and a recognized model family for the verifier and every recorded builder. The verifier's family must differ from every builder family. Recognized families are OpenAI (including ASTRA), Anthropic (including CLAUDE, OPUS, SONNET, HAIKU and FABLE), and Google (including GEMINI).
 
 `appendReceipt(request, writer)` takes a local bare Git repository, an existing proposal branch, expected main and proposal SHAs, and a complete Format 2 event. Supply the writer role, actor and principal from the authenticated route context separately. The writer validates the candidate in a private checkout against the frozen contract, source blobs and preceding Git history. A single Git ref transaction verifies main and compares and swaps the proposal head. A stale head or competing update fails. The caller must refresh the trusted main ref before preparing a packet and check the remote base again at publication. There is no cross-host transaction.
 
-With fresh refs, an exact canonical duplicate returns the current head, path, hash and `appended: false`. Conflicting payloads at the same key, reused event IDs, broken predecessors and stale bases fail. A B9-CLASS-006 record requires the verifier stream and a principal distinct from the frozen builder. B9-CLASS-007 requires the human control-thread stream. Recorded attribution still requires independent evidence of who actually acted. An accepted hash chain alone cannot establish human consent.
+With fresh refs, an exact canonical duplicate returns the current head, path, hash and `appended: false`. Conflicting payloads at the same key, reused event IDs, broken predecessors and stale bases fail. A B9-CLASS-006 record requires the verifier stream and a principal distinct from the frozen builder. B9-CLASS-007 requires the human control-thread stream. Under CRED-1, `actor_id` records attribution and the hash checks record integrity. Human authorization requires separate authenticated evidence. Hash != HUMAN_OPERATOR signature. [P1-B5 PERM-007](q3m7y26-p1-b5-role-authority-matrix-v0.md)
 
 ## Revision and compensation proof
 

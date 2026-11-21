@@ -243,12 +243,17 @@ export function parseSessionId(id) {
 const writerSeats = new Map([
   ["builder", "JAI::DEV::BUILDER"],
   ["verifier", "JAI::DEV::VERIFIER"],
-  ["control-thread", "JAI::DEV::OPERATOR"],
 ]);
 
-export function assertWriterSeat(role, actorId) {
-  const actor = parseSessionId(actorId);
-  requireThat(actor.session && actor.seat === writerSeats.get(role), "Invalid writer seat: " + actorId);
+export function assertWriterIdentity(event) {
+  if (event.writer_role === "control-thread") {
+    requireThat(event.actor_id === event.principal_id && !event.actor_id.startsWith("JAI::"),
+      "Expected exact human principal attribution");
+    return;
+  }
+  requireThat(!event.receipt_class.startsWith("B9-CLASS-007"), "Human control principal required");
+  const actor = parseSessionId(event.actor_id);
+  requireThat(actor.session && actor.seat === writerSeats.get(event.writer_role), "Invalid writer seat: " + event.actor_id);
 }
 
 // Classify the session's model field independently of the contract principal's name.
@@ -282,7 +287,9 @@ function checkEvents(root, events, contracts) {
     const lane = contracts.get(laneKey(event));
     requireThat(lane && Object.hasOwn(lane.writers, event.writer_role) && lane.writers[event.writer_role] === event.principal_id,
       "Unbound writer principal: " + file);
-    assertWriterSeat(event.writer_role, event.actor_id);
+    requireThat(event.writer_role === "control-thread" || event.actor_id !== lane.writers["control-thread"],
+      "Agent actor cannot equal the frozen control-thread principal: " + file);
+    assertWriterIdentity(event);
     if (event.receipt_class.startsWith("B9-CLASS-006")) {
       requireThat(event.writer_role === "verifier" && Object.hasOwn(lane.writers, "builder") &&
         lane.writers.builder !== event.principal_id, "Independent verifier required: " + file);
@@ -292,7 +299,6 @@ function checkEvents(root, events, contracts) {
         "Recognized builder and verifier model families required: " + file);
       requireThat(!builders.has(verifier), "Verifier shares builder model family: " + file);
     }
-    if (event.receipt_class.startsWith("B9-CLASS-007")) requireThat(event.writer_role === "control-thread", "Human control principal required: " + file);
     bindSource(root, event.contract_source);
     requireThat(event.contract_source.path === contractPath(lane) &&
       git(root, "hash-object", "--", contractPath(lane)).trim() === event.contract_source.source_blob,

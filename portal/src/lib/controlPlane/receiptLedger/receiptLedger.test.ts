@@ -66,14 +66,16 @@ test("bare Git proposal append, replay, and competing revisions use ref compare-
   assert.equal(git("rev-list", "--count", base + "..b1-fixture"), "2");
   assert.equal(git("rev-parse", "main"), base);
   assert.equal(git("rev-parse", "b1-fixture:" + first.path), git("rev-parse", first.head + ":" + first.path));
-  const operator = { role: "control-thread", principalId: "Jerry Ingram",
-    actorId: "JAI::DEV::OPERATOR::HUMAN::UNDECLARED::2026-11-20" } as const;
+  const operator = { role: "control-thread", principalId: "Jerry Ingram", actorId: "Jerry Ingram" } as const;
   const acceptance = { ...initial, event_id: "00000000030000000000000000", timestamp: "1970-01-01T00:00:00.003Z",
     writer_role: operator.role, principal_id: operator.principalId, actor_id: operator.actorId,
     receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" };
   const proposal = { ...request, expectedHeadSha: git("rev-parse", "b1-fixture"), event: acceptance };
-  const wrongSeat = operator.actorId.replace("DEV", "OPS");
+  const wrongSeat = "JAI::DEV::OPERATOR::GPT::HIGH::2026-11-20";
   await assert.rejects(appendReceipt({ ...proposal, event: { ...acceptance, actor_id: wrongSeat } },
-    { ...operator, actorId: wrongSeat }), /Invalid writer seat/);
+    { ...operator, actorId: wrongSeat }), /exact human principal/);
+  await assert.rejects(appendReceipt({ ...proposal, event: { ...acceptance, actor_id: wrongSeat, principal_id: wrongSeat } },
+    { ...operator, actorId: wrongSeat, principalId: wrongSeat }), /exact human principal/);
+  assert.equal(git("rev-parse", "b1-fixture"), proposal.expectedHeadSha);
   assert.ok((await appendReceipt(proposal, operator)).appended);
 });

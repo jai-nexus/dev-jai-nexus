@@ -39,7 +39,7 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   const source = { path: parent, source_commit: baseline, source_blob: git("rev-parse", baseline + ":" + parent) };
   const program = { document_kind: "program", ...identity, status: "RESERVED_NOT_OPENED", evidence: [source] };
   const lane = { document_kind: "lane_contract", ...identity, lane_coordinate: "A1", write_repo: "jai-nexus/dev-jai-nexus",
-    depends_on: [], writers: { builder: "Fixture builder", verifier: "Fixture reviewer", "control-thread": "Fixture operator" }, evidence: [source] };
+    depends_on: [], writers: { builder: "Fixture builder", verifier: "Fixture reviewer", "control-thread": "Jerry Ingram" }, evidence: [source] };
   const contract = dir + "/lanes/A1/contract.yaml";
   const ideaFile = ".nexus/conjectures/fixture-hypothesis.yaml";
   const idea = { document_kind: "conjecture", ...env, conjecture_id: "fixture-hypothesis", authority_granted: false,
@@ -122,6 +122,8 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   }
   const receipt = eventPath(event);
   write(receipt, event);
+  await rejectChange("builder cannot use the frozen control-thread principal as its actor", receipt,
+    { ...event, actor_id: lane.writers["control-thread"] }, /Agent actor cannot equal/);
   await t.test("valid append-only ledger addition", async () => assert.equal((await check(established)).documents, 10));
   await rejectChange("writer namespace belongs to one principal", receipt, { ...event, principal_id: "other" }, /Unbound writer principal/);
   await rejectChange("builder cannot label an event with the verifier seat", receipt,
@@ -165,15 +167,17 @@ test("Package Format 2 compares temporary records to explicit Git history", asyn
   });
   const delivered = commit("fixture delivery receipt");
   await t.test("verification and human acceptance use the frozen lane's own principals", async () => {
-    const accept = { ...event, writer_role: "control-thread", actor_id: "JAI::DEV::OPERATOR::HUMAN::UNDECLARED::2026-11-20",
+    const accept = { ...event, writer_role: "control-thread", actor_id: "Jerry Ingram",
       principal_id: lane.writers["control-thread"], event_id: "00000000010000000000000002",
       receipt_class: "B9-CLASS-007 / CONTROL_ACCEPTANCE_RECEIPT" };
     try {
       write(eventPath(verify), verify);
       write(eventPath(accept), accept);
       assert.equal((await check(delivered)).documents, 12);
-      write(eventPath(accept), { ...accept, actor_id: accept.actor_id.replace("DEV", "OPS") });
-      await assert.rejects(check(delivered), /Invalid writer seat/);
+      for (const actor_id of ["JAI::DEV::OPERATOR", "JAI::DEV::OPERATOR::GPT::HIGH::2026-11-20", "jerry ingram"]) {
+        write(eventPath(accept), { ...accept, actor_id });
+        await assert.rejects(check(delivered), /exact human principal/);
+      }
     } finally {
       for (const record of [verify, accept]) fs.rmSync(absolute(eventPath(record)), { force: true });
     }

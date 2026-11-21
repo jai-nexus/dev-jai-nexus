@@ -28,14 +28,14 @@ test("packet module initializes and parses in an isolated runtime without Node m
 });
 
 test("ratified planes accept broadcasts and canonical seats accept addressed packets", () => {
-  for (const plane of ["COUNCIL", "DEV", "AGENT", "EXT", "OPS", "SECURITY", "RUNTIME"]) {
+  for (const plane of ["COUNCIL", "DEV", "AGENT", "EXT", "DOCS", "SECURITY", "RUNTIME"]) {
     validatePacket({ ...ping, to: "JAI::" + plane, delivery_mode: "PLANE_BROADCAST", repo_mutations_authorized: false }, context);
   }
   for (const plane of ["COUNCIL", "DEV"]) {
     for (const role of ["ARCHITECT", "BUILDER", "AUDITOR", "VERIFIER", "OPERATOR", "LIBRARIAN", "AUDIT", "FORMAT", "EXECUTOR", "BENCH", "DIRECT"])
       validatePacket({ ...ping, to: ["JAI", plane, role].join("::"), repo_mutations_authorized: false }, context);
   }
-  for (const to of ["JAI::OPS::OPERATOR", "JAI::SECURITY::AUDIT", "JAI::RUNTIME::EXECUTOR",
+  for (const to of ["JAI::SECURITY::AUDIT", "JAI::RUNTIME::EXECUTOR",
     "JAI::AGENT::BENCH", "JAI::EXT::DIRECT", "JAI::DOCS::ARCHIVIST", "JAI::AUDIT::RISK_REVIEWER",
     "JAI::AGENT::SYNTHESIZER", "JAI::SECURITY::GATE_REVIEWER"]) {
     validatePacket({ ...ping, to, repo_mutations_authorized: false }, context);
@@ -50,7 +50,7 @@ test("packet and ledger parsers agree on structural seats and undeclared session
     assert.deepEqual(parseAddress(id), parseSessionId(id));
     assert.equal(parseAddress(id).declared, false);
   }
-  for (const id of ["JAI::7OPS::VERIFIER", "JAI::DOCS::RISK-REVIEWER", "JAI::A.B::READER"]) {
+  for (const id of ["JAI::7DOCS::VERIFIER", "JAI::DOCS::RISK-REVIEWER", "JAI::A.B::READER"]) {
     assert.throws(() => parseAddress(id));
     assert.throws(() => parseSessionId(id));
   }

@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { assertWriterSeat, canonicalJson, ledgerEventPath, receiptHash, validate } from "../../../../scripts/validate-package-format-2.mjs";
+import { assertWriterIdentity, canonicalJson, ledgerEventPath, receiptHash, validate } from "../../../../scripts/validate-package-format-2.mjs";
 
 export { canonicalJson, receiptHash };
 
@@ -48,7 +48,7 @@ export async function appendReceipt(request: AppendRequest, writer: WriterContex
   const file = ledgerEventPath(event);
   if (event.writer_role !== writer.role || event.principal_id !== writer.principalId || event.actor_id !== writer.actorId)
     throw new Error("Receipt does not match caller's writer context");
-  assertWriterSeat(writer.role, writer.actorId);
+  assertWriterIdentity(event);
   const hash = receiptHash(event);
   const dir = mkdtempSync(path.join(tmpdir(), "jai-receipt-"));
   try {
