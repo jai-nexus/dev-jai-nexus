@@ -9,6 +9,7 @@
   "notes": "Required floor, not an exhaustive list. --run executes every discovered *.test.ts under root, pinned or not. Paths are relative to root, forward slashes, byte-order sorted.",
   "tests": [
     "companyAssetDomainRegistry.test.ts",
+    "fleetSnapshot/canonicalFleetSnapshot.test.ts",
     "governedPassalongRouteContractAdoption.test.ts",
     "governedRouteBoundary.test.ts",
     "governedRouteContractParity.test.ts",
