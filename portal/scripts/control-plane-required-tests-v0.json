@@ -36,6 +36,8 @@
     "programLifecycle/program-state-transition-matrix.test.ts",
     "programLifecycle/program-transition-receipt-boundary.test.ts",
     "q4m11y26-p2-a1-fleet-reconciliation.test.ts",
+    "receiptLedger/packetContract.test.ts",
+    "receiptLedger/receiptLedger.test.ts",
     "routePackets/supervisedRoutePacket.test.ts",
     "sandboxNexus/sandboxNexusSurface.test.ts",
     "sandboxNexus/sandboxPacketControlSurface.test.ts",
