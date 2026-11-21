@@ -3,21 +3,21 @@
 | Field | Value |
 | -- | -- |
 | Program / lane | `Q4M11Y26-P2:A3` (JAI-277) — Least-Privilege, CI, Inference and Kill-Switch Boundaries |
-| This document | Packet **A3-G** (Governance, Rolemap and CI Guardrails) |
-| Baseline | `jai-nexus/dev-jai-nexus@002a2f7256c593d57a7840066cb4b5010a2b14a2` |
-| Route | `PING-Q4M11Y26-P2-A3G-EXEC-V1` (B9-CLASS-004) |
-| Author seat | `JAI::DEV::VERIFIER` (Claude), exclusive steward of `.github/workflows/**` and `roles/rolemap.json` |
-| Cross-verifier | `JAI::COUNCIL::BUILDER` (ChatGPT), B9-CLASS-006; no self-verification |
+| Packets | A3-G governance guardrails and A3-I manual-inference gates |
+| A3-G baseline | `jai-nexus/dev-jai-nexus@002a2f7256c593d57a7840066cb4b5010a2b14a2` |
+| A3-G route | `PING-Q4M11Y26-P2-A3G-EXEC-V1` (B9-CLASS-004) |
+| A3-G author | `JAI::DEV::VERIFIER` (Claude), exclusive steward of `.github/workflows/**` and `roles/rolemap.json` |
+| A3-G cross-verifier | `JAI::COUNCIL::BUILDER` (ChatGPT), B9-CLASS-006; no self-verification |
 | Merge | Human only (B9-CLASS-007). `merge_authorized: false` for every AI seat |
 
 ## 1. Two-packet split
 
-- **A3-G (this packet):** repository-enforced guardrails. That means the rolemap, the
+- **A3-G:** repository-enforced guardrails. That means the rolemap, the
   `role_guardrails` and `portal_guardrails` workflows, CODEOWNERS, a pinned required-test
   manifest, and CI enforcement of the A2 offline Prisma wrapper.
-- **A3-I (later, separate route):** runtime inference and kill-switch gates on the
+- **A3-I:** runtime inference and kill-switch gates on the
   manual-inference route (ADMIN, budget and provider checks), plus the observed drills.
-  A3-I is not started. Nothing in this document claims an A3-I result.
+  The Builder executed the local drills below under `PING-Q4M11Y26-P2-A3I-EXEC-V1`. Independent verification belongs to Claude.
 
 ## 2. Defects closed by A3-G
 
@@ -45,29 +45,27 @@ an A3-I PR declared as BUILDER on manual-inference route files still passes (tes
 | Check | Required by ruleset? | A3-G content |
 | -- | -- | -- |
 | `portal_guardrails` | **Yes** | Policy regressions; runner regressions; manifest `--check`; offline Prisma test and validate; type check; CI-B; required control-plane `--run`; build |
-| `role_guardrails` | **No** (see 3.2) | Policy regressions; trusted-base role, path and evidence evaluation |
+| `role_guardrails` | **Yes** (B9-CLASS-010, section 3.2) | Policy regressions; trusted-base role, path and evidence evaluation |
 
 ### 3.2 External GitHub state (observed, not changed)
 
-Read through the GitHub REST API from this session at `2026-11-20T21:32:20Z`:
+Historical A3-G observation from the GitHub REST API at `2026-11-20T21:32:20Z`:
 
 - Ruleset `11506548` (`main-protection`) is `active` on `~DEFAULT_BRANCH` and has no bypass actors.
   - Rules: `non_fast_forward`, `deletion`, `pull_request`, `required_status_checks`.
   - `pull_request`: `required_approving_review_count: 0`, `require_code_owner_review: false`,
     `dismiss_stale_reviews_on_push: true`, `required_review_thread_resolution: true`.
   - `required_status_checks` (strict): `portal_guardrails`, `Vercel`, `Vercel Preview Comments`.
-    **`role_guardrails` is not a required check**, so a failing `role_guardrails` does not block a
-    merge today.
+    **`role_guardrails` was not yet required**, so a failing `role_guardrails` did not block a
+    merge at that observation.
 - `rules/branches/main` returns the same four rule types.
 - Not observable from this session: classic branch protection (HTTP 403), Actions permission
   settings (proxy 403) and organization rulesets (not repository-scoped). This document claims
   nothing about them.
 
-**Queued for a B9-CLASS-010 human operator ruleset update (not done by A3-G):** add
-`role_guardrails` to the required status checks. Do **not** turn on
-`require_code_owner_review` while there is only one human author. GitHub does not let authors
-approve their own PRs, so it would block every solo-author PR. CODEOWNERS stays advisory until
-that decision changes.
+**B9-CLASS-007 integration.** GitHub records the human-accepted A3-G PR as merged to main at `2026-11-20T22:31:18Z`. Its merge commit and the verified A3-I base are `5189469e500aa0346fc33cd4f89c139b21c975cb`. [PR #450](https://github.com/jai-nexus/dev-jai-nexus/pull/450)
+
+**B9-CLASS-010 ruleset observation.** During A3-I, a read of `repos/jai-nexus/dev-jai-nexus/rulesets/11506548` returned active enforcement on the default branch. The required contexts are `role_guardrails`, `portal_guardrails`, `Vercel`, and `Vercel Preview Comments`. The pull-request rule reports `require_code_owner_review: false`. [main-protection](https://github.com/jai-nexus/dev-jai-nexus/rules/11506548)
 
 ## 4. Residual limits (true after A3-G)
 
@@ -78,7 +76,7 @@ that decision changes.
    check off for itself. The rolemap marks those paths VERIFIER-only, but `role_guardrails`
    itself enforces that, so the protection is circular. The real backstops are human-only merge
    (B9-CLASS-007), cross-verification (B9-CLASS-006), and the required `portal_guardrails`.
-   Making `role_guardrails` required (3.2) would not close this. That needs a design that runs
+   The required check still evaluates PR-supplied workflow code. That needs a design that runs
    base-revision code only, without executing PR code under `pull_request_target`, and it needs
    its own route.
 2. **The role is a self-asserted line in the PR body, not an identity.** The check enforces
@@ -90,30 +88,31 @@ that decision changes.
    scripts. An early `return` or `process.exit(0)` inside them cannot be detected.
 5. **CODEOWNERS is advisory** while `require_code_owner_review` is `false`.
 
-## 5. Pending A3-I drills (not performed in A3-G)
+## 5. B9-CLASS-002 local A3-I drills
 
-None of the following has been executed, observed or claimed:
+The Builder exercised the manual-inference POST and provider connector with synthetic server sessions, a fake provider credential, an SDK import spy, and an in-memory persistence spy. No provider or database was contacted by these drills.
 
-- non-ADMIN and unauthorized budget/provider requests to the manual-inference route failing;
-- kill-switch drill preventing further writes within the exact drill scope;
-- a one-repository lane write permission failing against an unauthorized repository;
-- independently observed credential or branch-setting external effects (B9-CLASS-010 evidence).
+| Input or change | Observed result |
+| --- | --- |
+| Missing session, including caller-supplied ADMIN hints | HTTP 401 before reading the body. Zero participants and writes. |
+| AGENT, missing role, or ADMIN with blank email | HTTP 403 before reading the body. Zero participants and writes. |
+| ADMIN requests provider mode with live enablement, a fake key and a positive spend value | HTTP 403, `provider_spend_not_authorized`. Zero participants, provider calls and writes. Direct connector invocation with a simulated configured status also reached neither credential access nor SDK import. |
+| ADMIN requests mock with kill switch ON or malformed | HTTP 503 before deliberation. Zero writes. |
+| After mock deliberation, kill switch flips ON or writes flip to false | HTTP 503 with the corresponding disabled code and `persisted: false`. Zero calls to persist the prepared record. |
+| ADMIN requests mock with kill switch OFF and writes enabled | HTTP 200. One mock participant and one advisory history write to the spy. Human approval remains required. |
 
-A3-G changed no credentials, tokens, GitHub settings or rulesets, called no providers, and
-spent no money.
+The code-level Layer 2 ceiling is **USD 0.00**. The gates cover future dispatch through the in-repo manual-inference path and the call to persist `DeliberationRunHistory`. The write check reads the process environment immediately before persistence. Operational reach ends at that boundary. External provider account revocation, cancellation of already-in-flight network packets or writes, and enforcement of cross-repository credentials were outside the drill.
 
 ## 6. A3 checkable exit coverage
 
-| JAI-277 exit item | Status after A3-G |
-| -- | -- |
-| Required manifest covers ≥ 32 files and rejects missing/skipped checks | **Covered** (D6) |
-| Protected branch / CODEOWNERS settings observed, not merely documented | **Partial**: ruleset observed (3.2); CODEOWNERS present; code-owner review off by design |
-| One-repository write permission fails against an unauthorized repository | A3-I / external |
-| Non-ADMIN and unauthorized budget/provider paths fail | A3-I |
-| Kill switch prevents future writes within exact drill scope | A3-I |
+| JAI-277 exit item | Evidence |
+| --- | --- |
+| Required manifest floor and skip detection | A3-G runner regression suite |
+| Protected branch settings and CODEOWNERS | B9-CLASS-010 ruleset observation in section 3.2. CODEOWNERS remains advisory. |
+| One-repository write permission against an unauthorized repository | External credential drill remains unverified. |
+| Non-ADMIN, provider and unauthorized spend paths | B9-CLASS-002 local denials in section 5 |
+| Kill switch before manual-inference persistence | B9-CLASS-002 mid-request flip in section 5 |
 
-## 7. Non-authorizations
+## 7. Authority boundary
 
-No `.nexus/**`, `portal/prisma/**`, `portal/package.json`, lockfile or manual-inference
-runtime change. No ledger files. No merge, branch deletion, ruleset change, credential
-operation, provider call or Layer 2 spend. This document grants no authority.
+These records grant zero execution, provider-spend, routing or acceptance authority. Independent B9-CLASS-006 verification and human B9-CLASS-007 acceptance remain separate decisions for A3-I.

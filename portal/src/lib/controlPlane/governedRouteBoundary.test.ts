@@ -173,8 +173,11 @@ function testMotionIntakeBoundary() {
 
 function testManualInferenceProviderDisabledBoundary() {
   assertIncludesAll(manualInferenceRoute, [
-    'value === "env_gated_provider" ? "env_gated_provider" : "mock"',
-    'nonAuthorityDisclaimer:\n          "Mock mode was selected; no provider connector call was made."',
+    'import { getServerAuthSession } from "@/auth"',
+    'user.role !== "ADMIN"',
+    '!user.email.trim()',
+    'evaluateA3InferenceGate({ env: process.env, mode: requestedMode, phase: "request" })',
+    'evaluateA3InferenceGate({ env: process.env, mode: requestedMode, phase: "pre_persist" })',
     "Provider output is advisory only.",
     "Provider connector is server-side only.",
     "Provider mode is disabled by default.",
@@ -186,23 +189,22 @@ function testManualInferenceProviderDisabledBoundary() {
     "No provider API key exposure.",
     "No provider secret storage.",
   ]);
-  assertOrdered(
-    manualInferenceRoute,
-    'if (requestedMode === "env_gated_provider")',
-    "createMockDeliberationParticipantOutput(deliberationRequest)",
-  );
+  const ordered = [
+    "await getServerAuthSession()", 'user.role !== "ADMIN"', "await parseBody(request)",
+    'phase: "request"', "if (!gate.allowed)", "createMockDeliberationParticipantOutput(deliberationRequest)",
+    'phase: "pre_persist"', "if (!writeGate.allowed)", "await persistDeliberationRunHistory(historyRecord)",
+  ];
+  for (let i = 1; i < ordered.length; i++) assertOrdered(manualInferenceRoute, ordered[i - 1], ordered[i]);
   assertIncludesAll(providerConfig, [
-    'mode: "provider_disabled"',
-    "Live provider inference is disabled; mock mode remains default.",
-    'mode: "provider_config_missing"',
-    "Live provider inference is enabled but required provider config is missing.",
+    'mode: "provider_disabled"', "liveInferenceEnabled: false", "providerConfigured: false",
+    "Layer 2 API spend is not authorized.",
   ]);
   assertNoPositiveAuthorityClaims(manualInferenceRoute);
 }
 
 function testProviderConnectorSafeFallbackBoundary() {
   assertIncludesAll(providerConnector, [
-    "if (!status.providerConfigured)",
+    "if (!gate.allowed || !status.providerConfigured)",
     "Provider connector returned safe mock fallback; no live provider call was made.",
     "Unsupported provider did not run and cannot create authority.",
     "Provider connector did not run because config was unavailable.",
@@ -221,9 +223,10 @@ function testProviderConnectorSafeFallbackBoundary() {
     "No automatic route execution.",
     "Provider output is advisory only.",
   ]);
+  assertOrdered(providerConnector, 'phase: "provider_dispatch"', "if (!gate.allowed || !status.providerConfigured)");
   assertOrdered(
     providerConnector,
-    "if (!status.providerConfigured)",
+    "if (!gate.allowed || !status.providerConfigured)",
     'await import("openai")',
   );
   assertNoPositiveAuthorityClaims(providerConnector);

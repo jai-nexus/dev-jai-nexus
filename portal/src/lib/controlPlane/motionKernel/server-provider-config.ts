@@ -27,45 +27,14 @@ export function getServerProviderConfig(): ServerProviderConfig {
 
 export function getSafeProviderStatus(): ProviderConnectorSafeStatus {
   const config = getServerProviderConfig();
-  const providerConfigured = Boolean(
-    config.enabled && config.provider && config.model && config.credential,
-  );
-
-  if (!config.enabled) {
-    return {
-      liveInferenceEnabled: false,
-      providerConfigured: false,
-      providerKeyPresent: Boolean(config.credential),
-      providerName: config.provider,
-      modelName: config.model,
-      mode: "provider_disabled",
-      advisoryMessage:
-        "Live provider inference is disabled; mock mode remains default.",
-    };
-  }
-
-  if (!config.provider || !config.model || !config.credential) {
-    return {
-      liveInferenceEnabled: true,
-      providerConfigured: false,
-      providerKeyPresent: Boolean(config.credential),
-      providerName: config.provider,
-      modelName: config.model,
-      mode: "provider_config_missing",
-      advisoryMessage:
-        "Live provider inference is enabled but required provider config is missing.",
-    };
-  }
-
   return {
-    liveInferenceEnabled: true,
-    providerConfigured,
-    providerKeyPresent: true,
+    liveInferenceEnabled: false,
+    providerConfigured: false,
+    providerKeyPresent: Boolean(config.credential),
     providerName: config.provider,
     modelName: config.model,
-    mode: "provider_configured",
-    advisoryMessage:
-      "Live provider inference is configured for manual server-side invocation.",
+    mode: "provider_disabled",
+    advisoryMessage: "Provider inference is blocked because Layer 2 API spend is not authorized.",
   };
 }
 
