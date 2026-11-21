@@ -57,6 +57,16 @@
  *   - Safe to run anytime.
  *   - Key presence is environmental only; it does not validate correctness,
  *     funding, provider reachability, or live API readiness.
+ *   - Reports paid provider API dispatch as disabled under the Layer 2 lock.
+ *
+ * Layer 2 spend lock (Q4M11Y26-P2:A3-C):
+ *   Program 2 Layer 2 API spend is code-locked at USD 0.00. Paid modes (draft
+ *   and promote without --no-api, revise, evidence, with or without --preview)
+ *   exit with code 3 before any credential is read or request is sent, even
+ *   when OPENAI_API_KEY / ANTHROPIC_API_KEY are set. Every OpenAI Responses and
+ *   Anthropic Messages helper repeats the check. context, status and
+ *   draft/promote --no-api stay fully offline. Lifting the lock requires a code
+ *   change under its own CONTROL_THREAD route.
  *
  * Output contract (stable for future consumers):
  *   intent, next_motion_id, branch, head_commit, recent_motions,
@@ -78,6 +88,11 @@ const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 
 const SUPPORTED_PROVIDERS = new Set(["openai", "anthropic"]);
 const DEFAULT_PROVIDER = "openai";
+
+// Program 2 Layer 2 API spend ceiling, locked in code (not configurable by env).
+const LAYER2_AUTHORIZED_API_SPEND_USD = "0.00";
+const PAID_PROVIDER_DISPATCH_ENABLED = false;
+const SPEND_LOCK_EXIT_CODE = 3;
 
 const STANDARD_MOTION_FILES = [
     "motion.yaml",
@@ -142,6 +157,18 @@ const MOTION_YAML_STRUCTURAL_FIELDS = new Set([
 function die(msg) {
     console.error(`\n[MOTION-FACTORY] ERROR: ${msg}\n`);
     process.exit(1);
+}
+
+// Fails closed on every call: no paid OpenAI/Anthropic request may be sent
+// while Layer 2 API spend is locked at USD 0.00. Called before credentials are
+// read and again inside each provider dispatch helper.
+function assertPaidProviderDispatchAllowed(site) {
+    console.error(
+        `\n[MOTION-FACTORY] SPEND LOCK: paid provider API dispatch is disabled (${site}).\n` +
+        `  Program 2 Layer 2 API spend is code-locked at USD ${LAYER2_AUTHORIZED_API_SPEND_USD}; no OpenAI or Anthropic request was sent.\n` +
+        `  draft and promote can run offline with --no-api. revise and evidence have no offline mode.\n`
+    );
+    process.exit(SPEND_LOCK_EXIT_CODE);
 }
 
 function log(msg) {
@@ -232,6 +259,7 @@ function resolveProvider(args) {
 }
 
 function requireApiKey(provider) {
+    assertPaidProviderDispatchAllowed(`credential:${provider}`);
     if (provider === "anthropic") {
         const key = process.env.ANTHROPIC_API_KEY;
         if (!key) {
@@ -826,6 +854,10 @@ function buildStatusSnapshot({ repoRoot, branch, motionInventory, candidateDisco
             anthropic_key_present: anthropicKeyPresent,
             key_presence_semantics:
                 "present/missing only; does not validate correctness, funding, provider reachability, or live API readiness",
+            paid_provider_dispatch_enabled: PAID_PROVIDER_DISPATCH_ENABLED,
+            layer2_authorized_api_spend_usd: LAYER2_AUTHORIZED_API_SPEND_USD,
+            paid_provider_dispatch_semantics:
+                "disabled by the code-locked Layer 2 spend ceiling regardless of key presence; paid modes exit 3 before any request",
         },
         file_scopes: {
             revise_default: [...DEFAULT_REVISE_FILES],
@@ -916,10 +948,10 @@ async function statusCommand({ repoRoot, jsonOutput }) {
     log(``);
     log(`Commands:`);
     log(`  context   - inspect repo context for a given intent (no files, no API)`);
-    log(`  draft     - create a 9-file motion package`);
-    log(`  promote   - create a draft motion package from an existing candidate`);
-    log(`  revise    - update narrative files from notes`);
-    log(`  evidence  - insert proof evidence into narrative files`);
+    log(`  draft     - create a 9-file motion package (offline only with --no-api)`);
+    log(`  promote   - create a draft motion package from an existing candidate (offline only with --no-api)`);
+    log(`  revise    - update narrative files from notes (paid API; spend-locked)`);
+    log(`  evidence  - insert proof evidence into narrative files (paid API; spend-locked)`);
     log(`  status    - local factory readiness/configuration snapshot`);
     log(``);
     log(`Providers:`);
@@ -933,6 +965,8 @@ async function statusCommand({ repoRoot, jsonOutput }) {
     );
     log(`  (Key presence is environmental only; does not validate`);
     log(`   correctness, funding, provider reachability, or live API readiness.)`);
+    log(`  Paid API dispatch: DISABLED (Layer 2 spend code-locked at USD ${status.providers.layer2_authorized_api_spend_usd})`);
+    log(`  (Independent of key presence. Paid modes exit ${SPEND_LOCK_EXIT_CODE}; use --no-api for draft/promote.)`);
     log(``);
     log(`File scopes:`);
     log(`  Revise default:    ${status.file_scopes.revise_default.join(", ")}`);
@@ -1263,6 +1297,7 @@ function normalizeNarrativePayload(parsed) {
 }
 
 async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
+    assertPaidProviderDispatchAllowed("openai:responses:draft-narrative");
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
         die(`Missing OPENAI_API_KEY. Set it in the environment or use --no-api.`);
@@ -1346,6 +1381,7 @@ async function generateNarrativeWithOpenAI({ context, motionId, intent }) {
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function callAnthropicApi({ apiKey, systemPrompt, userContent, maxTokens = 8000 }) {
+    assertPaidProviderDispatchAllowed("anthropic:messages");
     const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -1446,6 +1482,7 @@ async function callOpenAIRevise({
     targetFiles,
     originalIntent,
 }) {
+    assertPaidProviderDispatchAllowed("openai:responses:revise");
     const fileDescriptions = targetFiles
         .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
         .join("\n\n");
@@ -1604,6 +1641,7 @@ async function callOpenAIEvidence({
     targetFiles,
     originalIntent,
 }) {
+    assertPaidProviderDispatchAllowed("openai:responses:evidence");
     const fileDescriptions = targetFiles
         .map((f) => `--- ${f} ---\n${existingContent[f] || "(empty)"}\n--- end ${f} ---`)
         .join("\n\n");
@@ -2362,6 +2400,11 @@ Usage:
   node portal/scripts/motion-factory.mjs evidence --motion motion-NNNN --evidence-file path [--notes "..."] [--files f1,f2] [--provider openai|anthropic] [--preview]
   node portal/scripts/motion-factory.mjs status   [--json]
 
+Layer 2 spend lock:
+  Paid provider API dispatch is disabled: Program 2 Layer 2 API spend is
+  code-locked at USD 0.00. draft/promote without --no-api, revise and evidence
+  exit with code 3 before any credential is read or request is sent.
+
 Commands:
   context    Inspect motion-specific repo context for a given intent.
              Writes no files. Calls no API. Requires --intent.
@@ -2477,6 +2520,7 @@ async function main() {
         const noApi = args["no-api"] === true;
         const provider = resolveProvider(args);
         const preview = args.preview === true;
+        if (!noApi) assertPaidProviderDispatchAllowed(`draft:${provider}`);
         await draftCommand({ repoRoot, intent, noApi, provider, preview });
         return;
     }
@@ -2492,6 +2536,7 @@ async function main() {
         const noApi = args["no-api"] === true;
         const provider = resolveProvider(args);
         const preview = args.preview === true;
+        if (!noApi) assertPaidProviderDispatchAllowed(`promote:${provider}`);
         await promoteCommand({ repoRoot, candidateId, noApi, provider, preview });
         return;
     }
@@ -2517,6 +2562,7 @@ async function main() {
 
         const provider = resolveProvider(args);
         const preview = args.preview === true;
+        assertPaidProviderDispatchAllowed(`revise:${provider}`);
         await reviseCommand({ repoRoot, motionId, notes, requestedFiles, provider, preview });
         return;
     }
@@ -2543,6 +2589,7 @@ async function main() {
 
         const provider = resolveProvider(args);
         const preview = args.preview === true;
+        assertPaidProviderDispatchAllowed(`evidence:${provider}`);
         await evidenceCommand({
             repoRoot,
             motionId,

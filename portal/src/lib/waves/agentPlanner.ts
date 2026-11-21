@@ -1,109 +1,50 @@
-import OpenAI from "openai";
-import type {
-  WavePlan,
-  WaveTask,
-  WaveTaskKind,
-  WaveTaskStatus,
-  WaveTaskTarget,
-} from "./types";
+// Q4M11Y26-P2:A3-C. Program 2 Layer 2 API spend is code-locked at USD 0.00.
+// The wave planner returns only a deterministic offline stub plan. It imports
+// no provider SDK and builds no client, whatever OPENAI_API_KEY,
+// JAI_PLANNER_MODEL or JAI_LAYER2_AUTHORIZED_API_SPEND_USD contain. A caller
+// that demands live provider planning fails closed. Lifting the lock requires
+// a code change under its own CONTROL_THREAD route.
+import type { WavePlan, WaveTask } from "./types";
+
+export const PLANNER_LAYER2_AUTHORIZED_API_SPEND_USD = "0.00";
+
+export type PlannerProviderMode = "offline_stub" | "live_provider";
+
+export const PLANNER_GENERATION = Object.freeze({
+  source: "offline_stub",
+  providerGenerated: false,
+  layer2ApiSpendUsd: PLANNER_LAYER2_AUTHORIZED_API_SPEND_USD,
+});
 
 export type PlanWaveInput = {
   projectKey: string;
   waveLabel: string;
   title: string;
   repoName: string;
+  providerMode?: PlannerProviderMode;
 };
 
-const MODEL = process.env.JAI_PLANNER_MODEL ?? "gpt-4.1-mini";
+export class PlannerSpendLockError extends Error {
+  readonly code = "PROVIDER_SPEND_NOT_AUTHORIZED";
 
-// Only create a client if we actually have a key
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-  : null;
+  constructor(requestedMode: unknown) {
+    super(
+      `Wave planner provider mode ${JSON.stringify(requestedMode)} is not authorized: ` +
+        `Layer 2 API spend is code-locked at USD ${PLANNER_LAYER2_AUTHORIZED_API_SPEND_USD}.`,
+    );
+    this.name = "PlannerSpendLockError";
+  }
+}
 
-// ---- Raw model output shapes (to avoid any) -----------------------------
+// Throws for anything other than the offline stub, including unknown values.
+export function assertPlannerSpendLock(mode: unknown = "offline_stub"): void {
+  if (mode !== "offline_stub") throw new PlannerSpendLockError(mode);
+}
 
-type RawTarget = {
-  kind?: string;
-  path?: string;
-};
-
-type RawTask = {
-  id?: string;
-  kind?: string;
-  status?: string;
-  title?: string;
-  description?: string;
-  repoName?: string;
-  nhId?: string;
-  target?: RawTarget | null;
-};
-
-type RawPlan = {
-  summary?: string;
-  notes?: string;
-  tasks?: RawTask[] | null;
-};
-
-// ---- Helpers ------------------------------------------------------------
-
-function makeTaskId(
-  projectKey: string,
-  waveLabel: string,
-  index: number,
-): string {
+function makeTaskId(projectKey: string, waveLabel: string, index: number): string {
   // 2.1.2 + W1.0 + 1 => 2.1.2.W1.0.1
   return `${projectKey}.${waveLabel}.${index + 1}`;
 }
-
-const VALID_KINDS: WaveTaskKind[] = [
-  "audit",
-  "refactor",
-  "feature",
-  "bugfix",
-  "infra",
-];
-
-const VALID_STATUS: WaveTaskStatus[] = ["pending", "in_progress", "done"];
-
-const VALID_TARGET_KINDS: WaveTaskTarget["kind"][] = [
-  "route",
-  "api",
-  "script",
-  "db",
-  "config",
-];
-
-function normalizeKind(kind: string | undefined): WaveTaskKind {
-  if (kind && (VALID_KINDS as string[]).includes(kind)) {
-    return kind as WaveTaskKind;
-  }
-  return "feature";
-}
-
-function normalizeStatus(status: string | undefined): WaveTaskStatus {
-  if (status && (VALID_STATUS as string[]).includes(status)) {
-    return status as WaveTaskStatus;
-  }
-  return "pending";
-}
-
-function normalizeTarget(raw?: RawTarget | null): WaveTaskTarget | undefined {
-  if (!raw || !raw.path) return undefined;
-
-  const kind: WaveTaskTarget["kind"] = VALID_TARGET_KINDS.includes(
-    raw.kind as WaveTaskTarget["kind"],
-  )
-    ? (raw.kind as WaveTaskTarget["kind"])
-    : "route";
-
-  return {
-    kind,
-    path: String(raw.path),
-  };
-}
-
-// ---- Stub plan (no OpenAI key or errors) --------------------------------
 
 function buildStubPlan(input: PlanWaveInput): WavePlan {
   const { projectKey, waveLabel, title, repoName } = input;
@@ -158,134 +99,13 @@ function buildStubPlan(input: PlanWaveInput): WavePlan {
     waveLabel,
     summary: `Plan for ${projectKey} ${waveLabel}: ${title}`,
     notes:
-      "Stubbed by agentPlanner.buildStubPlan; replace with real agent output when OPENAI_API_KEY is configured.",
+      "Offline stub plan from agentPlanner.buildStubPlan; not provider-generated. " +
+      `No model was called: Layer 2 API spend is code-locked at USD ${PLANNER_LAYER2_AUTHORIZED_API_SPEND_USD}.`,
     tasks,
   };
 }
 
-// ---- Main entry point ---------------------------------------------------
-
-export async function planWaveWithAgent(
-  input: PlanWaveInput,
-): Promise<WavePlan> {
-  const { projectKey, waveLabel, title, repoName } = input;
-
-  // No key → deterministic stub plan (what you already have today).
-  if (!openai) {
-    console.warn(
-      "[planWaveWithAgent] OPENAI_API_KEY missing – returning stubbed plan",
-    );
-    return buildStubPlan(input);
-  }
-
-  const nhPrefix = `${projectKey}.${waveLabel}`;
-
-  const systemPrompt = `
-You are the JAI NEXUS wave planner.
-
-You receive a projectKey (NH root), a waveLabel (e.g. "W1.0"),
-a human-readable wave title, and a repoName.
-
-Return a JSON object with this shape (no extra keys, no commentary):
-
-{
-  "summary": string,
-  "notes": string,
-  "tasks": [
-    {
-      "id": string,             // e.g. "${nhPrefix}.1"
-      "kind": "audit" | "refactor" | "feature" | "bugfix" | "infra",
-      "status": "pending",      // always "pending" initially
-      "title": string,
-      "description": string,
-      "repoName": string,       // usually "${repoName}"
-      "nhId": string,           // same as id
-      "target": {
-        "kind": "route" | "api" | "script" | "db" | "config",
-        "path": string          // repo-relative path
-      }
-    }
-  ]
-}
-`.trim();
-
-  const userPayload = {
-    projectKey,
-    waveLabel,
-    title,
-    repoName,
-  };
-
-  // Catch ANY OpenAI issues and fall back to stub
-  let completion;
-  try {
-    completion = await openai.chat.completions.create({
-      model: MODEL,
-      temperature: 0.3,
-      messages: [
-        { role: "system", content: systemPrompt },
-        {
-          role: "user",
-          content: `Plan a small, focused wave for this input:\n${JSON.stringify(
-            userPayload,
-          )}`,
-        },
-      ],
-    });
-  } catch (err) {
-    console.error(
-      "[planWaveWithAgent] OpenAI call failed, returning stubbed plan.",
-      err,
-    );
-    return buildStubPlan(input);
-  }
-
-  const content = completion.choices[0]?.message?.content?.trim();
-  if (!content) {
-    console.error("[planWaveWithAgent] Empty model response, using stub.");
-    return buildStubPlan(input);
-  }
-
-  let raw: RawPlan;
-  try {
-    raw = JSON.parse(content) as RawPlan;
-  } catch (err) {
-    console.error(
-      "[planWaveWithAgent] Failed to parse JSON from model, using stub.",
-      err,
-    );
-    return buildStubPlan(input);
-  }
-
-  const tasksRaw: RawTask[] = Array.isArray(raw.tasks) ? raw.tasks : [];
-
-  const tasks: WaveTask[] = tasksRaw.map((t, index) => {
-    const id = t.id || makeTaskId(projectKey, waveLabel, index);
-    const kind = normalizeKind(t.kind);
-    const status = normalizeStatus(t.status);
-    const target = normalizeTarget(t.target ?? undefined);
-
-    return {
-      id,
-      kind,
-      status,
-      title: t.title || `Task ${index + 1}`,
-      description: t.description || "",
-      repoName: t.repoName || repoName,
-      nhId: t.nhId || id,
-      target,
-    };
-  });
-
-  const plan: WavePlan = {
-    projectKey,
-    waveLabel,
-    summary: raw.summary || `Plan for ${projectKey} ${waveLabel}: ${title}`,
-    notes:
-      raw.notes ||
-      "Generated by planWaveWithAgent using OpenAI; tasks normalized server-side.",
-    tasks,
-  };
-
-  return plan;
+export async function planWaveWithAgent(input: PlanWaveInput): Promise<WavePlan> {
+  assertPlannerSpendLock(input.providerMode ?? "offline_stub");
+  return buildStubPlan(input);
 }

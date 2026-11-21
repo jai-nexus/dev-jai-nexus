@@ -46,8 +46,11 @@ function cli(args) {
   return spawnSync(process.execPath, [runner, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 }
 
+// Fixtures run under the default tsx runtime, exactly as production --run does,
+// so this suite does not depend on Node's built-in TypeScript stripping
+// (absent by default before Node 22.18; Q4M11Y26-P2:A3-C, advisory V-5).
 function runFixture(fx, mode) {
-  return cli([mode, "--manifest", fx.manifestPath, "--root", fx.root, "--runtime", "node"]);
+  return cli([mode, "--manifest", fx.manifestPath, "--root", fx.root]);
 }
 
 test("--check passes a valid 32-test manifest and --run executes every test", (t) => {
@@ -157,11 +160,12 @@ test("default tsx runtime executes TypeScript and reports failures", (t) => {
   assert.deepEqual(results.map((r) => [r.file, r.ok, r.reason]), [["bad.test.ts", false, "exit 4"], ["typed.test.ts", true, null]]);
 });
 
-test("repository manifest is valid and pins the 33-file A3-G baseline", () => {
+test("repository manifest is valid and pins the 34-file A3-C baseline", () => {
   const manifest = JSON.parse(readFileSync(DEFAULT_MANIFEST, "utf8"));
   const result = checkManifest(manifest, { root: DEFAULT_ROOT });
   assert.equal(result.ok, true, result.errors.join("\n"));
-  assert.ok(manifest.tests.length >= 33);
+  assert.ok(manifest.tests.length >= 34);
+  assert.ok(manifest.tests.includes("motionKernel/a3-inference-gates.test.ts"));
   assert.ok(manifest.tests.every((file) => discoverTests(DEFAULT_ROOT).includes(file)));
   assert.ok(manifest.tests.includes("motionKernel/local-operating-loop.test.ts"));
   assert.ok(existsSync(path.join(DEFAULT_ROOT, "motionKernel", "local-operating-loop.ts")));
