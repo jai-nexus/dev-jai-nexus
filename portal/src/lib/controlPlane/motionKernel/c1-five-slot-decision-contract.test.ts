@@ -45,13 +45,49 @@ test("measured and unmeasured are valid, only measured qualifies for scoring", (
 });
 test("F2 checks declared model families", () => {
   const config = structuredClone(measured.intelligence_configuration);
-  assert.equal(evaluateCrossFamilyVerifierSeparation(config, "other"), null);
+  assert.deepEqual(evaluateCrossFamilyVerifierSeparation(config, "other"), { separated: true, code: null });
+  const conflict = { separated: false, code: "C1_VERIFIER_SELF_GRADING_CONFLICT" };
+  for (const family of [null as unknown as string, "   "])
+    assert.deepEqual(evaluateCrossFamilyVerifierSeparation(config, family), conflict);
+  for (const invalid of [null, {}, { ...config, GOVERNANCE: {} }])
+    assert.deepEqual(evaluateCrossFamilyVerifierSeparation(invalid, "other"), conflict);
   for (const family of ["Anthropic", null, ""]) {
     config.CONSTRUCTION.models[0].provider_family = family;
-    assert.equal(
-      evaluateCrossFamilyVerifierSeparation(config, "anthropic"),
-      "C1_VERIFIER_SELF_GRADING_CONFLICT",
-    );
+    assert.deepEqual(evaluateCrossFamilyVerifierSeparation(config, "anthropic"), conflict);
+  }
+});
+test("clock eligibility and envelope validation share strict measured bounds", () => {
+  const clock = measured.operator_clock_telemetry;
+  for (const invalid of [
+    {}, null, 0, { status: "unmeasured" }, { ...clock, active_founder_minutes: null },
+    { ...clock, active_founder_minutes: 5.000002 }, { ...clock, active_founder_minutes: Infinity },
+    { ...clock, active_founder_minutes: -1 }, { ...clock, retries: 0.5 },
+    { ...clock, capture_method: " " }, { ...clock, extra: true },
+    { ...clock, started_at_iso: "2026-02-30T00:00:00Z" },
+    { ...clock, completed_at_iso: "2026-11-21T00:00:00Z" },
+  ]) {
+    assert.equal(evaluateC3BenchmarkClockEligibility(invalid), "C1_MALFORMED_OUTPUT");
+    assert.equal(validateC1Envelope({ ...measured, operator_clock_telemetry: invalid }), "C1_MALFORMED_OUTPUT");
+  }
+  assert.equal(evaluateC3BenchmarkClockEligibility({ ...clock, active_founder_minutes: 5.000001 }), null);
+});
+test("every pair of recorded five-slot claims must be distinct", () => {
+  for (let i = 0; i < slots.length; i++)
+    for (let j = i + 1; j < slots.length; j++) {
+      const e = structuredClone(measured);
+      e.slot_outputs[j].text = e.slot_outputs[i].text;
+      assert.equal(validateC1Envelope(e), "C1_ROLE_COLLAPSE", `${slots[i]} / ${slots[j]}`);
+    }
+});
+test("canonicalization catches superficial edits and empty recorded claims", () => {
+  const e = structuredClone(measured);
+  const proposal = e.slot_outputs[0].text;
+  for (const text of [
+    proposal.toUpperCase(), proposal.slice(0, -1), proposal.replace(/ /g, "  "),
+    proposal.replace("Evaluate", "Ｅvaluate") + "—", "", " \t ", "—+$!",
+  ]) {
+    e.slot_outputs[2].text = text;
+    assert.equal(validateC1Envelope(e), "C1_ROLE_COLLAPSE");
   }
 });
 for (const { name, diagnostic, envelope } of failureFixtures)

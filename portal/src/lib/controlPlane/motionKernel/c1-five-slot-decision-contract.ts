@@ -97,22 +97,28 @@ export type Diagnostic =
   | "C1_UNMEASURED_FOUNDER_CLOCK"
   | "C1_VERIFIER_SELF_GRADING_CONFLICT";
 
-export function evaluateC3BenchmarkClockEligibility(clock: OperatorClock) {
-  return clock.status === "UNMEASURED" ? "C1_UNMEASURED_FOUNDER_CLOCK" : null;
+export function evaluateC3BenchmarkClockEligibility(clock: unknown) {
+  try {
+    return validateClock(clock) === "MEASURED" ? null : "C1_UNMEASURED_FOUNDER_CLOCK";
+  } catch {
+    return "C1_MALFORMED_OUTPUT";
+  }
 }
 /** F2 is a CONTROL_THREAD-approved addition. Only declared models are visible.
  * Omitted upstream lineage and undeclared external tools require independent C4 audit. */
 export function evaluateCrossFamilyVerifierSeparation(
-  config: IntelligenceConfiguration,
-  verifierProviderFamily: string,
-) {
-  const family = verifierProviderFamily.trim().toLowerCase();
-  const models = config.CONSTRUCTION.models;
-  return !family ||
-    !models.length ||
-    models.some((m) => !m.provider_family?.trim() || m.provider_family.trim().toLowerCase() === family)
-    ? "C1_VERIFIER_SELF_GRADING_CONFLICT"
-    : null;
+  config: unknown,
+  verifierProviderFamily: unknown,
+): { separated: true; code: null } | { separated: false; code: "C1_VERIFIER_SELF_GRADING_CONFLICT" } {
+  try {
+    const family = string(verifierProviderFamily).trim().toLowerCase();
+    const { models } = inspectConfiguration(config);
+    if (models.length && models.every((m) => m.family !== null && m.family !== family))
+      return { separated: true, code: null };
+  } catch {
+    // Separation requires a valid declaration and a named verifier.
+  }
+  return { separated: false, code: "C1_VERIFIER_SELF_GRADING_CONFLICT" };
 }
 
 class Invalid extends Error {
@@ -170,7 +176,7 @@ function iso(v: unknown) {
   requireValue(Number.isFinite(date.getTime()) && date.toISOString().startsWith(s.slice(0, 10)));
   return Date.parse(s);
 }
-function clock(v: unknown) {
+function validateClock(v: unknown) {
   const c = object(v, "status started_at_iso completed_at_iso active_founder_minutes retries capture_method");
   if (c.status === "UNMEASURED") {
     requireValue(
@@ -181,16 +187,18 @@ function clock(v: unknown) {
         (c.retries === null || natural(c.retries)),
     );
   } else {
-    requireValue(
-      c.status === "MEASURED" && iso(c.completed_at_iso) >= iso(c.started_at_iso) && natural(c.retries),
-    );
+    requireValue(c.status === "MEASURED" && natural(c.retries));
+    const elapsedMinutes = (iso(c.completed_at_iso) - iso(c.started_at_iso)) / 60_000;
     requireValue(
       typeof c.active_founder_minutes === "number" &&
         Number.isFinite(c.active_founder_minutes) &&
-        c.active_founder_minutes >= 0,
+        c.active_founder_minutes >= 0 &&
+        elapsedMinutes >= 0 &&
+        c.active_founder_minutes <= elapsedMinutes + 1e-6,
     );
     string(c.capture_method);
   }
+  return c.status;
 }
 function path(v: unknown) {
   const s = string(v);
@@ -223,10 +231,7 @@ function uniqueSlots(names: string[], five: boolean) {
     "C1_ROLE_COLLAPSE",
   );
 }
-function inspect(input: unknown) {
-  const envelope = object(input, "intelligence_configuration operator_clock_telemetry slot_outputs");
-  clock(envelope.operator_clock_telemetry);
-  const raw = envelope.intelligence_configuration;
+function inspectConfiguration(raw: unknown) {
   requireValue(raw && typeof raw === "object" && Object.hasOwn(raw, "GOVERNANCE"), "C1_AUTHORITY_ESCALATION");
   const config = object(raw, "CONSTRUCTION COORDINATION GOVERNANCE");
   const gov = config.GOVERNANCE;
@@ -258,9 +263,10 @@ function inspect(input: unknown) {
   refs.forEach(provenance);
   const models = array(c.models).map((v) => {
     const m = object(v, "slot provider_family model_id effort lineage_ref");
-    for (const key of ["provider_family", "model_id", "effort", "lineage_ref"])
+    for (const key of ["model_id", "effort", "lineage_ref"])
       if (m[key] !== null) string(m[key]);
-    return { slot: string(m.slot), model: m.model_id, lineage: m.lineage_ref };
+    const family = m.provider_family === null ? null : string(m.provider_family).trim().toLowerCase();
+    return { slot: string(m.slot), model: m.model_id, lineage: m.lineage_ref, family };
   });
   const names = models.map((m) => m.slot);
   uniqueSlots(names, five);
@@ -293,6 +299,17 @@ function inspect(input: unknown) {
           "C1_FALSE_CONSENSUS",
         );
     }
+  return { five, refs, models };
+}
+const punctuation = new RegExp("[\\p{P}\\x21-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\x7e]", "gu");
+function canonicalText(text: string) {
+  return text.normalize("NFKC").toLowerCase().replace(punctuation, "").replace(/\s+/gu, " ").trim();
+}
+function inspect(input: unknown) {
+  const envelope = object(input, "intelligence_configuration operator_clock_telemetry slot_outputs");
+  validateClock(envelope.operator_clock_telemetry);
+  const { five, refs } = inspectConfiguration(envelope.intelligence_configuration);
+  const claims = new Set<string>();
   const outputs = array(envelope.slot_outputs).map((v) => {
     const o = object(v, "slot text state evidence_indices competing_positions");
     const state = o.state;
@@ -303,7 +320,15 @@ function inspect(input: unknown) {
         (state !== "RECORDED" || indices.length > 0),
       "C1_MISSING_EVIDENCE",
     );
-    return { slot: string(o.slot), text: string(o.text), state, positions: strings(o.competing_positions) };
+    if (five && state === "RECORDED") {
+      requireValue(typeof o.text === "string");
+      const claim = canonicalText(o.text);
+      requireValue(claim.length > 0 && !claims.has(claim), "C1_ROLE_COLLAPSE");
+      claims.add(claim);
+    } else {
+      string(o.text);
+    }
+    return { slot: string(o.slot), state, positions: strings(o.competing_positions) };
   });
   uniqueSlots(
     outputs.map((o) => o.slot),
@@ -311,13 +336,6 @@ function inspect(input: unknown) {
   );
   requireValue(outputs.length > 0);
   if (outputs.some((o) => o.state !== "RECORDED")) throw new Invalid("C1_TIMEOUT_OR_FAILURE");
-  if (five) {
-    const proposal = outputs.find((o) => o.slot === "Proposal")!.text.trim();
-    requireValue(
-      !outputs.some((o) => (o.slot === "Challenge" || o.slot === "Synthesis") && o.text.trim() === proposal),
-      "C1_ROLE_COLLAPSE",
-    );
-  }
   if (outputs.some((o) => o.positions.length > 0)) throw new Invalid("C1_UNRESOLVED_DISAGREEMENT");
 }
 /** Validation reports readiness only and never rewrites input or confers authority. */

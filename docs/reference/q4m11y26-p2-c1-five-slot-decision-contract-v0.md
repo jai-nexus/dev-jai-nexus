@@ -22,6 +22,8 @@ CONSTRUCTION identifies declared models and lineage, tools, prompt versions, val
 
 COORDINATION records one-model, two-seat, three-seat, five-slot or deterministic mode. In five-slot mode both the model declarations and outputs must each contain every canonical name exactly once. Other modes permit free non-empty slot names. Every mode records `adds_c3_benchmark_arms: false`.
 
+Five-slot validation compares recorded claims across all ten slot pairs. It applies NFKC normalization, lowercases text, removes ASCII and Unicode punctuation, collapses whitespace runs to one space and trims the result. An empty claim or a duplicate after normalization yields `C1_ROLE_COLLAPSE`.
+
 GOVERNANCE requires `authority_granted: false`, `HUMAN_OPERATOR_ONLY`, zero spend and false execution and inference flags. The validator returns a diagnostic or null and leaves the recorded envelope intact.
 
 ## Seven failure fixtures diagnostic matrix
@@ -38,9 +40,9 @@ GOVERNANCE requires `authority_granted: false`, `HUMAN_OPERATOR_ONLY`, zero spen
 
 ## CONTROL_THREAD-approved additions
 
-F1 and F2 extend the committed lane scope for C2–C4 readiness. F1 preserves either measured interval, minutes, retries and capture method or explicit unmeasured nulls. C1 accepts both. The C3 scoring helper returns `C1_UNMEASURED_FOUNDER_CLOCK` for unmeasured runs. The frozen estimate of 45 founder minutes is a prior.
+F1 and F2 extend the committed lane scope for C2–C4 readiness. F1 preserves either measured interval, minutes, retries and capture method or explicit unmeasured nulls. C1 accepts both. The envelope validator and C3 scoring helper use the same clock schema. A measured clock requires ordered ISO timestamps, finite nonnegative active minutes within the elapsed interval (tolerance 0.000001 minutes), a nonnegative integer retry count, a nonblank capture method and exactly the declared fields. The helper returns null for a valid measured clock, `C1_UNMEASURED_FOUNDER_CLOCK` for a valid unmeasured clock and `C1_MALFORMED_OUTPUT` for malformed input. The frozen estimate of 45 founder minutes is a prior.
 
-F2 checks the verifier family against every declared construction model. Missing family or a case-insensitive match yields `C1_VERIFIER_SELF_GRADING_CONFLICT`. This check sees only declared models. Undeclared external tooling and omitted upstream lineage require independent C4 audit.
+F2 validates the configuration and compares the trimmed verifier family with each declared construction model family, ignoring case. Valid declarations with at least one model and distinct verifier and construction families yield `{ separated: true, code: null }`. An invalid configuration, empty model list, missing or blank family, or matching family yields `{ separated: false, code: "C1_VERIFIER_SELF_GRADING_CONFLICT" }`. Undeclared external tooling and omitted upstream lineage require independent C4 audit.
 
 ## B9 ownership and required-test pin
 
