@@ -4,6 +4,8 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 import { canonicalJson, receiptHash } from "../receiptLedger/receiptLedger";
 import { slots, type Envelope } from "./c1-five-slot-decision-contract";
 import { replayFiveSlots } from "./c2-five-slot-replay";
@@ -12,8 +14,9 @@ import {
   verifyReceipt, type ReplayPins, type VerifiedSnapshot,
 } from "./c2-ledger-snapshot";
 
-const root = path.resolve(__dirname, "../../../../..");
-const pins = strictJson(readFileSync(path.join(__dirname, "c2-replay-pins-v1.json"))) as ReplayPins;
+const testPath = fileURLToPath(import.meta.url);
+const root = path.resolve(path.dirname(testPath), "../../../../..");
+const pins = strictJson(readFileSync(new URL("./c2-replay-pins-v1.json", import.meta.url))) as ReplayPins;
 const load = () => loadLedgerSnapshot(root, pins);
 function inventory() {
   const files: Record<string, string> = {};
@@ -80,7 +83,8 @@ if (cold) {
     assert.equal(result.digest, pins.expected_replay_digest);
     const expected = Buffer.from(canonicalJson({ payload: result.payload, digest: result.digest }));
     for (const [TZ, locale] of [["UTC","C"], ["America/Chicago","en_US.UTF-8"], ["Asia/Tokyo","C"]]) {
-      const output = execFileSync(process.execPath, [require.resolve("tsx/cli"), __filename, "--cold-replay"], {
+      const cli = createRequire(import.meta.url).resolve("tsx/cli");
+      const output = execFileSync(process.execPath, [cli, testPath, "--cold-replay"], {
         env: { ...process.env, TZ, LANG: locale, LC_ALL: locale, GIT_ALLOW_PROTOCOL: "file", GIT_NO_LAZY_FETCH: "1" },
         timeout: 60_000,
       });
