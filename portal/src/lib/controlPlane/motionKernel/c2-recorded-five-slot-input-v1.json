@@ -1,0 +1,190 @@
+{
+  "intelligence_configuration": {
+    "CONSTRUCTION": {
+      "models": [
+        {
+          "slot": "Proposal",
+          "provider_family": null,
+          "model_id": null,
+          "effort": null,
+          "lineage_ref": "recorded-case-v1"
+        },
+        {
+          "slot": "Evidence",
+          "provider_family": null,
+          "model_id": null,
+          "effort": null,
+          "lineage_ref": "recorded-case-v1"
+        },
+        {
+          "slot": "Challenge",
+          "provider_family": null,
+          "model_id": null,
+          "effort": null,
+          "lineage_ref": "recorded-case-v1"
+        },
+        {
+          "slot": "Risk-Economics",
+          "provider_family": null,
+          "model_id": null,
+          "effort": null,
+          "lineage_ref": "recorded-case-v1"
+        },
+        {
+          "slot": "Synthesis",
+          "provider_family": null,
+          "model_id": null,
+          "effort": null,
+          "lineage_ref": "recorded-case-v1"
+        }
+      ],
+      "tools": [],
+      "prompt_versions": [
+        "recorded-case-v1"
+      ],
+      "validators": [
+        "validateC1Envelope"
+      ],
+      "provenance": [
+        {
+          "provenance_kind": "COMMITTED_EVIDENCE",
+          "repository": "jai-nexus/dev-jai-nexus",
+          "source": {
+            "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/builder/20261121T201902000Z-01M7ZW69QGMYM4K1RDTR3WFVRH.json",
+            "source_commit": "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31",
+            "source_blob": "a4dcd8ae37a8966c56a5f49abdce9f5f25c51afd"
+          },
+          "receipt_event_id": "01M7ZW69QGMYM4K1RDTR3WFVRH",
+          "receipt_hash": "b45509fb3ff38b20d9dc82e5a301928151c7bd7d95a1f70d494aa4e7ad5c5a26",
+          "receipt_ledger_path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/builder/20261121T201902000Z-01M7ZW69QGMYM4K1RDTR3WFVRH.json"
+        },
+        {
+          "provenance_kind": "COMMITTED_EVIDENCE",
+          "repository": "jai-nexus/dev-jai-nexus",
+          "source": {
+            "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B3/builder/20261121T233027000Z-01M8074SHR5WP5PKSEJNDDZNWC.json",
+            "source_commit": "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31",
+            "source_blob": "000e3b9524ac5256b77c0eb99da307e85c0ebb78"
+          },
+          "receipt_event_id": "01M8074SHR5WP5PKSEJNDDZNWC",
+          "receipt_hash": "d77ae28b0e2cf7cae565c60717fbe9ee6c5097cabfd20e9acd49c3eadddf9294",
+          "receipt_ledger_path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B3/builder/20261121T233027000Z-01M8074SHR5WP5PKSEJNDDZNWC.json"
+        },
+        {
+          "provenance_kind": "COMMITTED_EVIDENCE",
+          "repository": "jai-nexus/dev-jai-nexus",
+          "source": {
+            "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/builder/20261122T012736000Z-01M80DV9T0WV6JDSAFMZXQP4Q0.json",
+            "source_commit": "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31",
+            "source_blob": "2e929c4a5787524ff42affca6119fd96a7e4179d"
+          },
+          "receipt_event_id": "01M80DV9T0WV6JDSAFMZXQP4Q0",
+          "receipt_hash": "76a1f6a611c4e96b681b94c7c21c61c1c22e45d410a6da29a4ffcb761580c047",
+          "receipt_ledger_path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/builder/20261122T012736000Z-01M80DV9T0WV6JDSAFMZXQP4Q0.json"
+        },
+        {
+          "provenance_kind": "COMMITTED_EVIDENCE",
+          "repository": "jai-nexus/dev-jai-nexus",
+          "source": {
+            "path": "portal/src/lib/controlPlane/motionKernel/c1-five-slot-decision-contract.ts",
+            "source_commit": "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31",
+            "source_blob": "26fc10e9cee777a53ad490d50bf5356ec650e664"
+          }
+        }
+      ],
+      "correlation_disclosure": {
+        "shared_model_or_lineage": true,
+        "correlation_groups": [
+          [
+            "Proposal",
+            "Evidence",
+            "Challenge",
+            "Risk-Economics",
+            "Synthesis"
+          ]
+        ],
+        "independent_consensus_claim": false,
+        "functional_slots_are_not_model_slots": true,
+        "five_independent_models_claimed": false
+      }
+    },
+    "COORDINATION": {
+      "mode": "five-slot",
+      "adds_c3_benchmark_arms": false
+    },
+    "GOVERNANCE": {
+      "authority_granted": false,
+      "decision_boundary": "HUMAN_OPERATOR_ONLY",
+      "execution_implied": false,
+      "live_inference_authorized": false,
+      "layer_2_spend_usd": 0
+    }
+  },
+  "operator_clock_telemetry": {
+    "status": "UNMEASURED",
+    "started_at_iso": null,
+    "completed_at_iso": null,
+    "active_founder_minutes": null,
+    "retries": null,
+    "capture_method": null
+  },
+  "slot_outputs": [
+    {
+      "slot": "Synthesis",
+      "text": "The record supports an offline comparison. The independence objection and effort estimate remain unresolved.",
+      "state": "RECORDED",
+      "evidence_indices": [
+        3,
+        1
+      ],
+      "competing_positions": []
+    },
+    {
+      "slot": "Evidence",
+      "text": "Builder receipts identify the B2 fleet snapshot, B3 lifecycle adapter and B4 local operating loop deliveries.",
+      "state": "RECORDED",
+      "evidence_indices": [
+        2,
+        0,
+        1
+      ],
+      "competing_positions": []
+    },
+    {
+      "slot": "Risk-Economics",
+      "text": "Founder effort remains unknown until an operator supplies measured telemetry.",
+      "state": "RECORDED",
+      "evidence_indices": [
+        2,
+        3
+      ],
+      "competing_positions": [
+        "Founder effort remains unknown until an operator supplies measured telemetry."
+      ]
+    },
+    {
+      "slot": "Proposal",
+      "text": "Replay the three Batch B delivery records against the frozen C1 envelope.",
+      "state": "RECORDED",
+      "evidence_indices": [
+        3,
+        0
+      ],
+      "competing_positions": []
+    },
+    {
+      "slot": "Challenge",
+      "text": "Delivery receipts establish what was recorded. They do not establish independent model agreement.",
+      "state": "RECORDED",
+      "evidence_indices": [
+        0,
+        1,
+        2
+      ],
+      "competing_positions": [
+        "Accept the three records as evidence of implementation.",
+        "Delivery receipts establish what was recorded. They do not establish independent model agreement."
+      ]
+    }
+  ]
+}
