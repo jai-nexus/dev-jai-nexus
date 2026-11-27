@@ -2,28 +2,10 @@ import { createHash } from "node:crypto";
 import { canonicalJson } from "../receiptLedger/receiptLedger";
 import { slots, validateC1Envelope, type Envelope, type Diagnostic } from "./c1-five-slot-decision-contract";
 import {
-  blobId, check, contractPath, matchesSnapshot, ReplayError, sha256, strictJson,
-  type ReceiptPin, type ReplayPins, type VerifiedSnapshot,
+  bindEvidence, blobId, check, matchesSnapshot, ReplayError, sha256, strictJson,
+  type ReplayPins, type VerifiedSnapshot,
 } from "./c2-ledger-snapshot";
 
-function bindEvidence(envelope: Envelope, snapshot: VerifiedSnapshot) {
-  const bindings: Readonly<ReceiptPin>[] = [];
-  for (const ref of envelope.intelligence_configuration.CONSTRUCTION.provenance) {
-    const { source } = ref;
-    check(ref.provenance_kind === "COMMITTED_EVIDENCE" && ref.repository === "jai-nexus/dev-jai-nexus" &&
-      source.source_commit === snapshot.snapshot_commit_sha, "C2_EVIDENCE");
-    if (source.path === contractPath) {
-      check(source.source_blob === snapshot.c1_contract_blob_sha && ref.receipt_event_id === undefined &&
-        ref.receipt_ledger_path === undefined && ref.receipt_hash === undefined, "C2_EVIDENCE");
-      continue;
-    }
-    const receipt = snapshot.receipts.find(r => r.path === source.path);
-    check(receipt && source.source_blob === receipt.blob_sha && ref.receipt_ledger_path === receipt.path &&
-      ref.receipt_event_id === receipt.event_id && ref.receipt_hash === receipt.receipt_hash, "C2_EVIDENCE");
-    bindings.push(receipt);
-  }
-  return bindings;
-}
 function failure(code: ReplayError["code"] | Diagnostic) {
   return { ok: false, code, digest: null, payload: null } as const;
 }

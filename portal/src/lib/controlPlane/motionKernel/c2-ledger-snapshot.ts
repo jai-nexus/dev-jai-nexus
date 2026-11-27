@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { posix } from "node:path";
 import { assertWriterIdentity, ledgerEventPath } from "../../../../scripts/validate-package-format-2.mjs";
 import { canonicalJson, receiptHash } from "../receiptLedger/receiptLedger";
+import type { Envelope } from "./c1-five-slot-decision-contract";
 
 export const snapshotCommit = "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31";
 export const contractPath = "portal/src/lib/controlPlane/motionKernel/c1-five-slot-decision-contract.ts";
@@ -121,6 +122,25 @@ export interface VerifiedSnapshot {
   readonly receipts: readonly Readonly<ReceiptPin>[];
 }
 const verified = new WeakSet<VerifiedSnapshot>();
+export function bindEvidence(envelope: Envelope, snapshot: VerifiedSnapshot) {
+  check(verified.has(snapshot), "C2_PIN");
+  const bindings: Readonly<ReceiptPin>[] = [];
+  for (const ref of envelope.intelligence_configuration.CONSTRUCTION.provenance) {
+    const { source } = ref;
+    check(ref.provenance_kind === "COMMITTED_EVIDENCE" && ref.repository === "jai-nexus/dev-jai-nexus" &&
+      source.source_commit === snapshot.snapshot_commit_sha, "C2_EVIDENCE");
+    if (source.path === contractPath) {
+      check(source.source_blob === snapshot.c1_contract_blob_sha && ref.receipt_event_id === undefined &&
+        ref.receipt_ledger_path === undefined && ref.receipt_hash === undefined, "C2_EVIDENCE");
+      continue;
+    }
+    const receipt = snapshot.receipts.find(r => r.path === source.path);
+    check(receipt && source.source_blob === receipt.blob_sha && ref.receipt_ledger_path === receipt.path &&
+      ref.receipt_event_id === receipt.event_id && ref.receipt_hash === receipt.receipt_hash, "C2_EVIDENCE");
+    bindings.push(receipt);
+  }
+  return bindings;
+}
 export function matchesSnapshot(snapshot: VerifiedSnapshot, pins: ReplayPins) {
   return verified.has(snapshot) && pins.snapshot_commit_sha === snapshot.snapshot_commit_sha &&
     pins.c1_contract_blob_sha === snapshot.c1_contract_blob_sha &&
