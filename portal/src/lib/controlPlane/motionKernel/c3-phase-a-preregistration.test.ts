@@ -140,6 +140,8 @@ test("exact committed C2 fixture fails separation; measured in-memory OpenAI var
   const cold = () => coldReconstructDecisionEvidencePacket(data.packet,data.rawEnvelopeBytes,snapshot,data.pins);
   assert.ok(cold().ok);
   assert.deepEqual(cold(),cold());
+  assert.deepEqual(coldReconstructDecisionEvidencePacket({ ...data.packet, case_id: "relabeled" },
+    data.rawEnvelopeBytes,snapshot,data.pins), { ok: false, code: "C3_CASE_BINDING" });
   Object.assign(data.packet.cost_to_verified_execution,{ combined_total_usd: 5 });
   assert.equal(cold().ok,false);
 });

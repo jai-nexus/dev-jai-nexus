@@ -2,7 +2,7 @@ import { z } from "zod";
 import { canonicalJson } from "../receiptLedger/receiptLedger";
 import { evaluateC3BenchmarkClockEligibility, validateC1Envelope, type Envelope, type IntelligenceConfiguration, type OperatorClock } from "./c1-five-slot-decision-contract";
 import { replayFiveSlots as replayFiveSlotDecision } from "./c2-five-slot-replay";
-import { type ReplayPins, type VerifiedSnapshot } from "./c2-ledger-snapshot";
+import { strictJson, type ReplayPins, type VerifiedSnapshot } from "./c2-ledger-snapshot";
 import { hex64, id, isolatedConfiguration, requireC3, TASK_COMPLEXITY_TIERS, tokenTelemetry } from "./c3-preregistration-protocol";
 
 const packetSchema = z.object({
@@ -33,6 +33,12 @@ export function coldReconstructDecisionEvidencePacket(packet: unknown, rawEnvelo
       binding.snapshot_commit_sha === replay.payload.snapshot_commit_sha && binding.c1_contract_blob_sha === replay.payload.c1_contract_blob_sha, "C3_REPLAY_BINDING");
     requireC3(canonicalJson(p.intelligence_configuration) === canonicalJson(envelope.intelligence_configuration) &&
       isolatedConfiguration(p.intelligence_configuration), "C1_VERIFIER_SELF_GRADING_CONFLICT");
+    const caseMarkers = p.intelligence_configuration.CONSTRUCTION.prompt_versions.filter(v => v.startsWith("C3-CASE:"));
+    requireC3(caseMarkers.length === 1, "C3_CASE_BINDING");
+    const [caseId, tier] = z.tuple([id, z.enum(TASK_COMPLEXITY_TIERS), hex64]).parse(
+      strictJson(Buffer.from(caseMarkers[0].slice("C3-CASE:".length))),
+    );
+    requireC3(caseId === p.case_id && tier === p.task_complexity_tier, "C3_CASE_BINDING");
     requireC3(canonicalJson(p.cost_to_verified_execution.L4_founder_time_non_cash) === canonicalJson(envelope.operator_clock_telemetry), "C3_CLOCK_BINDING");
     return { ok: true, packet: p, digest: replay.digest } as const;
   } catch (error) {
