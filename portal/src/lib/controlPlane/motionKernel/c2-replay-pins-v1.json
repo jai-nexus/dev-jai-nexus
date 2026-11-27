@@ -1,0 +1,170 @@
+{
+  "snapshot_commit_sha": "15e2cc02a4ea3bdbd3c6e1123e822533b9bc5e31",
+  "c1_contract_blob_sha": "26fc10e9cee777a53ad490d50bf5356ec650e664",
+  "input_blob_sha": "acb4e64e7cbf02f4ecc1816be2c32745128a6d98",
+  "input_sha256": "e0871de76b40b8f96091c1ff3aa9ac0820bc76f288694f261f5a9c4bde8aea35",
+  "receipts": [
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/builder/20261121T201902000Z-01M7ZW69QGMYM4K1RDTR3WFVRH.json",
+      "blob_sha": "a4dcd8ae37a8966c56a5f49abdce9f5f25c51afd",
+      "event_id": "01M7ZW69QGMYM4K1RDTR3WFVRH",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "b45509fb3ff38b20d9dc82e5a301928151c7bd7d95a1f70d494aa4e7ad5c5a26"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/control-thread/20261121T230425000Z-01M805N458KZR7Q6EQ3A1HMHDK.json",
+      "blob_sha": "76417e063f849704c252fe935b0cce9cff940596",
+      "event_id": "01M805N458KZR7Q6EQ3A1HMHDK",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "3fde6959c4f4854fb57b922cc3f86d4abf4a1ce5848153cb044d7c97dab976b7"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/control-thread/20261121T232221000Z-01M806NYY8YGQV5HT6DVZG8EF0.json",
+      "blob_sha": "4d47cf53d67eab80a5cead6c882d51b949813fd9",
+      "event_id": "01M806NYY8YGQV5HT6DVZG8EF0",
+      "prev_ledger_entry_hash": "3fde6959c4f4854fb57b922cc3f86d4abf4a1ce5848153cb044d7c97dab976b7",
+      "receipt_hash": "4273e666bc0b52d0888a15b93726e2c91c559793abe81c37941312f8b7733e55"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/verifier/20261121T225126450Z-01M804XBVJWF0QTAHWSGJRF682.json",
+      "blob_sha": "f31e8e73db4828f8d55ebdb85f46bee41738ceb0",
+      "event_id": "01M804XBVJWF0QTAHWSGJRF682",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "52405411cef186fb99236ed0f1732b1da832a3ed6594fb391083eac2e87479a6"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B2/verifier/20261121T230749000Z-01M805VBC8HYTE43P80J5MKE1Q.json",
+      "blob_sha": "2c4f4e0819d64208bc4a8ffc3e9ccdd5494cc2bd",
+      "event_id": "01M805VBC8HYTE43P80J5MKE1Q",
+      "prev_ledger_entry_hash": "52405411cef186fb99236ed0f1732b1da832a3ed6594fb391083eac2e87479a6",
+      "receipt_hash": "5b2448c820308853215899d7e648381e2e602f9d6cdf9f111a69210472ecd1b3"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B3/builder/20261121T233027000Z-01M8074SHR5WP5PKSEJNDDZNWC.json",
+      "blob_sha": "000e3b9524ac5256b77c0eb99da307e85c0ebb78",
+      "event_id": "01M8074SHR5WP5PKSEJNDDZNWC",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "d77ae28b0e2cf7cae565c60717fbe9ee6c5097cabfd20e9acd49c3eadddf9294"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B3/control-thread/20261121T234037000Z-01M807QD8817Q8MW3XRC8J14B0.json",
+      "blob_sha": "591410cb79ab96c58ee679c472f700ee795c825b",
+      "event_id": "01M807QD8817Q8MW3XRC8J14B0",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "57690aa9a1ac76e1eed76d84786c254377c21387bd3e915c73ba5ae95a93576c"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B3/verifier/20261121T233706442Z-01M807GZMART0MB9HVBM1WYK3T.json",
+      "blob_sha": "81fd215d8863d1c61ae44a8f5789292c8f709146",
+      "event_id": "01M807GZMART0MB9HVBM1WYK3T",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "1b9430948cebcd7509b28a1f998a602c1e33431c603341ef1010ea457fa6d514"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/builder/20261122T012736000Z-01M80DV9T0WV6JDSAFMZXQP4Q0.json",
+      "blob_sha": "2e929c4a5787524ff42affca6119fd96a7e4179d",
+      "event_id": "01M80DV9T0WV6JDSAFMZXQP4Q0",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "76a1f6a611c4e96b681b94c7c21c61c1c22e45d410a6da29a4ffcb761580c047"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000815000Z-01M809A0CR9T68C9R8B1CQA23M.json",
+      "blob_sha": "81f7472437f17e205a564eea3b8aa6aa91d788b6",
+      "event_id": "01M809A0CR9T68C9R8B1CQA23M",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "b0bc0e7bdf927b69fd98e3b75e4ac305a6c8b83ab1d32af8f53b35d8cbf04e52"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000839000Z-01M809AQTRPWP9ZHEX6Z23FANM.json",
+      "blob_sha": "c169afd050a49aa8ef69c970690fb3de82a127ac",
+      "event_id": "01M809AQTRPWP9ZHEX6Z23FANM",
+      "prev_ledger_entry_hash": "b0bc0e7bdf927b69fd98e3b75e4ac305a6c8b83ab1d32af8f53b35d8cbf04e52",
+      "receipt_hash": "ed26fd7c06843bc9123e7a0bab79e05261322e1551d4c8c805b77b9e5c65c933"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000845000Z-01M809AXP89JBCKQ6EQF7MZSWK.json",
+      "blob_sha": "93a9dbdd28808aa0e25eb2119997cd3ce99ddd57",
+      "event_id": "01M809AXP89JBCKQ6EQF7MZSWK",
+      "prev_ledger_entry_hash": "ed26fd7c06843bc9123e7a0bab79e05261322e1551d4c8c805b77b9e5c65c933",
+      "receipt_hash": "c159e81eaf8451e564a3426124b3b6cf982dac6d6707960ed240d1f5fa121943"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000911000Z-01M809BQ2R1JWBJ25S7AF12MM9.json",
+      "blob_sha": "61b672bdfdf69213e0d9e1a988479a31974b23e0",
+      "event_id": "01M809BQ2R1JWBJ25S7AF12MM9",
+      "prev_ledger_entry_hash": "c159e81eaf8451e564a3426124b3b6cf982dac6d6707960ed240d1f5fa121943",
+      "receipt_hash": "c3588a1f8f6945c388dabd87f81e1de6ab1735a11cb7d3c3e595907b64d45805"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000919000Z-01M809BYWR25TEGWFQXZH7N2E0.json",
+      "blob_sha": "f39e913e367597b2286cb336a81843d1b91cf8ee",
+      "event_id": "01M809BYWR25TEGWFQXZH7N2E0",
+      "prev_ledger_entry_hash": "c3588a1f8f6945c388dabd87f81e1de6ab1735a11cb7d3c3e595907b64d45805",
+      "receipt_hash": "83934f913e99d828888d5620411890b8e235ba518d37e835031a70a795cc7865"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000933000Z-01M809CCJ8MXVTRQ75R6WC30S7.json",
+      "blob_sha": "85a5c4735fafd21c036661b56bc1912832c608ef",
+      "event_id": "01M809CCJ8MXVTRQ75R6WC30S7",
+      "prev_ledger_entry_hash": "83934f913e99d828888d5620411890b8e235ba518d37e835031a70a795cc7865",
+      "receipt_hash": "530ec74d5462ba3c65023deb196e9a68e58f4da7baa34300d3efe1754e8cb466"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000943000Z-01M809CPARCAATG92FNSDFV6HE.json",
+      "blob_sha": "3142dcb72e28ed88dc8565fa78bf0f5a0925ea06",
+      "event_id": "01M809CPARCAATG92FNSDFV6HE",
+      "prev_ledger_entry_hash": "530ec74d5462ba3c65023deb196e9a68e58f4da7baa34300d3efe1754e8cb466",
+      "receipt_hash": "2196908d3e1cdc5a223360f9f3d5b1093a2e290ab219512cbedb883ca34c3719"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T000953000Z-01M809D0387SWXZAJ1CTT84504.json",
+      "blob_sha": "6915175b535acecfe4cea72dbf43eb1e863cc83c",
+      "event_id": "01M809D0387SWXZAJ1CTT84504",
+      "prev_ledger_entry_hash": "2196908d3e1cdc5a223360f9f3d5b1093a2e290ab219512cbedb883ca34c3719",
+      "receipt_hash": "33df5245285f4e504758596a11b568204f39f2b2191741c3bc8b4d51a93f6fd2"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T010938000Z-01M80CTD2GXJ6N8B2MN05N9NX2.json",
+      "blob_sha": "dfb2523c5add24b6e212192cdcc082889552d242",
+      "event_id": "01M80CTD2GXJ6N8B2MN05N9NX2",
+      "prev_ledger_entry_hash": "33df5245285f4e504758596a11b568204f39f2b2191741c3bc8b4d51a93f6fd2",
+      "receipt_hash": "b7a1d07cffd03024cdf36c7ecd6ea2188e574fd2f2683ce6b1ef3848e1dd4046"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T011053000Z-01M80CWPA8NH6WED228PQSSH0G.json",
+      "blob_sha": "77781b2d533c25d3cccbc511991c5c440cec5875",
+      "event_id": "01M80CWPA8NH6WED228PQSSH0G",
+      "prev_ledger_entry_hash": "b7a1d07cffd03024cdf36c7ecd6ea2188e574fd2f2683ce6b1ef3848e1dd4046",
+      "receipt_hash": "4e773a29313572fdd97980b8c921a153663c21571cda16bd3a9e714179cc765f"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T011123000Z-01M80CXKKR7QYZ72J64TEH8926.json",
+      "blob_sha": "e53455cab83998901fc4fd0c4ac0f0f1d6fee8e8",
+      "event_id": "01M80CXKKR7QYZ72J64TEH8926",
+      "prev_ledger_entry_hash": "4e773a29313572fdd97980b8c921a153663c21571cda16bd3a9e714179cc765f",
+      "receipt_hash": "1425280a1d73be985a57145fb972d846c4db5f07ca396685d27d0e402b8d73e2"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T011437000Z-01M80D3H28CZF5C1Z99NSN92YC.json",
+      "blob_sha": "c5fac32979f827b5a55feb2f2b1bee5eed52cb10",
+      "event_id": "01M80D3H28CZF5C1Z99NSN92YC",
+      "prev_ledger_entry_hash": "1425280a1d73be985a57145fb972d846c4db5f07ca396685d27d0e402b8d73e2",
+      "receipt_hash": "0545d2b5308aae01a3033221db71d453f7c3a0243459de275629b2163b369105"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/control-thread/20261122T013854000Z-01M80EFZXGHFP8PE2EZ092MRAN.json",
+      "blob_sha": "57fddd2302c08089bb52e22e205b4e3731a8e20c",
+      "event_id": "01M80EFZXGHFP8PE2EZ092MRAN",
+      "prev_ledger_entry_hash": "0545d2b5308aae01a3033221db71d453f7c3a0243459de275629b2163b369105",
+      "receipt_hash": "a06784c34e287328d3582a632812791683c78f6778f66e98cc6ac379757bc5b2"
+    },
+    {
+      "path": ".nexus/ledger/corpus-v1/motion-0248/jai-five-slot-compounded-reasoning-shadow-kernel-v0/B4/verifier/20261122T013244109Z-01M80E4PPDHGZ16MACRYR2N3RQ.json",
+      "blob_sha": "ceb61ca32e8751f55cbe10d6db8111560107c37b",
+      "event_id": "01M80E4PPDHGZ16MACRYR2N3RQ",
+      "prev_ledger_entry_hash": null,
+      "receipt_hash": "b1cd8b4fc6f5cf9cef55ba75ec96b9b6e031dc029c68a1acfa509e4041d50d8d"
+    }
+  ],
+  "expected_replay_digest": "e7070d01538ae80376d85f987063fe2ecd8201b805c0e8c1a491dd953cd89946"
+}
