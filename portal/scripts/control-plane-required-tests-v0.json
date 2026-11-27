@@ -22,6 +22,7 @@
     "motionKernel/batch-e-negative-and-rollback-suite.test.ts",
     "motionKernel/c1-five-slot-decision-contract.test.ts",
     "motionKernel/c2-five-slot-replay.test.ts",
+    "motionKernel/c3-phase-a-preregistration.test.ts",
     "motionKernel/local-operating-loop-handler.test.ts",
     "motionKernel/local-operating-loop.test.ts",
     "programLifecycle/canonical-active-program-resolver.test.ts",
